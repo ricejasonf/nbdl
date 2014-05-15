@@ -1,27 +1,16 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
 
-using namespace std::string;
+#include "Entity.h"
 
-Account *account = new Account();
-	account->setNameFirst("Joe");
-	account->setNameLast("Higashi");
-	account->setUsername("kicky1995");
-	account->setPassword("moomoo1234");
-	account->create();
-
-
-class Account
+class Account : public Entity
 {
-	private:
-		
 	public:
-		void setNameFirst(string);
-		void setNameLast(string);
-		void setUsername(string);
-		void setPassword(string);
-		void setAge(string);
-		void setAge(int);
+		Account &setNameFirst(string) { set("NameFirst"); return *this; }
+		Account &setNameLast(string) { set("NameLast"); return *this; }
+		Account &setUsername(string) { set("Username"); return *this; }
+		Account &setPassword(string) { set("Password"); return *this; }
+		Account &setAge(string) { set("Age"); return *this; }
 }
 
 #endif

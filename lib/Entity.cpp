@@ -23,12 +23,12 @@ void Entity::save()
 
 	bool transactionStartedHere = backend.beginTransaction();
 	try {
-		backend.callBeforeSaveFunctions();
+		//callBeforeSaveFunctions();
 		if (getId())
 			backEnd.insert(getDiff());
 		else
 			backEnd.update(getId(), getDiff());
-		backend.callAfterSaveFunctions();
+		//callAfterSaveFunctions();
 	} catch(...) {
 		if (transactionStartedHere)
 			backend.rollBack();
