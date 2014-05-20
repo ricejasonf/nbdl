@@ -1,73 +1,79 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <memory>
+
 #include "ValidatorInt.h"
 #include "ValidatorIntUnsigned.h"
 #include "ValidatorString.h"
-
-use std::string;
-use std::vector;
-use std::map;
+#include "BackEnd.h"
 
 class Entity
 {
 	public:
 
-	typedef unordered_map<string, string> ValueMap;
-	typedef Validator<string, vector, ValueMap> Validator;
+	typedef std::unordered_map<std::string, std::string> ValueMap;
 
-	Entity(ValueMaP &values) :
-		values(values) {}
-	virtual ~Entity() { clearValidators(); }
+	Entity(/*Builder &builder,*/ std::unique_ptr<BackEnd> backEnd) :
+		//builder(builder),
+		backEnd(std::move(backEnd)) {}
+	virtual ~Entity() { }
 
-	int getId();
+	int getId() { return id; }
+	bool save();
 
-	virtual void create(); 
-	virtual void read();
-	virtual void update();
-	virtual void remove();
+	inline void set(const std::string name, const std::string value) { changedValues[name] = value; }
+	const std::string get(const std::string name);
 
-	void save();
-
-	inline void set(const string name, const string value) { changedValues[name] = value; }
-	const string get(const string name);
-	
 	//add accessors in child?
 
 	protected:
 
-	inline ValidatorIntUnsigned &validateIntUnsigned(const string &name) { return validate<ValidatorIntUnsigned>(name); }
-	inline ValidatorInt &validateInt(const string &name) { return validate<ValidatorInt>(name); }
-	inline ValidatorString &validateString(const string &name) { return validate<ValidatorString>(name); }
+	friend class Validator;
 
-	virtual void validate() {}
+	void addError(const std::string name, const std::string error);
 
-	virtual const string getRevisionResourceKey() = 0;
-	virtual const string getRevisionObjectType() = 0;
+	inline ValidatorIntUnsigned &validateIntUnsigned(const std::string name) { return validate<ValidatorIntUnsigned>(name); }
+	inline ValidatorInt &validateInt(const std::string name) { return validate<ValidatorInt>(name); }
+	inline ValidatorString &validateString(const std::string name) { return validate<ValidatorString>(name); }
 
+	virtual void validate() {
+		validateString("NameFirst")
+			.max(50);	
+	}
+
+	/*
 	void notifyChange(const ValueMap diff);
 	void notifyChange(const ValueMap diff, int id);
+	*/
 
-	inline void addValidator(Validator *v) { validators.push_back(v); }
-	void addError(const string name, const string *e);
+	//Builder &builder;
+	std::unique_ptr<BackEnd> backEnd;
 
 	private:
 
-	friend class Validator;
+	void flushValidatedValues();
 
-	void clearValidators();
-
-	ValueMap &values;
+	ValueMap values;
 	ValueMap changedValues;
-	vector<Validator *> validators;
-	map<string, vector<string>> errors;
-	<template class V>
-	V &validate(const string &name);
+	ValueMap validatedValues;
+	Validator *currentValidator;
+	std::vector<std::unique_ptr<Validator> > validators;
+	std::unordered_map<std::string, std::vector<std::string>> errors;
+	bool _hasErrors;
 
-}
+	template<class V>
+	V &validate(const std::string name);
+	int id;
+
+};
 
 #endif
 
+/*
 client.createContact()
 	.setName("blah")
 	.setEmail("blah@bah.com")
@@ -105,3 +111,4 @@ bool Contact::validate()
 		;
 	normalize();
 }
+*/

@@ -1,18 +1,38 @@
-#include "Validator.h"
+#include <string>
+#include <regex>
+#include <iostream>
 
-Validator::Validator(Entity &entity, const string name) :
+#include "Validator.h"
+#include "Entity.h"
+
+using std::string;
+using std::regex_match;
+
+Validator::Validator(Entity &entity, const string &name) :
 	entity(entity),
 	name(name),
 	chainBroken(false)
 {
+	std::cout << "CONSTRUCTOR FOR Validator CALLED" << std::endl;
 	Entity::ValueMap::iterator i = entity.changedValues.find(name);
-	if (i != entity.changeValues.end())
+	if (i != entity.changedValues.end())
 	{
 		_hasValue = true;
-		value = *i;
+		value = (*i).second;
 	}
 	else
 		_hasValue = false;
+}
+
+void Validator::addError(const string &error) 
+{ 
+	entity.addError(name, error); 
+	chainBroken = true; 
+}
+void Validator::_matches(const string &r, const string &token) 
+{ 
+	if (!regex_match(value, std::regex(r)))
+		addError(token); 
 }
 
 void Validator::_required()
