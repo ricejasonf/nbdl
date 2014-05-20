@@ -20,6 +20,7 @@ class Entity
 	Entity(/*Builder &builder,*/ std::unique_ptr<BackEnd> backEnd) :
 		//builder(builder),
 		backEnd(std::move(backEnd)) {}
+	Entity(Entity&&); //move constructor
 	virtual ~Entity() { }
 
 	int getId() { return id; }
