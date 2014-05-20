@@ -23,7 +23,7 @@ class Entity
 	virtual ~Entity() { }
 
 	int getId() { return id; }
-	bool save();
+	void save();
 
 	inline void set(const std::string name, const std::string value) { changedValues[name] = value; }
 	const std::string get(const std::string name);
