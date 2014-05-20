@@ -32,9 +32,9 @@ void Entity::save()
 	try {
 		//callBeforeSaveFunctions();
 		if (getId())
-			backEnd->insert(changedValues);
-		else
 			backEnd->update(getId(), changedValues);
+		else
+			backEnd->insert(changedValues);
 		//callAfterSaveFunctions();
 	} catch(...) {
 		if (transactionStartedHere)
