@@ -26,7 +26,7 @@ class Entity
 	void save();
 
 	inline void set(const std::string name, const std::string value) { changedValues[name] = value; }
-	const std::string get(const std::string name);
+	const std::string get(const std::string &name);
 
 	//add accessors in child?
 
@@ -34,7 +34,7 @@ class Entity
 
 	friend class Validator;
 
-	void addError(const std::string name, const std::string error);
+	void addError(const std::string &name, const std::string &error);
 
 	inline ValidatorIntUnsigned &validateIntUnsigned(const std::string name) { return validate<ValidatorIntUnsigned>(name); }
 	inline ValidatorInt &validateInt(const std::string name) { return validate<ValidatorInt>(name); }
@@ -64,10 +64,16 @@ class Entity
 	std::vector<std::unique_ptr<Validator> > validators;
 	std::unordered_map<std::string, std::vector<std::string>> errors;
 	bool _hasErrors;
+	int id;
 
 	template<class V>
-	V &validate(const std::string name);
-	int id;
+	V &validate(const std::string &name)
+	{
+		V *v = new V(*this, name);
+		validators.push_back(std::unique_ptr<Validator>(v));
+		//return reference for idiom
+		return *v;
+	}
 
 };
 

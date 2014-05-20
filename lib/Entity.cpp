@@ -32,13 +32,13 @@ void Entity::save()
 	try {
 		//callBeforeSaveFunctions();
 		if (getId())
-			backEnd->insert(getDiff());
+			backEnd->insert(changedValues);
 		else
-			backEnd->update(getId(), getDiff());
+			backEnd->update(getId(), changedValues);
 		//callAfterSaveFunctions();
 	} catch(...) {
 		if (transactionStartedHere)
-			backEnd->rollBack();
+			backEnd->rollback();
 		throw;
 	}
 	if (transactionStartedHere)
@@ -47,7 +47,7 @@ void Entity::save()
 
 void Entity::addError(const std::string &name, const std::string &error)
 {
-	std::vector<std::string> &_errors = entity.errors[name];
+	std::vector<std::string> &_errors = errors[name];
 	if (std::find(_errors.begin(), _errors.end(), error) == _errors.end())
 		_errors.push_back(error);
 }
@@ -56,18 +56,19 @@ void Entity::flushValidatedValues()
 {
 	for (auto &v : validators)
 	{
-		if (v.hasValue())
-			changedValues[v.getName()] = v.getValue();
+		if (v->hasValue())
+			changedValues[v->getName()] = v->getValue();
 	}	
 	validators.clear();
 }
 
-<template class V>
-V &Entity::validate<V>(const std::string &name)
+/*
+template<class V>
+V &Entity::validate(const std::string &name)
 {
-	ValueMap::iterator i;
-	V *v = new V(*this, *i);
+	V *v = new V(*this, name);
 	validators.push_back(std::unique_ptr<Validator>(v));
 	//return reference for idiom
 	return *v;
 }
+*/

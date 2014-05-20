@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "../../lib/Entity.h"
 #include "../../lib/BackEndPrint.h"
 
@@ -6,7 +8,7 @@
 int main()
 {
 	//Entity account = buildAccount();
-	Entity account(unique_ptr<BackEnd>(new BackEndPrint("Account")));
+	Entity account(std::unique_ptr<BackEnd>(new BackEndPrint("Account")));
 	account.set("NameFirst", "Joe");
 	account.set("NameLast", "Smith");
 	account.set("username", "joe");
