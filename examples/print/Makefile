@@ -11,3 +11,6 @@ print.o: print.cpp
 
 $(LIB_DIR)/%.o: $(LIB_DIR)/%.cpp
 	$(CC) -c $< -o $@
+
+clean:
+	rm *.o $(LIB_OBJ_FILES)

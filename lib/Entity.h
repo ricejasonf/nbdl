@@ -45,11 +45,6 @@ class Entity
 			.max(50);	
 	}
 
-	/*
-	void notifyChange(const ValueMap diff);
-	void notifyChange(const ValueMap diff, int id);
-	*/
-
 	//Builder &builder;
 	std::unique_ptr<BackEnd> backEnd;
 

@@ -1,17 +1,13 @@
 #ifndef VALIDATORSTRING_H
 #define VALIDATORSTRING_H
 
-#include<iostream>
-
 #include "Validator.h"
 
 class ValidatorString : public Validator
 {
 	public:
 
-	ValidatorString(Entity &entity, const std::string &name) : Validator(entity, name) {
-	std::cout << "CONSTRUCTOR FOR ValidatorString CALLED" << std::endl;
-	}
+	ValidatorString(Entity &entity, const std::string &name) : Validator(entity, name) {}
 	inline ValidatorString &required() { _required(); return *this; }
 	inline ValidatorString &optional() { _optional(); return *this; }
 	inline ValidatorString &min(const int m) 

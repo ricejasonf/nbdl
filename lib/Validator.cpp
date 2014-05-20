@@ -1,6 +1,5 @@
 #include <string>
 #include <regex>
-#include <iostream>
 
 #include "Validator.h"
 #include "Entity.h"
@@ -13,7 +12,6 @@ Validator::Validator(Entity &entity, const string &name) :
 	name(name),
 	chainBroken(false)
 {
-	std::cout << "CONSTRUCTOR FOR Validator CALLED" << std::endl;
 	Entity::ValueMap::iterator i = entity.changedValues.find(name);
 	if (i != entity.changedValues.end())
 	{
