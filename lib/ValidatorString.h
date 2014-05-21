@@ -12,13 +12,13 @@ class ValidatorString : public Validator
 	inline ValidatorString &optional() { _optional(); return *this; }
 	inline ValidatorString &min(const int m) 
 	{ 
-		if (!chainBroken && value.size() < m) 
+		if (!chain_broken && value.size() < m) 
 			addError("tooShort"); 
 		return *this; 
 	}
 	inline ValidatorString &max(const int m) 
 	{ 
-		if (!chainBroken && value.size() > m) 
+		if (!chain_broken && value.size() > m) 
 			addError("tooLong"); 
 		return *this; 
 	}
@@ -29,19 +29,19 @@ class ValidatorString : public Validator
 	}
 	inline ValidatorString &asEmail() 
 	{ 
-		if (!chainBroken)
-			_matches("/^[a-zA-Z0-9\\-_\\.\\+]+@[a-zA-Z0-9_\\-]+(\\.[a-zA-Z0-9_\\-]+)*$/"); 
+		if (!chain_broken)
+			_matches("^[a-zA-Z0-9\\-_\\.\\+]+@[a-zA-Z0-9_\\-]+(\\.[a-zA-Z0-9_\\-]+)*$"); 
 		return *this; 
 	}
 	inline ValidatorString &allDigits()
 	{ 
-		if (!chainBroken)
-			_matches("/^[0-9]*$/"); 
+		if (!chain_broken)
+			_matches("^[0-9]*$"); 
 		return *this; 
 	}
 	inline ValidatorString &inSet(std::vector<std::string> set)
 	{
-		if (!chainBroken && std::find(set.begin(), set.end(), value) == set.end())
+		if (!chain_broken && std::find(set.begin(), set.end(), value) == set.end())
 			addError("notInSet");
 		return *this;
 	}

@@ -22,7 +22,7 @@ class ValidatorInt : public Validator
 	/*
 	inline ValidatorInt &inSet(std::vector<std::string> set) 
 	{
-		if (!chainBroken && std::find(set.begin(), set.end(), value) == set.end())
+		if (!chain_broken && std::find(set.begin(), set.end(), value) == set.end())
 			addError("notInSet");
 		return *this;
 	}

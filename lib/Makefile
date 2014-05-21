@@ -8,8 +8,14 @@ libnewhotness.a: Entity.o $(OBJ_FILES)
 Entity.o: Entity.cpp Entity.h $(wildcard Validator*.h)
 	$(CC) -c Entity.cpp
 
-%.o: %.cpp %.h
-	$(CC) -c $<
+Validator.o: Validator.cpp Validator.h
+	$(CC) -c Validator.cpp
+	
+BackEndPrint.o: BackEndPrint.cpp BackEndPrint.h
+	$(CC) -c BackEndPrint.cpp
+
+#%.o: %.cpp %.h
+#	$(CC) -c $<
 
 clean:
 	rm *.o

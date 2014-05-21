@@ -1,25 +1,43 @@
 #include <memory>
+#include <iostream>
+
+#include <BackEndPrint.h>
+#include "Account.h"
+
+
+Account buildAccount() 
+{ 
+	return Account(std::unique_ptr<BackEnd>(new BackEndPrint("Account"))); 
+}
 
 /*
-#include "../../lib/Entity.h"
-#include "../../lib/BackEndPrint.h"
-*/
-#include <Entity.h>
-#include <BackEndPrint.h>
-
-
-Entity buildAccount() 
+Account buildAccount() 
 { 
-	return Entity(std::unique_ptr<BackEnd>(new BackEndPrint("Account"))); 
+	return Account(buildBackEnd()
+		withMySqlTable("Account")	
+		withObjType("c")
+		withResourceKey("p"????
+			); 
 }
+*/
 
 int main()
 {
-	Entity account = buildAccount();
-//	Entity account(std::unique_ptr<BackEnd>(new BackEndPrint("Account")));
-	account.set("NameFirst", "Joe");
-	account.set("NameLast", "Smith");
-	account.set("username", "joe");
-	account.set("password", "iamasecret123");
-	account.save();
+	Account account = buildAccount();
+	if (!account
+		.setNameFirst("Jow")
+		.setNameLast("Smart")
+		.setPhoneNumber("7024334206")
+		.save())
+	{
+		std::cout << "Validation failed with the following errors:" << std::endl;
+		for (auto &i : account.getErrors())
+		{
+			std::cout << "\t" << i.first << std::endl;
+			for (auto &j : i.second)
+			{
+				std::cout << "\t\t" << j << std::endl;
+			}
+		}
+	}
 }

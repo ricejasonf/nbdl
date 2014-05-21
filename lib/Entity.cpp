@@ -18,14 +18,25 @@ const std::string Entity::get(const std::string &name)
 	return std::string("");
 }
 
-void Entity::save()
+bool Entity::save()
 {
 	//todo handle relations
+	has_errors = false;
 	validators.clear();
 	validate();
+	if (has_errors)
+	{
+		//todo use callback function
+		return false;
+	}
 	changedValues.clear();
 	flushValidatedValues();
 	backEnd->validate();
+	if (has_errors)
+	{
+		//todo use callback function
+		return false;
+	}
 	flushValidatedValues();
 
 	bool transactionStartedHere = backEnd->beginTransaction();
@@ -43,10 +54,12 @@ void Entity::save()
 	}
 	if (transactionStartedHere)
 		backEnd->commit();
+	return true;
 }
 
 void Entity::addError(const std::string &name, const std::string &error)
 {
+	has_errors = true;
 	std::vector<std::string> &_errors = errors[name];
 	if (std::find(_errors.begin(), _errors.end(), error) == _errors.end())
 		_errors.push_back(error);

@@ -1,35 +1,36 @@
 #include <string>
-#include <regex>
+#include <boost/regex.hpp>
 
 #include "Validator.h"
 #include "Entity.h"
 
 using std::string;
-using std::regex_match;
+using boost::regex_match;
+using boost::regex;
 
 Validator::Validator(Entity &entity, const string &name) :
 	entity(entity),
 	name(name),
-	chainBroken(false)
+	chain_broken(false)
 {
 	Entity::ValueMap::iterator i = entity.changedValues.find(name);
 	if (i != entity.changedValues.end())
 	{
-		_hasValue = true;
+		has_value = true;
 		value = (*i).second;
 	}
 	else
-		_hasValue = false;
+		has_value = false;
 }
 
 void Validator::addError(const string &error) 
 { 
 	entity.addError(name, error); 
-	chainBroken = true; 
+	chain_broken = true; 
 }
 void Validator::_matches(const string &r, const string &token) 
 { 
-	if (!regex_match(value, std::regex(r)))
+	if (!chain_broken && !regex_match(value, regex(r)))
 		addError(token); 
 }
 
@@ -40,7 +41,7 @@ void Validator::_required()
 		if (hasValue() && isBlank())
 			addError("required");	
 		else if (!hasValue())
-			chainBroken = true;
+			chain_broken = true;
 	}
 	else if (isBlank())
 		addError("required");

@@ -11,11 +11,13 @@
 #include "ValidatorString.h"
 #include "BackEnd.h"
 
+#include<iostream>
 class Entity
 {
 	public:
 
 	typedef std::unordered_map<std::string, std::string> ValueMap;
+	typedef std::unordered_map<std::string, std::vector<std::string>> ErrorList;
 
 	Entity(/*Builder &builder,*/ std::unique_ptr<BackEnd> backEnd) :
 		//builder(builder),
@@ -24,12 +26,11 @@ class Entity
 	virtual ~Entity() { }
 
 	int getId() { return id; }
-	void save();
+	bool save();
 
 	inline void set(const std::string name, const std::string value) { changedValues[name] = value; }
 	const std::string get(const std::string &name);
-
-	//add accessors in child?
+	const ErrorList getErrors() { return errors; }
 
 	protected:
 
@@ -41,10 +42,7 @@ class Entity
 	inline ValidatorInt &validateInt(const std::string name) { return validate<ValidatorInt>(name); }
 	inline ValidatorString &validateString(const std::string name) { return validate<ValidatorString>(name); }
 
-	virtual void validate() {
-		validateString("NameFirst")
-			.max(50);	
-	}
+	virtual void validate() = 0;
 
 	//Builder &builder;
 	std::unique_ptr<BackEnd> backEnd;
@@ -58,8 +56,9 @@ class Entity
 	ValueMap validatedValues;
 	Validator *currentValidator;
 	std::vector<std::unique_ptr<Validator> > validators;
-	std::unordered_map<std::string, std::vector<std::string>> errors;
-	bool _hasErrors;
+	ErrorList errors;
+	//std::unordered_map<std::string, std::vector<std::string>> errors;
+	bool has_errors;
 	int id;
 
 	template<class V>
