@@ -1,12 +1,14 @@
 #include <string>
-#include <boost/regex.hpp>
+//#include <boost/regex.hpp>
 
 #include "Validator.h"
 #include "Entity.h"
 
 using std::string;
+/*
 using boost::regex_match;
 using boost::regex;
+*/
 
 Validator::Validator(Entity &entity, const string &name) :
 	entity(entity),
@@ -30,8 +32,10 @@ void Validator::addError(const string &error)
 }
 void Validator::_matches(const string &r, const string &token) 
 { 
+	/*
 	if (!chain_broken && !regex_match(value, regex(r)))
 		addError(token); 
+		*/
 }
 
 void Validator::_required()
