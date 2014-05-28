@@ -1,28 +1,17 @@
-#include <memory>
+//#include <memory>
 #include <iostream>
 
 #include <BackEndPrint.h>
 #include "Account.h"
-
 
 Account buildAccount() 
 { 
 	return Account(std::unique_ptr<BackEnd>(new BackEndPrint("Account"))); 
 }
 
-/*
-Account buildAccount() 
-{ 
-	return Account(buildBackEnd()
-		withMySqlTable("Account")	
-		withObjType("c")
-		withResourceKey("p"????
-			); 
-}
-*/
-
 int main()
 {
+	std::cout << "hello account" << "\n";
 	Account account = buildAccount();
 	if (!account
 		.setNameFirst("Jow")

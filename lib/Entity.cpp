@@ -37,7 +37,6 @@ bool Entity::save()
 		//todo use callback function
 		return false;
 	}
-	flushValidatedValues();
 
 	bool transactionStartedHere = backEnd->beginTransaction();
 	try {
