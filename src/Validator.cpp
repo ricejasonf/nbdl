@@ -1,14 +1,9 @@
 #include <string>
-//#include <boost/regex.hpp>
 
 #include "Validator.h"
 #include "Entity.h"
 
 using std::string;
-/*
-using boost::regex_match;
-using boost::regex;
-*/
 
 Validator::Validator(Entity &entity, const string &name) :
 	entity(entity),
@@ -30,13 +25,6 @@ void Validator::addError(const string &error)
 	entity.addError(name, error); 
 	chain_broken = true; 
 }
-void Validator::_matches(const string &r, const string &token) 
-{ 
-	/*
-	if (!chain_broken && !regex_match(value, regex(r)))
-		addError(token); 
-		*/
-}
 
 void Validator::_required()
 {
@@ -51,3 +39,24 @@ void Validator::_required()
 		addError("required");
 }
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+void Validator::_matches(const string &r, const string &token) 
+{ 
+	int matches = EM_ASM_INT({
+		var value = Pointer_stringify($0);
+		var regStr = Pointer_stringify($1);
+		alert(value);
+		return value.match(new RegExp(regStr)) !== null;
+	}, value.c_str(), r.c_str());
+	if (!chain_broken && !matches)
+		addError(token); 
+}
+#else
+#include <boost/regex.hpp>
+void Validator::_matches(const string &r, const string &token) 
+{ 
+	if (!chain_broken && !boost::regex_match(value, boost::regex(r)))
+		addError(token); 
+}
+#endif

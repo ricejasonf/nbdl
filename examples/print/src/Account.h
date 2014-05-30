@@ -3,7 +3,7 @@
 
 #include <string>
 #include <memory>
-#include "../../lib/Entity.h"
+#include <Entity.h>
 
 class Account : public Entity
 {

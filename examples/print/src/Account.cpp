@@ -8,9 +8,7 @@ void Account::validate()
 	validateString("NameLast")
 		.required()
 		.max(50);
-	/*
 	validateString("PhoneNumber")
 		.optional()
 		.matches("^[0-9]{10}$");
-		*/
 }
