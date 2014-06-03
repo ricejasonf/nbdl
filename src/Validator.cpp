@@ -46,7 +46,6 @@ void Validator::_matches(const string &r, const string &token)
 	int matches = EM_ASM_INT({
 		var value = Pointer_stringify($0);
 		var regStr = Pointer_stringify($1);
-		alert(value);
 		return value.match(new RegExp(regStr)) !== null;
 	}, value.c_str(), r.c_str());
 	if (!chain_broken && !matches)
@@ -56,7 +55,8 @@ void Validator::_matches(const string &r, const string &token)
 #include <boost/regex.hpp>
 void Validator::_matches(const string &r, const string &token) 
 { 
-	if (!chain_broken && !boost::regex_match(value, boost::regex(r)))
+	if (!chain_broken 
+			&& !boost::regex_match(value, boost::regex(r, boost::regex::ECMAScript)))
 		addError(token); 
 }
 #endif

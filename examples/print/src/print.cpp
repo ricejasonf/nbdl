@@ -16,7 +16,7 @@ int main()
 	if (!account
 		.setNameFirst("Jow")
 		.setNameLast("Smart")
-		.setPhoneNumber("7024334206")
+		.setPhoneNumber("5553451234")
 		.save())
 	{
 		std::cout << "Validation failed with the following errors:" << std::endl;
