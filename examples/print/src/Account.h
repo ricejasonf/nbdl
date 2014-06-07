@@ -17,6 +17,12 @@ class Account : public Entity
 		Account &setPassword(const std::string &v) { set("Password", v); return *this; }
 		Account &setAge(const std::string &v) { set("Age", v); return *this; }
 
+		Account &setAddress(const EntityPtr<Address> address)
+		{
+			address = address;
+			return *this;
+		}
+
 		void validate();
 };
 

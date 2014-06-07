@@ -13,6 +13,13 @@ int main()
 {
 	std::cout << "hello account" << "\n";
 	Account account = buildAccount();
+
+	account.createAddress()
+		.setLine1("123 Spork Rd.")
+		.setCity("Henderson")
+		.setState("NV")
+		.setZip("89015");
+
 	if (!account
 		.setNameFirst("Jow")
 		.setNameLast("Smart")

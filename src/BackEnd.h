@@ -19,6 +19,8 @@ class BackEnd
 		virtual bool beginTransaction() { return true; }
 		virtual void commit() {}
 		virtual void rollback() {}
+
+		virtual void load() = 0;
 };
 
 #endif

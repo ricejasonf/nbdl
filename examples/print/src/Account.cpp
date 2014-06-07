@@ -12,3 +12,39 @@ void Account::validate()
 		.optional()
 		.matches("^[0-9]{10}$");
 }
+
+Client Account::getClient()
+{
+	return getRelation<Client>("Client", client);	
+}
+
+Client Account::setClient(Client client)
+{
+	return setRelation<Client>(client);
+}
+
+void Account::bindRelations(Builder &b)
+{
+	b.bindEntity("address", &address);
+	b.bindEntity("contact", &contact);
+	b.bindEntityList("status-list", &statusList);
+}
+
+RelationMap Account::getRelationMap()
+{
+	static RelationMap map
+		.table("account");
+		.add(
+			MemberOneToOne("address")
+				.withKey("addressId")
+		).add(
+			MemberOneToMany("address")
+				.withForeignKey("propertyId")
+		).add(
+			MemberManyToMany("contact")
+				.withLinkingTable("accountContact")
+				.withKey("contactId")
+				.withForeignKey("accountId")
+		);
+	return map;
+}

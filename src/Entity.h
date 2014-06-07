@@ -16,6 +16,7 @@ class Entity
 {
 	public:
 
+	typedef std::shared_ptr<std::string, std::string> Ptr;
 	typedef std::unordered_map<std::string, std::string> ValueMap;
 	typedef std::unordered_map<std::string, std::vector<std::string>> ErrorList;
 
@@ -35,6 +36,7 @@ class Entity
 	protected:
 
 	friend class Validator;
+	friend class EntityBuilder;
 
 	void addError(const std::string &name, const std::string &error);
 
