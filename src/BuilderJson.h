@@ -3,6 +3,7 @@
 
 #include<exception>
 #include<json/json.h>
+#include "Binder.h"
 #include "Entity.h"
 
 class JsonUnserialize : public Binder
