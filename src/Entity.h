@@ -16,18 +16,19 @@ class Entity
 {
 	public:
 
-	typedef std::shared_ptr<std::string, std::string> Ptr;
+	typedef std::shared_ptr<Entity> Ptr;
 	typedef std::unordered_map<std::string, std::string> ValueMap;
 	typedef std::unordered_map<std::string, std::vector<std::string>> ErrorList;
 
-	Entity(/*Builder &builder,*/ std::unique_ptr<BackEnd> backEnd) :
-		//builder(builder),
+	Entity(std::unique_ptr<BackEnd> backEnd) :
 		backEnd(std::move(backEnd)) {}
 	Entity(Entity&&); //move constructor
 	virtual ~Entity() { }
 
 	int getId() { return id; }
 	bool save();
+
+	virtual bindRelations(Builder &) {}
 
 	inline void set(const std::string name, const std::string value) { changedValues[name] = value; }
 	const std::string get(const std::string &name);
@@ -38,11 +39,15 @@ class Entity
 	friend class Validator;
 	friend class EntityBuilder;
 
+	inline void initValue(const std::string name, const std::string value) { values[name] = value; }
 	void addError(const std::string &name, const std::string &error);
 
 	inline ValidatorIntUnsigned &validateIntUnsigned(const std::string name) { return validate<ValidatorIntUnsigned>(name); }
 	inline ValidatorInt &validateInt(const std::string name) { return validate<ValidatorInt>(name); }
 	inline ValidatorString &validateString(const std::string name) { return validate<ValidatorString>(name); }
+
+	inline void bind(Binder &b, const std::string name, Entity &entity) { b.bind(name, entity); }
+	inline void bind(Binder &b, const std::string name, std::vector<Entity> &list) { b.bind(name, list); }
 
 	virtual void validate() = 0;
 
@@ -59,7 +64,6 @@ class Entity
 	Validator *currentValidator;
 	std::vector<std::unique_ptr<Validator> > validators;
 	ErrorList errors;
-	//std::unordered_map<std::string, std::vector<std::string>> errors;
 	bool has_errors;
 	int id;
 

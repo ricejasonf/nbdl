@@ -14,7 +14,7 @@ int main()
 	std::cout << "hello account" << "\n";
 	Account account = buildAccount();
 
-	account.createAddress()
+	account.getAddress()
 		.setLine1("123 Spork Rd.")
 		.setCity("Henderson")
 		.setState("NV")

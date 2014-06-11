@@ -23,13 +23,12 @@ Client Account::setClient(Client client)
 	return setRelation<Client>(client);
 }
 
-void Account::bindRelations(Builder &b)
+void Account::bindMembers(Binder &b)
 {
-	b.bindEntity("address", &address);
-	b.bindEntity("contact", &contact);
-	b.bindEntityList("status-list", &statusList);
+	bind(b, "address", &address);
 }
 
+	/*
 RelationMap Account::getRelationMap()
 {
 	static RelationMap map
@@ -48,3 +47,4 @@ RelationMap Account::getRelationMap()
 		);
 	return map;
 }
+*/

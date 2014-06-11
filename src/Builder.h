@@ -4,11 +4,12 @@
 #include "Entity.h"
 #include "BackEndPrint.h"
 
-class Builder
+class BuilderBase
 {
 	public:
 
-	Account buildAccount() { return Account(*this, unique_ptr<BackEnd>(new BackEndPrint("Account")); }
+	template<typename T>
+	void load(T entity
 
 }
 
