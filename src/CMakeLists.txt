@@ -8,6 +8,8 @@ add_library(arcus STATIC
 	Entity.cpp
 	Validator.cpp
 	BackEndPrint.cpp
+	JsonSerialize.cpp
+	JsonUnserialize.cpp
 	)
 
 include(../arcus.cmake)

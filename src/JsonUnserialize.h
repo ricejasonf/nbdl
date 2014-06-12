@@ -1,31 +1,29 @@
 #ifndef JSONUNSERIALIZE_H
 #define JSONUNSERIALIZE_H
 
-#include "Binder.h"
-#include "Entity.h"
+#include"Entity.h"
+namespace Json { class Value; }
 
-class JsonUnserialize : public Binder
+
+class JsonUnserialize : public Entity::Binder
 {
 	public:
 
-	static void run(std::string &json, Entity &entity);
-
-	protected:
+	static void fromString(std::string &json, Entity &entity);
 
 	void unserialize(Entity &entity, const Json::Value &obj);
 
-	//the bind methods are protected to prevent the abuse of currentObj before it is set
+	protected:
+
+	//the bind methods are protected to prevent null pointer abuse
 	friend class Entity;
 	void bind(const std::string name, Entity &entity);
 	void bind(const std::string name, std::vector<Entity> &list);
 			
 	private: 
 	
-	//private constructor
-	void JsonUnserialize();
-
-	Json::Value *currentObj;
+	const Json::Value *currentObj;
 		
-}
+};
 
 #endif

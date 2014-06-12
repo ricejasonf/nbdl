@@ -1,17 +1,18 @@
-#include<exception>
-#include<json/json.h>
+#include<stdexcept>
+#include<jsoncpp/json/json.h>
+#include "JsonUnserialize.h"
 #include "Entity.h"
 
-static void JsonUnserialize::run(std::string &json, Entity &entity)
+void JsonUnserialize::fromString(std::string &json, Entity &entity)
 {
 	Json::Reader reader;
 	Json::Value root;
 	JsonUnserialize r;
 	if (!reader.parse(json, root, false))
 	{
-		throw std::exception("JSON parse error");
+		throw std::runtime_error("JSON parse error");
 	}
-	r.unserialize(entity, root)
+	r.unserialize(entity, root);
 }
 
 void JsonUnserialize::unserialize(Entity &entity, const Json::Value &obj)
@@ -19,45 +20,61 @@ void JsonUnserialize::unserialize(Entity &entity, const Json::Value &obj)
 	currentObj = &obj;
 	if (!obj.isObject())
 	{
-		throw std::exception("JSON Object expected");
+		throw std::runtime_error("JSON Object expected");
 		return;
 	}
-	for (auto &i : obj)
+	for (auto itr = obj.begin(); itr != obj.end(); ++itr)
 	{
-		if (*i.isString())
+		auto &i = *itr;
+		if (i.isString())
 		{
-			initValue(entity, i.key(), *i);
+			initValue(entity, itr.key().asString(), i.asString());
 		}
-		else if (*i.isNumeric())
+		else if (i.isInt())
 		{
-			initValue(entity, i.key(), std::to_string(*i));
+			initValue(entity, itr.key().asString(), std::to_string(i.asInt()));
+		}
+		else if (i.isDouble())
+		{
+			initValue(entity, itr.key().asString(), std::to_string(i.asDouble()));
+		}
+		else if (i.isBool())
+		{
+			initValue(entity, itr.key().asString(), std::to_string(i.asBool()));
+		}
+		else
+		{
+			throw std::runtime_error("JSON parsing of unimplemented type.");
 		}
 	}
-	entity.bindRelations(this);
+	bindMembers(entity);
 	currentObj = NULL;
 }
 
 void JsonUnserialize::bind(const std::string name, Entity &entity)
 {
 	if (currentObj == NULL)
-		throw std::exception("Bind method called in wrong context");
-	Json::Value &obj = *currentObj;
+		throw std::runtime_error("Bind method called in wrong context");
+	const Json::Value &obj = *currentObj;
 	unserialize(entity, obj[name]);
 	currentObj = &obj;
 }
 
 void JsonUnserialize::bind(const std::string name, std::vector<Entity> &list)
 {
-	JsonValue &tempObj = *currentObj;
-	JsonValue &array = tempObj[name];
+	const Json::Value &obj = *currentObj;
+	const Json::Value &array = obj[name];
 	if (!array.isArray())
 	{
-		throw std::exception("JSON Array expected");
+		throw std::runtime_error("JSON Array expected");
 		return;
 	}
 	list.resize(array.size());
 
-	for (auto &i : array)
-		unserialize(list[i.key()], *i);
-	currentObj = &tempObj;
+	for (auto itr = obj.begin(); itr != obj.end(); ++itr)
+	{
+		auto &i = *itr;
+		unserialize(list[itr.key().asInt()], i);
+	}
+	currentObj = &obj;
 }

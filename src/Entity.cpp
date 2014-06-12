@@ -75,12 +75,6 @@ void Entity::flushValidatedValues()
 }
 
 /*
-template<class V>
-V &Entity::validate(const std::string &name)
-{
-	V *v = new V(*this, name);
-	validators.push_back(std::unique_ptr<Validator>(v));
-	//return reference for idiom
-	return *v;
-}
+void Entity::bind(Binder &b, const std::string name, Entity &entity) { b.bind(name, entity); }
+void Entity::bind(Binder &b, const std::string name, std::vector<Entity> &list) { b.bind(name, list); }
 */

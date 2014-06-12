@@ -11,7 +11,6 @@
 #include "ValidatorString.h"
 #include "BackEnd.h"
 
-#include<iostream>
 class Entity
 {
 	public:
@@ -28,17 +27,31 @@ class Entity
 	int getId() { return id; }
 	bool save();
 
-	virtual bindRelations(Builder &) {}
-
-	inline void set(const std::string name, const std::string value) { changedValues[name] = value; }
-	const std::string get(const std::string &name);
 	const ErrorList getErrors() { return errors; }
-
-	protected:
 
 	friend class Validator;
 	friend class EntityBuilder;
+	friend class Binder;
+	class Binder
+	{
+		protected:
 
+		friend class Entity;
+		virtual void bind(const std::string, Entity &) = 0;
+		virtual void bind(const std::string, std::vector<Entity> &) = 0;
+		//todo bind members of primitive type if the ol' string vector thing doesn't cut it
+
+		inline void bindMembers(Entity &e) { e.bindMembers(*this); };
+		inline ValueMap getValues(Entity &e) { return e.values; };
+		inline void initValue(Entity &entity, const std::string name, const std::string value) { entity.initValue(name, value); }
+	};
+
+	protected:
+
+	virtual void bindMembers(Binder &) {}
+
+	inline void set(const std::string name, const std::string value) { changedValues[name] = value; }
+	const std::string get(const std::string &name);
 	inline void initValue(const std::string name, const std::string value) { values[name] = value; }
 	void addError(const std::string &name, const std::string &error);
 
