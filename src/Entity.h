@@ -10,6 +10,7 @@
 #include "ValidatorIntUnsigned.h"
 #include "ValidatorString.h"
 #include "BackEnd.h"
+class EntityListBase;
 
 class Entity
 {
@@ -19,8 +20,9 @@ class Entity
 	typedef std::unordered_map<std::string, std::string> ValueMap;
 	typedef std::unordered_map<std::string, std::vector<std::string>> ErrorList;
 
-	Entity(std::unique_ptr<BackEnd> backEnd) :
-		backEnd(std::move(backEnd)) {}
+	Entity() = delete; //users don't create entities by themselves
+	Entity(BackEnd::Ptr backEnd) :
+		backEnd(backEnd) {}
 	Entity(Entity&&); //move constructor
 	virtual ~Entity() { }
 
@@ -38,7 +40,7 @@ class Entity
 
 		friend class Entity;
 		virtual void bind(const std::string, Entity &) = 0;
-		virtual void bind(const std::string, std::vector<Entity> &) = 0;
+		virtual void bind(const std::string, EntityListBase &) = 0;
 		//todo bind members of primitive type if the ol' string vector thing doesn't cut it
 
 		inline void bindMembers(Entity &e) { e.bindMembers(*this); };
@@ -60,12 +62,11 @@ class Entity
 	inline ValidatorString &validateString(const std::string name) { return validate<ValidatorString>(name); }
 
 	inline void bind(Binder &b, const std::string name, Entity &entity) { b.bind(name, entity); }
-	inline void bind(Binder &b, const std::string name, std::vector<Entity> &list) { b.bind(name, list); }
+	inline void bind(Binder &b, const std::string name, EntityListBase &list) { b.bind(name, list); }
 
 	virtual void validate() = 0;
 
-	//Builder &builder;
-	std::unique_ptr<BackEnd> backEnd;
+	BackEnd::Ptr backEnd;
 
 	private:
 

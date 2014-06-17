@@ -18,7 +18,7 @@ class JsonUnserialize : public Entity::Binder
 	//the bind methods are protected to prevent null pointer abuse
 	friend class Entity;
 	void bind(const std::string name, Entity &entity);
-	void bind(const std::string name, std::vector<Entity> &list);
+	void bind(const std::string name, EntityListBase &list);
 			
 	private: 
 	

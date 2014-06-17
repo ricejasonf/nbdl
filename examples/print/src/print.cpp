@@ -1,19 +1,26 @@
-//#include <memory>
 #include <iostream>
+#include <string>
 
 #include <BackEndPrint.h>
+#include <JsonUnserialize.h>
+#include <JsonSerialize.h>
 #include "Account.h"
 
 Account buildAccount() 
 { 
-	return Account(std::unique_ptr<BackEnd>(new BackEndPrint("Account"))); 
+	return Account(BackEnd::Ptr(new BackEndPrint("Account"))); 
 }
 
 int main()
 {
-	std::cout << "hello account" << "\n";
 	Account account = buildAccount();
+	std::string inputJson, outputJson;
+	for (std::string line; std::getline(std::cin, line);)
+		inputJson += line;
+	JsonUnserialize::fromString(inputJson, account);
+	std::cout << JsonSerialize::toString(account);
 
+	/*
 	account.getAddress()
 		.setLine1("123 Spork Rd.")
 		.setCity("Henderson")
@@ -36,4 +43,5 @@ int main()
 			}
 		}
 	}
+	*/
 }

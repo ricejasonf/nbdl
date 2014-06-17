@@ -1,6 +1,7 @@
 #include<stdexcept>
 #include<jsoncpp/json/json.h>
 #include "Entity.h"
+#include "EntityList.h"
 #include "JsonSerialize.h"
 
 std::string JsonSerialize::toString(Entity &entity)
@@ -33,12 +34,12 @@ void JsonSerialize::bind(const std::string name, Entity &entity)
 	currentObj = &obj;
 }
 
-void JsonSerialize::bind(const std::string name, std::vector<Entity> &list)
+void JsonSerialize::bind(const std::string name, EntityListBase &list)
 {
 	Json::Value &tempObj = *currentObj;
 	Json::Value &array = tempObj[name] = Json::Value(Json::arrayValue);
 
-	for (auto &i : list)
+	for (auto &i : list.getRefs())
 	{
 		Json::Value element = array.append(Json::Value(Json::objectValue));
 		serialize(i, element);

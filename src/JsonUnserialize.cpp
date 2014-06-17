@@ -2,6 +2,7 @@
 #include<jsoncpp/json/json.h>
 #include "JsonUnserialize.h"
 #include "Entity.h"
+#include "EntityList.h"
 
 void JsonUnserialize::fromString(std::string &json, Entity &entity)
 {
@@ -42,10 +43,6 @@ void JsonUnserialize::unserialize(Entity &entity, const Json::Value &obj)
 		{
 			initValue(entity, itr.key().asString(), std::to_string(i.asBool()));
 		}
-		else
-		{
-			throw std::runtime_error("JSON parsing of unimplemented type.");
-		}
 	}
 	bindMembers(entity);
 	currentObj = NULL;
@@ -60,7 +57,7 @@ void JsonUnserialize::bind(const std::string name, Entity &entity)
 	currentObj = &obj;
 }
 
-void JsonUnserialize::bind(const std::string name, std::vector<Entity> &list)
+void JsonUnserialize::bind(const std::string name, EntityListBase &list)
 {
 	const Json::Value &obj = *currentObj;
 	const Json::Value &array = obj[name];
@@ -69,12 +66,13 @@ void JsonUnserialize::bind(const std::string name, std::vector<Entity> &list)
 		throw std::runtime_error("JSON Array expected");
 		return;
 	}
-	list.resize(array.size());
+	list.initWithSize(array.size());
+	auto refItr = list.getRefs().begin();
 
-	for (auto itr = obj.begin(); itr != obj.end(); ++itr)
+	for (auto &i : array)
 	{
-		auto &i = *itr;
-		unserialize(list[itr.key().asInt()], i);
+		unserialize(*refItr, i);
+		++refItr;
 	}
 	currentObj = &obj;
 }

@@ -2,13 +2,14 @@
 #define BACKEND_H
 
 #include <string>
+#include <memory>
 #include <unordered_map>
 
 class BackEnd
 {
 	public:
 
-		//todo move to an external header file
+		typedef std::shared_ptr<BackEnd> Ptr;
 		typedef std::unordered_map<std::string, std::string> ValueMap;
 
 		virtual void validate() {}
@@ -20,7 +21,7 @@ class BackEnd
 		virtual void commit() {}
 		virtual void rollback() {}
 
-		virtual void load() = 0;
+		//virtual void load() = 0;
 };
 
 #endif

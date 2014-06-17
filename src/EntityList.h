@@ -3,57 +3,70 @@
 
 #include<type_traits>
 
+class Entity;
+
 class EntityListBase
 {
 	public:
 
-	typedef std::vector<std::reference_wrapper<Entity>> EntityRefs;
-	typedef std::vector::size_type size_type;
+	virtual ~EntityListBase() {}
 
-	EntityRefs getEntityRefs() = 0;
-	Entity &appendNewEntity() = 0;
-	void resize(size_type) = 0;
-	size_type size() = 0;
-}
+	typedef std::reference_wrapper<Entity> EntityRef;
+	typedef std::vector<EntityRef> EntityRefs;
+	typedef std::vector<Entity::Ptr>::size_type size_type;
+
+	virtual EntityRefs getRefs() = 0;
+	virtual Entity &appendNew() = 0;
+	virtual void initWithSize(size_type) = 0;
+	virtual size_type size() = 0;
+};
 
 template<typename T>
 class EntityList : public EntityListBase
 {
-	static_assert(std::is_base_of(Entity, T)::value, "T must be derived from Entity");
+	static_assert(std::is_base_of<Entity, T>::value, "T must be derived from Entity");
 
 	public:
 
-	typedef std::vector<std::reference_wrapper<Entity&>> EntityRefs;
+	EntityList(BackEnd::Ptr backend) :
+		backEnd(backEnd) {}
 
-	Entity &addNew()
+	Entity &appendNew()
 	{
-		//some kind of dependency injection stuff needs to go here
-		T *entity = new T();
-		vec.push_back(entity);
+		T *entity = new T(backEnd);
+		vec.push_back(Entity::Ptr(entity));
 		return *entity;
 	}
 
-	size_type size()
+	EntityListBase::size_type size()
 	{
 		return vec.size();
 	}
 
+	EntityListBase::EntityRefs getRefs()
+	{
+		auto refs = EntityListBase::EntityRefs();
+		for (auto &i: vec)
+		{
+			refs.push_back(*i);
+		}
+		return refs;
+	}
+
 	protected:
 
-	EntityRefs getEntityRefs()
+	void initWithSize(EntityListBase::size_type n)
 	{
-		return EntityRefs(vec.begin(), vec.end());
+		vec.clear();
+		for (int i = 0; i < n; i++)
+			appendNew();
 	}
 
-	void resize(size_type n)
-	{
-		vec.resize(n);
-	}
-
+	BackEnd::Ptr backEnd;
 
 	private:
 
 	std::vector<Entity::Ptr> vec;
-}
+};
 
 #endif

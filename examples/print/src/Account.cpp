@@ -2,17 +2,18 @@
 
 void Account::validate()
 {
-	validateString("NameFirst")
+	validateString("nameFirst")
 		.required()
 		.max(50);
-	validateString("NameLast")
+	validateString("nameLast")
 		.required()
 		.max(50);
-	validateString("PhoneNumber")
+	validateString("phoneNumber")
 		.optional()
 		.matches("^[0-9]{10}$");
 }
 
+/*
 Client Account::getClient()
 {
 	return getRelation<Client>("Client", client);	
@@ -22,22 +23,24 @@ Client Account::setClient(Client client)
 {
 	return setRelation<Client>(client);
 }
+*/
 
 void Account::bindMembers(Binder &b)
 {
-	bind(b, "address", &address);
+	bind(b, "address", address);
+	bind(b, "foods", foods);
 }
 
 	/*
-RelationMap Account::getRelationMap()
+RelationMap Account::getRelationMemberMap()
 {
 	static RelationMap map
 		.table("account");
 		.add(
-			MemberOneToOne("address")
+			RelationMap::OneToOne("address")
 				.withKey("addressId")
 		).add(
-			MemberOneToMany("address")
+		RelationMap::OneToMany("address")
 				.withForeignKey("propertyId")
 		).add(
 			MemberManyToMany("contact")
