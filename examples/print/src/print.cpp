@@ -13,7 +13,8 @@ Account buildAccount()
 
 int main()
 {
-	Account account = buildAccount();
+	Account origAccount = buildAccount();
+	Account account = std::move(origAccount);
 	std::string inputJson, outputJson;
 	for (std::string line; std::getline(std::cin, line);)
 		inputJson += line;

@@ -67,12 +67,13 @@ void JsonUnserialize::bind(const std::string name, EntityListBase &list)
 		return;
 	}
 	list.initWithSize(array.size());
-	auto refItr = list.getRefs().begin();
+	auto pointers = list.getEntityPointers();
+	auto pointerItr = pointers.begin();
 
 	for (auto &i : array)
 	{
-		unserialize(*refItr, i);
-		++refItr;
+		unserialize(**pointerItr, i);
+		++pointerItr;
 	}
 	currentObj = &obj;
 }

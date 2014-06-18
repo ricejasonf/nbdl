@@ -2,6 +2,7 @@
 #define ENTITYLIST_H
 
 #include<type_traits>
+#include "BackEndPrint.h"
 
 class Entity;
 
@@ -11,14 +12,13 @@ class EntityListBase
 
 	virtual ~EntityListBase() {}
 
-	typedef std::reference_wrapper<Entity> EntityRef;
-	typedef std::vector<EntityRef> EntityRefs;
-	typedef std::vector<Entity::Ptr>::size_type size_type;
+	typedef std::vector<Entity *>::size_type size_type;
 
-	virtual EntityRefs getRefs() = 0;
-	virtual Entity &appendNew() = 0;
+	virtual std::vector<Entity *> getEntityPointers() = 0;
 	virtual void initWithSize(size_type) = 0;
 	virtual size_type size() = 0;
+
+
 };
 
 template<typename T>
@@ -28,29 +28,28 @@ class EntityList : public EntityListBase
 
 	public:
 
+	EntityList() = delete;
+	EntityList(BackEnd::Ptr backend) {}
+	/*
 	EntityList(BackEnd::Ptr backend) :
 		backEnd(backEnd) {}
-
-	Entity &appendNew()
-	{
-		T *entity = new T(backEnd);
-		vec.push_back(Entity::Ptr(entity));
-		return *entity;
-	}
+		*/
+	EntityList(EntityList&&) :
+		vec(std::move(vec)) {}
+		//backEnd(std::move(backEnd)) {} //move constructor
+	~EntityList() {}
 
 	EntityListBase::size_type size()
 	{
 		return vec.size();
 	}
 
-	EntityListBase::EntityRefs getRefs()
+	std::vector<Entity *> getEntityPointers()
 	{
-		auto refs = EntityListBase::EntityRefs();
-		for (auto &i: vec)
-		{
-			refs.push_back(*i);
-		}
-		return refs;
+		auto pointers = std::vector<Entity *>();
+		for (auto &i : vec)
+			pointers.push_back(&i);
+		return pointers;
 	}
 
 	protected:
@@ -59,14 +58,17 @@ class EntityList : public EntityListBase
 	{
 		vec.clear();
 		for (int i = 0; i < n; i++)
-			appendNew();
+			append();
 	}
 
-	BackEnd::Ptr backEnd;
+	//BackEnd::Ptr backEnd;
 
 	private:
 
-	std::vector<Entity::Ptr> vec;
+	//void append() { vec.push_back(T(backEnd)); }
+	void append() { vec.emplace_back(BackEnd::Ptr(new BackEndPrint("ListItemBleh"))); }
+
+	std::vector<T> vec;
 };
 
 #endif

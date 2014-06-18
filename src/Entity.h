@@ -23,7 +23,10 @@ class Entity
 	Entity() = delete; //users don't create entities by themselves
 	Entity(BackEnd::Ptr backEnd) :
 		backEnd(backEnd) {}
-	Entity(Entity&&); //move constructor
+	Entity(Entity&&) :
+		validators(std::vector<std::unique_ptr<Validator>>()),
+		backEnd(std::move(backEnd)) 
+		{} //move constructor
 	virtual ~Entity() { }
 
 	int getId() { return id; }
