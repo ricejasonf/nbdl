@@ -39,10 +39,10 @@ void JsonSerialize::bind(const std::string name, EntityListBase &list)
 	Json::Value &tempObj = *currentObj;
 	Json::Value &array = tempObj[name] = Json::Value(Json::arrayValue);
 
-	for (auto &i : list.getEntityPointers())
+	for (auto &i : list.getEntityRefs())
 	{
 		auto element = Json::Value(Json::objectValue);
-		serialize(*i, element);
+		serialize(i, element);
 		array.append(element);
 	}
 	currentObj = &tempObj;

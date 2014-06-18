@@ -13,8 +13,10 @@ class EntityListBase
 	virtual ~EntityListBase() {}
 
 	typedef std::vector<Entity *>::size_type size_type;
+	typedef std::reference_wrapper<Entity> EntityRef;
+	typedef std::vector<EntityRef> EntityRefs;
 
-	virtual std::vector<Entity *> getEntityPointers() = 0;
+	virtual EntityRefs getEntityRefs() = 0;
 	virtual void initWithSize(size_type) = 0;
 	virtual size_type size() = 0;
 
@@ -44,12 +46,12 @@ class EntityList : public EntityListBase
 		return vec.size();
 	}
 
-	std::vector<Entity *> getEntityPointers()
+	EntityListBase::EntityRefs getEntityRefs()
 	{
-		auto pointers = std::vector<Entity *>();
+		auto refs = EntityListBase::EntityRefs();
 		for (auto &i : vec)
-			pointers.push_back(&i);
-		return pointers;
+			refs.push_back(EntityListBase::EntityRef(i));
+		return refs;
 	}
 
 	protected:
