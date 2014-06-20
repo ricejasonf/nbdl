@@ -13,14 +13,34 @@ Account buildAccount()
 
 int main()
 {
-	Account origAccount = buildAccount();
-	Account account = std::move(origAccount);
+	Account account = buildAccount();
 	std::string inputJson, outputJson;
 	for (std::string line; std::getline(std::cin, line);)
 		inputJson += line;
 	JsonUnserialize::fromString(inputJson, account);
 	std::cout << JsonSerialize::toString(account);
 
+
+	MyArcusPathRoot arcus;
+	arcusContainer.async(arcus.clients(15).accounts(5)
+			.retrieve()
+				.success([](Account &a) { /*do something with the account*/ })
+				.notFound([]() { /*do something else*/ })
+				.error([](arcus::Error &e) { /*oh crap*/ })
+		);
+	
+	auto account = arcus.clients(15).accounts(5).create();
+	arcusContainer.async(arcus
+			.save(account)
+				.success([](Account &a) { /*do something with the account*/ })
+				.validationFail([]() { /*do something else*/ })
+				.error([](arcus::Error &e) { /*oh crap*/ })
+		);
+
+	arcusContainer.async(arcus.clients(15).accounts(5)
+			.listen([this](ValueMap diff) { /* blah */ })
+		);
+			
 	/*
 	account.getAddress()
 		.setLine1("123 Spork Rd.")

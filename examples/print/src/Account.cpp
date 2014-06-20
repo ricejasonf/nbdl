@@ -31,18 +31,20 @@ void Account::bindMembers(Binder &b)
 	bind(b, "foods", foods);
 }
 
-	/*
-RelationMap Account::getRelationMemberMap()
+RelationMap Account::getRelationMap()
 {
 	static RelationMap map
 		.table("account");
-		.add(
+		.requireOwner(
+			RelationMap::OneToOne("client")
+				.withKey("clientId")
+		).addMember(
 			RelationMap::OneToOne("address")
 				.withKey("addressId")
-		).add(
-		RelationMap::OneToMany("address")
-				.withForeignKey("propertyId")
-		).add(
+		).addMember(
+			RelationMap::OneToMany("address")
+					.withForeignKey("propertyId")
+		).addMember(
 			MemberManyToMany("contact")
 				.withLinkingTable("accountContact")
 				.withKey("contactId")
@@ -50,4 +52,3 @@ RelationMap Account::getRelationMemberMap()
 		);
 	return map;
 }
-*/

@@ -23,6 +23,8 @@ class Account : public Entity
 		Account &setPassword(const std::string &v) { set("password", v); return *this; }
 		Account &setAge(const std::string &v) { set("age", v); return *this; }
 
+		Address &getAddress() { return address; }
+
 		void validate();
 
 	private:
