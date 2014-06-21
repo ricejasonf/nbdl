@@ -8,6 +8,10 @@ class RelationMap
 {
 	public:
 
+	RelationMap() = delete;
+	RelationMap(std::string name) : name(name) {}
+	virtual compl RelationMap() {}
+
 	struct OneToOne
 	{
 		std::string name;
@@ -43,9 +47,21 @@ class RelationMap
 		ManyToMany &withLinkingTable(std::string name) { linkingTable = name; return *this; } 
 	};
 
-	RelationMap &add(OneToOne r) { oneToOneList.push_back(r); return *this; }
-	RelationMap &add(OneToMany r) { oneToManyList.push_back(r); return *this; }
-	RelationMap &add(ManyToMany r) { manyToManyList.push_back(r); return *this; }
+	RelationMap &addMember(OneToOne r) { normalize(r); oneToOneMembers.push_back(r); return *this; }
+	RelationMap &addMember(OneToMany r) { normalize(r); oneToManyMembers.push_back(r); return *this; }
+	RelationMap &addMember(ManyToMany r) { normalize(r); manyToManyMembers.push_back(r); return *this; }
+
+	RelationMap &requireOwner(OneToOne r) { normalize(r); oneToOneOwners.push_back(r); return *this; }
+	RelationMap &requireOwner(OneToMany r) { normalize(r); oneToManyOwners.push_back(r); return *this; }
+	RelationMap &requireOwner(ManyToMany r) { normalize(r); manyToManyOwners.push_back(r); return *this; }
+
+	std::vector<OneToOne> oneToOneMembers;
+	std::vector<OneToMany> manyToOneMembers;
+	std::vector<ManyToMany> manyToManyMembers;
+
+	std::vector<OneToOne> oneToOneOwners;
+	std::vector<OneToMany> manyToOneOwners;
+	std::vector<ManyToMany> manyToManyOwners;
 
 	protected:
 
@@ -55,9 +71,10 @@ class RelationMap
 
 	private:
 
-	std::vector<OneToOne> oneToOneList;
-	std::vector<OneToMany> manyToOneList;
-	std::vector<ManyToMany> manyToManyList;
+	void normalize(OneToOne);
+	void normalize(OneToMany);
+	void normalize(ManyToMany);
+
 };
 
 #endif

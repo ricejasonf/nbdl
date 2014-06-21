@@ -34,6 +34,8 @@ class Entity
 
 	const ErrorList getErrors() { return errors; }
 
+	virtual RelationMap getRelationMap = 0;
+
 	friend class Validator;
 	friend class EntityBuilder;
 	friend class Binder;

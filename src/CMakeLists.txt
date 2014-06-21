@@ -11,6 +11,7 @@ add_library(arcus STATIC
 	BackEndPrint.cpp
 	JsonSerialize.cpp
 	JsonUnserialize.cpp
+	RelationMap.cpp
 	)
 
 include(../arcus.cmake)
