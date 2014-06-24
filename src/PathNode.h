@@ -14,7 +14,7 @@ class PathNodeBase
 
 	PathNodeBase(int id = 0) : id(id) {}
 
-	PathNodeBase getParent() = 0;
+	PathNodeBase &getParent() = 0;
 	const std::string getName() = 0;
 	int getId() { return id; }
 

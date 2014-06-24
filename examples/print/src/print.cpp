@@ -20,21 +20,24 @@ int main()
 	JsonUnserialize::fromString(inputJson, account);
 	std::cout << JsonSerialize::toString(account);
 
-
-	MyArcusPathRoot arcus;
+	MyArcusEntityRoot arcus();
+	/* 
+	   the arcusContainer should have the backend pointer and the entity root creates
+	   request objects with callbacks
+	 */
 	arcusContainer.async(arcus.clients(15).accounts(5)
 			.retrieve()
 				.success([](Account &a) { /*do something with the account*/ })
 				.notFound([]() { /*do something else*/ })
-				.error([](arcus::Error &e) { /*oh crap*/ })
+				.fail([]() { /*oh crap*/ })
 		);
 	
 	auto account = arcus.clients(15).accounts(5).create();
 	arcusContainer.async(arcus
 			.save(account)
-				.success([](Account &a) { /*do something with the account*/ })
+				.success([]() { /*do something with the account*/ })
 				.validationFail([]() { /*do something else*/ })
-				.error([](arcus::Error &e) { /*oh crap*/ })
+				.fail([]() { /*oh crap*/ })
 		);
 
 	arcusContainer.async(arcus.clients(15).accounts(5)
