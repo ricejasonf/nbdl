@@ -15,32 +15,27 @@ class ListenRequestBase
 	virtual ~ListenRequestBase();
 
 	virtual void callNotify() = 0;
-	virtual Entity::Ref getEntityRef() = 0;
 };
 
 template<class T>
 class ListenRequest
 {
-	std::function<void(T)> _notify;
-	std::function<void()> _notFound;
-	std::function<void()> _fail;
-	T entity;
+	std::function<void(ValueMap, ValueMap)> _notify;
 
 	public:
 
 	ListenRequest(std::unique_ptr<PathNode> p) :
 		ListenRequestBase(p) {}
 
-	ListenRequest &notify(std::function<void, T> fn)
+	ListenRequest &notify(std::function<void(ValueMap, ValueMap)> fn)
 	{
 		_notify = fn;	
 		return *this;
 	}
 
-	void callNotify() 
+	void callNotify(ValueMap diff, ValueMap keys) 
 	{
-		//todo work in diff or something
-		_notify(entity);
+		_notify(diff, keys);
 	}
 
 	T::Ref getEntityRef()
