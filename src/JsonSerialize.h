@@ -7,20 +7,24 @@ class JsonSerialize : public Entity::Binder
 {
 	public:
 
+	JsonSerialize(Json::Value &value) :
+		jsonVal(value) {}
+
 	static std::string toString(Entity &entity);
 
 	protected:
 
 	void serialize(Entity &entity, Json::Value &obj);
 
-	//the bind methods are protected to prevent the null pointer abuse
-	friend class Entity;
+	template<typename T>
+	void bind(const std::string name, T &value) { jsonVal[name] = value; }
+
 	void bind(const std::string name, Entity &entity);
 	void bind(const std::string name, EntityListBase &list);
 			
 	private: 
 	
-	Json::Value *currentObj;
+	Json::Value &jsonVal;
 		
 };
 

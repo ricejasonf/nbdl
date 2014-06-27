@@ -10,9 +10,10 @@ class Validator
 {
 	public:
 
-	Validator(Entity &entity, T &field) :
+	Validator(Entity &entity, T &field, Errors &e) :
 		entity(entity),
 		field(field),
+		errors(e),
 		chain_broken(false) {}
 
 	virtual ~Validator() {}
@@ -31,6 +32,7 @@ class Validator
 
 	Entity &entity;
 	T &field;
+	Errors &errors;
 };
 #include "Validator.hpp"
 

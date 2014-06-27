@@ -8,42 +8,25 @@ std::string JsonSerialize::toString(Entity &entity)
 {
 	Json::StyledWriter writer;
 	Json::Value root;
-	JsonSerialize r;
-	r.serialize(entity, root);
+	JsonSerialize r(root);
+	entity.bindMembers(r);
 	return writer.write(root);
 }
-
-void JsonSerialize::serialize(Entity &entity, Json::Value &obj)
-{
-	currentObj = &obj;
-	for (auto &i : getValues(entity))
-	{
-		obj[i.first] = i.second;
-	}
-	bindMembers(entity);
-	currentObj = NULL;
-}
-
 void JsonSerialize::bind(const std::string name, Entity &entity)
 {
-	if (currentObj == NULL)
-		throw std::runtime_error("Bind method called in wrong context");
-	Json::Value &obj = *currentObj;
-	obj[name] = Json::Value(Json::objectValue);
-	serialize(entity, obj[name]);
-	currentObj = &obj;
+	auto subVal = Json::Value(Json::objectValue);
+	entity.bindMembers(JsonSerialize(subVal));
+	jsonVal[name] = subVal;
 }
-
 void JsonSerialize::bind(const std::string name, EntityListBase &list)
 {
-	Json::Value &tempObj = *currentObj;
-	Json::Value &array = tempObj[name] = Json::Value(Json::arrayValue);
-
-	for (auto &i : list.getEntityRefs())
+	auto array = Json::Value(Json::arrayValue);
+	subBinder.bindMembers(entity);
+	for (auto &entity : list.getEntityRefs())
 	{
 		auto element = Json::Value(Json::objectValue);
-		serialize(i, element);
+		entity.bindMembers(JsonSerialize(element));
 		array.append(element);
 	}
-	currentObj = &tempObj;
+	jsonVal[name] = array;
 }

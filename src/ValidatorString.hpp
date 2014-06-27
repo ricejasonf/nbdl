@@ -1,14 +1,14 @@
 inline ValidatorString &
-	ValidatorString::minLen(const int m) 
+	ValidatorString::minLen(const int l) 
 { 
-	if (!chain_broken && value.size() < m) 
+	if (!chain_broken && value.size() < l) 
 		addError("tooShort"); 
 	return *this; 
 }
 inline ValidatorString &
-	ValidatorString::maxLen(const int m) 
+	ValidatorString::maxLen(const int l) 
 { 
-	if (!chain_broken && value.size() > m) 
+	if (!chain_broken && value.size() > l) 
 		addError("tooLong"); 
 	return *this; 
 }

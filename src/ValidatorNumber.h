@@ -12,8 +12,8 @@ class ValidatorNumber : public Validator<ValidatorNumber, T>
 {
 	public:
 
-	ValidatorNumber(Entity &entity, T &field) :
-		Validator<ValidatorNumber, T>(entity, field) {} 
+	ValidatorNumber(Entity &entity, T &field, Errors &e) :
+		Validator<ValidatorNumber, T>(entity, field, e) {} 
 
 	inline ValidatorNumber &max(const T v);
 	inline ValidatorNumber &min(const T v);

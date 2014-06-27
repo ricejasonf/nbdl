@@ -1,14 +1,14 @@
 #include "Account.h"
 
-void Account::validate(EntityErrors &e)
+void Account::validate(Errors &e)
 {
-	validateString(e, &nameFirst)
+	validateString(e, nameFirst)
 		.required()
 		.max(50);
-	validateString(e, "nameLast")
+	validateString(e, nameLast)
 		.required()
 		.max(50);
-	validateString(e, "phoneNumber")
+	validateString(e, phoneNumber)
 		.optional()
 		.matches("^[0-9]{10}$");
 }
@@ -18,8 +18,8 @@ void Account::bindMembers(Binder &b)
 	bind(b, "nameFirst", nameFirst);
 	bind(b, "nameLast", nameLast);
 	bind(b, "phoneNumber", phoneNumber);
-	bind(b, "address", address);
-	bind(b, "foods", foods);
+	//bind(b, "address", address);
+	//bind(b, "foods", foods);
 }
 
 RelationMap Account::getRelationMap()

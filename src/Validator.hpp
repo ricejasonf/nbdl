@@ -4,7 +4,7 @@ tempate<class C, typename T>
 inline void 
 	Validator<C, T>::addError(const std::string &error) 
 { 
-	entity.addError(name, error); 
+	errors.addError(field, error);
 	chain_broken = true; 
 }
 

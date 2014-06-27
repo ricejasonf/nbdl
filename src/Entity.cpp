@@ -40,7 +40,7 @@ bool Entity::save(BackEnd &backEnd, ErrorList &errors)
 	bool transactionStartedHere = backEnd->beginTransaction();
 	try {
 		//callBeforeSaveFunctions();
-		if (getId())
+		if (!isNew())
 			backEnd->update(getId(), diff);
 		else
 			backEnd->insert(diff);
