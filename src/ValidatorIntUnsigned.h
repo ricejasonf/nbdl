@@ -3,19 +3,12 @@
 
 #include "Validator.h"
 
-class ValidatorIntUnsigned : public Validator
+class ValidatorIntUnsigned : public ValidatorNumber<unsigned int>
 {
 	public:
 
-	ValidatorIntUnsigned(Entity &entity, const std::string &name) :
-		Validator(entity, name)
-	{
-		if (hasValue())
-			_matches("^[0-9]+$", "notUnsigned");
-	}
-
-	ValidatorIntUnsigned &required() { _required(); return *this; }
-	ValidatorIntUnsigned &optional() { _optional(); return *this; }
+	ValidatorIntUnsigned(Entity &entity, unsigned int &field) :
+		ValidatorNumber<unsigned int>(entity, field) {}
 };
 
 #endif

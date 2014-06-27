@@ -5,32 +5,33 @@
 
 class Entity;
 
+template<class C, typename T>
 class Validator
 {
 	public:
 
-	Validator(Entity &entity, const std::string &name);
+	Validator(Entity &entity, T &field) :
+		entity(entity),
+		field(field),
+		chain_broken(false) {}
+
 	virtual ~Validator() {}
-	inline bool hasValue() { return has_value; }
-	inline std::string getValue() { return value; }
-	inline std::string getName() { return name; }
 
 	protected:
 
-	void addError(const std::string &error);
-	void _matches(const std::string &r, const std::string &token = "invalid");
-	inline void _optional() { if (!hasValue()) chain_broken = true; }
-	inline bool isBlank() { return value.size() < 1; }
+	inline C &addError(const std::string error);
+	inline C &inSet(const std::vector<T> set);
+	inline C &inSet(const std::unordered_set<T> set);
+	inline C &required();
+	inline C &optional();
 
-	void _required();
-	std::string value;
+	inline bool isBlank();
+
 	bool chain_broken;
 
-	private:
-
 	Entity &entity;
-	const std::string name;
-	bool has_value;
+	T &field;
 };
+#include "Validator.hpp"
 
 #endif
