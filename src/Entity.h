@@ -11,22 +11,17 @@
 #include "ValidatorString.h"
 #include "BackEnd.h"
 class EntityListBase;
+typedef std::unordered_map<std::string, std::string> ValueMap;
+typedef std::unordered_map<std::string, std::vector<std::string>> ErrorList;
 
 class Entity
 {
 	public:
 
-	typedef std::shared_ptr<Entity> Ptr;
-	typedef std::unordered_map<std::string, std::string> ValueMap;
-	typedef std::unordered_map<std::string, std::vector<std::string>> ErrorList;
-
-	Entity() = delete; //users don't create entities by themselves
-	Entity(BackEnd::Ptr backEnd) :
-		backEnd(backEnd) {}
+	Entity(Entity&) :
+		validators(std::vector<std::unique_ptr<Validator>>()) {}
 	Entity(Entity&&) :
-		validators(std::vector<std::unique_ptr<Validator>>()),
-		backEnd(std::move(backEnd)) 
-		{} //move constructor
+		validators(std::vector<std::unique_ptr<Validator>>()) {}
 	virtual ~Entity() { }
 
 	int getId() { return id; }
@@ -44,12 +39,15 @@ class Entity
 		protected:
 
 		friend class Entity;
+		virtual void bind(const std::string, &bool) = 0;
+		virtual void bind(const std::string, &unsigned int) = 0;
+		virtual void bind(const std::string, &int) = 0;
+		virtual void bind(const std::string, &double) = 0;
+		virtual void bind(const std::string, &std::string) = 0;
 		virtual void bind(const std::string, Entity &) = 0;
 		virtual void bind(const std::string, EntityListBase &) = 0;
-		//todo bind members of primitive type if the ol' string vector thing doesn't cut it
 
 		inline void bindMembers(Entity &e) { e.bindMembers(*this); };
-		inline ValueMap getValues(Entity &e) { return e.values; };
 		inline void initValue(Entity &entity, const std::string name, const std::string value) { entity.initValue(name, value); }
 	};
 
@@ -57,34 +55,32 @@ class Entity
 
 	virtual void bindMembers(Binder &) {}
 
-	inline void set(const std::string name, const std::string value) { changedValues[name] = value; }
+	template<typename T>
+	void set(T value, T &field)
+	{
+		diff.set(value, field, this);
+	}
 	const std::string get(const std::string &name);
-	inline void initValue(const std::string name, const std::string value) { values[name] = value; }
 	void addError(const std::string &name, const std::string &error);
 
 	inline ValidatorIntUnsigned &validateIntUnsigned(const std::string name) { return validate<ValidatorIntUnsigned>(name); }
 	inline ValidatorInt &validateInt(const std::string name) { return validate<ValidatorInt>(name); }
 	inline ValidatorString &validateString(const std::string name) { return validate<ValidatorString>(name); }
 
+	/*
+	inline void bind(Binder &b, const std::string name, int &v) { b.bind(name, v); }
+	//todo implement bind functions for all supported types
 	inline void bind(Binder &b, const std::string name, Entity &entity) { b.bind(name, entity); }
 	inline void bind(Binder &b, const std::string name, EntityListBase &list) { b.bind(name, list); }
+	*/
+	template<type B>
+	inline void bind(Binder &b, const std::string name, B &v) { b.bind(name, v); }
 
-	virtual void validate() = 0;
-
-	BackEnd::Ptr backEnd;
+	virtual ValueMap validate(ValueMap changes) = 0;
 
 	private:
 
-	void flushValidatedValues();
-
-	ValueMap values;
-	ValueMap changedValues;
-	ValueMap validatedValues;
-	Validator *currentValidator;
-	std::vector<std::unique_ptr<Validator> > validators;
-	ErrorList errors;
-	bool has_errors;
-	int id;
+	EntityDiff diff;
 
 	template<class V>
 	V &validate(const std::string &name)
@@ -94,10 +90,7 @@ class Entity
 		//return reference for idiom
 		return *v;
 	}
-
 };
-
-#endif
 
 /*
 client.createContact()
@@ -138,3 +131,4 @@ bool Contact::validate()
 	normalize();
 }
 */
+#endif

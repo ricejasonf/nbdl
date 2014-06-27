@@ -1,20 +1,23 @@
 #include "Account.h"
 
-void Account::validate()
+void Account::validate(EntityErrors &e)
 {
-	validateString("nameFirst")
+	validateString(e, &nameFirst)
 		.required()
 		.max(50);
-	validateString("nameLast")
+	validateString(e, "nameLast")
 		.required()
 		.max(50);
-	validateString("phoneNumber")
+	validateString(e, "phoneNumber")
 		.optional()
 		.matches("^[0-9]{10}$");
 }
 
 void Account::bindMembers(Binder &b)
 {
+	bind(b, "nameFirst", nameFirst);
+	bind(b, "nameLast", nameLast);
+	bind(b, "phoneNumber", phoneNumber);
 	bind(b, "address", address);
 	bind(b, "foods", foods);
 }

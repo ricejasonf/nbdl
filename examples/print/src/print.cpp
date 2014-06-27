@@ -33,6 +33,18 @@ int main()
 		);
 	
 	auto account = arcus.clients(15).accounts(5).create();
+	account
+		.nameFirst("Blah")
+		.age(15)
+		.address(Address().line1("mooo"))
+		.address()
+			.line1("123 Spring Rd.")
+			.city("Henderson")
+			.zipCode(89015)
+		.addRun(Run()
+			.seconds(1045)
+			.miles(1.65))
+		;
 	arcusContainer.async(arcus
 			.save(account)
 				.success([]() { /*do something with the account*/ })

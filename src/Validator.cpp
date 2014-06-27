@@ -5,11 +5,13 @@
 
 using std::string;
 
-Validator::Validator(Entity &entity, const string &name) :
+template<typename T>
+Validator<T>Validator(Entity &entity, T &field) :
 	entity(entity),
-	name(name),
+	field(field),
 	chain_broken(false)
 {
+	if (entity.isDirty(field))
 	Entity::ValueMap::iterator i = entity.changedValues.find(name);
 	if (i != entity.changedValues.end())
 	{
@@ -20,25 +22,37 @@ Validator::Validator(Entity &entity, const string &name) :
 		has_value = false;
 }
 
-void Validator::addError(const string &error) 
+template<typename T>
+void Validator<T>addError(const string &error) 
 { 
 	entity.addError(name, error); 
 	chain_broken = true; 
 }
 
-void Validator::_required()
+template<typename T>
+void Validator<T>_required()
 {
-	if (entity.getId())
+	if (entity.isNew())
 	{
-		if (hasValue() && isBlank())
+		bool hasValue = entity.isDirty(field);
+		if (hasValue && isBlank())
 			addError("required");	
-		else if (!hasValue())
+		else if (!hasValue)
 			chain_broken = true;
 	}
 	else if (isBlank())
 		addError("required");
 }
 
+template<typename T>
+bool Validator<T>isBlank() { return false; }
+template<>
+bool Validator<std::string>::isBlank() 
+{ 
+	return field.size() > 0;	
+}
+
+//todo move to ValidatorString.cpp
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 void Validator::_matches(const string &r, const string &token) 

@@ -3,7 +3,7 @@
 
 #include "Validator.h"
 
-class ValidatorString : public Validator
+class ValidatorString : public Validator<std::string>
 {
 	public:
 

@@ -18,19 +18,18 @@ const std::string Entity::get(const std::string &name)
 	return std::string("");
 }
 
-bool Entity::save()
+bool Entity::save(BackEnd &backEnd, ErrorList &errors)
 {
 	//todo handle relations
 	has_errors = false;
-	validators.clear();
-	validate();
+	ValueMap validatedDiff;
+	validate(validatedDiff);
+	diff = validatedDiff;
 	if (has_errors)
 	{
 		//todo use callback function
 		return false;
 	}
-	changedValues.clear();
-	flushValidatedValues();
 	backEnd->validate();
 	if (has_errors)
 	{
@@ -42,9 +41,9 @@ bool Entity::save()
 	try {
 		//callBeforeSaveFunctions();
 		if (getId())
-			backEnd->update(getId(), changedValues);
+			backEnd->update(getId(), diff);
 		else
-			backEnd->insert(changedValues);
+			backEnd->insert(diff);
 		//callAfterSaveFunctions();
 	} catch(...) {
 		if (transactionStartedHere)
@@ -62,16 +61,6 @@ void Entity::addError(const std::string &name, const std::string &error)
 	std::vector<std::string> &_errors = errors[name];
 	if (std::find(_errors.begin(), _errors.end(), error) == _errors.end())
 		_errors.push_back(error);
-}
-
-void Entity::flushValidatedValues()
-{
-	for (auto &v : validators)
-	{
-		if (v->hasValue())
-			changedValues[v->getName()] = v->getValue();
-	}	
-	validators.clear();
 }
 
 /*
