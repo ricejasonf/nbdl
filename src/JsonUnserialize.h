@@ -9,12 +9,9 @@ class JsonUnserialize : public Entity::Binder
 {
 	public:
 
-	JsonUnserialize(Json::Value &value) :
-		jsonVal(value) {}
+	JsonUnserialize(Json::Value &value);
 
 	static void fromString(std::string &json, Entity &entity);
-
-	void unserialize(Entity &entity, const Json::Value &obj);
 
 	void bind(const std::string, bool &);
 	void bind(const std::string, unsigned int &);
