@@ -15,21 +15,16 @@ std::string JsonWrite::toString(Entity &entity)
 void JsonWrite::bind(Entity &parent, const std::string name, Entity &entity)
 {
 	auto subVal = Json::Value(Json::objectValue);
-	entity.bindMembers(
-		JsonWrite(subVal)
-			.diffMode(isDiffMode()));
+	entity.bindMembers(JsonWrite(subVal, isDiffMode()))
 	jsonVal[name] = subVal;
 }
 void JsonWrite::bind(Entity &parent, const std::string name, EntityListBase &list)
 {
 	auto array = Json::Value(Json::arrayValue);
-	subBinder.bindMembers(entity);
-	for (auto &entity : list.getEntityRefs())
+	for (int i = 0; i < list.size(); ++i)
 	{
 		auto element = Json::Value(Json::objectValue);
-		entity.bindMembers(
-			JsonWrite(element)
-				.diffMode(isDiffMode()));
+		list.getRef(i).bindMembers(JsonWrite(element, isDiffMode()));
 		array.append(element);
 	}
 	jsonVal[name] = array;

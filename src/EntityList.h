@@ -13,10 +13,8 @@ class EntityListBase
 	virtual ~EntityListBase() {}
 
 	typedef std::vector<Entity *>::size_type size_type;
-	typedef std::reference_wrapper<Entity> EntityRef;
-	typedef std::vector<EntityRef> EntityRefs;
 
-	virtual EntityRefs getEntityRefs() = 0;
+	virtual Entity &getRef(const int i) = 0;
 	virtual void initWithSize(size_type) = 0;
 	virtual size_type size() = 0;
 
@@ -30,28 +28,14 @@ class EntityList : public EntityListBase
 
 	public:
 
-	EntityList() = delete;
-	EntityList(BackEnd::Ptr backend) {}
-	/*
-	EntityList(BackEnd::Ptr backend) :
-		backEnd(backEnd) {}
-		*/
-	EntityList(EntityList&&) :
-		vec(std::move(vec)) {}
-		//backEnd(std::move(backEnd)) {} //move constructor
-	~EntityList() {}
-
 	EntityListBase::size_type size()
 	{
 		return vec.size();
 	}
 
-	EntityListBase::EntityRefs getEntityRefs()
+	Entity &getRef(const int i)
 	{
-		auto refs = EntityListBase::EntityRefs();
-		for (auto &i : vec)
-			refs.push_back(EntityListBase::EntityRef(i));
-		return refs;
+		return vec.at(i);
 	}
 
 	protected:

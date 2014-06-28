@@ -10,10 +10,10 @@ class Validator
 {
 	public:
 
-	Validator(Entity &entity, T &field, Errors &e) :
+	Validator(Entity &entity, T &field, ErrorBinder &e) :
 		entity(entity),
 		field(field),
-		errors(e),
+		errorBinder(e),
 		chain_broken(false) {}
 
 	virtual ~Validator() {}
@@ -32,8 +32,13 @@ class Validator
 
 	Entity &entity;
 	T &field;
-	Errors &errors;
+	ErrorBinder &errorbinder;
 };
 #include "Validator.hpp"
+
+/*
+	call validate method to populate error container
+	call bindMembers and bind the errors to the binder
+*/
 
 #endif

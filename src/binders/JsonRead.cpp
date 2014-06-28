@@ -69,12 +69,9 @@ void JsonRead::bind(Entity &parent, const std::string name, EntityListBase &list
 	if (!array.isArray())
 		throw std::runtime_error("JSON Array expected");
 	list.initWithSize(array.size());
-	auto refs = list.getEntityRefs();
-	auto refItr = refs.begin();
-
+	int i = 0;
 	for (auto &obj : array)
 	{
-		*refItr.bindMembers(JsonRead(obj));	
-		++refItr;
+		list.getRef(i++).bindMembers(JsonRead(obj));	
 	}
 }

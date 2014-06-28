@@ -32,7 +32,7 @@ class Entity
 
 	protected:
 
-	virtual ValueMap validate(ValueMap changes) = 0;
+	virtual bool validate(ErrorBinder &errors) = 0;
 
 	template<typename T>
 	inline void set(T value, T &field);
@@ -44,7 +44,7 @@ class Entity
 	inline ValidatorNumber &validateNumber(T &field, Errors &e);
 	inline ValidatorString &validateString(std::string &field, Errors &e);
 	template<typename T, class V>
-	inline V &validate(T &field, , Errors &e);
+	inline V &validate(T &field, ErrorBinder &e);
 
 	template<type T>
 	inline void bind(Binder &b, const std::string name, T &field);
