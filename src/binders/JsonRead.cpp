@@ -1,21 +1,21 @@
 #include<stdexcept>
 #include<jsoncpp/json/json.h>
-#include "JsonUnserialize.h"
+#include "JsonRead.h"
 #include "Entity.h"
 #include "EntityList.h"
 
-JsonUnserialize(Json::Value &value) :
+JsonRead(Json::Value &value) :
 	jsonVal(value) 
 {
 	if (!jsonVal.isObject())
 		throw std::runtime_error("JSON Object expected");
 }
 
-void JsonUnserialize::fromString(std::string &json, Entity &entity)
+void JsonRead::fromString(std::string &json, Entity &entity)
 {
 	Json::Reader reader;
 	Json::Value root;
-	JsonUnserialize r;
+	JsonRead r;
 	if (!reader.parse(json, root, false))
 	{
 		throw std::runtime_error("JSON parse error");
@@ -23,7 +23,7 @@ void JsonUnserialize::fromString(std::string &json, Entity &entity)
 	r.unserialize(entity, root);
 }
 
-void JsonUnserialize::bind(const std::string name, bool &field)
+void JsonRead::bind(const std::string name, bool &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isBool())
@@ -31,7 +31,7 @@ void JsonUnserialize::bind(const std::string name, bool &field)
 	field = obj.asBool();
 }
 
-void JsonUnserialize::bind(const std::string name, unsigned int &field)
+void JsonRead::bind(const std::string name, unsigned int &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isIntegral())
@@ -39,7 +39,7 @@ void JsonUnserialize::bind(const std::string name, unsigned int &field)
 	field = obj.asUInt();
 }
 
-void JsonUnserialize::bind(const std::string name, int &field)
+void JsonRead::bind(const std::string name, int &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isIntegral())
@@ -47,7 +47,7 @@ void JsonUnserialize::bind(const std::string name, int &field)
 	field = obj.asInt();
 }
 
-void JsonUnserialize::bind(const std::string name, double &field)
+void JsonRead::bind(const std::string name, double &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isNumeric())
@@ -55,15 +55,15 @@ void JsonUnserialize::bind(const std::string name, double &field)
 	field = obj.asDouble();
 }
 
-void JsonUnserialize::bind(const std::string name, Entity &entity)
+void JsonRead::bind(const std::string name, Entity &entity)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isObject())
 		throw std::runtime_error("JSON Object expected");
-	entity.bindMembers(JsonUnserialize(obj));
+	entity.bindMembers(JsonRead(obj));
 }
 
-void JsonUnserialize::bind(const std::string name, EntityListBase &list)
+void JsonRead::bind(const std::string name, EntityListBase &list)
 {
 	const Json::Value &array = jsonVal[name];
 	if (!array.isArray())
@@ -74,7 +74,7 @@ void JsonUnserialize::bind(const std::string name, EntityListBase &list)
 
 	for (auto &obj : array)
 	{
-		*refItr.bindMembers(JsonUnserialize(obj));	
+		*refItr.bindMembers(JsonRead(obj));	
 		++refItr;
 	}
 }

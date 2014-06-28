@@ -1,13 +1,13 @@
-#ifndef JSONSERIALIZE_H
-#define JSONSERIALIZE_H
+#ifndef JSONWRITE_H
+#define JSONWRITE_H
 
 #include"Entity.h"
 
-class JsonSerialize : public Entity::Binder
+class JsonWrite : public Entity::Binder
 {
 	public:
 
-	JsonSerialize(Json::Value &value) :
+	JsonWrite(Json::Value &value) :
 		jsonVal(value) {}
 
 	static std::string toString(Entity &entity);

@@ -2,8 +2,8 @@
 #include <string>
 
 #include <BackEndPrint.h>
-#include <JsonUnserialize.h>
-#include <JsonSerialize.h>
+#include <binders/JsonRead.h>
+#include <binders/JsonWrite.h>
 #include "Account.h"
 
 Account buildAccount() 
@@ -17,8 +17,8 @@ int main()
 	std::string inputJson, outputJson;
 	for (std::string line; std::getline(std::cin, line);)
 		inputJson += line;
-	JsonUnserialize::fromString(inputJson, account);
-	std::cout << JsonSerialize::toString(account);
+	JsonRead::fromString(inputJson, account);
+	std::cout << JsonWrite::toString(account);
 
 	MyArcusEntityRoot arcus();
 	/* 

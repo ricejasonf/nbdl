@@ -1,15 +1,15 @@
-#ifndef JSONUNSERIALIZE_H
-#define JSONUNSERIALIZE_H
+#ifndef JSONREAD_H
+#define JSONREAD_H
 
 #include"Entity.h"
 namespace Json { class Value; }
 
 
-class JsonUnserialize : public Entity::Binder
+class JsonRead : public Entity::Binder
 {
 	public:
 
-	JsonUnserialize(Json::Value &value);
+	JsonRead(Json::Value &value);
 
 	static void fromString(std::string &json, Entity &entity);
 
