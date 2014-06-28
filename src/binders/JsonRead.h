@@ -5,21 +5,21 @@
 namespace Json { class Value; }
 
 
-class JsonRead : public Entity::Binder
+class JsonRead : public Binder
 {
 	public:
 
-	JsonRead(Json::Value &value);
+	JsonRead(Json::Value &value, bool diffMode = false);
 
 	static void fromString(std::string &json, Entity &entity);
 
-	void bind(const std::string, bool &);
-	void bind(const std::string, unsigned int &);
-	void bind(const std::string, int &);
-	void bind(const std::string, double &);
-	void bind(const std::string, std::string &);
-	void bind(const std::string name, Entity &entity);
-	void bind(const std::string name, EntityListBase &list);
+	void bind(Entity &parent, const std::string, bool &);
+	void bind(Entity &parent, const std::string, unsigned int &);
+	void bind(Entity &parent, const std::string, int &);
+	void bind(Entity &parent, const std::string, double &);
+	void bind(Entity &parent, const std::string, std::string &);
+	void bind(Entity &parent, const std::string name, Entity &entity);
+	void bind(Entity &parent, const std::string name, EntityListBase &list);
 			
 	private: 
 	

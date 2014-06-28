@@ -62,8 +62,3 @@ void Entity::addError(const std::string &name, const std::string &error)
 	if (std::find(_errors.begin(), _errors.end(), error) == _errors.end())
 		_errors.push_back(error);
 }
-
-/*
-void Entity::bind(Binder &b, const std::string name, Entity &entity) { b.bind(name, entity); }
-void Entity::bind(Binder &b, const std::string name, std::vector<Entity> &list) { b.bind(name, list); }
-*/

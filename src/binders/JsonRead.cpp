@@ -4,8 +4,8 @@
 #include "Entity.h"
 #include "EntityList.h"
 
-JsonRead(Json::Value &value) :
-	jsonVal(value) 
+JsonRead(Json::Value &value, bool diffMode) :
+	jsonVal(value), Binder(diffMode) 
 {
 	if (!jsonVal.isObject())
 		throw std::runtime_error("JSON Object expected");
@@ -23,7 +23,7 @@ void JsonRead::fromString(std::string &json, Entity &entity)
 	r.unserialize(entity, root);
 }
 
-void JsonRead::bind(const std::string name, bool &field)
+void JsonRead::bind(Entity &parent, const std::string name, bool &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isBool())
@@ -31,7 +31,7 @@ void JsonRead::bind(const std::string name, bool &field)
 	field = obj.asBool();
 }
 
-void JsonRead::bind(const std::string name, unsigned int &field)
+void JsonRead::bind(Entity &parent, const std::string name, unsigned int &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isIntegral())
@@ -39,7 +39,7 @@ void JsonRead::bind(const std::string name, unsigned int &field)
 	field = obj.asUInt();
 }
 
-void JsonRead::bind(const std::string name, int &field)
+void JsonRead::bind(Entity &parent, const std::string name, int &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isIntegral())
@@ -47,7 +47,7 @@ void JsonRead::bind(const std::string name, int &field)
 	field = obj.asInt();
 }
 
-void JsonRead::bind(const std::string name, double &field)
+void JsonRead::bind(Entity &parent, const std::string name, double &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isNumeric())
@@ -55,7 +55,7 @@ void JsonRead::bind(const std::string name, double &field)
 	field = obj.asDouble();
 }
 
-void JsonRead::bind(const std::string name, Entity &entity)
+void JsonRead::bind(Entity &parent, const std::string name, Entity &entity)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isObject())
@@ -63,7 +63,7 @@ void JsonRead::bind(const std::string name, Entity &entity)
 	entity.bindMembers(JsonRead(obj));
 }
 
-void JsonRead::bind(const std::string name, EntityListBase &list)
+void JsonRead::bind(Entity &parent, const std::string name, EntityListBase &list)
 {
 	const Json::Value &array = jsonVal[name];
 	if (!array.isArray())
