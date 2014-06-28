@@ -2,7 +2,6 @@
 #define ENTITYLIST_H
 
 #include<type_traits>
-#include "BackEndPrint.h"
 
 class Entity;
 
@@ -44,15 +43,10 @@ class EntityList : public EntityListBase
 	{
 		vec.clear();
 		for (int i = 0; i < n; i++)
-			append();
+			vec.emplace_back();
 	}
 
-	//BackEnd::Ptr backEnd;
-
 	private:
-
-	//void append() { vec.push_back(T(backEnd)); }
-	void append() { vec.emplace_back(BackEnd::Ptr(new BackEndPrint("ListItemBleh"))); }
 
 	std::vector<T> vec;
 };
