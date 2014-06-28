@@ -1,6 +1,6 @@
 #include "Account.h"
 
-void Account::validate(Errors &e)
+void Account::validate(ErrorBinder &e)
 {
 	validateString(e, nameFirst)
 		.required()
