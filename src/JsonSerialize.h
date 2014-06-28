@@ -12,10 +12,6 @@ class JsonSerialize : public Entity::Binder
 
 	static std::string toString(Entity &entity);
 
-	protected:
-
-	void serialize(Entity &entity, Json::Value &obj);
-
 	template<typename T>
 	void bind(const std::string name, T &value) { jsonVal[name] = value; }
 

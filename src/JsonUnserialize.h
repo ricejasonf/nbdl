@@ -9,20 +9,24 @@ class JsonUnserialize : public Entity::Binder
 {
 	public:
 
+	JsonUnserialize(Json::Value &value) :
+		jsonVal(value) {}
+
 	static void fromString(std::string &json, Entity &entity);
 
 	void unserialize(Entity &entity, const Json::Value &obj);
 
-	protected:
-
-	//the bind methods are protected to prevent null pointer abuse
-	friend class Entity;
+	void bind(const std::string, bool &);
+	void bind(const std::string, unsigned int &);
+	void bind(const std::string, int &);
+	void bind(const std::string, double &);
+	void bind(const std::string, std::string &);
 	void bind(const std::string name, Entity &entity);
 	void bind(const std::string name, EntityListBase &list);
 			
 	private: 
 	
-	const Json::Value *currentObj;
+	const Json::Value &jsonVal;
 		
 };
 

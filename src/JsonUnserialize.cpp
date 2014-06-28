@@ -48,13 +48,44 @@ void JsonUnserialize::unserialize(Entity &entity, const Json::Value &obj)
 	currentObj = NULL;
 }
 
+void JsonUnserialize::bind(const std::string name, bool &field)
+{
+	const Json::Value &obj = jsonVal[name];
+	if (!obj.isBool())
+		throw std::runtime_error("JSON Integral expected");
+	field = obj.asBool();
+}
+
+void JsonUnserialize::bind(const std::string name, unsigned int &field)
+{
+	const Json::Value &obj = jsonVal[name];
+	if (!obj.isIntegral())
+		throw std::runtime_error("JSON Integral expected");
+	field = obj.asUInt();
+}
+
+void JsonUnserialize::bind(const std::string name, int &field)
+{
+	const Json::Value &obj = jsonVal[name];
+	if (!obj.isIntegral())
+		throw std::runtime_error("JSON Integral expected");
+	field = obj.asInt();
+}
+
+void JsonUnserialize::bind(const std::string name, double &field)
+{
+	const Json::Value &obj = jsonVal[name];
+	if (!obj.isNumeric())
+		throw std::runtime_error("JSON Number expected");
+	field = obj.asDouble();
+}
+
 void JsonUnserialize::bind(const std::string name, Entity &entity)
 {
-	if (currentObj == NULL)
-		throw std::runtime_error("Bind method called in wrong context");
-	const Json::Value &obj = *currentObj;
-	unserialize(entity, obj[name]);
-	currentObj = &obj;
+	const Json::Value &obj = jsonVal[name];
+	if (!obj.isObject())
+		throw std::runtime_error("JSON Object expected");
+	entity.bindMembers(JsonUnserialize(obj));
 }
 
 void JsonUnserialize::bind(const std::string name, EntityListBase &list)
