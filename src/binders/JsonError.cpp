@@ -6,7 +6,8 @@
 void JsonError::bind(Entity &parent, const std::string name, Entity &entity)
 {
 	auto obj = Json::Value(Json::objectValue);
-	validate(entity, JsonError(obj));
+	JsonError error(obj);
+	validateChild(entity, error);
 	jsonVal[name] = obj;
 }
 void JsonError::bind(Entity &parent, const std::string name, EntityListBase &list)
@@ -15,7 +16,8 @@ void JsonError::bind(Entity &parent, const std::string name, EntityListBase &lis
 	for (int i = 0; i < list.size(); ++i)
 	{
 		auto element = Json::Value(Json::objectValue);
-		validate(list.getRef(i), JsonError(element));
+		JsonError error(element);
+		validateChild(list.getRef(i), error);
 		array.append(element);
 	}
 	jsonVal[name] = array;
@@ -29,10 +31,4 @@ void JsonError:writeErrors(std::string name, std::vector<std::string> errors)
 	for (auto token: errors)
 		array.append(token);
 	jsonVal[name] = array;
-}
-
-void validate(Entity &entity, JsonError e)
-{
-	entity.validate(e);
-	entity.bindMembers(e);
 }
