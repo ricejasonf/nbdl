@@ -14,9 +14,10 @@ std::string JsonWrite::toString(Entity &entity)
 }
 void JsonWrite::bind(Entity &parent, const std::string name, Entity &entity)
 {
-	auto subVal = Json::Value(Json::objectValue);
-	entity.bindMembers(JsonWrite(subVal, isDiffMode()))
-	jsonVal[name] = subVal;
+	auto obj = Json::Value(Json::objectValue);
+	entity.bindMembers(JsonWrite(obj, isDiffMode()))
+	if (obj.size())
+		jsonVal[name] = obj;
 }
 void JsonWrite::bind(Entity &parent, const std::string name, EntityListBase &list)
 {
@@ -27,5 +28,6 @@ void JsonWrite::bind(Entity &parent, const std::string name, EntityListBase &lis
 		list.getRef(i).bindMembers(JsonWrite(element, isDiffMode()));
 		array.append(element);
 	}
-	jsonVal[name] = array;
+	if (array.size())
+		jsonVal[name] = array;
 }

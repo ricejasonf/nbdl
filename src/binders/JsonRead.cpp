@@ -15,48 +15,70 @@ void JsonRead::fromString(std::string &json, Entity &entity)
 {
 	Json::Reader reader;
 	Json::Value root;
-	JsonRead r;
+	JsonRead r(root);
 	if (!reader.parse(json, root, false))
 	{
 		throw std::runtime_error("JSON parse error");
 	}
-	r.unserialize(entity, root);
+	entity.bindMembers(JsonRead(root));
 }
 
 void JsonRead::bind(Entity &parent, const std::string name, bool &field)
 {
+	if (diffMode() && !jsonVal.isMember(name))
+		return;
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isBool())
-		throw std::runtime_error("JSON Integral expected");
-	field = obj.asBool();
+		throw std::runtime_error("JSON Boolean expected");
+	if (diffMode())
+		set(obj.asBool(), field);
+	else
+		field = obj.asBool();
 }
 
 void JsonRead::bind(Entity &parent, const std::string name, unsigned int &field)
 {
+	if (diffMode() && !jsonVal.isMember(name))
+		return;
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isIntegral())
 		throw std::runtime_error("JSON Integral expected");
-	field = obj.asUInt();
+	if (diffMode())
+		set(obj.asUInt(), field);
+	else
+		field = obj.asUInt();
 }
 
 void JsonRead::bind(Entity &parent, const std::string name, int &field)
 {
+	if (diffMode() && !jsonVal.isMember(name))
+		return;
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isIntegral())
 		throw std::runtime_error("JSON Integral expected");
-	field = obj.asInt();
+	if (diffMode())
+		set(obj.asInt(), field);
+	else
+		field = obj.asInt();
 }
 
 void JsonRead::bind(Entity &parent, const std::string name, double &field)
 {
+	if (diffMode() && !jsonVal.isMember(name))
+		return;
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isNumeric())
 		throw std::runtime_error("JSON Number expected");
-	field = obj.asDouble();
+	if (diffMode())
+		set(obj.asDouble(), field);
+	else
+		field = obj.asDouble();
 }
 
 void JsonRead::bind(Entity &parent, const std::string name, Entity &entity)
 {
+	if (diffMode() && !jsonVal.isMember(name))
+		return;
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isObject())
 		throw std::runtime_error("JSON Object expected");

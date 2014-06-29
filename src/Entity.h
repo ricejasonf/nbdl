@@ -13,16 +13,13 @@ class Entity
 {
 	public:
 
-	Entity(Entity&) :
-		validators(std::vector<std::unique_ptr<Validator>>()) {}
-	Entity(Entity&&) :
-		validators(std::vector<std::unique_ptr<Validator>>()) {}
-	virtual ~Entity() { }
+	virtual ~Entity();
 
 	bool save();
 	template<typename T>
 	inline bool isDirty(T &field);
 	inline bool isDirty();
+	bool isNew(); //todo make this function be based of PathNode
 
 	virtual void bindMembers(Binder &) {}
 

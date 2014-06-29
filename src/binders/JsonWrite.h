@@ -15,11 +15,10 @@ class JsonWrite : public Binder
 	static std::string toString(Entity &entity);
 
 	template<typename T>
-	void bind(Entity &parent, const std::string name, T &value) 
+	void bind(Entity &parent, const std::string name, T &field) 
 	{ 
-		if (isDiffMode() && !parent.isDirty(value))
-			return;
-		jsonVal[name] = value; 
+		if (!diffMode() || parent.isDirty(field))
+			jsonVal[name] = field; 
 	}
 
 	void bind(Entity &parent, const std::string name, Entity &entity);
