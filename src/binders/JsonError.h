@@ -23,6 +23,7 @@ class JsonError : public ErrorBinder
 	private: 
 
 	void writeErrors(std::string name, std::vector<std::string> errors);
+	void validate(Entity &, JsonError);
 	
 	Json::Value &jsonVal;
 		
