@@ -20,6 +20,7 @@ class ListenRequestBase
 template<class T>
 class ListenRequest
 {
+	//todo use ListenCallbackBase
 	std::function<void(ValueMap, ValueMap)> _notify;
 
 	public:

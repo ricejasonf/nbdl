@@ -32,12 +32,9 @@ class PathNode
 	T create() { return T(); }
 	RetrieveCallback<T> retrieve() 
 		{ return RetrieveCallback<T>(this); }
-	ListenCallback<T, ValueMap> listen(std::function<T, ValueMap> fn) 
-		{ return ListenCallback<T, ValueMap>(this, fn); }
-	ListenCallback<T, ValueMap, ValueMap> listen(std::function<T, ValueMap, ValueMap> fn) 
-		{ return ListenCallback<T, ValueMap, ValueMap>(this, fn); }
-	ListenCallback<T, ValueMap, ValueMap> listen(std::function<T, ValueMap, ValueMap> fn) 
-		{ return ListenCallback<T, ValueMap, ValueMap>(this, fn); }
+	ListenCallback<T, std::reference_wrapper<Binder>> 
+		listen(std::function<T, std::reference_wrapper<Binder>> fn) 
+		{ return ListenCallback<T, std::reference_wrapper<Binder>>(this, fn); }
 	/* save needs to be in the root node
 	SaveCallback<T> save(T entity) 
 		{ return SaveCallback<T>(this, entity); }
@@ -47,9 +44,6 @@ class PathNode
 /*
 	get path string from fully built path
 	revert to parent node with concrete type using accessor must be implemented by client
-	the following is a capability but it is not limited to this:
-	the entity for every node in the path will be loaded an checked against the acl
-	so really deep trees is a bad idea unless parent entities are cached on the machine
 */
 
 #endif
