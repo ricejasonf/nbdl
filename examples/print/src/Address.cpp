@@ -17,3 +17,12 @@ void Address::validate(ErrorBinder &e)
 		.required()
 		.matches("^[A-Z]{2}$");
 }
+
+void Address::bindMembers(Binder &b)
+{
+	bind(b, "line1", line1);
+	bind(b, "line2", line2);
+	bind(b, "city", city);
+	bind(b, "state", state);
+	bind(b, "zipCode", zipCode);
+}

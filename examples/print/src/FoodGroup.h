@@ -13,6 +13,7 @@ class FoodGroup : public Entity
 		//FoodGroup &setName(const std::string v) { set(v, name); return *this; }
 
 		void validate(ErrorBinder &);
+		void bindMembers(Binder &b);
 };
 
 #endif

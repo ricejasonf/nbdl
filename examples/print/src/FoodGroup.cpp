@@ -6,3 +6,8 @@ void FoodGroup::validate(ErrorBinder &e)
 		.required()
 		.maxLen(50);
 }
+
+void FoodGroup::bindMembers(Binder &b)
+{
+	bind(b, "name", name);
+}

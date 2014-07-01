@@ -19,8 +19,9 @@ void Account::bindMembers(Binder &b)
 	bind(b, "nameFirst", nameFirst);
 	bind(b, "nameLast", nameLast);
 	bind(b, "phoneNumber", phoneNumber);
-	//bind(b, "address", address);
-	//bind(b, "foods", foods);
+	bind(b, "age", age);
+	bind(b, "address", address);
+	bind(b, "foods", foods);
 }
 
 RelationMap Account::getRelationMap()

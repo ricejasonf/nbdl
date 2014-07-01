@@ -95,7 +95,7 @@ void JsonRead::bind(Entity &parent, const std::string name, Entity &entity)
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isObject())
 		throw std::runtime_error("JSON Object expected");
-	JsonRead reader(obj);
+	JsonRead reader(obj, diffMode());
 	entity.bindMembers(reader);
 }
 
@@ -108,7 +108,7 @@ void JsonRead::bind(Entity &parent, const std::string name, EntityListBase &list
 	int i = 0;
 	for (auto &obj : array)
 	{
-		JsonRead reader(obj);
+		JsonRead reader(obj, diffMode());
 		list.getRef(i++).bindMembers(reader);
 	}
 }

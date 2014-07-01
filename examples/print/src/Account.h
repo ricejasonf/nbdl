@@ -32,6 +32,7 @@ class Account : public Entity
 		std::string phoneNumber;
 		Address address;
 		EntityList<Food> foods;
+		unsigned int age;
 };
 
 #endif

@@ -1,9 +1,10 @@
 #include <iostream>
 #include <string>
 
-#include "Account.h"
 #include <binders/JsonRead.h>
 #include <binders/JsonWrite.h>
+#include <jsoncpp/json/json.h>
+#include "Account.h"
 
 Account buildAccount() 
 { 
@@ -17,8 +18,32 @@ int main()
 	std::string inputJson, outputJson;
 	for (std::string line; std::getline(std::cin, line);)
 		inputJson += line;
+
+	Json::Value changes(Json::objectValue);
+	changes["nameLast"] = "Fartface";
+	changes["age"] = 34;
+	changes["address"] = Json::Value(Json::objectValue);
+	changes["address"]["city"] = "Hendertucky";
+	changes["foods"] = Json::Value(Json::arrayValue);
+	changes["foods"].append(Json::Value(Json::objectValue));
+	changes["foods"].append(Json::Value(Json::objectValue));
+	changes["foods"][1]["name"] = "Some Kind Crazy Food";
+
 	JsonRead::fromString(inputJson, account);
+
 	std::cout << JsonWrite::toString(account);
+
+	JsonRead changeBinder(changes, true);
+	account.bindMembers(changeBinder);
+
+	Json::StyledWriter writer;
+	auto root = Json::Value(Json::objectValue);
+	JsonWrite writeBinder(root, true);
+	account.bindMembers(writeBinder);
+	std::cout << writer.write(root);
+
+	std::cout << JsonWrite::toString(account);
+
 }
 
 	//MyArcusEntityRoot arcus();
