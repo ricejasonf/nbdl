@@ -9,13 +9,13 @@ Entity::set(T value, T &field)
 
 template<typename T>
 inline ValidatorNumber<T>
-Entity::validateNumber(T &field, ErrorBinder &e) 
+Entity::validateNumber(ErrorBinder &e, T &field)
 { 
 	return ValidatorNumber<T>(*this, field, e);
 }
 
 inline ValidatorString
-Entity::validateString(std::string &field, ErrorBinder &e)
+Entity::validateString(ErrorBinder &e, std::string &field)
 { 
 	return ValidatorString(*this, field, e);
 }

@@ -16,6 +16,8 @@ class Food : public Entity
 
 	private:
 
+		std::string name;
+
 		FoodGroup foodGroup;
 };
 

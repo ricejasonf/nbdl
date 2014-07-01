@@ -15,6 +15,14 @@ class Address : public Entity
 		*/
 
 		void validate(ErrorBinder &e);
+
+	private:
+
+		std::string line1;
+		std::string line2;
+		std::string city;
+		std::string state;
+		std::string zipCode;
 };
 
 #endif

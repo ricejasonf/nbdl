@@ -2,12 +2,12 @@
 
 void Food::validate(ErrorBinder &e)
 {
-	validateString(e, "name")
+	validateString(e, name)
 		.required()
-		.max(50);
+		.maxLen(50);
 }
 
-void Food::bindMembers(Entity::Binder &b)
+void Food::bindMembers(Binder &b)
 {
 	bind(b, "foodGroup", foodGroup);
 }

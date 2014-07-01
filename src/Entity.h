@@ -17,13 +17,13 @@ class Entity
 {
 	public:
 
-	virtual ~Entity();
+	virtual ~Entity() {}
 
 	bool save(BackEnd &, ErrorBinder&);
 	template<typename T>
 	inline bool isDirty(T &field);
 	inline bool isDirty();
-	bool isNew(); //todo make this function be based of PathNode
+	bool isNew(); //todo make this function be based off PathNode
 
 	virtual void bindMembers(Binder &) {}
 

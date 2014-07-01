@@ -1,13 +1,14 @@
 #include "Account.h"
+#include "RelationMap.h"
 
 void Account::validate(ErrorBinder &e)
 {
 	validateString(e, nameFirst)
 		.required()
-		.max(50);
+		.maxLen(50);
 	validateString(e, nameLast)
 		.required()
-		.max(50);
+		.maxLen(50);
 	validateString(e, phoneNumber)
 		.optional()
 		.matches("^[0-9]{10}$");
@@ -24,7 +25,7 @@ void Account::bindMembers(Binder &b)
 
 RelationMap Account::getRelationMap()
 {
-	static RelationMap map("account")
+	static auto map = RelationMap("account")
 		.requireOwner(RelationMap::OneToOne("client"))
 		.addMember(RelationMap::OneToOne("address"))
 		.addMember(RelationMap::OneToMany("address"))

@@ -37,3 +37,8 @@ bool Entity::save(BackEnd &backEnd, ErrorBinder &errors)
 	*/
 	return true;
 }
+
+bool Entity::isNew()
+{
+	return true;
+}

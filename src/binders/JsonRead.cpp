@@ -75,6 +75,19 @@ void JsonRead::bind(Entity &parent, const std::string name, double &field)
 		field = obj.asDouble();
 }
 
+void JsonRead::bind(Entity &parent, const std::string name, std::string &field)
+{
+	if (diffMode() && !jsonVal.isMember(name))
+		return;
+	const Json::Value &obj = jsonVal[name];
+	if (!obj.isString())
+		throw std::runtime_error("JSON String expected");
+	if (diffMode())
+		set(parent, obj.asString(), field);
+	else
+		field = obj.asString();
+}
+
 void JsonRead::bind(Entity &parent, const std::string name, Entity &entity)
 {
 	if (diffMode() && !jsonVal.isMember(name))

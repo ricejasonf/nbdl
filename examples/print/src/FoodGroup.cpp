@@ -4,5 +4,5 @@ void FoodGroup::validate(ErrorBinder &e)
 {
 	validateString(e, name)
 		.required()
-		.max(50);
+		.maxLen(50);
 }
