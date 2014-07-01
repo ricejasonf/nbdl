@@ -1,15 +1,15 @@
 #ifndef JSONREAD_H
 #define JSONREAD_H
 
-#include"Entity.h"
-namespace Json { class Value; }
+#include "../Binder.h"
 
+namespace Json { class Value; }
 
 class JsonRead : public Binder
 {
 	public:
 
-	JsonRead(Json::Value &value, bool diffMode = false);
+	JsonRead(const Json::Value &value, bool diffMode = false);
 
 	static void fromString(std::string &json, Entity &entity);
 

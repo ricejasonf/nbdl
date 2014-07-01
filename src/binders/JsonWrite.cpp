@@ -1,7 +1,7 @@
 #include<stdexcept>
 #include<jsoncpp/json/json.h>
-#include "Entity.h"
-#include "EntityList.h"
+#include "../Entity.h"
+#include "../EntityList.h"
 #include "JsonWrite.h"
 
 std::string JsonWrite::toString(Entity &entity)
@@ -12,10 +12,36 @@ std::string JsonWrite::toString(Entity &entity)
 	entity.bindMembers(r);
 	return writer.write(root);
 }
+void JsonWrite::bind(Entity &parent, const std::string name, bool & field) 
+{ 
+	if (!diffMode() || parent.isDirty(field))
+		jsonVal[name] = field; 
+}
+void JsonWrite::bind(Entity &parent, const std::string name, unsigned int & field) 
+{ 
+	if (!diffMode() || parent.isDirty(field))
+		jsonVal[name] = field; 
+}
+void JsonWrite::bind(Entity &parent, const std::string name, int & field) 
+{ 
+	if (!diffMode() || parent.isDirty(field))
+		jsonVal[name] = field; 
+}
+void JsonWrite::bind(Entity &parent, const std::string name, double & field) 
+{ 
+	if (!diffMode() || parent.isDirty(field))
+		jsonVal[name] = field; 
+}
+void JsonWrite::bind(Entity &parent, const std::string name, std::string & field) 
+{ 
+	if (!diffMode() || parent.isDirty(field))
+		jsonVal[name] = field; 
+}
 void JsonWrite::bind(Entity &parent, const std::string name, Entity &entity)
 {
 	auto obj = Json::Value(Json::objectValue);
-	entity.bindMembers(JsonWrite(obj, isDiffMode()))
+	JsonWrite writer(obj, diffMode());
+	entity.bindMembers(writer);
 	if (obj.size())
 		jsonVal[name] = obj;
 }
@@ -25,7 +51,8 @@ void JsonWrite::bind(Entity &parent, const std::string name, EntityListBase &lis
 	for (int i = 0; i < list.size(); ++i)
 	{
 		auto element = Json::Value(Json::objectValue);
-		list.getRef(i).bindMembers(JsonWrite(element, isDiffMode()));
+		JsonWrite writer(element, diffMode());
+		list.getRef(i).bindMembers(writer);
 		array.append(element);
 	}
 	if (array.size())

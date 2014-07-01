@@ -1,19 +1,19 @@
 #include "Address.h"
 
-void Address::validate()
+void Address::validate(ErrorBinder &e)
 {
-	validateString("line1")
+	validateString(e, "line1")
 		.required()
 		.max(50);
-	validateString("line2")
+	validateString(e, "line2")
 		.optional()
 		.max(50);
-	validateString("zipCode")
+	validateString(e, "zipCode")
 		.required()
 		.matches("^[0-9]{5}$");
-	validateString("city")
+	validateString(e, "city")
 		.required();
-	validateString("state")
+	validateString(e, "state")
 		.required()
 		.matches("^[A-Z]{2}$");
 }

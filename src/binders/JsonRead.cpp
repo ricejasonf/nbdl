@@ -1,10 +1,10 @@
 #include<stdexcept>
 #include<jsoncpp/json/json.h>
 #include "JsonRead.h"
-#include "Entity.h"
-#include "EntityList.h"
+#include "../Entity.h"
+#include "../EntityList.h"
 
-JsonRead(Json::Value &value, bool diffMode) :
+JsonRead::JsonRead(const Json::Value &value, bool diffMode) :
 	jsonVal(value), Binder(diffMode) 
 {
 	if (!jsonVal.isObject())
@@ -15,12 +15,12 @@ void JsonRead::fromString(std::string &json, Entity &entity)
 {
 	Json::Reader reader;
 	Json::Value root;
-	JsonRead r(root);
 	if (!reader.parse(json, root, false))
 	{
 		throw std::runtime_error("JSON parse error");
 	}
-	entity.bindMembers(JsonRead(root));
+	JsonRead r(root);
+	entity.bindMembers(r);
 }
 
 void JsonRead::bind(Entity &parent, const std::string name, bool &field)
@@ -31,7 +31,7 @@ void JsonRead::bind(Entity &parent, const std::string name, bool &field)
 	if (!obj.isBool())
 		throw std::runtime_error("JSON Boolean expected");
 	if (diffMode())
-		set(obj.asBool(), field);
+		set(parent, obj.asBool(), field);
 	else
 		field = obj.asBool();
 }
@@ -44,7 +44,7 @@ void JsonRead::bind(Entity &parent, const std::string name, unsigned int &field)
 	if (!obj.isIntegral())
 		throw std::runtime_error("JSON Integral expected");
 	if (diffMode())
-		set(obj.asUInt(), field);
+		set(parent, obj.asUInt(), field);
 	else
 		field = obj.asUInt();
 }
@@ -57,7 +57,7 @@ void JsonRead::bind(Entity &parent, const std::string name, int &field)
 	if (!obj.isIntegral())
 		throw std::runtime_error("JSON Integral expected");
 	if (diffMode())
-		set(obj.asInt(), field);
+		set(parent, obj.asInt(), field);
 	else
 		field = obj.asInt();
 }
@@ -70,7 +70,7 @@ void JsonRead::bind(Entity &parent, const std::string name, double &field)
 	if (!obj.isNumeric())
 		throw std::runtime_error("JSON Number expected");
 	if (diffMode())
-		set(obj.asDouble(), field);
+		set(parent, obj.asDouble(), field);
 	else
 		field = obj.asDouble();
 }
@@ -82,7 +82,8 @@ void JsonRead::bind(Entity &parent, const std::string name, Entity &entity)
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isObject())
 		throw std::runtime_error("JSON Object expected");
-	entity.bindMembers(JsonRead(obj));
+	JsonRead reader(obj);
+	entity.bindMembers(reader);
 }
 
 void JsonRead::bind(Entity &parent, const std::string name, EntityListBase &list)
@@ -94,6 +95,7 @@ void JsonRead::bind(Entity &parent, const std::string name, EntityListBase &list
 	int i = 0;
 	for (auto &obj : array)
 	{
-		list.getRef(i++).bindMembers(JsonRead(obj));	
+		JsonRead reader(obj);
+		list.getRef(i++).bindMembers(reader);
 	}
 }

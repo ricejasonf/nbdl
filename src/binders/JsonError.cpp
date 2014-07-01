@@ -1,6 +1,6 @@
 #include<jsoncpp/json/json.h>
-#include "Entity.h"
-#include "EntityList.h"
+#include "../Entity.h"
+#include "../EntityList.h"
 #include "JsonError.h"
 
 void JsonError::bind(Entity &parent, const std::string name, Entity &entity)

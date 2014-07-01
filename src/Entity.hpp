@@ -1,32 +1,26 @@
-#include <string>
+#include<algorithm>
 
 template<typename T>
-void 
+inline void 
 Entity::set(T value, T &field)
 {
 	diff.set(value, field, this);
 }
 
 template<typename T>
-inline ValidatorNumber &
-validateNumber(T &field, Errors &e) 
+inline ValidatorNumber<T>
+Entity::validateNumber(T &field, ErrorBinder &e) 
 { 
-	return validate<T, ValidatorNumber>(field, e); 
-}
-inline ValidatorString &
-validateString(T &field, Errors &e)
-{ 
-	return validate<std::string, ValidatorString>(field, e); 
+	return ValidatorNumber<T>(*this, field, e);
 }
 
-template<typename T, class V>
-V
-Entity::validate(T &field, Errors &e)
-{
-	return V(*this, field, e);
+inline ValidatorString
+Entity::validateString(std::string &field, ErrorBinder &e)
+{ 
+	return ValidatorString(*this, field, e);
 }
 
-template<type T>
+template<typename T>
 inline void 
 Entity::bind(Binder &b, const std::string name, T &field) 
 { 
@@ -34,18 +28,11 @@ Entity::bind(Binder &b, const std::string name, T &field)
 }
 
 template<typename T>
-inline void
-Entity::set(T value, T &field)
-{
-	diff.set(value, field, this);
-}
-
-template<typename T>
 inline void 
-Entity::Diff::set(T value, TYPE& field, Entity *container);
+Entity::Diff::set(T value, T& field, Entity *container)
 {
 	field = value;
-	dirtyFields.push_back(&field - container)
+	dirtyFields.push_back((uintptr_t)&field - (uintptr_t)container);
 }
 
 inline bool
@@ -63,19 +50,21 @@ template<typename T>
 inline bool 
 Entity::isDirty(T &field)
 {
-	return diff.isDirty(T &field, this);
+	return diff.isDirty(field, this);
 }
 
 template<typename T>
 inline bool
-Entity::Diff::isDirty(T &field)
+Entity::Diff::isDirty(T &field, Entity *container)
 {
 	return std::find(
 		dirtyFields.begin(),
 		dirtyFields.end(),
-		&field - container) != dirtyFields.end();
+		(uintptr_t)&field - (uintptr_t)container) != dirtyFields.end();
 }
 
+template<typename T>
+inline void Binder::set(Entity &e, T value, T &field) { e.set(value, field); }
 
 /*
 client.createContact()

@@ -1,14 +1,12 @@
-#include "Entity.h"
-
-tempate<class C, typename T>
+template<class C, typename T>
 inline void 
-	Validator<C, T>::addError(const std::string &error) 
+	Validator<C, T>::addError(const std::string error) 
 { 
-	errors.addError(field, error);
+	errorBinder.addError(entity, field, error);
 	chain_broken = true; 
 }
 
-tempate<class C, typename T>
+template<class C, typename T>
 inline C& 
 	Validator<C, T>::required()
 {
@@ -24,23 +22,23 @@ inline C&
 		addError("required");
 }
 
-tempate<class C, typename T>
+template<class C, typename T>
 inline C& 
-	Validator<C, T>::_optional() 
+	Validator<C, T>::optional() 
 { 
 	if (entity.isDirty(field)) 
 		chain_broken = true; 
 }
 
-tempate<class C, typename T>
+template<class C, typename T>
 inline C& 
 	Validator<C, T>::inSet(const std::vector<T> set) 
 {
-	if (!chain_broken && std::find(set.begin(), set.end(), value) == set.end())
+	if (!chain_broken && std::find(set.begin(), set.end(), field) == set.end())
 		addError("notInSet");
 }
 
-tempate<class C, typename T>
+template<class C, typename T>
 inline C& 
 	Validator<C, T>::inSet(const std::unordered_set<T> set) 
 {
@@ -48,18 +46,9 @@ inline C&
 		addError("notInSet");
 }
 
-tempate<class C, typename T>
+template<class C, typename T>
 inline bool 
 	Validator<C, T>::isBlank() 
 { 
 	return false; 
 }
-
-template<class C>
-inline bool 
-	Validator<C, std::string>::isBlank() 
-{ 
-	return field.size() > 0;	
-}
-
-#endif

@@ -3,62 +3,37 @@
 #include <memory>
 
 #include "Entity.h"
+#include "BackEnd.h"
 
-const std::string Entity::get(const std::string &name)
+bool Entity::save(BackEnd &backEnd, ErrorBinder &errors)
 {
-	/* 
-	 * i decided that returning the diff value when
-	 * set was useless and i wanted to avoid echoing
-	 * unfiltered or invalid data
-	 */
-	ValueMap::iterator i;
-	i = values.find(name);
-	if (i != values.end())
-		return (*i).second;
-	return std::string("");
-}
-
-bool Entity::save(BackEnd &backEnd, ErrorList &errors)
-{
-	//todo handle relations
-	has_errors = false;
-	ValueMap validatedDiff;
-	validate(validatedDiff);
-	diff = validatedDiff;
-	if (has_errors)
+	validate(errors);
+	if (!errors.hasErrors())
 	{
-		//todo use callback function
 		return false;
 	}
-	backEnd->validate();
-	if (has_errors)
+	/*
+	if (!backEnd->validate())
 	{
 		//todo use callback function
 		return false;
 	}
 
-	bool transactionStartedHere = backEnd->beginTransaction();
+	bool transactionStartedHere = backEnd.beginTransaction();
 	try {
 		//callBeforeSaveFunctions();
 		if (!isNew())
-			backEnd->update(getId(), diff);
+			backEnd.update(getId(), diff);
 		else
-			backEnd->insert(diff);
+			backEnd.insert(diff);
 		//callAfterSaveFunctions();
 	} catch(...) {
 		if (transactionStartedHere)
-			backEnd->rollback();
+			backEnd.rollback();
 		throw;
 	}
 	if (transactionStartedHere)
-		backEnd->commit();
+		backEnd.commit();
+	*/
 	return true;
-}
-
-void Entity::addError(const std::string &name, const std::string &error)
-{
-	has_errors = true;
-	std::vector<std::string> &_errors = errors[name];
-	if (std::find(_errors.begin(), _errors.end(), error) == _errors.end())
-		_errors.push_back(error);
 }

@@ -2,7 +2,9 @@
 #define VALIDATOR_H
 
 #include <string>
-
+#include <vector>
+#include <unordered_set>
+#include "ErrorBinder.h"
 class Entity;
 
 template<class C, typename T>
@@ -18,23 +20,22 @@ class Validator
 
 	virtual ~Validator() {}
 
-	protected:
-
-	inline C &addError(const std::string error);
+	inline void addError(const std::string error);
 	inline C &inSet(const std::vector<T> set);
 	inline C &inSet(const std::unordered_set<T> set);
 	inline C &required();
 	inline C &optional();
 
-	inline bool isBlank();
+	inline virtual bool isBlank();
+
+	protected:
 
 	bool chain_broken;
 
 	Entity &entity;
 	T &field;
-	ErrorBinder &errorbinder;
+	ErrorBinder &errorBinder;
 };
-#include "Validator.hpp"
 
 /*
 	call validate method to populate error container

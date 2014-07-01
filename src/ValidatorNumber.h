@@ -7,12 +7,14 @@
 
 #include "Validator.h"
 
+class Entity;
+
 template<typename T>
-class ValidatorNumber : public Validator<ValidatorNumber, T>
+class ValidatorNumber : public Validator<ValidatorNumber<T>, T>
 {
 	public:
 
-	ValidatorNumber(Entity &entity, T &field, Errors &e) :
+	ValidatorNumber(Entity &entity, T &field, ErrorBinder &e) :
 		Validator<ValidatorNumber, T>(entity, field, e) {} 
 
 	inline ValidatorNumber &max(const T v);

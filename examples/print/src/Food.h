@@ -8,14 +8,11 @@
 class Food : public Entity
 {
 	public:
-		Food(BackEnd::Ptr backEnd) : 
-			foodGroup(FoodGroup(backEnd)),
-			Entity(backEnd) {}
 
-		Food &setName(const std::string &v) { set("Name", v); return *this; }
+		//Food &setName(const std::string &v) { set("Name", v); return *this; }
 
 		void bindMembers(Binder &);
-		void validate();
+		void validate(ErrorBinder &);
 
 	private:
 

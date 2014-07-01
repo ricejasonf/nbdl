@@ -10,12 +10,9 @@
 class Account : public Entity
 {
 	public:
-		Account(BackEnd::Ptr backEnd) : 
-			address(Address(backEnd)), 
-			foods(EntityList<Food>(backEnd)),
-			Entity(backEnd) {}
 
 		void bindMembers(Binder &b);
+		/*
 		Account &setNameFirst(const std::string &v) { set("nameFirst", v); return *this; }
 		Account &setNameLast(const std::string &v) { set("nameLast", v); return *this; }
 		Account &setPhoneNumber(const std::string &v) { set("phoneNumber", v); return *this; }
@@ -23,12 +20,15 @@ class Account : public Entity
 		Account &setPassword(const std::string &v) { set("password", v); return *this; }
 		Account &setAge(const std::string &v) { set("age", v); return *this; }
 
-		Address &getAddress() { return address; }
+		*/
 
-		void validate();
+		void validate(ErrorBinder &);
 
 	private:
 
+		std::string nameFirst;
+		std::string nameLast;
+		std::string phoneNumber;
 		Address address;
 		EntityList<Food> foods;
 };

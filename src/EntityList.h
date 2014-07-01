@@ -46,6 +46,11 @@ class EntityList : public EntityListBase
 			vec.emplace_back();
 	}
 
+	void add(T entity)
+	{
+		vec.push_back(entity);
+	}
+
 	private:
 
 	std::vector<T> vec;

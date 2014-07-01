@@ -1,3 +1,6 @@
+#ifndef BINDER_H
+#define BINDER_H
+
 class Entity;
 class EntityListBase;
 
@@ -5,8 +8,8 @@ class Binder
 {
 	public:
 
-	Binder(bool diffMode = false) : _isDiffMode(diffMode) {}
-	void setDiffMode(bool b = true) { _diffMode = b; return *this; }
+	Binder(bool diffMode = false) : _diffMode(diffMode) {}
+	void setDiffMode(bool b = true) { _diffMode = b; }
 
 	protected:
 	friend class Entity;
@@ -20,9 +23,15 @@ class Binder
 	virtual void bind(Entity &, const std::string, Entity &) = 0;
 	virtual void bind(Entity &, const std::string, EntityListBase &) = 0;
 
+	//implemented in Entity.hpp
+	template<typename T>
+	inline void set(Entity &e, T value, T &field);
+
 	inline bool diffMode() { return _diffMode; }
 
 	private:
 
 	bool _diffMode;
 };
+
+#endif

@@ -1,14 +1,14 @@
 inline ValidatorString &
 	ValidatorString::minLen(const int l) 
 { 
-	if (!chain_broken && value.size() < l) 
+	if (!chain_broken && field.size() < l) 
 		addError("tooShort"); 
 	return *this; 
 }
 inline ValidatorString &
 	ValidatorString::maxLen(const int l) 
 { 
-	if (!chain_broken && value.size() > l) 
+	if (!chain_broken && field.size() > l) 
 		addError("tooLong"); 
 	return *this; 
 }
@@ -25,4 +25,9 @@ inline ValidatorString &
 	if (!chain_broken)
 		matches("^[0-9]*$"); 
 	return *this; 
+}
+inline bool 
+	ValidatorString::isBlank() 
+{ 
+	return field.size() > 0;	
 }

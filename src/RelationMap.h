@@ -2,15 +2,16 @@
 #define RELATIONMAP_H
 
 #include<string>
-#include"RelationMap.h"
+#include<vector>
 
 class RelationMap
 {
 	public:
-
+	
 	RelationMap() = delete;
 	RelationMap(std::string name) : name(name) {}
-	virtual compl RelationMap() {}
+
+	virtual ~RelationMap() {}
 
 	struct OneToOne
 	{
@@ -18,7 +19,7 @@ class RelationMap
 		std::string key;
 		std::string foreignKey;
 
-		void OneToOne(const std::string name) : name(name) {}
+		OneToOne(const std::string name) : name(name) {}
 		OneToOne &withKey(std::string name) { key = name; return *this; }
 		OneToOne &withForeignKey(std::string name) { foreignKey = name; return *this; } //default to 'id'
 	};
@@ -29,7 +30,7 @@ class RelationMap
 		std::string key;
 		std::string foreignKey;
 
-		void OneToMany(const std::string name) : name(name) {}
+		OneToMany(const std::string name) : name(name) {}
 		OneToMany &withKey(std::string name) { key = name; } //default to 'id'
 		OneToMany &withForeignKey(std::string name) { foreignKey = name; return *this; } //default to '<name>Id'
 	};
@@ -41,7 +42,7 @@ class RelationMap
 		std::string foreignKey;
 		std::string linkingTable;
 
-		void ManyToMany(const std::string name) : name(name) {}
+		ManyToMany(const std::string name) : name(name) {}
 		ManyToMany &withKey(std::string name) { key = name; return *this; } //default to 'id'
 		ManyToMany &withForeignKey(std::string name) { foreignKey = name; return *this; } //default to '<name>Id'
 		ManyToMany &withLinkingTable(std::string name) { linkingTable = name; return *this; } 
@@ -56,11 +57,11 @@ class RelationMap
 	RelationMap &requireOwner(ManyToMany r) { normalize(r); manyToManyOwners.push_back(r); return *this; }
 
 	std::vector<OneToOne> oneToOneMembers;
-	std::vector<OneToMany> manyToOneMembers;
+	std::vector<OneToMany> oneToManyMembers;
 	std::vector<ManyToMany> manyToManyMembers;
 
 	std::vector<OneToOne> oneToOneOwners;
-	std::vector<OneToMany> manyToOneOwners;
+	std::vector<OneToMany> oneToManyOwners;
 	std::vector<ManyToMany> manyToManyOwners;
 
 	protected:
@@ -75,6 +76,7 @@ class RelationMap
 	void normalize(OneToMany);
 	void normalize(ManyToMany);
 
+	std::string name;
 };
 
 #endif

@@ -7,11 +7,12 @@ set(CMAKE_BUILD_TYPE Debug)
 
 add_library(arcus STATIC 
 	Entity.cpp
-	Validator.cpp
-	BackEndPrint.cpp
-	JsonSerialize.cpp
-	JsonUnserialize.cpp
+	#BackEndPrint.cpp
+	binders/JsonWrite.cpp
+	binders/JsonRead.cpp
 	RelationMap.cpp
+	ErrorBinder.cpp
+	ValidatorString.cpp
 	)
 
 include(../arcus.cmake)

@@ -1,15 +1,15 @@
 template<typename T>
-inline ValidatorNumber &
+inline ValidatorNumber<T> &
 	ValidatorNumber<T>::max(const T v)
 {
-	if (field > v) addError("tooBig");
+	if (this->field > v) this->addError("tooBig");
 	return *this;
 }
 
 template<typename T>
-inline ValidatorNumber &
+inline ValidatorNumber<T> &
 	ValidatorNumber<T>::min(const T v)
 {
-	if (field < v) addError("tooSmall");
+	if (this->field < v) this->addError("tooSmall");
 	return *this;
 }

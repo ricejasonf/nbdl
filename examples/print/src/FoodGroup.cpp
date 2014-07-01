@@ -1,8 +1,8 @@
 #include "FoodGroup.h"
 
-void FoodGroup::validate()
+void FoodGroup::validate(ErrorBinder &e)
 {
-	validateString("name")
+	validateString(e, name)
 		.required()
 		.max(50);
 }

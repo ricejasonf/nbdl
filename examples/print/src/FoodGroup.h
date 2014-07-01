@@ -6,12 +6,13 @@
 
 class FoodGroup : public Entity
 {
+	std::string name;
+
 	public:
-		FoodGroup(BackEnd::Ptr backEnd) : Entity(backEnd) {}
 
-		FoodGroup &setName(const std::string &v) { set("Name", v); return *this; }
+		//FoodGroup &setName(const std::string v) { set(v, name); return *this; }
 
-		void validate();
+		void validate(ErrorBinder &);
 };
 
 #endif
