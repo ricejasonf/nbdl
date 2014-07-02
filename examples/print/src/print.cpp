@@ -6,15 +6,9 @@
 #include <jsoncpp/json/json.h>
 #include "Account.h"
 
-Account buildAccount() 
-{ 
-	return Account();
-	//return Account(BackEnd::Ptr(new BackEndPrint("Account"))); 
-}
-
 int main()
 {
-	Account account = buildAccount();
+	auto account = Account();
 	std::string inputJson, outputJson;
 	for (std::string line; std::getline(std::cin, line);)
 		inputJson += line;
@@ -29,7 +23,6 @@ int main()
 	changes["foods"].append(Json::Value(Json::objectValue));
 	changes["foods"].append(Json::Value(Json::objectValue));
 	changes["foods"][1]["name"] = "Some Kind Crazy Food";
-	changes["foods"][2]["foodGroup"]["name"] = "Crazy Food Group";
 	changes["foods"][2]["foodGroup"]["name"] = "Crazy Food Group";
 
 	JsonRead::fromString(inputJson, account);

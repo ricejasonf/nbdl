@@ -11,6 +11,8 @@ class Binder
 	Binder(bool diffMode = false) : _diffMode(diffMode) {}
 	void setDiffMode(bool b = true) { _diffMode = b; }
 
+	inline bool diffMode() { return _diffMode; }
+
 	protected:
 	friend class Entity;
 	//first entity ref is the owner used only to
@@ -26,8 +28,6 @@ class Binder
 	//implemented in Entity.hpp
 	template<typename T>
 	inline void set(Entity &e, T value, T &field);
-
-	inline bool diffMode() { return _diffMode; }
 
 	private:
 

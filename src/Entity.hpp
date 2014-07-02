@@ -26,6 +26,14 @@ Entity::bind(Binder &b, const std::string name, T &field)
 { 
 	b.bind(*this, name, field); 
 }
+template<typename T>
+inline void 
+Entity::bindReadOnly(Binder &b, const std::string name, T &field) 
+{
+	if (b.diffMode()) 
+		return; //silently disregard i guess
+	bind(b, name, field);
+}
 
 template<typename T>
 inline void 
@@ -64,7 +72,8 @@ Entity::Diff::isDirty(T &field, Entity *container)
 }
 
 template<typename T>
-inline void Binder::set(Entity &e, T value, T &field) { e.set(value, field); }
+inline void 
+Binder::set(Entity &e, T value, T &field) { e.set(value, field); }
 
 /*
 client.createContact()

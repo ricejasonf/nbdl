@@ -39,6 +39,9 @@ class Entity
 
 	template<typename T>
 	inline void bind(Binder &b, const std::string name, T &field);
+	template<typename T>
+	inline void bindReadOnly(Binder &b, const std::string name, T &field);
+
 
 	friend class Binder; //for external use of set
 

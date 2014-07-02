@@ -16,8 +16,8 @@ void Account::validate(ErrorBinder &e)
 
 void Account::bindMembers(Binder &b)
 {
-	bind(b, "nameFirst", nameFirst);
-	bind(b, "nameLast", nameLast);
+	bindReadOnly(b, "nameFirst", nameFirst);
+	bindReadOnly(b, "nameLast", nameLast);
 	bind(b, "phoneNumber", phoneNumber);
 	bind(b, "age", age);
 	bind(b, "address", address);
