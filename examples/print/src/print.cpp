@@ -27,7 +27,10 @@ int main()
 	changes["foods"] = Json::Value(Json::arrayValue);
 	changes["foods"].append(Json::Value(Json::objectValue));
 	changes["foods"].append(Json::Value(Json::objectValue));
+	changes["foods"].append(Json::Value(Json::objectValue));
 	changes["foods"][1]["name"] = "Some Kind Crazy Food";
+	changes["foods"][2]["foodGroup"]["name"] = "Crazy Food Group";
+	changes["foods"][2]["foodGroup"]["name"] = "Crazy Food Group";
 
 	JsonRead::fromString(inputJson, account);
 
