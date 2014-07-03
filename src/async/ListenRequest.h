@@ -1,7 +1,7 @@
 #ifndef LISTENREQUEST_H
 #define LISTENREQUEST_H
 
-#include<functional>
+#include<memory>
 
 class ListenRequestBase
 {
@@ -21,22 +21,24 @@ template<class T>
 class ListenRequest
 {
 	//todo use ListenCallbackBase
-	std::function<void(ValueMap, ValueMap)> _notify;
+	std::unique_ptr<ListenCallbackBase> _notify;
 
 	public:
 
 	ListenRequest(std::unique_ptr<PathNode> p) :
 		ListenRequestBase(p) {}
 
-	ListenRequest &notify(std::function<void(ValueMap, ValueMap)> fn)
+	template<typename F>
+	ListenRequest &notify(F&& fn)
 	{
-		_notify = fn;	
+		_notify = std::unique_ptr<ListenCallbackBase>(
+				new ListenCallback(std::forward<F>(fn)));	
 		return *this;
 	}
 
-	void callNotify(ValueMap diff, ValueMap keys) 
+	void callNotify(PathNode &pathNode, Binder &binder)
 	{
-		_notify(diff, keys);
+		_notify->notify(pathNode, binder);
 	}
 
 	T::Ref getEntityRef()

@@ -26,6 +26,7 @@ class Entity
 	bool isNew(); //todo make this function be based off PathNode
 
 	virtual void bindMembers(Binder &) {}
+	inline void applyDiff(Binder &);
 
 	//virtual RelationMap getRelationMap() = 0;
 
@@ -41,6 +42,7 @@ class Entity
 	inline void bind(Binder &b, const std::string name, T &field);
 	template<typename T>
 	inline void bindReadOnly(Binder &b, const std::string name, T &field);
+	inline void bindPathKey(Binder &, const std::string, unsigned int &);
 
 
 	friend class Binder; //for external use of set

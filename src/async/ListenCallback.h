@@ -1,17 +1,22 @@
-#ifndef LISTENREQUESTCALLBACK_H
-#define LISTENREQUESTCALLBACK_H
+#ifndef LISTENCALLBACK_H
+#define LISTENCALLBACK_H
 
-class ListenRequestCallbackBase
+class ListenCallbackBase
 {
 	virtual void notify(PathNodeBase &pathNode, Binder &diff) = 0;
 };
 
 template<typename F>
-class ListenRequestCallback
+class ListenCallback
 {
 	F fn;
 
-	void notify(PathNodeBase &pathNode, Binder &diff)
+	public:
+
+	ListenCallBack(F &&fn) :
+		fn(std::forward<F>(fn)) {}
+
+	void notify(PathNodeBase pathNode, Binder diff)
 	{
 		fn(pathNode, diff);
 	}

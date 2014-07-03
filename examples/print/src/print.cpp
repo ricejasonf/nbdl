@@ -29,13 +29,13 @@ int main()
 
 	std::cout << JsonWrite::toString(account);
 
-	JsonRead changeBinder(changes, true);
-	account.bindMembers(changeBinder);
+	JsonRead changeBinder(changes);
+	account.applyDiff(changeBinder);
 
 	Json::StyledWriter writer;
 	auto root = Json::Value(Json::objectValue);
-	JsonWrite writeBinder(root, true);
-	account.bindMembers(writeBinder);
+	JsonWrite writeBinder(root);
+	account.applyDiff(writeBinder);
 	std::cout << writer.write(root);
 
 	std::cout << JsonWrite::toString(account);
@@ -43,7 +43,7 @@ int main()
 }
 
 	//MyArcusEntityRoot arcus();
-	/*
+/*
 	   the arcusContainer should have the backend pointer and the entity root creates
 	   request objects with callbacks
 	arcusContainer.async(arcus.clients(15).accounts(5)

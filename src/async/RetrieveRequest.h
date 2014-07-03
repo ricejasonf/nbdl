@@ -5,13 +5,8 @@
 
 class RetrieveRequestBase
 {
-	std::unique_ptr<PathNode> pathNode;
-
 	public:
 
-	RetrieveRequestBase(std::unique_ptr<PathNode> p) :
-		pathNode(p) {}
-	RetrieveRequestBase(RetrieveRequestBase &&) {}
 	virtual ~RetrieveRequestBase();
 
 	virtual void callSuccess() = 0;

@@ -7,6 +7,13 @@ Entity::set(T value, T &field)
 	diff.set(value, field, this);
 }
 
+inline void 
+Entity::applyDiff(Binder &binder)
+{
+	binder.setDiffMode(true);	
+	bindMembers(binder);
+}
+
 template<typename T>
 inline ValidatorNumber<T>
 Entity::validateNumber(ErrorBinder &e, T &field)
@@ -31,7 +38,16 @@ inline void
 Entity::bindReadOnly(Binder &b, const std::string name, T &field) 
 {
 	if (b.diffMode()) 
-		return; //silently disregard i guess
+		return;
+	bind(b, name, field);
+}
+inline void 
+Entity::bindPathKey(Binder &b, const std::string name, unsigned int &field) 
+{
+	//prevents modifying a key that is already established
+	//this should be used for every key in the path
+	if (b.diffMode() && field > 0) 
+		return;
 	bind(b, name, field);
 }
 
