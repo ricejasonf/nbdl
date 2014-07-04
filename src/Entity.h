@@ -23,7 +23,7 @@ class Entity
 	template<typename T>
 	inline bool isDirty(T &field);
 	inline bool isDirty();
-	bool isNew(); //todo make this function be based off PathNode
+	virtual bool isNew() = 0;
 
 	virtual void bindMembers(Binder &) {}
 	inline void applyDiff(Binder &);
@@ -45,7 +45,7 @@ class Entity
 	inline void bindPathKey(Binder &, const std::string, unsigned int &);
 
 
-	friend class Binder; //for external use of set
+	friend class Binder; //for external use of set method
 
 	template<typename T>
 	inline void set(T value, T &field);
