@@ -8,8 +8,6 @@ class ChatMessage : public Entity
 	void bindMembers(Binder&);
 	void validate(ErrorBinder&);
 
-	EntityList<ChatMessage> replies;
-
 	unsigned id() { return _id; }
 	unsigned message() { return _message; }
 
@@ -19,6 +17,23 @@ class ChatMessage : public Entity
 	private:
 
 	unsigned _id;
-	unsigned _message;
+	unsigned _parentMessageId;
+	std::string _message;
 	unsigned _mood;
+}
+
+class ChatMessagePath : public PathNode<ChatMessage>
+{
+	public:
+
+	ChatMessagePath(ChatRoomPath room, unsigned id) : 
+		room(room),
+		PathNode<ChatMessage>(id) {}
+
+	std::string getPath() { return getPath(room); }
+
+	private:
+
+	ChatRoomPath room;
+
 }

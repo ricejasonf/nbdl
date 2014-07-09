@@ -43,7 +43,6 @@ int main()
 }
 
 	//MyArcusEntityRoot arcus();
-/*
 	   the arcusContainer should have the backend pointer and the entity root creates
 	   request objects with callbacks
 	arcusContainer.async(arcus.clients(15).accounts(5)
@@ -57,7 +56,6 @@ int main()
 	account
 		.nameFirst("Blah")
 		.age(15)
-		.address(Address().line1("mooo"))
 		.address()
 			.line1("123 Spring Rd.")
 			.city("Henderson")
@@ -66,7 +64,7 @@ int main()
 			.seconds(1045)
 			.miles(1.65))
 		;
-	arcusContainer.async(arcus
+	arcusContainer.async(arcus.clients(15).accounts(5)
 			.save(account)
 				.success([]() {  })
 				.validationFail([]() {  })
@@ -77,27 +75,11 @@ int main()
 			.listen([this](ValueMap diff) {  })
 		);
 			
-	account.getAddress()
+	account.address()
 		.setLine1("123 Spork Rd.")
 		.setCity("Henderson")
 		.setState("NV")
 		.setZip("89015");
 
-	if (!account
-		.setNameFirst("Jow")
-		.setNameLast("Smart")
-		.setPhoneNumber("5553451234")
-		.save())
-	{
-		std::cout << "Validation failed with the following errors:" << std::endl;
-		for (auto &i : account.getErrors())
-		{
-			std::cout << "\t" << i.first << std::endl;
-			for (auto &j : i.second)
-			{
-				std::cout << "\t\t" << j << std::endl;
-			}
-		}
-	}
 }
 	*/

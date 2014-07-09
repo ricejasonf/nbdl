@@ -17,7 +17,6 @@ class EntityListBase
 	virtual void initWithSize(size_type) = 0;
 	virtual size_type size() = 0;
 
-
 };
 
 template<typename T>
@@ -46,12 +45,15 @@ class EntityList : public EntityListBase
 			vec.emplace_back();
 	}
 
-	void add(T entity)
+	T &add()
 	{
-		vec.push_back(entity);
+		vec.push_back(T());
+		return vec.back();
 	}
-
-	private:
+	/*
+		todo - add an entity validator that specifies if the user is 
+		allowed to add new entities to its list
+	*/
 
 	std::vector<T> vec;
 };
