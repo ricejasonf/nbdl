@@ -1,6 +1,14 @@
 #ifndef CHATROOM_H
 #define CHATROOM_H
 
+/*
+
+list users in chat room
+list last 100 messages in chat room with their replies
+render new messages in their appropriate threads
+
+*/
+
 class ChatRoom : public EntityPersistent
 {
 	public:
@@ -27,6 +35,7 @@ class ChatRoomPath : public PathNode<ChatRoom>
 	private:
 
 	//multi index of messages
+	//this should go in a flat cache structure and index by path somehow
 	boost::multi_index_container<
 		ChatMessage,
 		boost::multi_index::indexed_by<

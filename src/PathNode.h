@@ -32,8 +32,9 @@ class PathNode
 	//todo is_base_of EntityPersistent<KEY>
 	static_assert(std::is_base_of<Entity, T>::value, "T must be derived from Entity");
 
-
 	public:
+
+	typedef KEY KeyType;
 
 	PathNode(KEY id) : id(id) {}
 
@@ -53,6 +54,7 @@ class PathNode
 
 template<class T, typename KEY = unsigned>
 class PathNodeCriteria : public PathNodeBase
+{}
 /*
 	get path string from fully built path
 	revert to parent node with concrete type using accessor must be implemented by client
