@@ -42,6 +42,7 @@ int main()
 
 }
 
+/*
 	//MyArcusEntityRoot arcus();
 	   the arcusContainer should have the backend pointer and the entity root creates
 	   request objects with callbacks
@@ -82,4 +83,4 @@ int main()
 		.setZip("89015");
 
 }
-	*/
+*/

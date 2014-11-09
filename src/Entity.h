@@ -23,12 +23,10 @@ class Entity
 	template<typename T>
 	inline bool isDirty(T &field);
 	inline bool isDirty();
-	virtual bool isNew() = 0;
+	bool isNew();
 
 	virtual void bindMembers(Binder &) {}
 	inline void applyDiff(Binder &);
-
-	//virtual RelationMap getRelationMap() = 0;
 
 	virtual void validate(ErrorBinder &errors) = 0;
 

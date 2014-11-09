@@ -20,6 +20,7 @@ inline C&
 	}
 	else if (isBlank())
 		addError("required");
+	return static_cast<C&>(*this);
 }
 
 template<class C, typename T>
@@ -28,6 +29,7 @@ inline C&
 { 
 	if (entity.isDirty(field)) 
 		chain_broken = true; 
+	return static_cast<C&>(*this);
 }
 
 template<class C, typename T>
@@ -36,6 +38,7 @@ inline C&
 {
 	if (!chain_broken && std::find(set.begin(), set.end(), field) == set.end())
 		addError("notInSet");
+	return static_cast<C&>(*this);
 }
 
 template<class C, typename T>
@@ -44,6 +47,7 @@ inline C&
 {
 	if (!chain_broken && set.find(field) != set.end())
 		addError("notInSet");
+	return static_cast<C&>(*this);
 }
 
 template<class C, typename T>
