@@ -1,0 +1,30 @@
+{
+	"nameFirst": "Jason",
+	"nameLast": "Rice",
+	"phoneNumber": "7024569874",
+	"age": 29,
+	"address": {
+		"line1":"123 Spork Rd.",
+		"line2":"",
+		"city":"Las Vegas",
+		"zipCode":"89015",
+		"state":"NV"
+	},
+	"foods": [
+		{ 
+			"id": 1,
+			"name": "Banana", 
+			"foodGroup": { "name": "Fruits" }
+		},
+		{ 
+			"id": 2,
+			"name": "Apple", 
+			"foodGroup": { "name": "Fruits" }
+		},
+		{ 
+			"id": 3,
+			"name": "Meatball", 
+			"foodGroup": { "name": "Meats" }
+		}
+	]
+}

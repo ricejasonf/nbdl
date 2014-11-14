@@ -1,7 +1,7 @@
 #ifndef VALIDATORSTRING_H
 #define VALIDATORSTRING_H
 
-#include "Validator.h"
+#include "Validator.hpp"
 
 class ValidatorString : public Validator<ValidatorString, std::string>
 {

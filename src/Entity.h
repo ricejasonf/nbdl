@@ -21,32 +21,32 @@ class Entity
 
 	bool save(BackEnd &, ErrorBinder&);
 	template<typename T>
-	inline bool isDirty(T &field);
-	inline bool isDirty();
+	bool isDirty(T &field);
+	bool isDirty();
 	bool isNew();
 
 	virtual void bindMembers(Binder &) {}
-	inline void applyDiff(Binder &);
+	void applyDiff(Binder &);
 
 	virtual void validate(ErrorBinder &errors) = 0;
 
 	protected:
 
 	template<typename T>
-	inline ValidatorNumber<T> validateNumber(ErrorBinder &e, T &field);
-	inline ValidatorString validateString(ErrorBinder &e, std::string &field);
+	ValidatorNumber<T> validateNumber(ErrorBinder &e, T &field);
+	ValidatorString validateString(ErrorBinder &e, std::string &field);
 
 	template<typename T>
-	inline void bind(Binder &b, const std::string name, T &field);
+	void bind(Binder &b, const std::string name, T &field);
 	template<typename T>
-	inline void bindReadOnly(Binder &b, const std::string name, T &field);
-	inline void bindPathKey(Binder &, const std::string, unsigned int &);
+	void bindReadOnly(Binder &b, const std::string name, T &field);
+	void bindPathKey(Binder &, const std::string, unsigned int &);
 
 
 	friend class Binder; //for external use of set method
 
 	template<typename T>
-	inline void set(T value, T &field);
+	void set(T value, T &field);
 
 	private:
 
@@ -54,13 +54,13 @@ class Entity
 	{
 		public:
 
-		inline bool isDirty();
+		bool isDirty();
 
 		template<typename TYPE>
-		inline bool isDirty(TYPE &field, Entity *container);
+		bool isDirty(TYPE &field, Entity *container);
 
 		template<typename TYPE>
-		inline void set(TYPE value, TYPE& field, Entity *container);
+		void set(TYPE value, TYPE& field, Entity *container);
 
 		private:
 
@@ -70,6 +70,28 @@ class Entity
 
 };
 #include "Entity.hpp"
-#include "Validator.hpp"
+
+//Validator implementations of convenience methods
+template<class Derived, typename T>
+Derived& Validator<Derived, T>::required()
+{
+	if (entity.isNew())
+	{
+		bool hasValue = entity.isDirty(field);
+		if (hasValue && isBlank())
+			addError("required");	
+		else if (!hasValue)
+			chain_broken = true;
+	}
+	else if (isBlank())
+		addError("required");
+}
+
+template<class Derived, typename T>
+Derived& Validator<Derived, T>::optional() 
+{ 
+	if (entity.isDirty(field)) 
+		chain_broken = true; 
+}
 
 #endif

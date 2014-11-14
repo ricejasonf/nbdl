@@ -1,58 +1,66 @@
-template<class C, typename T>
-inline void 
-	Validator<C, T>::addError(const std::string error) 
-{ 
-	errorBinder.addError(entity, field, error);
-	chain_broken = true; 
-}
+#ifndef VALIDATOR_HPP
+#define VALIDATOR_HPP
 
-template<class C, typename T>
-inline C& 
-	Validator<C, T>::required()
+#include <string>
+#include <vector>
+#include <unordered_set>
+#include <algorithm>
+#include "ErrorBinder.h"
+class Entity;
+
+template<class Derived, typename T>
+class Validator
 {
-	if (entity.isNew())
-	{
-		bool hasValue = entity.isDirty(field);
-		if (hasValue && isBlank())
-			addError("required");	
-		else if (!hasValue)
-			chain_broken = true;
-	}
-	else if (isBlank())
-		addError("required");
-	return static_cast<C&>(*this);
-}
+	public:
 
-template<class C, typename T>
-inline C& 
-	Validator<C, T>::optional() 
-{ 
-	if (entity.isDirty(field)) 
+	Validator(Entity &entity, T &field, ErrorBinder &e) :
+		entity(entity),
+		field(field),
+		errorBinder(e),
+		chain_broken(false) {}
+
+	virtual ~Validator() {}
+
+	void addError(const std::string error)
+	{ 
+		errorBinder.addError(entity, field, error);
 		chain_broken = true; 
-	return static_cast<C&>(*this);
-}
+	}
 
-template<class C, typename T>
-inline C& 
-	Validator<C, T>::inSet(const std::vector<T> set) 
-{
-	if (!chain_broken && std::find(set.begin(), set.end(), field) == set.end())
-		addError("notInSet");
-	return static_cast<C&>(*this);
-}
+	Derived &inSet(const std::vector<T> set)
+	{
+		if (!chain_broken && std::find(set.begin(), set.end(), field) == set.end())
+			addError("notInSet");
+		return static_cast<Derived&>(*this);
+	}
+	Derived &inSet(const std::unordered_set<T> set)
+	{
+		if (!chain_broken && set.find(field) != set.end())
+			addError("notInSet");
+		return static_cast<Derived&>(*this);
+	}
 
-template<class C, typename T>
-inline C& 
-	Validator<C, T>::inSet(const std::unordered_set<T> set) 
-{
-	if (!chain_broken && set.find(field) != set.end())
-		addError("notInSet");
-	return static_cast<C&>(*this);
-}
+	virtual bool isBlank()
+	{ 
+		return false; 
+	}
 
-template<class C, typename T>
-inline bool 
-	Validator<C, T>::isBlank() 
-{ 
-	return false; 
-}
+	//the following are implemented in Entity.hpp
+	Derived &required();
+	Derived &optional();
+
+	protected:
+
+	bool chain_broken;
+
+	Entity &entity;
+	T &field;
+	ErrorBinder &errorBinder;
+};
+
+/*
+	call validate method to populate error container
+	call bindMembers and bind the errors to the binder
+*/
+
+#endif

@@ -23,7 +23,7 @@ void JsonError::bind(Entity &parent, const std::string name, EntityListBase &lis
 	jsonVal[name] = array;
 }
 
-void JsonError:writeErrors(std::string name, std::vector<std::string> errors)
+void JsonError::writeErrors(std::string name, std::vector<std::string> errors)
 {
 	if (!errors.size())
 		return;
