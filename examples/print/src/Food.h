@@ -2,7 +2,7 @@
 #define FOOD_H
 
 #include <string>
-#include <Entity.h>
+#include <Entity.hpp>
 #include "FoodGroup.h"
 
 class Food : public Entity

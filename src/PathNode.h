@@ -4,7 +4,7 @@
 #include<string>
 #include<functional>
 #include<type_traits>
-#include "Entity.h"
+#include "Entity.hpp"
 
 class PathNodeBase
 {

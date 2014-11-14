@@ -1,132 +1,157 @@
-#include<algorithm>
+#ifndef ENTITY_HPP
+#define ENTITY_HPP
 
-template<typename T>
-inline void 
-Entity::set(T value, T &field)
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
+
+#include "ValidatorNumber.h"
+#include "ValidatorString.h"
+#include "Binder.h"
+
+class BackEnd;
+class RelationMap;
+class ErrorBinder;
+
+class Entity
 {
-	diff.set(value, field, this);
-}
+	public:
 
-inline void 
-Entity::applyDiff(Binder &binder)
-{
-	binder.setDiffMode(true);	
-	bindMembers(binder);
-}
+	virtual ~Entity() {}
 
-template<typename T>
-inline ValidatorNumber<T>
-Entity::validateNumber(ErrorBinder &e, T &field)
-{ 
-	return ValidatorNumber<T>(*this, field, e);
-}
+	bool save(BackEnd &, ErrorBinder&);
 
-inline ValidatorString
-Entity::validateString(ErrorBinder &e, std::string &field)
-{ 
-	return ValidatorString(*this, field, e);
-}
+	template<typename T>
+	bool isDirty(T &field)
+	{
+		return diff.isDirty(field, this);
+	}
 
-template<typename T>
-inline void 
-Entity::bind(Binder &b, const std::string name, T &field) 
-{ 
-	b.bind(*this, name, field); 
-}
-template<typename T>
-inline void 
-Entity::bindReadOnly(Binder &b, const std::string name, T &field) 
-{
-	if (b.diffMode()) 
-		return;
-	bind(b, name, field);
-}
-inline void 
-Entity::bindPathKey(Binder &b, const std::string name, unsigned int &field) 
-{
-	//prevents modifying a key that is already established
-	//this should be used for every key in the path
-	if (b.diffMode() && field > 0) 
-		return;
-	bind(b, name, field);
-}
+	bool isDirty()
+	{
+		return diff.isDirty();
+	}
 
-template<typename T>
-inline void 
-Entity::Diff::set(T value, T& field, Entity *container)
-{
-	field = value;
-	dirtyFields.push_back((uintptr_t)&field - (uintptr_t)container);
-}
+	bool isNew()
+	{
+		return false;
+	}
 
-inline bool
-Entity::isDirty()
-{
-	return diff.isDirty();
-}
+	virtual void bindMembers(Binder &) {}
 
-inline bool
-Entity::Diff::isDirty()
-{
-	return dirtyFields.size() > 0;
-}
-template<typename T>
-inline bool 
-Entity::isDirty(T &field)
-{
-	return diff.isDirty(field, this);
-}
+	void applyDiff(Binder &binder)
+	{
+		binder.setDiffMode(true);	
+		bindMembers(binder);
+	}
 
-template<typename T>
-inline bool
-Entity::Diff::isDirty(T &field, Entity *container)
-{
-	return std::find(
-		dirtyFields.begin(),
-		dirtyFields.end(),
-		(uintptr_t)&field - (uintptr_t)container) != dirtyFields.end();
-}
+	virtual void validate(ErrorBinder &errors) = 0;
 
+	protected:
+
+	template<typename T>
+	ValidatorNumber<T> validateNumber(ErrorBinder &e, T &field)
+	{ 
+		return ValidatorNumber<T>(*this, field, e);
+	}
+
+	ValidatorString validateString(ErrorBinder &e, std::string &field)
+	{ 
+		return ValidatorString(*this, field, e);
+	}
+
+	template<typename T>
+	void bind(Binder &b, const std::string name, T &field)
+	{ 
+		b.bind(*this, name, field); 
+	}
+
+	template<typename T>
+	void bindReadOnly(Binder &b, const std::string name, T &field)
+	{
+		if (b.diffMode()) 
+			return;
+		bind(b, name, field);
+	}
+	void bindPathKey(Binder &b, const std::string name, unsigned int &field)
+	{
+		//prevents modifying a key that is already established
+		//this should be used for every key in the path
+		if (b.diffMode() && field > 0) 
+			return;
+		bind(b, name, field);
+	}
+
+	friend class Binder; //for external use of set method
+
+	template<typename T>
+	void set(T value, T &field)
+	{
+		diff.set(value, field, this);
+	}
+
+	private:
+
+	class Diff
+	{
+		public:
+
+		bool isDirty()
+		{
+			return dirtyFields.size() > 0;
+		}
+
+		template<typename TYPE>
+		bool isDirty(TYPE &field, Entity *container)
+		{
+			return std::find(
+				dirtyFields.begin(),
+				dirtyFields.end(),
+				(uintptr_t)&field - (uintptr_t)container) != dirtyFields.end();
+		}
+
+		template<typename TYPE>
+		void set(TYPE value, TYPE& field, Entity *container)
+		{
+			field = value;
+			dirtyFields.push_back((uintptr_t)&field - (uintptr_t)container);
+		}
+
+		private:
+
+		std::vector<unsigned int> dirtyFields;
+	};
+	Diff diff;
+
+};
+
+//Binder implementation
 template<typename T>
 inline void 
 Binder::set(Entity &e, T value, T &field) { e.set(value, field); }
 
-/*
-client.createContact()
-	.setName("blah")
-	.setEmail("blah@bah.com")
-	.save();
-
-client.getContact(5)
-	.setName("blah")
-	.setEmail("blah@bah.com")
-	.save();
-
-Contact Client::createContact()
+//Validator implementation of convenience methods
+template<class Derived, typename T>
+Derived& Validator<Derived, T>::required()
 {
-	Contact contact = Contact();
-	contact.setClientId(getId());
-	return contact;
+	if (entity.isNew())
+	{
+		bool hasValue = entity.isDirty(field);
+		if (hasValue && isBlank())
+			addError("required");	
+		else if (!hasValue)
+			chain_broken = true;
+	}
+	else if (isBlank())
+		addError("required");
 }
 
-bool Contact::validate()
-{
-	validateEmail("Email");
-	validateString("NameFirst")
-		.required()
-		.matches("^[A-Za-z'\\-]*$")
-		.max(50)
-		.min(2)
-		;
-	validatePhoneNumber("Phone");
-	validateIntUnsigned("ClientId")
-		.required()
-		.min(1)
-		;
-	validateIntUnsigned("Age")
-		.min(18)
-		.max(150)
-		;
-	normalize();
+template<class Derived, typename T>
+Derived& Validator<Derived, T>::optional() 
+{ 
+	if (entity.isDirty(field)) 
+		chain_broken = true; 
 }
-*/
+
+#endif

@@ -1,6 +1,6 @@
 #include<string>
 #include "ValidatorString.h"
-#include "Entity.h"
+#include "Entity.hpp"
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>

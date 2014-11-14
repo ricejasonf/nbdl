@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 
-#include "Entity.h"
+#include "Entity.hpp"
 #include "BackEnd.h"
 
 bool Entity::save(BackEnd &backEnd, ErrorBinder &errors)
@@ -35,10 +35,5 @@ bool Entity::save(BackEnd &backEnd, ErrorBinder &errors)
 	if (transactionStartedHere)
 		backEnd.commit();
 	*/
-	return true;
-}
-
-bool Entity::isNew()
-{
 	return true;
 }

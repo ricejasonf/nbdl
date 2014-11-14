@@ -1,7 +1,7 @@
 #include<stdexcept>
 #include<jsoncpp/json/json.h>
 #include "JsonRead.h"
-#include "../Entity.h"
+#include "../Entity.hpp"
 #include "../EntityList.h"
 
 JsonRead::JsonRead(const Json::Value &value, bool diffMode) :

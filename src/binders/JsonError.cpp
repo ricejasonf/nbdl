@@ -1,5 +1,5 @@
 #include<jsoncpp/json/json.h>
-#include "../Entity.h"
+#include "../Entity.hpp"
 #include "../EntityList.h"
 #include "JsonError.h"
 

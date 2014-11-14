@@ -1,5 +1,5 @@
 #include "ErrorBinder.h"
-#include "Entity.h"
+#include "Entity.hpp"
 
 void ErrorBinder::validateChild(Entity &entity, ErrorBinder &e)
 {

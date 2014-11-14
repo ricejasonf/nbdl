@@ -2,7 +2,7 @@
 #define ACCOUNT_H
 
 #include <string>
-#include <Entity.h>
+#include <Entity.hpp>
 #include <EntityList.h>
 #include "Address.h"
 #include "Food.h"

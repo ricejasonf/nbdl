@@ -2,7 +2,7 @@
 #define ADDRESS_H
 
 #include <string>
-#include <Entity.h>
+#include <Entity.hpp>
 
 class Address : public Entity
 {
