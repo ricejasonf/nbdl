@@ -1,5 +1,5 @@
-#ifndef VALIDATORSTRING_H
-#define VALIDATORSTRING_H
+#ifndef VALIDATORSTRING_HPP
+#define VALIDATORSTRING_HPP
 
 #include "Validator.hpp"
 
@@ -17,42 +17,5 @@ class ValidatorString : public Validator<ValidatorString, std::string>
 
 	bool isBlank();
 };
-
-/*
- * IMPL
- */
-ValidatorString &
-	ValidatorString::minLen(const int l) 
-{ 
-	if (!chain_broken && field.size() < l) 
-		addError("tooShort"); 
-	return *this; 
-}
-ValidatorString &
-	ValidatorString::maxLen(const int l) 
-{ 
-	if (!chain_broken && field.size() > l) 
-		addError("tooLong"); 
-	return *this; 
-}
-ValidatorString &
-	ValidatorString::asEmail() 
-{ 
-	if (!chain_broken)
-		matches("^[a-zA-Z0-9\\-_\\.\\+]+@[a-zA-Z0-9_\\-]+(\\.[a-zA-Z0-9_\\-]+)*$"); 
-	return *this; 
-}
-ValidatorString &
-	ValidatorString::allDigits()
-{ 
-	if (!chain_broken)
-		matches("^[0-9]*$"); 
-	return *this; 
-}
-bool 
-	ValidatorString::isBlank() 
-{ 
-	return field.size() > 0;	
-}
 
 #endif
