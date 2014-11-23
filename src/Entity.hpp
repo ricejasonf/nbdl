@@ -31,7 +31,7 @@ class Entity
 
 	bool isNew()
 	{
-		return false;
+		return true;
 	}
 
 	virtual void bindMembers(Binder &) {}
