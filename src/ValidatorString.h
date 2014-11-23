@@ -9,14 +9,50 @@ class ValidatorString : public Validator<ValidatorString, std::string>
 
 	ValidatorString(Entity &entity, std::string &field, ErrorBinder &e) : 
 		Validator<ValidatorString, std::string>(entity, field, e) {}
-	inline ValidatorString &minLen(const int);
-	inline ValidatorString &maxLen(const int);
-	inline ValidatorString &asEmail();
-	inline ValidatorString &allDigits();
+	ValidatorString &minLen(const int);
+	ValidatorString &maxLen(const int);
+	ValidatorString &asEmail();
+	ValidatorString &allDigits();
 	ValidatorString &matches(const std::string reg, const std::string errorToken = "invalid");
 
-	inline bool isBlank();
+	bool isBlank();
 };
-#include "ValidatorString.hpp"
+
+/*
+ * IMPL
+ */
+ValidatorString &
+	ValidatorString::minLen(const int l) 
+{ 
+	if (!chain_broken && field.size() < l) 
+		addError("tooShort"); 
+	return *this; 
+}
+ValidatorString &
+	ValidatorString::maxLen(const int l) 
+{ 
+	if (!chain_broken && field.size() > l) 
+		addError("tooLong"); 
+	return *this; 
+}
+ValidatorString &
+	ValidatorString::asEmail() 
+{ 
+	if (!chain_broken)
+		matches("^[a-zA-Z0-9\\-_\\.\\+]+@[a-zA-Z0-9_\\-]+(\\.[a-zA-Z0-9_\\-]+)*$"); 
+	return *this; 
+}
+ValidatorString &
+	ValidatorString::allDigits()
+{ 
+	if (!chain_broken)
+		matches("^[0-9]*$"); 
+	return *this; 
+}
+bool 
+	ValidatorString::isBlank() 
+{ 
+	return field.size() > 0;	
+}
 
 #endif

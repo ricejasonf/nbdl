@@ -79,4 +79,16 @@ class RelationMap
 	std::string name;
 };
 
+/* example ripped from print example
+RelationMap Account::getRelationMap()
+{
+	static auto map = RelationMap("account")
+		.requireOwner(RelationMap::OneToOne("client"))
+		.addMember(RelationMap::OneToOne("address"))
+		.addMember(RelationMap::OneToMany("address"))
+		.addMember(RelationMap::ManyToMany("contact"))
+		;
+	return map;
+}
+*/
 #endif

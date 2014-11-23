@@ -23,7 +23,6 @@ class Account : public Entity
 		*/
 
 		void validate(ErrorBinder &);
-		RelationMap getRelationMap();
 
 	private:
 

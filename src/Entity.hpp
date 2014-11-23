@@ -6,12 +6,10 @@
 #include <unordered_map>
 #include <algorithm>
 
-#include "ValidatorNumber.h"
-#include "ValidatorString.h"
+#include "ValidatorNumber.hpp"
+#include "ValidatorString.hpp"
 #include "Binder.h"
 
-class BackEnd;
-class RelationMap;
 class ErrorBinder;
 
 class Entity
@@ -19,8 +17,6 @@ class Entity
 	public:
 
 	virtual ~Entity() {}
-
-	bool save(BackEnd &, ErrorBinder&);
 
 	template<typename T>
 	bool isDirty(T &field)

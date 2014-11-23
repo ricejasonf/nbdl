@@ -1,5 +1,4 @@
 #include "Account.h"
-#include "RelationMap.h"
 
 void Account::validate(ErrorBinder &e)
 {
@@ -24,13 +23,3 @@ void Account::bindMembers(Binder &b)
 	bind(b, "foods", foods);
 }
 
-RelationMap Account::getRelationMap()
-{
-	static auto map = RelationMap("account")
-		.requireOwner(RelationMap::OneToOne("client"))
-		.addMember(RelationMap::OneToOne("address"))
-		.addMember(RelationMap::OneToMany("address"))
-		.addMember(RelationMap::ManyToMany("contact"))
-		;
-	return map;
-}

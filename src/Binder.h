@@ -27,7 +27,7 @@ class Binder
 
 	//implemented in Entity.hpp
 	template<typename T>
-	inline void set(Entity &e, T value, T &field);
+	void set(Entity &e, T value, T &field);
 
 	private:
 
