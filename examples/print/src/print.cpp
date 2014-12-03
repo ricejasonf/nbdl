@@ -53,7 +53,7 @@ int main()
 				.fail([]() {  })
 		);
 	
-	auto account = arcus.clients(15).accounts(5).create();
+	Account account = arcus.clients(15).accounts(5).create();
 	account
 		.nameFirst("Blah")
 		.age(15)

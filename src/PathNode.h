@@ -26,19 +26,17 @@ class PathNodeBase
 	std::string _getPath() { return "/" + getName() + "/" + getKey(); } 
 };
 
-template<class T, typename KEY = unsigned>
+template<class T, typename KeyType = unsigned>
 class PathNode
 {
-	//todo is_base_of EntityPersistent<KEY>
-	static_assert(std::is_base_of<Entity, T>::value, "T must be derived from Entity");
+	static_assert(std::is_base_of<EntityPersistent<KeyType>, T>::value, 
+			"T must be derived from EntityPersistent<KeyType>");
 
 	public:
 
-	typedef KEY KeyType;
+	PathNode(KeyType id) : id(id) {}
 
-	PathNode(KEY id) : id(id) {}
-
-	KEY id;
+	KeyType id;
 	T create() { return T(id); }
 
 	RetrieveCallback<T> retrieve() 
@@ -51,13 +49,5 @@ class PathNode
 	SaveCallback<T> save(T entity) 
 		{ return SaveCallback<T>(*this, entity); }
 };
-
-template<class T, typename KEY = unsigned>
-class PathNodeCriteria : public PathNodeBase
-{}
-/*
-	get path string from fully built path
-	revert to parent node with concrete type using accessor must be implemented by client
-*/
 
 #endif

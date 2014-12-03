@@ -9,6 +9,7 @@ class Binder
 	public:
 
 	Binder(bool diffMode = false) : _diffMode(diffMode) {}
+	virtual ~Binder() {}
 	void setDiffMode(bool b = true) { _diffMode = b; }
 
 	inline bool diffMode() { return _diffMode; }

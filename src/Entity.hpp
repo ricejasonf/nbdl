@@ -29,7 +29,7 @@ class Entity
 		return diff.isDirty();
 	}
 
-	bool isNew()
+	virtual bool isNew()
 	{
 		return true;
 	}
@@ -141,13 +141,15 @@ Derived& Validator<Derived, T>::required()
 	}
 	else if (isBlank())
 		addError("required");
+	return static_cast<Derived &>(*this);
 }
 
 template<class Derived, typename T>
 Derived& Validator<Derived, T>::optional() 
 { 
-	if (entity.isDirty(field)) 
+	if (!entity.isDirty(field)) 
 		chain_broken = true; 
+	return static_cast<Derived &>(*this);
 }
 
 #endif

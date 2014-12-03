@@ -22,4 +22,3 @@ void Account::bindMembers(Binder &b)
 	bind(b, "address", address);
 	bind(b, "foods", foods);
 }
-
