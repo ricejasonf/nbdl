@@ -71,6 +71,7 @@ class Entity
 		return diff.isDirty();
 	}
 
+	//todo deprecate
 	void applyDiff(Binder &binder)
 	{
 		binder.setDiffMode(true);	
@@ -100,7 +101,7 @@ class Entity
 	template<typename T>
 	void member(Binder &b, const std::string name, T &field)
 	{ 
-		b.bind(*this, name, field); 
+		b.bindMember(*this, name, field); 
 	}
 
 	//not used yet

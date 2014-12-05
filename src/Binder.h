@@ -4,35 +4,41 @@
 class Entity;
 class EntityListBase;
 
+template<class Derived>
 class Binder
 {
+	bool _diffMode;
+
 	public:
 
+	//todo move diffMode stuff out of base Binder class
 	Binder(bool diffMode = false) : _diffMode(diffMode) {}
 	virtual ~Binder() {}
 	void setDiffMode(bool b = true) { _diffMode = b; }
 
-	inline bool diffMode() { return _diffMode; }
+	bool diffMode() { return _diffMode; }
+
+	//if EntityType is derived from Entity use that
+   	//to prevent code bloat. otherwise allow ad hoc types
+	template<class EntityType, typename T>
+	typename std::enable_if<!std::is_base_of<Entity, EntityType>::value>::type
+		bindMember(EntityType &entity, const std::string name, T &field)
+	{
+		static_cast<Derived*>(this)->bind(entity, name, field);
+	}
+	template<typename T>
+	void bindMember(Entity &entity, const std::string name, T &field)
+	{
+		static_cast<Derived*>(this)->bind(entity, name, field);
+	}
 
 	protected:
-	friend class Entity;
-	//first entity ref is the owner used only to
-	//determine dirtyness when it is needed
-	virtual void bind(Entity &, const std::string, bool &) = 0;
-	virtual void bind(Entity &, const std::string, unsigned int &) = 0;
-	virtual void bind(Entity &, const std::string, int &) = 0;
-	virtual void bind(Entity &, const std::string, double &) = 0;
-	virtual void bind(Entity &, const std::string, std::string &) = 0;
-	virtual void bind(Entity &, const std::string, Entity &) = 0;
-	virtual void bind(Entity &, const std::string, EntityListBase &) = 0;
 
-	//implemented in Entity.hpp
+	//implemented in Entity.hpp because 
+	//it calls members of Entity (for convenience)
 	template<typename T>
 	void set(Entity &e, T value, T &field);
 
-	private:
-
-	bool _diffMode;
 };
 
 #endif

@@ -4,11 +4,11 @@
 #include<string>
 #include<vector>
 #include<unordered_map>
-#include "Binder.h"
+#include "Binder.hpp"
 #include<stdint.h>
 class Entity;
 
-class ValidationBinder : public Binder
+class ValidationBinder : public Binder<ValidationBinder>
 {
 	public:
 
