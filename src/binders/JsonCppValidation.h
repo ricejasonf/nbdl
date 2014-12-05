@@ -1,14 +1,14 @@
-#ifndef JSONERROR_H
-#define JSONERROR_H
+#ifndef JSONCPPVALIDATION_H
+#define JSONCPPVALIDATION_H
 
 class Entity;
 class EntityListBase;
 
-class JsonError : public ErrorBinder
+class JsonCppValidation : public ValidationBinder
 {
 	public:
 
-	JsonError(Json::Value &value) :
+	JsonCppValidation(Json::Value &value) :
 		jsonVal(value) {}
 
 	template<typename T>

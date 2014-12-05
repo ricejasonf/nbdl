@@ -14,7 +14,7 @@ class ValidatorNumber : public Validator<ValidatorNumber<T>, T>
 {
 	public:
 
-	ValidatorNumber(Entity &entity, T &field, ErrorBinder &e) :
+	ValidatorNumber(Entity &entity, T &field, ValidationBinder &e) :
 		Validator<ValidatorNumber, T>(entity, field, e) {} 
 
 	inline ValidatorNumber &max(const T v);
@@ -28,7 +28,8 @@ template<typename T>
 inline ValidatorNumber<T> &
 	ValidatorNumber<T>::max(const T v)
 {
-	if (this->field > v) this->addError("tooBig");
+	if (!this->isChainBroken() && this->field > v) 
+		this->addError("tooBig");
 	return *this;
 }
 
@@ -36,7 +37,8 @@ template<typename T>
 inline ValidatorNumber<T> &
 	ValidatorNumber<T>::min(const T v)
 {
-	if (this->field < v) this->addError("tooSmall");
+	if (!this->isChainBroken() && this->field < v) 
+		this->addError("tooSmall");
 	return *this;
 }
 

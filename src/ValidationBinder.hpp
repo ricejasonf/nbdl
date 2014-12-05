@@ -1,5 +1,5 @@
-#ifndef ERRORBINDER_H
-#define ERRORBINDER_H
+#ifndef VALIDATIONBINDER_HPP
+#define VALIDATIONBINDER_HPP
 
 #include<string>
 #include<vector>
@@ -8,19 +8,23 @@
 #include<stdint.h>
 class Entity;
 
-class ErrorBinder : public Binder
+class ValidationBinder : public Binder
 {
 	public:
 
-	ErrorBinder() : _hasErrors(false) {}
+	ValidationBinder() : 
+		hasErrors_(false),
+		isUpdate_(false)
+   	{}
 
 	template<typename T>
 	void addError(Entity &entity, T &field, const std::string error)
 	{
-		_hasErrors = true;
+		hasErrors_ = true;
 		errors[(uintptr_t)&field - (uintptr_t)&entity].push_back(error);
 	}
-	bool hasErrors() { return _hasErrors; }
+	bool hasErrors() { return hasErrors_; }
+	bool isUpdate() { return isUpdate_; }
 
 	protected:
 
@@ -30,11 +34,12 @@ class ErrorBinder : public Binder
 		return errors[(uintptr_t)&field - (uintptr_t)&entity];
 	}
 
-	void validateChild(Entity &entity, ErrorBinder &e);
+	void validateChild(Entity &entity, ValidationBinder &e);
 
 	private:
 
-	bool _hasErrors;
+	bool isUpdate_;
+	bool hasErrors_;
 	std::unordered_map<uintptr_t, std::vector<std::string>> errors;
 };
 

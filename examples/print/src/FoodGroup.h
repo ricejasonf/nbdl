@@ -8,12 +8,12 @@ class FoodGroup : public Entity
 {
 	std::string name;
 
+	void members(Binder &b);
+	void validate(ValidationBinder &);
+
 	public:
 
-		//FoodGroup &setName(const std::string v) { set(v, name); return *this; }
-
-		void validate(ErrorBinder &);
-		void bindMembers(Binder &b);
+	//FoodGroup &setName(const std::string v) { set(v, name); return *this; }
 };
 
 #endif

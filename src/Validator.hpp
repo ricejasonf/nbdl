@@ -5,37 +5,47 @@
 #include <vector>
 #include <unordered_set>
 #include <algorithm>
-#include "ErrorBinder.h"
+#include "ValidationBinder.hpp"
 class Entity;
 
 template<class Derived, typename T>
 class Validator
 {
+	ValidationBinder &validationBinder;
+	Entity &entity;
+	bool chainBroken_;
+
 	public:
 
-	Validator(Entity &entity, T &field, ErrorBinder &e) :
+	Validator(Entity &entity, T &field, ValidationBinder &e) :
 		entity(entity),
 		field(field),
-		errorBinder(e),
-		chain_broken(false) {}
+		validationBinder(e),
+		chainBroken_(false) {}
 
 	virtual ~Validator() {}
 
+	bool isUpdate()
+	{
+		return validationBinder.isUpdate();
+	}
+
 	void addError(const std::string error)
 	{ 
-		errorBinder.addError(entity, field, error);
-		chain_broken = true; 
+		validationBinder.addError(entity, field, error);
+		chainBroken_ = true; 
 	}
 
 	Derived &inSet(const std::vector<T> set)
 	{
-		if (!chain_broken && std::find(set.begin(), set.end(), field) == set.end())
+		if (!chainBroken_ && std::find(set.begin(), set.end(), field) == set.end())
 			addError("notInSet");
 		return static_cast<Derived&>(*this);
 	}
+
 	Derived &inSet(const std::unordered_set<T> set)
 	{
-		if (!chain_broken && set.find(field) != set.end())
+		if (!chainBroken_ && set.find(field) != set.end())
 			addError("notInSet");
 		return static_cast<Derived&>(*this);
 	}
@@ -51,16 +61,11 @@ class Validator
 
 	protected:
 
-	bool chain_broken;
-
-	Entity &entity;
 	T &field;
-	ErrorBinder &errorBinder;
+	bool isChainBroken()
+	{ 
+		return chainBroken_;
+	}
 };
-
-/*
-	call validate method to populate error container
-	call bindMembers and bind the errors to the binder
-*/
 
 #endif

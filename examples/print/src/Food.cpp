@@ -1,15 +1,15 @@
 #include "Food.h"
 
-void Food::validate(ErrorBinder &e)
+void Food::validate(ValidationBinder &e)
 {
 	validateString(e, name)
 		.required()
 		.maxLen(50);
 }
 
-void Food::bindMembers(Binder &b)
+void Food::members(Binder &b)
 {
-	bind(b, "id", id);
-	bind(b, "name", name);
-	bind(b, "foodGroup", foodGroup);
+	member(b, "id", id);
+	member(b, "name", name);
+	member(b, "foodGroup", foodGroup);
 }

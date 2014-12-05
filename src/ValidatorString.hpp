@@ -7,7 +7,7 @@ class ValidatorString : public Validator<ValidatorString, std::string>
 {
 	public:
 
-	ValidatorString(Entity &entity, std::string &field, ErrorBinder &e) : 
+	ValidatorString(Entity &entity, std::string &field, ValidationBinder &e) : 
 		Validator<ValidatorString, std::string>(entity, field, e) {}
 	ValidatorString &minLen(const int);
 	ValidatorString &maxLen(const int);

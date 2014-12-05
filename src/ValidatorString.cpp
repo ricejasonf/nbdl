@@ -12,7 +12,7 @@ ValidatorString::matches(const std::string r, const std::string token)
 		var regStr = Pointer_stringify($1);
 		return value.match(new RegExp(regStr)) !== null;
 	}, field.c_str(), r.c_str());
-	if (!chain_broken && !match)
+	if (!isChainBroken() && !match)
 		addError(token); 
 }
 #else
@@ -20,7 +20,7 @@ ValidatorString::matches(const std::string r, const std::string token)
 ValidatorString & 
 ValidatorString::matches(const std::string r, const std::string token) 
 { 
-	if (!chain_broken 
+	if (!isChainBroken() 
 			&& !boost::regex_match(field, boost::regex(r, boost::regex::ECMAScript)))
 		addError(token); 
 }
@@ -29,28 +29,28 @@ ValidatorString::matches(const std::string r, const std::string token)
 ValidatorString &
 	ValidatorString::minLen(const int l) 
 { 
-	if (!chain_broken && field.size() < l) 
+	if (!isChainBroken() && field.size() < l) 
 		addError("tooShort"); 
 	return *this; 
 }
 ValidatorString &
 	ValidatorString::maxLen(const int l) 
 { 
-	if (!chain_broken && field.size() > l) 
+	if (!isChainBroken() && field.size() > l) 
 		addError("tooLong"); 
 	return *this; 
 }
 ValidatorString &
 	ValidatorString::asEmail() 
 { 
-	if (!chain_broken)
+	if (!isChainBroken())
 		matches("^[a-zA-Z0-9\\-_\\.\\+]+@[a-zA-Z0-9_\\-]+(\\.[a-zA-Z0-9_\\-]+)*$"); 
 	return *this; 
 }
 ValidatorString &
 	ValidatorString::allDigits()
 { 
-	if (!chain_broken)
+	if (!isChainBroken())
 		matches("^[0-9]*$"); 
 	return *this; 
 }

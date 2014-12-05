@@ -8,7 +8,7 @@ set(CMAKE_BUILD_TYPE Debug)
 add_library(arcus STATIC 
 	binders/JsonWrite.cpp
 	binders/JsonRead.cpp
-	#ErrorBinder.cpp
+	ValidationBinder.cpp
 	ValidatorString.cpp
 	)
 

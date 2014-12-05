@@ -1,13 +1,13 @@
 #include "FoodGroup.h"
 
-void FoodGroup::validate(ErrorBinder &e)
+void FoodGroup::validate(ValidationBinder &e)
 {
 	validateString(e, name)
 		.required()
 		.maxLen(50);
 }
 
-void FoodGroup::bindMembers(Binder &b)
+void FoodGroup::members(Binder &b)
 {
-	bind(b, "name", name);
+	member(b, "name", name);
 }

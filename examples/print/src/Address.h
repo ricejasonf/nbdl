@@ -6,6 +6,15 @@
 
 class Address : public Entity
 {
+	std::string line1;
+	std::string line2;
+	std::string city;
+	std::string state;
+	std::string zipCode;
+
+	void members(Binder &);
+	void validate(ValidationBinder &);
+
 	public:
 
 	/*
@@ -15,16 +24,6 @@ class Address : public Entity
 	Address &setZipCode(const std::string &v) { set("zipCode", v); return *this; }
 	*/
 
-	void validate(ErrorBinder &);
-	void bindMembers(Binder &);
-
-	private:
-
-	std::string line1;
-	std::string line2;
-	std::string city;
-	std::string state;
-	std::string zipCode;
 };
 
 #endif

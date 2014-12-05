@@ -1,6 +1,6 @@
 #include "Address.h"
 
-void Address::validate(ErrorBinder &e)
+void Address::validate(ValidationBinder &e)
 {
 	validateString(e, line1)
 		.required()
@@ -18,11 +18,11 @@ void Address::validate(ErrorBinder &e)
 		.matches("^[A-Z]{2}$");
 }
 
-void Address::bindMembers(Binder &b)
+void Address::members(Binder &b)
 {
-	bind(b, "line1", line1);
-	bind(b, "line2", line2);
-	bind(b, "city", city);
-	bind(b, "state", state);
-	bind(b, "zipCode", zipCode);
+	member(b, "line1", line1);
+	member(b, "line2", line2);
+	member(b, "city", city);
+	member(b, "state", state);
+	member(b, "zipCode", zipCode);
 }

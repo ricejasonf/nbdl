@@ -1,6 +1,6 @@
 #include "Account.h"
 
-void Account::validate(ErrorBinder &e)
+void Account::validate(ValidationBinder &e)
 {
 	validateString(e, nameFirst)
 		.required()
@@ -13,12 +13,12 @@ void Account::validate(ErrorBinder &e)
 		.matches("^[0-9]{10}$");
 }
 
-void Account::bindMembers(Binder &b)
+void Account::members(Binder &b)
 {
-	bind(b, "nameFirst", nameFirst);
-	bind(b, "nameLast", nameLast);
-	bind(b, "phoneNumber", phoneNumber);
-	bind(b, "age", age);
-	bind(b, "address", address);
-	bind(b, "foods", foods);
+	member(b, "nameFirst", nameFirst);
+	member(b, "nameLast", nameLast);
+	member(b, "phoneNumber", phoneNumber);
+	member(b, "age", age);
+	member(b, "address", address);
+	member(b, "foods", foods);
 }

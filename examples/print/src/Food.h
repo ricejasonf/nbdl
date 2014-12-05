@@ -7,19 +7,13 @@
 
 class Food : public Entity
 {
-	public:
+	void members(Binder &);
+	void validate(ValidationBinder &);
 
-		//Food &setName(const std::string &v) { set("Name", v); return *this; }
+	unsigned id;
+	std::string name;
 
-		void bindMembers(Binder &);
-		void validate(ErrorBinder &);
-
-	private:
-
-		unsigned id;
-		std::string name;
-
-		FoodGroup foodGroup;
+	FoodGroup foodGroup;
 };
 
 #endif
