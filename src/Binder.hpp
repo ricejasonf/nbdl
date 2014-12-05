@@ -1,5 +1,5 @@
-#ifndef BINDER_H
-#define BINDER_H
+#ifndef BINDER_HPP
+#define BINDER_HPP
 
 class Entity;
 class EntityListBase;

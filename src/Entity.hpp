@@ -8,7 +8,7 @@
 
 #include "ValidatorNumber.hpp"
 #include "ValidatorString.hpp"
-#include "Binder.h"
+#include "Binder.hpp"
 
 class ValidationBinder;
 
