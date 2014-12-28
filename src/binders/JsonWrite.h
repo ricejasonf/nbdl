@@ -1,26 +1,43 @@
 #ifndef JSONWRITE_H
 #define JSONWRITE_H
 
-class Entity;
-class EntityListBase;
+#include<string>
+#include<jsoncpp/json/json.h>
+#include "../Binder.hpp"
 
-class JsonWrite : public Binder
+class JsonWrite : public Binder<JsonWrite>
 {
 	public:
 
-	JsonWrite(Json::Value &value, bool diffMode = false) :
+	JsonWrite(Json::Value &value) :
 		jsonVal(value), 
-		Binder(diffMode) {}
+		Binder() {}
 
-	static std::string toString(Entity &entity);
+	template<class Entity>
+	static std::string toString(Entity &entity)
+	{
+		Json::StyledWriter writer;
+		Json::Value root;
+		JsonWrite r(root);
+		entity.bindMembers(r);
+		return writer.write(root);
+	}
 
-	void bind(Entity &parent, const std::string name, bool & field);
-	void bind(Entity &parent, const std::string name, unsigned int & field);
-	void bind(Entity &parent, const std::string name, int & field);
-	void bind(Entity &parent, const std::string name, double & field);
-	void bind(Entity &parent, const std::string name, std::string & field);
-	void bind(Entity &parent, const std::string name, Entity &entity);
-	void bind(Entity &parent, const std::string name, EntityListBase &list);
+	template<typename T>
+	void bind(const std::string name, T & field)
+	{ 
+		jsonVal[name] = field; 
+	}
+
+	template<class Entity>
+	void bindEntity(const std::string name, Entity &entity)
+	{
+		auto obj = Json::Value(Json::objectValue);
+		JsonWrite writer(obj);
+		entity.bindMembers(writer);
+		if (obj.size())
+			jsonVal[name] = obj;
+	}
 			
 	private: 
 	

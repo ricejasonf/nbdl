@@ -9,8 +9,10 @@
 #include "ValidatorNumber.hpp"
 #include "ValidatorString.hpp"
 
+class EntityBase {};
+
 template<class Impl>
-class Entity
+class Entity : public EntityBase
 {
 	Impl *impl() 
 	{
@@ -19,6 +21,7 @@ class Entity
 
 	public:
 
+	template<class ValidationBinder>
 	void runValidation(ValidationBinder &binder)
 	{
 		validate(binder);
@@ -30,18 +33,31 @@ class Entity
 		impl()->members(binder);
 	}
 
+	//non mutable entities are considered dirty
+	bool isDirty(void)
+	{
+		return true;
+	}
+	template<typename T>
+	bool isDirty(T &field)
+	{
+		return true;
+	}
+
 	protected:
 
 	template<class ValidationBinder, typename T>
-	ValidatorNumber<T> validateNumber(ValidationBinder &e, T &field)
+	ValidatorNumber<ValidationBinder, Entity, T> 
+		validateNumber(ValidationBinder &e, T &field)
 	{ 
-		return ValidatorNumber<ValidationBinder, T>(*this, field, e);
+		return ValidatorNumber<ValidationBinder, Entity, T>(*this, field, e);
 	}
 
 	template<class ValidationBinder>
-	ValidatorString validateString(ValidationBinder &e, std::string &field)
+	ValidatorString<ValidationBinder, Entity> 
+		validateString(ValidationBinder &e, std::string &field)
 	{ 
-		return ValidatorString<ValidationBinder>(*this, field, e);
+		return ValidatorString<ValidationBinder, Entity>(*this, field, e);
 	}
 
 	template<class Binder, typename T>

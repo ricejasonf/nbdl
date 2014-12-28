@@ -1,6 +1,8 @@
 #ifndef BINDER_HPP
 #define BINDER_HPP
 
+#include "Entity.hpp"
+
 template<class Impl>
 class Binder
 {
@@ -8,13 +10,13 @@ class Binder
 
 	template<typename T>
 	typename std::enable_if<!std::is_base_of<EntityBase, T>::value>::type
-	void bindMember(const std::string name, T &field)
+		bindMember(const std::string name, T &field)
 	{
 		static_cast<Impl*>(this)->bind(name, field);
 	}
 
 	template<typename T>
-	typename std::enable_if<!std::is_base_of<EntityBase, T>::value>::type
+	typename std::enable_if<std::is_base_of<EntityBase, T>::value>::type
 		bindMember(const std::string name, T &field)
 	{
 		static_cast<Impl*>(this)->bindEntity(name, field);

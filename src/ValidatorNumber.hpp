@@ -7,16 +7,14 @@
 
 #include "Validator.hpp"
 
-class Entity;
-
-template<class ValidationBinder, class Entity, typename T>
+template<class ValidationBinder, class EntityType, typename T>
 class ValidatorNumber : public Validator<ValidatorNumber<ValidationBinder, EntityType, T>, T>
 {
 	public:
 
 	typedef ValidationBinder ValidationBinderType;
 
-	ValidatorNumber(Entity &entity, T &field, ValidationBinder &e) :
+	ValidatorNumber(EntityType &entity, T &field, ValidationBinder &e) :
 		Validator<ValidatorNumber, T>(entity, field, e) {} 
 
 	ValidatorNumber &max(const T v)

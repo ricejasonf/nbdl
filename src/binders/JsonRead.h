@@ -29,7 +29,7 @@ class JsonRead : public Binder<JsonRead>
 	JsonRead(const Json::Value &value, bool diffMode = false);
 
 	template<class EntityType>
-	static void fromString(std::string &json, EntityType &entity);
+	static void fromString(std::string &json, EntityType &entity)
 	{
 		Json::Reader reader;
 		Json::Value root;

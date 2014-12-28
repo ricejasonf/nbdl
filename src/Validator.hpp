@@ -21,7 +21,7 @@ class Validator
 
 	public:
 
-	Validator(EntityType &entity, T &field, ValidationBinderType &e) :
+	Validator(Entity &entity, T &field, ValidationBinder &e) :
 		entity(entity),
 		field(field),
 		validationBinder(e),
@@ -82,6 +82,7 @@ class Validator
 	}
 
 	T &field;
+
 	bool isChainBroken()
 	{ 
 		return chainBroken_;
