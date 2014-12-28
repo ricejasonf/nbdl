@@ -4,18 +4,30 @@
 #include<string>
 #include<vector>
 #include<unordered_map>
-#include "Binder.hpp"
 #include<stdint.h>
-class Entity;
+#include"Binder.hpp"
 
-class ValidationBinder : public Binder<ValidationBinder>
-{
+template<class Impl>
+class ValidationBinder : public Binder<Impl>
+j
+	bool hasErrors_;
+	bool isUpdate_;
+	std::unordered_map<uintptr_t, std::vector<std::string>> errors;
+
 	public:
 
 	ValidationBinder() : 
 		hasErrors_(false),
 		isUpdate_(false)
    	{}
+
+	bool isUpdate() { return isUpdate_; }
+
+	template<typename T>
+	std::vector<std::string> getErrors(Entity &entity, T &field)
+	{
+		return errors[(uintptr_t)&field - (uintptr_t)&entity];
+	}
 
 	template<typename T>
 	void addError(Entity &entity, T &field, const std::string error)
@@ -24,23 +36,16 @@ class ValidationBinder : public Binder<ValidationBinder>
 		errors[(uintptr_t)&field - (uintptr_t)&entity].push_back(error);
 	}
 	bool hasErrors() { return hasErrors_; }
-	bool isUpdate() { return isUpdate_; }
 
 	protected:
 
-	template<typename T>
-	std::vector<std::string> getErrors(Entity &entity, T &field)
+	template<class EntityType, class ValidationBinderType>
+	void validateChild(EntityType &entity, ValidationBinderType &e);
 	{
-		return errors[(uintptr_t)&field - (uintptr_t)&entity];
+		entity.runValidation(e);
+		entity.bindMembers(e);
+		hasErrors_ = hasErrors_ || e.hasErrors();
 	}
-
-	void validateChild(Entity &entity, ValidationBinder &e);
-
-	private:
-
-	bool isUpdate_;
-	bool hasErrors_;
-	std::unordered_map<uintptr_t, std::vector<std::string>> errors;
 };
 
 #endif

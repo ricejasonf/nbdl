@@ -5,25 +5,27 @@
 #include <vector>
 #include <unordered_set>
 #include <algorithm>
-#include "ValidationBinder.hpp"
-class Entity;
 
-template<class Derived, typename T>
+template<class Impl>
+struct ValidatorTraits;
+
+template<class Impl, typename T>
 class Validator
 {
+	typedef typename ValidatorTraits<Impl>::ValidationBinder ValidationBinder;
+	typedef typename ValidatorTraits<Impl>::Entity Entity;
 	ValidationBinder &validationBinder;
 	Entity &entity;
+
 	bool chainBroken_;
 
 	public:
 
-	Validator(Entity &entity, T &field, ValidationBinder &e) :
+	Validator(EntityType &entity, T &field, ValidationBinderType &e) :
 		entity(entity),
 		field(field),
 		validationBinder(e),
 		chainBroken_(false) {}
-
-	virtual ~Validator() {}
 
 	bool isUpdate()
 	{
@@ -36,30 +38,48 @@ class Validator
 		chainBroken_ = true; 
 	}
 
-	Derived &inSet(const std::vector<T> set)
+	Impl &inSet(const std::vector<T> set)
 	{
 		if (!chainBroken_ && std::find(set.begin(), set.end(), field) == set.end())
 			addError("notInSet");
-		return static_cast<Derived&>(*this);
+		return static_cast<Impl&>(*this);
 	}
 
-	Derived &inSet(const std::unordered_set<T> set)
+	Impl &inSet(const std::unordered_set<T> set)
 	{
 		if (!chainBroken_ && set.find(field) != set.end())
 			addError("notInSet");
-		return static_cast<Derived&>(*this);
+		return static_cast<Impl&>(*this);
 	}
 
-	virtual bool isBlank()
+	Impl& required()
+	{
+		if (!isUpdate())
+		{
+			bool hasValue = entity.isDirty(field);
+			if (hasValue && isBlank())
+				addError("required");	
+			else if (!hasValue)
+				chainBroken_ = true;
+		}
+		else if (isBlank())
+			addError("required");
+		return static_cast<Impl &>(*this);
+	}
+
+	Impl& optional() 
 	{ 
-		return false; 
+		if (!entity.isDirty(field)) 
+			chainBroken_ = true; 
+		return static_cast<Impl &>(*this);
 	}
-
-	//the following are implemented in Entity.hpp
-	Derived &required();
-	Derived &optional();
 
 	protected:
+
+	bool isBlank()
+	{ 
+		return static_cast<Impl*>(this)->isBlank();
+	}
 
 	T &field;
 	bool isChainBroken()

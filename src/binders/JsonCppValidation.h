@@ -1,10 +1,12 @@
 #ifndef JSONCPPVALIDATION_H
 #define JSONCPPVALIDATION_H
 
+#include "ValidationBinder.hpp"
+
 class Entity;
 class EntityListBase;
 
-class JsonCppValidation : public ValidationBinder
+class JsonCppValidation : public ValidationBinder<JsonCppValidation>
 {
 	public:
 
@@ -17,6 +19,7 @@ class JsonCppValidation : public ValidationBinder
 		writeErrors(getErrors(parent, value));
 	}
 
+	//todo needs sfinae for bases of Entity
 	void bind(Entity &parent, const std::string name, Entity &entity);
 	void bind(Entity &parent, const std::string name, EntityListBase &list);
 			

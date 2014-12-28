@@ -9,37 +9,36 @@
 
 class Entity;
 
-template<typename T>
-class ValidatorNumber : public Validator<ValidatorNumber<T>, T>
+template<class ValidationBinder, class Entity, typename T>
+class ValidatorNumber : public Validator<ValidatorNumber<ValidationBinder, EntityType, T>, T>
 {
 	public:
+
+	typedef ValidationBinder ValidationBinderType;
 
 	ValidatorNumber(Entity &entity, T &field, ValidationBinder &e) :
 		Validator<ValidatorNumber, T>(entity, field, e) {} 
 
-	inline ValidatorNumber &max(const T v);
-	inline ValidatorNumber &min(const T v);
+	ValidatorNumber &max(const T v)
+	{
+		if (!this->isChainBroken() && this->field > v) 
+			this->addError("tooBig");
+		return *this;
+	}
+	ValidatorNumber &min(const T v)
+	{
+		if (!this->isChainBroken() && this->field < v) 
+			this->addError("tooSmall");
+		return *this;
+	}
 };
 
-/*
- * IMPL
- */
-template<typename T>
-inline ValidatorNumber<T> &
-	ValidatorNumber<T>::max(const T v)
+//ValidatorTraits specialization
+template<class ValidationBinderType, class EntityType, typename T>
+struct ValidatorTraits<ValidatorNumber<ValidationBinderType, EntityType, T>>
 {
-	if (!this->isChainBroken() && this->field > v) 
-		this->addError("tooBig");
-	return *this;
-}
-
-template<typename T>
-inline ValidatorNumber<T> &
-	ValidatorNumber<T>::min(const T v)
-{
-	if (!this->isChainBroken() && this->field < v) 
-		this->addError("tooSmall");
-	return *this;
-}
+	typedef ValidationBinderType ValidationBinder;
+	typedef EntityType Entity;
+};
 
 #endif

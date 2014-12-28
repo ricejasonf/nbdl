@@ -8,8 +8,8 @@ set(CMAKE_BUILD_TYPE Debug)
 add_library(arcus STATIC 
 	binders/JsonWrite.cpp
 	binders/JsonRead.cpp
-	ValidationBinder.cpp
-	ValidatorString.cpp
+	#ValidationBinder.cpp
+	#ValidatorString.cpp
 	)
 
 include(../arcus.cmake)

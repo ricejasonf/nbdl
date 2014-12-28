@@ -1,9 +1,9 @@
 #include<string>
 #include "ValidatorString.hpp"
-//#include "Entity.hpp"
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
+template
 ValidatorString & 
 ValidatorString::matches(const std::string r, const std::string token) 
 { 
@@ -17,6 +17,7 @@ ValidatorString::matches(const std::string r, const std::string token)
 }
 #else
 #include <boost/regex.hpp>
+template
 ValidatorString & 
 ValidatorString::matches(const std::string r, const std::string token) 
 { 
@@ -26,6 +27,7 @@ ValidatorString::matches(const std::string r, const std::string token)
 }
 #endif
 
+template
 ValidatorString &
 	ValidatorString::minLen(const int l) 
 { 
@@ -33,6 +35,7 @@ ValidatorString &
 		addError("tooShort"); 
 	return *this; 
 }
+template
 ValidatorString &
 	ValidatorString::maxLen(const int l) 
 { 
@@ -40,6 +43,7 @@ ValidatorString &
 		addError("tooLong"); 
 	return *this; 
 }
+template
 ValidatorString &
 	ValidatorString::asEmail() 
 { 
@@ -47,6 +51,7 @@ ValidatorString &
 		matches("^[a-zA-Z0-9\\-_\\.\\+]+@[a-zA-Z0-9_\\-]+(\\.[a-zA-Z0-9_\\-]+)*$"); 
 	return *this; 
 }
+template
 ValidatorString &
 	ValidatorString::allDigits()
 { 
@@ -54,6 +59,7 @@ ValidatorString &
 		matches("^[0-9]*$"); 
 	return *this; 
 }
+template
 bool 
 	ValidatorString::isBlank() 
 { 
