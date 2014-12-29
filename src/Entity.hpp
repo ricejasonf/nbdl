@@ -63,7 +63,7 @@ class Entity : public EntityBase
 	template<class Binder, typename T>
 	void member(Binder &b, const std::string name, T &field)
 	{ 
-		b.bindMember(*this, name, field); 
+		b.bindMember(name, field); 
 	}
 };
 

@@ -22,7 +22,7 @@ void JsonWrite::bind(const std::string name, std::string & field)
 { 
 	jsonVal[name] = field; 
 }
-/* 
+/* will need this code when we reintroduce lists 
 void JsonWrite::bind(const std::string name, EntityListBase &list)
 {
 	auto array = Json::Value(Json::arrayValue);

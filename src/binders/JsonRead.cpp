@@ -1,8 +1,5 @@
 #include<stdexcept>
-#include<jsoncpp/json/json.h>
 #include "JsonRead.h"
-#include "../Entity.hpp"
-#include "../EntityList.h"
 
 JsonRead::JsonRead(const Json::Value &value) :
 	jsonVal(value)
@@ -51,14 +48,15 @@ void JsonRead::bind(const std::string name, std::string &field)
 	field = obj.asString();
 }
 
-void JsonRead::createObjectReader(const std::string name)
+JsonRead JsonRead::createObjectReader(const std::string name)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isObject())
 		throw std::runtime_error("JSON Object expected");
-	return JsonRead reader(obj);
+	return JsonRead(obj);
 }
 
+/* i'm getting rid of 'lists' for now but will need this code
 void JsonRead::bind(const std::string name, EntityListBase &list)
 {
 	const Json::Value &array = jsonVal[name];
@@ -75,3 +73,4 @@ void JsonRead::bind(const std::string name, EntityListBase &list)
 			break;
 	}
 }
+*/

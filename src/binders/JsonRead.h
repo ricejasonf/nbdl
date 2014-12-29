@@ -1,9 +1,9 @@
 #ifndef JSONREAD_H
 #define JSONREAD_H
 
+#include<string>
+#include<jsoncpp/json/json.h>
 #include "../Binder.hpp"
-
-namespace Json { class Value; }
 
 class JsonRead : public Binder<JsonRead>
 {
@@ -17,16 +17,17 @@ class JsonRead : public Binder<JsonRead>
 	template<class EntityType>
 	void bindEntity(const std::string name, EntityType &entity)
 	{
-		//i'm not sure if this is where you would use std::move
-		entity.bindMembers(createObjectReader(name));
+		JsonRead reader = createObjectReader(name);
+		entity.bindMembers(reader);
 	}
+
 	JsonRead createObjectReader(const std::string name);
 
 	const Json::Value &jsonVal;
 
 	public:
 
-	JsonRead(const Json::Value &value, bool diffMode = false);
+	JsonRead(const Json::Value &value);
 
 	template<class EntityType>
 	static void fromString(std::string &json, EntityType &entity)

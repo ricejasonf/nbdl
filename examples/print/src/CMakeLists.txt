@@ -7,10 +7,10 @@ set(CMAKE_BUILD_TYPE Debug)
 
 add_executable(print
 	print.cpp
-	Account.cpp
-	Address.cpp
-	Food.cpp
-	FoodGroup.cpp
+	#Account.cpp
+	#Address.cpp
+	#Food.cpp
+	#FoodGroup.cpp
 	)
 
 SET(LIBARCUS_DIR

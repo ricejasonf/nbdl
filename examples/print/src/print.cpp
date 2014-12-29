@@ -13,6 +13,11 @@ int main()
 	for (std::string line; std::getline(std::cin, line);)
 		inputJson += line;
 
+	JsonRead::fromString(inputJson, account);
+
+	std::cout << JsonWrite::toString(account);
+
+	/*
 	Json::Value changes(Json::objectValue);
 	changes["nameLast"] = "Fartface";
 	changes["age"] = 34;
@@ -24,18 +29,14 @@ int main()
 	changes["foods"].append(Json::Value(Json::objectValue));
 	changes["foods"][1]["name"] = "Some Kind Crazy Food";
 	changes["foods"][2]["foodGroup"]["name"] = "Crazy Food Group";
-
-	JsonRead::fromString(inputJson, account);
-
-	std::cout << JsonWrite::toString(account);
-
 	JsonRead changeBinder(changes);
 	account.applyDiff(changeBinder);
+	*/
 
 	Json::StyledWriter writer;
 	auto root = Json::Value(Json::objectValue);
 	JsonWrite writeBinder(root);
-	account.applyDiff(writeBinder);
+	account.bindMembers(writeBinder);
 	std::cout << writer.write(root);
 
 	std::cout << JsonWrite::toString(account);

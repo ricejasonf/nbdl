@@ -4,7 +4,7 @@
 #include <string>
 #include <Entity.hpp>
 
-class Address : public Entity
+class Address : public Entity<Address>
 {
 	std::string line1;
 	std::string line2;
@@ -12,18 +12,36 @@ class Address : public Entity
 	std::string state;
 	std::string zipCode;
 
-	void members(Binder &);
-	void validate(ValidationBinder &);
+	friend class Entity<Address>;
 
-	public:
+	template<class ValidationBinder>
+	void validate(ValidationBinder &e)
+	{
+		validateString(e, line1)
+			.required()
+			.maxLen(50);
+		validateString(e, line2)
+			.optional()
+			.maxLen(50);
+		validateString(e, zipCode)
+			.required()
+			.matches("^[0-9]{5}$");
+		validateString(e, city)
+			.required();
+		validateString(e, state)
+			.required()
+			.matches("^[A-Z]{2}$");
+	}
 
-	/*
-	Address &setLine1(const std::string &v) { set("line1", v); return *this; }
-	Address &setLine2(const std::string &v) { set("line2", v); return *this; }
-	Address &setCity(const std::string &v) { set("city", v); return *this; }
-	Address &setZipCode(const std::string &v) { set("zipCode", v); return *this; }
-	*/
-
+	template<class Binder>
+	void members(Binder &b)
+	{
+		member(b, "line1", line1);
+		member(b, "line2", line2);
+		member(b, "city", city);
+		member(b, "state", state);
+		member(b, "zipCode", zipCode);
+	}
 };
 
 #endif
