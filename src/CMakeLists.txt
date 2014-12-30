@@ -6,8 +6,8 @@ add_definitions(-std=c++11)
 set(CMAKE_BUILD_TYPE Debug)
 
 add_library(arcus STATIC 
-	#binders/JsonWrite.cpp
 	binders/JsonRead.cpp
+	binders/JsonCppApplyDiff.cpp
 	Regex.cpp
 	)
 

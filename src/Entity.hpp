@@ -19,6 +19,13 @@ class Entity : public EntityBase
 		return static_cast<Impl *>(this);
 	}
 
+	//friend class EntityMutable<Impl>;
+	template<typename T>
+	uintptr_t memberOffset(T &member)
+	{
+		return (uintptr_t)&member - (uintptr_t)impl();
+	}
+
 	public:
 
 	template<class ValidationBinder>

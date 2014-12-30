@@ -3,11 +3,13 @@
 
 #include <binders/JsonRead.h>
 #include <binders/JsonWrite.h>
+#include <binders/JsonCppApplyDiff.hpp>
 #include <jsoncpp/json/json.h>
 #include "Account.h"
 
 int main()
 {
+	Json::StyledWriter writer;
 	auto account = Account();
 	std::string inputJson, outputJson;
 	for (std::string line; std::getline(std::cin, line);)
@@ -17,7 +19,6 @@ int main()
 
 	std::cout << JsonWrite::toString(account);
 
-	/*
 	Json::Value changes(Json::objectValue);
 	changes["nameLast"] = "Fartface";
 	changes["age"] = 34;
@@ -29,18 +30,14 @@ int main()
 	changes["foods"].append(Json::Value(Json::objectValue));
 	changes["foods"][1]["name"] = "Some Kind Crazy Food";
 	changes["foods"][2]["foodGroup"]["name"] = "Crazy Food Group";
-	JsonRead changeBinder(changes);
-	account.applyDiff(changeBinder);
-	*/
+	std::cout << writer.write(changes);
+	JsonCppApplyDiff changeBinder(changes);
+	account.bindMembers(changeBinder);
 
-	Json::StyledWriter writer;
-	auto root = Json::Value(Json::objectValue);
+	Json::Value root(Json::objectValue);
 	JsonWrite writeBinder(root);
 	account.bindMembers(writeBinder);
 	std::cout << writer.write(root);
-
-	std::cout << JsonWrite::toString(account);
-
 }
 
 /*
