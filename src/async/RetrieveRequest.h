@@ -12,25 +12,26 @@ class RetrieveRequestBase
 	virtual void callSuccess() = 0;
 	virtual void callNotFound() = 0;
 	virtual void callFail() = 0;
-	virtual Entity::Ref getEntityRef() = 0;
 };
 
-template<class T>
+template<class Entity>
 class RetrieveRequest
 {
-	std::function<void(T)> _success;
-	std::function<void()> _notFound;
-	std::function<void()> _fail;
-	T entity;
+	RequestRetrieveSuccess<Entity> success_;
+	RequestResourceNotFound notFound_;
+	RequestFail fail_;
+
+	Entity entity;
 
 	public:
 
 	RetrieveRequest(std::unique_ptr<PathNode> p) :
 		RetrieveRequestBase(p) {}
 
-	RetrieveRequest &success(std::function<void, T> fn)
+	template<class Fn>
+	RetrieveRequest &success(Fn fn)
 	{
-		_success = fn;	
+		success_ = fn;	
 		return *this;
 	}
 

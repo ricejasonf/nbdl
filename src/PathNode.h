@@ -1,10 +1,20 @@
 #ifndef PATHNODE_H
 #define PATHNODE_H
 
+#include<stdint.h>
 #include<string>
-#include<functional>
-#include<type_traits>
 #include "Entity.hpp"
+
+template<KeyType = uint32_t>
+struct Id
+{
+	KeyType id;
+	std::string localId;
+
+	Id(KeyType id = 0, localId = 0) :
+		id(id),
+		localId(localId) {}
+}
 
 class PathNodeBase
 {
@@ -26,28 +36,34 @@ class PathNodeBase
 	std::string _getPath() { return "/" + getName() + "/" + getKey(); } 
 };
 
-template<class T, typename KeyType = unsigned>
+template<class Impl, class Entity, class ParentPathNode, typename KeyType = Id>
 class PathNode
 {
-	static_assert(std::is_base_of<EntityPersistent<KeyType>, T>::value, 
-			"T must be derived from EntityPersistent<KeyType>");
+	ParentPathNode parent_;
+	KeyType id_;
 
 	public:
 
-	PathNode(KeyType id) : id(id) {}
+	PathNode(KeyType id) : id_(id) {}
 
-	KeyType id;
-	T create() { return T(id); }
+	KeyType id() { return id_; }
+	ParentPathNode parent() { return parent_; }
 
-	RetrieveCallback<T> retrieve() 
-		{ return RetrieveCallback<T>(*this); }
+};
 
-	ListenCallback<T, std::reference_wrapper<Binder>> 
-		listen(std::function<T, std::reference_wrapper<Binder>> fn) 
-		{ return ListenCallback<T, std::reference_wrapper<Binder>>(*this, fn); }
-
-	SaveCallback<T> save(T entity) 
-		{ return SaveCallback<T>(*this, entity); }
+class ClientPathNode : public PathNode<ClientPathNode, Client>
+{
+	void register()
+	{
+		RootPath::registerChild(*this);
+	}
+};
+class PropertyPathNode : public PathNode<PropertyPathNode, Property, ClientPathNode>
+{
+	const char *parentKeyName()
+	{
+		return "clientId";
+	}
 };
 
 #endif
