@@ -1,44 +1,69 @@
 #include<string>
 #include<iostream>
+#include<stdexcept>
 
-template<class Owner, typename... MemberTypes>
-class MemberMap {};
-
-template<class Owner, typename MemberType, typename... MemberTypes>
-class MemberMap<Owner, MemberType, MemberTypes...> : public MemberMap<Owner, MemberTypes...>
+template<class Owner, typename T> 
+struct MemberPtr
 {
-	MemberType Owner::*tail;
+	using OwnerType = Owner;
+	T Owner::* ptr;
+
+	constexpr MemberPtr(T Owner::*p) :
+		ptr(p) 
+	{}
+};
+template<class Owner, typename T>
+constexpr MemberPtr<Owner, T> memberPtr(T Owner::*ptr)
+{
+	return MemberPtr<Owner, T>(ptr);
+}
+
+template<class Owner, typename... Mptrs>
+class MemberMap 
+{
+	public:
+	
+	constexpr MemberMap(Mptrs... m) {}
+
+	template<typename T>
+	constexpr int map(T Owner::*p, int i = 0)
+	{
+		return false ? -1 : throw std::out_of_range("Not a mapped member");
+	}
+};
+
+template<class Owner, typename Mptr, typename... Mptrs>
+class MemberMap<Owner, Mptr, Mptrs...> 
+	: public MemberMap<Owner, Mptrs...>
+{
+	const uintptr_t tail;
 
 	public:
 
-	template<typename... MemberPtrs>
-	constexpr MemberMap(MemberType Owner::*m, MemberPtrs... ptrs) :
-		MemberMap<Owner, MemberTypes...>(ptrs...)
-		tail(m)
+	constexpr MemberMap(Mptr mptr1, Mptrs... mptrN) :
+		MemberMap<Owner, Mptrs...>(mptrN...),
+		tail(offset(mptr1))
 	{}
 
-	/*
-	template<typename MemberPtr>
-	constexpr int map(Owner Mtype::*p, int i = 0)
+	template<typename T>
+	constexpr uintptr_t offset(MemberPtr<Owner, T> p)
 	{
-		return ((uintptr_t)&((Owner*)nullptr->*p) - (uintptr_t)nullptr) 
-			== thisOffset() ? i : 
-			
+		return (const uintptr_t)&((Owner*)nullptr->*p.ptr) - (const uintptr_t)nullptr;
 	}
-	constexpr int thisOffset()
+
+	template<typename T>
+	constexpr int map(T Owner::*p, int i = 0)
 	{
-		return (uintptr_t)&((Owner*)nullptr->*tail) - (uintptr_t)nullptr;
+		return  (offset(memberPtr(p)) == tail) ? i : 
+			MemberMap<Owner, Mptrs...>::map(p, i + 1);
 	}
-	*/
 };
 
-template<class Owner, typename MemberType, typename... Args>
-MemberMap<Owner, MemberType, Args...>
-	memberMap(MemberType Owner::*p1, Args... args)
+template<class Mptr, typename... Mptrs>
+constexpr MemberMap<typename Mptr::OwnerType, Mptr, Mptrs...>
+	memberMap(Mptr p1, Mptrs... pN)
 {
-	MemberMap<Owner, MemberType, Args...> moo(p1, args...);
-	return moo;
-	//return MemberMap<Owner, MemberType, Args...>moo(&Owner::p1, Args... args);
+	return MemberMap<typename Mptr::OwnerType, Mptr, Mptrs...>(p1, pN...);
 }
 
 template<class Impl>
@@ -53,12 +78,40 @@ class Moo : public Base<Moo>
 	int frequency;
 	int duration;
 	std::string cow;
+	int outOf;
 };
+
+class Fart
+{
+	public:
+	int frequency;
+};
+
+template<class Owner, typename T>
+constexpr int map(T Owner::*p)
+{
+	return memberMap(
+		memberPtr(&Moo::frequency),
+		memberPtr(&Moo::duration),
+		memberPtr(&Moo::cow) ).map(p);
+}
 
 int main()
 {
-	auto m = memberMap(
-		&Moo::frequency,
-		&Moo::duration,
-		&Moo::cow);
+	/*
+	constexpr auto m = memberMap(
+		memberPtr(&Moo::frequency),
+		memberPtr(&Moo::duration),
+		memberPtr(&Moo::cow) );
+		*/
+	constexpr int x = map(&Moo::outOf) + map(&Moo::duration);
+	std::cout << map(&Moo::frequency);
+	std::cout << std::endl;
+	std::cout << map(&Moo::duration);
+	std::cout << std::endl;
+	std::cout << map(&Moo::cow);
+	std::cout << std::endl;
+	std::cout << map(&Moo::outOf);
+	std::cout << std::endl;
+
 }
