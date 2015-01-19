@@ -59,6 +59,11 @@ struct MemberSet
 {
 	using Offsets = NumberSet<Ms::offset...>;
 
+	template<typename M>
+	static constexpr int indexOf()
+	{
+		return Offsets::template indexOf<M::offset>();
+	}
 };
 
 struct Moo
@@ -90,6 +95,7 @@ int main()
 		Member<Moo, int, &Moo::duration>,
 		Member<Moo, std::string, &Moo::name>>;
 
-	std::cout << MooMembers::Offsets::template indexOf<Member<Moo, std::string, &Moo::name>::offset>();
+	//std::cout << MooMembers::Offsets::template indexOf<Member<Moo, std::string, &Moo::name>::offset>();
+	std::cout << MooMembers::template indexOf<Member<Moo, std::string, &Moo::name>>();
 	std::cout << std::endl;
 }
