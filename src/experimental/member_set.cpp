@@ -61,7 +61,7 @@ struct Member
 	static constexpr uintptr_t offset = (uintptr_t)&((Owner*)nullptr->*p);
 	static constexpr T Owner::*ptr = p;
 };
-#define MEMBER(mptr) Member<typename MemberTraits<decltype(mptr)>::OwnerType, typename MemberTraits<decltype(mptr)>::MemberType, mptr>
+#define NBDL_MEMBER(mptr) Member<typename MemberTraits<decltype(mptr)>::OwnerType, typename MemberTraits<decltype(mptr)>::MemberType, mptr>
 
 template<typename... Ms>
 struct MemberSet
@@ -86,18 +86,18 @@ int main()
 {
 
 	using MooMembers = MemberSet<
-		MEMBER(&Moo::freq),
-		MEMBER(&Moo::duration),
-		MEMBER(&Moo::name) >;
+		NBDL_MEMBER(&Moo::freq),
+		NBDL_MEMBER(&Moo::duration),
+		NBDL_MEMBER(&Moo::name) >;
 
 	//std::cout << MooMembers::Offsets::template indexOf<Member<Moo, std::string, &Moo::name>::offset>();
-	std::cout << MooMembers::template indexOf<MEMBER(&Moo::freq)>();
+	std::cout << MooMembers::template indexOf<NBDL_MEMBER(&Moo::freq)>();
 	std::cout << std::endl;
-	std::cout << MooMembers::template indexOf<MEMBER(&Moo::duration)>();
+	std::cout << MooMembers::template indexOf<NBDL_MEMBER(&Moo::duration)>();
 	std::cout << std::endl;
-	std::cout << MooMembers::template indexOf<MEMBER(&Moo::name)>();
+	std::cout << MooMembers::template indexOf<NBDL_MEMBER(&Moo::name)>();
 	std::cout << std::endl;
-	using namePtr = MEMBER(&Moo::name);
+	using namePtr = NBDL_MEMBER(&Moo::name);
 	Moo moo = Moo();
 	moo.name = "fart";	
 	std::cout << moo.name;
