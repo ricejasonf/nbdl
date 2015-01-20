@@ -63,6 +63,17 @@ struct Member
 };
 #define NBDL_MEMBER(mptr) Member<typename MemberTraits<decltype(mptr)>::OwnerType, typename MemberTraits<decltype(mptr)>::MemberType, mptr>
 
+template<class Format, class Mptr>
+struct MemberName
+{
+	static constexpr const char *name = "undefined";
+};
+
+#define NBDL_MEMBER_NAME(Owner, member_name) \
+template<class Format> \
+struct MemberName<Format, NBDL_MEMBER(&Owner::member_name)> \
+{ static constexpr const char *name = #member_name; };
+
 template<typename... Ms>
 struct MemberSet
 {
@@ -81,6 +92,10 @@ struct Moo
 	int duration;
 	std::string name;
 };
+
+NBDL_MEMBER_NAME(Moo, freq)
+NBDL_MEMBER_NAME(Moo, duration)
+NBDL_MEMBER_NAME(Moo, name)
 
 int main()
 {
@@ -103,6 +118,12 @@ int main()
 	std::cout << moo.name;
 	std::cout << std::endl;
 	std::cout << moo.*namePtr::ptr;
+	std::cout << std::endl;
+	std::cout << MemberName<int, NBDL_MEMBER(&Moo::freq)>::name;
+	std::cout << std::endl;
+	std::cout << MemberName<int, NBDL_MEMBER(&Moo::duration)>::name;
+	std::cout << std::endl;
+	std::cout << MemberName<int, NBDL_MEMBER(&Moo::name)>::name;
 	std::cout << std::endl;
 }
 
