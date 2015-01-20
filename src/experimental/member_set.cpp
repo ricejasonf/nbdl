@@ -60,6 +60,7 @@ struct Member
 	using OwnerType = Owner;
 	using MemberType = T;
 	static constexpr uintptr_t offset = (uintptr_t)&((Owner*)nullptr->*p);
+	static constexpr T Owner::*ptr = p;
 };
 #define MEMBER(mptr) Member<typename MemberTraits<decltype(mptr)>::OwnerType, typename MemberTraits<decltype(mptr)>::MemberType, mptr>
 
@@ -97,4 +98,12 @@ int main()
 	std::cout << std::endl;
 	std::cout << MooMembers::template indexOf<MEMBER(&Moo::name)>();
 	std::cout << std::endl;
+	using namePtr = MEMBER(&Moo::name);
+	Moo moo = Moo();
+	moo.name = "fart";	
+	std::cout << moo.name;
+	std::cout << std::endl;
+	std::cout << moo.*namePtr::ptr;
+	std::cout << std::endl;
 }
+
