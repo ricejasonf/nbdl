@@ -1,7 +1,6 @@
 #include<type_traits>
 #include<iostream>
 #include<string>
-#include<cstddef>
 
 template<uintptr_t p1, uintptr_t... pN>
 struct NumberSet : NumberSet<pN...>
@@ -46,6 +45,15 @@ struct NumberSet<p>
 	}
 };
 
+template<typename T>
+struct MemberTraits;
+template<class Owner, typename T>
+struct MemberTraits<T Owner::*>
+{
+	using OwnerType = Owner;
+	using MemberType = T;
+};
+
 template<class Owner, typename T, T Owner::*p>
 struct Member
 {
@@ -53,6 +61,7 @@ struct Member
 	using MemberType = T;
 	static constexpr uintptr_t offset = (uintptr_t)&((Owner*)nullptr->*p);
 };
+#define MEMBER(mptr) Member<typename MemberTraits<decltype(mptr)>::OwnerType, typename MemberTraits<decltype(mptr)>::MemberType, mptr>
 
 template<typename... Ms>
 struct MemberSet
@@ -75,27 +84,17 @@ struct Moo
 
 int main()
 {
-	typedef NumberSet<0, 4, 8, 12> X;
-	std::cout << X::indexOf<0>();
-	std::cout << std::endl;
-	std::cout << X::indexOf<4>();
-	std::cout << std::endl;
-	std::cout << X::indexOf<8>();
-	std::cout << std::endl;
-	std::cout << X::indexOf<12>();
-	std::cout << std::endl;
-	std::cout << X::at(2);
-	std::cout << std::endl;
-	std::cout << "size: " << X::size();
-	std::cout << std::endl;
-	//std::cout << X::indexOf<5>(); //should fail static assert (Not in set.)
 
 	using MooMembers = MemberSet<
-		Member<Moo, int, &Moo::freq>,
-		Member<Moo, int, &Moo::duration>,
-		Member<Moo, std::string, &Moo::name>>;
+		MEMBER(&Moo::freq),
+		MEMBER(&Moo::duration),
+		MEMBER(&Moo::name) >;
 
 	//std::cout << MooMembers::Offsets::template indexOf<Member<Moo, std::string, &Moo::name>::offset>();
-	std::cout << MooMembers::template indexOf<Member<Moo, std::string, &Moo::name>>();
+	std::cout << MooMembers::template indexOf<MEMBER(&Moo::freq)>();
+	std::cout << std::endl;
+	std::cout << MooMembers::template indexOf<MEMBER(&Moo::duration)>();
+	std::cout << std::endl;
+	std::cout << MooMembers::template indexOf<MEMBER(&Moo::name)>();
 	std::cout << std::endl;
 }
