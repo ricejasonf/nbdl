@@ -3,6 +3,8 @@
 
 #include "Entity.hpp"
 
+namespace nbdl {
+
 template<class Impl>
 class Binder
 {
@@ -22,5 +24,7 @@ class Binder
 		static_cast<Impl*>(this)->bindEntity(name, field);
 	}
 };
+
+}//nbdl
 
 #endif

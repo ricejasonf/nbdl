@@ -6,14 +6,22 @@
 #include <unordered_map>
 #include <algorithm>
 
+#include "MemberSet.hpp"
 #include "ValidatorNumber.hpp"
 #include "ValidatorString.hpp"
+
+namespace nbdl {
+
+template<typename Impl>
+struct EntityTraits;
 
 class EntityBase {};
 
 template<class Impl>
 class Entity : public EntityBase
 {
+	using Members = typename EntityTraits<Impl>::Members;
+
 	Impl *impl() 
 	{
 		return static_cast<Impl *>(this);
@@ -74,4 +82,5 @@ class Entity : public EntityBase
 	}
 };
 
+} //nbdl
 #endif

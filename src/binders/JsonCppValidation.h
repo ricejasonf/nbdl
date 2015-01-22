@@ -3,6 +3,8 @@
 
 #include "ValidationBinder.hpp"
 
+namespace nbdl {
+
 class Entity;
 class EntityListBase;
 
@@ -31,5 +33,7 @@ class JsonCppValidation : public ValidationBinder<JsonCppValidation>
 	Json::Value &jsonVal;
 		
 };
+
+}//nbdl
 
 #endif

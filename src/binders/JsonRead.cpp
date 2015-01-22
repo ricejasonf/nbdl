@@ -1,6 +1,8 @@
 #include<stdexcept>
 #include "JsonRead.h"
 
+namespace nbdl {
+
 JsonRead::JsonRead(const Json::Value &value) :
 	jsonVal(value)
 {
@@ -74,3 +76,5 @@ void JsonRead::bind(const std::string name, EntityListBase &list)
 	}
 }
 */
+
+}//nbdl

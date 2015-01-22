@@ -1,5 +1,10 @@
+#ifndef MEMBERSET_HPP
+#define MEMBERSET_HPP
+
 #include<iostream>
 #include<string>
+
+namespace nbdl {
 
 template<uintptr_t p1, uintptr_t... pN>
 struct NumberSet : NumberSet<pN...>
@@ -74,56 +79,27 @@ template<class Format> \
 struct MemberName<Format, NBDL_MEMBER(&Owner::member_name)> \
 { static constexpr const char *name = #member_name; };
 
-template<typename M1, typename... Ms>
+template<typename M1, typename... Mn>
 struct MemberSet
 {
-	using Offsets = NumberSet<M1::offset, Ms::offset...>;
+	//todo make M1
+	using Offsets = NumberSet<M1::offset, Mn::offset...>;
 
 	template<typename M>
 	static constexpr int indexOf()
 	{
 		return Offsets::template indexOf<M::offset>();
 	}
+
+	template<typename Binder>
+	static void bindMembers(typename M1::OwnerType owner, Binder binder)
+	{
+		binder.bindMember(MemberName<typename Binder::Format, M1>::name, owner.*M1::ptr);
+		if (sizeof...(Mn))
+			MemberSet<Mn...>::template bindMembers(owner, binder);
+	}
 };
 
-struct Moo
-{
-	int freq;
-	int duration;
-	std::string name;
-};
+} //nbdl
 
-NBDL_MEMBER_NAME(Moo, freq)
-NBDL_MEMBER_NAME(Moo, duration)
-NBDL_MEMBER_NAME(Moo, name)
-
-int main()
-{
-
-	using MooMembers = MemberSet<
-		NBDL_MEMBER(&Moo::freq),
-		NBDL_MEMBER(&Moo::duration),
-		NBDL_MEMBER(&Moo::name) >;
-
-	//std::cout << MooMembers::Offsets::template indexOf<Member<Moo, std::string, &Moo::name>::offset>();
-	std::cout << MooMembers::template indexOf<NBDL_MEMBER(&Moo::freq)>();
-	std::cout << std::endl;
-	std::cout << MooMembers::template indexOf<NBDL_MEMBER(&Moo::duration)>();
-	std::cout << std::endl;
-	std::cout << MooMembers::template indexOf<NBDL_MEMBER(&Moo::name)>();
-	std::cout << std::endl;
-	using namePtr = NBDL_MEMBER(&Moo::name);
-	Moo moo = Moo();
-	moo.name = "fart";	
-	std::cout << moo.name;
-	std::cout << std::endl;
-	std::cout << moo.*namePtr::ptr;
-	std::cout << std::endl;
-	std::cout << MemberName<int, NBDL_MEMBER(&Moo::freq)>::name;
-	std::cout << std::endl;
-	std::cout << MemberName<int, NBDL_MEMBER(&Moo::duration)>::name;
-	std::cout << std::endl;
-	std::cout << MemberName<int, NBDL_MEMBER(&Moo::name)>::name;
-	std::cout << std::endl;
-}
-
+#endif

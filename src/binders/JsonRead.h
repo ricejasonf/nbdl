@@ -5,6 +5,8 @@
 #include<jsoncpp/json/json.h>
 #include "../Binder.hpp"
 
+namespace nbdl {
+
 class JsonRead : public Binder<JsonRead>
 {
 	friend class Binder<JsonRead>;
@@ -43,5 +45,7 @@ class JsonRead : public Binder<JsonRead>
 	}
 			
 };
+
+}//nbdl
 
 #endif

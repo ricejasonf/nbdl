@@ -7,6 +7,8 @@
 
 #include "Validator.hpp"
 
+namespace nbdl {
+
 template<class ValidationBinder, class EntityType, typename T>
 class ValidatorNumber : public Validator<ValidatorNumber<ValidationBinder, EntityType, T>, T>
 {
@@ -39,4 +41,5 @@ struct ValidatorTraits<ValidatorNumber<ValidationBinderType, EntityType, T>>
 	typedef EntityType Entity;
 };
 
+}//nbdl
 #endif

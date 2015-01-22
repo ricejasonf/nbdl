@@ -3,6 +3,8 @@
 #include "../EntityList.h"
 #include "JsonCppValidation.h"
 
+namespace nbdl {
+
 void JsonCppValidation::bind(Entity &parent, const std::string name, Entity &entity)
 {
 	auto obj = Json::Value(Json::objectValue);
@@ -32,3 +34,5 @@ void JsonCppValidation::writeErrors(std::string name, std::vector<std::string> e
 		array.append(token);
 	jsonVal[name] = array;
 }
+
+}//nbdl

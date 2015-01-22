@@ -7,6 +7,8 @@
 #include<stdint.h>
 #include"Binder.hpp"
 
+namespace nbdl {
+
 template<class Impl>
 class ValidationBinder : public Binder<Impl>
 j
@@ -47,5 +49,7 @@ j
 		hasErrors_ = hasErrors_ || e.hasErrors();
 	}
 };
+
+}//nbdl
 
 #endif

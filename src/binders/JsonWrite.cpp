@@ -1,6 +1,8 @@
 #include<stdexcept>
 #include "JsonWrite.h"
 
+namespace nbdl {
+
 //todo replace this stuff with a template
 void JsonWrite::bind(const std::string name, bool & field) 
 { 
@@ -37,3 +39,5 @@ void JsonWrite::bind(const std::string name, EntityListBase &list)
 		jsonVal[name] = array;
 }
 */
+
+}//nbdl

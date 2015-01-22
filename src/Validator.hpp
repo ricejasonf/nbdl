@@ -6,6 +6,8 @@
 #include <unordered_set>
 #include <algorithm>
 
+namespace nbdl {
+
 template<class Impl>
 struct ValidatorTraits;
 
@@ -88,5 +90,7 @@ class Validator
 		return chainBroken_;
 	}
 };
+
+}//nbdl
 
 #endif

@@ -1,6 +1,8 @@
 #include<stdexcept>
 #include "JsonCppApplyDiff.hpp"
 
+namespace nbdl {
+
 JsonCppApplyDiff::JsonCppApplyDiff(const Json::Value &value) :
 	jsonVal(value)
 {
@@ -65,3 +67,5 @@ JsonCppApplyDiff JsonCppApplyDiff::createObjectReader(const std::string name)
 		throw std::runtime_error("JSON Object expected");
 	return JsonCppApplyDiff(obj);
 }
+
+}//nbdl

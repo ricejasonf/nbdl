@@ -5,6 +5,8 @@
 #include "Regex.hpp"
 #include "Validator.hpp"
 
+namespace nbdl {
+
 template<class ValidationBinder, class Entity>
 class ValidatorString : public Validator<ValidatorString<ValidationBinder, Entity>, std::string>
 {
@@ -58,4 +60,5 @@ struct ValidatorTraits<ValidatorString<ValidationBinderType, EntityType>>
 	typedef EntityType Entity;
 };
 
+}//nbdl
 #endif

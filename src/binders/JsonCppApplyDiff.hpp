@@ -5,6 +5,8 @@
 #include<jsoncpp/json/json.h>
 #include "../Binder.hpp"
 
+namespace nbdl {
+
 class JsonCppApplyDiff : public Binder<JsonCppApplyDiff>
 {
 	friend class Binder<JsonCppApplyDiff>;
@@ -45,5 +47,7 @@ class JsonCppApplyDiff : public Binder<JsonCppApplyDiff>
 	}
 			
 };
+
+}//nbdl
 
 #endif

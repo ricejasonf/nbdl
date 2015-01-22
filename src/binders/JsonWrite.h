@@ -5,6 +5,8 @@
 #include<jsoncpp/json/json.h>
 #include "../Binder.hpp"
 
+namespace nbdl {
+
 class JsonWrite : public Binder<JsonWrite>
 {
 	public:
@@ -44,5 +46,7 @@ class JsonWrite : public Binder<JsonWrite>
 	Json::Value &jsonVal;
 		
 };
+
+}//nbdl
 
 #endif
