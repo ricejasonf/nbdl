@@ -3,14 +3,14 @@
 
 #include <string>
 #include <Entity.hpp>
-#include "Address.h"
+//#include "Address.h"
 
 class Account : public Entity<Account>
 {
 	std::string nameFirst;
 	std::string nameLast;
 	std::string phoneNumber;
-	Address address;
+	//Address address;
 	unsigned int age;
 
 	friend class Entity<Account>;
@@ -29,6 +29,7 @@ class Account : public Entity<Account>
 			.matches("^[0-9]{10}$");
 	}
 
+	/*
 	template<class Binder>
 	void members(Binder &b)
 	{
@@ -38,7 +39,20 @@ class Account : public Entity<Account>
 		member(b, "age", age);
 		member(b, "address", address);
 	}
+	*/
 
 };
+struct EntityTraits<Account>
+{
+	using Members = MemberSet<
+		NBDL_MEMBER(&Moo::nameFirst),
+		NBDL_MEMBER(&Moo::nameLast),
+		NBDL_MEMBER(&Moo::phoneNumber),
+		NBDL_MEMBER(&Moo::age) >;
+}
+NBDL_MEMBER_NAME(Moo, nameFirst);
+NBDL_MEMBER_NAME(Moo, nameLast);
+NBDL_MEMBER_NAME(Moo, phoneNumber);
+NBDL_MEMBER_NAME(Moo, age);
 
 #endif
