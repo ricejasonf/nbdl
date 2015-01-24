@@ -2,10 +2,11 @@
 #define ACCOUNT_H
 
 #include <string>
-#include <Entity.hpp>
+#include <EntityTraits.hpp>
+//#include <Entity.hpp>
 //#include "Address.h"
 
-class Account : public Entity<Account>
+struct Account
 {
 	std::string nameFirst;
 	std::string nameLast;
@@ -13,8 +14,9 @@ class Account : public Entity<Account>
 	//Address address;
 	unsigned int age;
 
-	friend class Entity<Account>;
+	//friend class nbdl::Entity<Account>;
 
+	//todo move validate to diff class
 	template<class ValidationBinder>
 	void validate(ValidationBinder &b)
 	{
@@ -42,17 +44,20 @@ class Account : public Entity<Account>
 	*/
 
 };
+namespace nbdl {
+template<>
 struct EntityTraits<Account>
 {
 	using Members = MemberSet<
-		NBDL_MEMBER(&Moo::nameFirst),
-		NBDL_MEMBER(&Moo::nameLast),
-		NBDL_MEMBER(&Moo::phoneNumber),
-		NBDL_MEMBER(&Moo::age) >;
-}
-NBDL_MEMBER_NAME(Moo, nameFirst);
-NBDL_MEMBER_NAME(Moo, nameLast);
-NBDL_MEMBER_NAME(Moo, phoneNumber);
-NBDL_MEMBER_NAME(Moo, age);
+		NBDL_MEMBER(&Account::nameFirst),
+		NBDL_MEMBER(&Account::nameLast),
+		NBDL_MEMBER(&Account::phoneNumber),
+		NBDL_MEMBER(&Account::age) >;
+};
+NBDL_MEMBER_NAME(Account, nameFirst);
+NBDL_MEMBER_NAME(Account, nameLast);
+NBDL_MEMBER_NAME(Account, phoneNumber);
+NBDL_MEMBER_NAME(Account, age);
+}//nbdl
 
 #endif

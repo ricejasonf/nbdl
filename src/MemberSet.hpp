@@ -68,7 +68,7 @@ struct Member
 };
 #define NBDL_MEMBER(mptr) Member<typename MemberTraits<decltype(mptr)>::OwnerType, typename MemberTraits<decltype(mptr)>::MemberType, mptr>
 
-template<class Format, class Mptr>
+template<class NameFormat, class Mptr>
 struct MemberName
 {
 	static constexpr const char *name = "undefined";
@@ -79,8 +79,15 @@ template<class Format> \
 struct MemberName<Format, NBDL_MEMBER(&Owner::member_name)> \
 { static constexpr const char *name = #member_name; };
 
-template<typename M1, typename... Mn>
+template<typename... Mn>
 struct MemberSet
+{
+	template<typename NameFormat, typename Binder, typename OwnerType>
+	static void bindMembers(Binder &binder, OwnerType &owner)
+	{}
+};
+template<typename M1, typename... Mn>
+struct MemberSet<M1, Mn...>
 {
 	//todo make M1
 	using Offsets = NumberSet<M1::offset, Mn::offset...>;
@@ -91,12 +98,11 @@ struct MemberSet
 		return Offsets::template indexOf<M::offset>();
 	}
 
-	template<typename Binder>
-	static void bindMembers(typename M1::OwnerType owner, Binder binder)
+	template<typename NameFormat, typename Binder>
+	static void bindMembers(Binder &binder, typename M1::OwnerType &owner)
 	{
-		binder.bindMember(MemberName<typename Binder::Format, M1>::name, owner.*M1::ptr);
-		if (sizeof...(Mn))
-			MemberSet<Mn...>::template bindMembers(owner, binder);
+		binder.bindMember(MemberName<NameFormat, M1>::name, owner.*M1::ptr);
+		MemberSet<Mn...>::template bindMembers<NameFormat>(binder, owner);
 	}
 };
 

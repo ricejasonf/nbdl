@@ -29,9 +29,16 @@ constexpr int A::* getMember2()
 	return &A::i;
 }
 
+void changeToFoo(A &owner, std::string A::*mptr)
+{
+	owner.*mptr = "foo";
+}
+
 int main()
 {
 	A a;
+	std::string A::*mptr = &A::m;
+	changeToFoo(a, mptr);
 	printMember(a, &A::m);
 	std::cout << offset(getMember1(), getMember2());
 	std::cout << std::endl;

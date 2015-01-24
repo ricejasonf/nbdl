@@ -7,6 +7,28 @@
 #include <jsoncpp/json/json.h>
 #include "Account.h"
 
+struct MyNameFormat;
+
+void fromString(std::string &json, Account &account)
+{
+	Json::Reader reader;
+	Json::Value root;
+	if (!reader.parse(json, root, false))
+		throw std::runtime_error("JSON parse error");
+	nbdl::JsonRead r(root);
+	nbdl::bind<MyNameFormat>(r, account);
+}
+
+std::string toString(Account &account)
+{
+	Json::StyledWriter writer;
+	Json::Value root;
+	nbdl::JsonWrite r(root);
+
+	nbdl::bind<MyNameFormat>(r, account);
+	return writer.write(root);
+}
+
 int main()
 {
 	Json::StyledWriter writer;
@@ -15,10 +37,10 @@ int main()
 	for (std::string line; std::getline(std::cin, line);)
 		inputJson += line;
 
-	JsonRead::fromString(inputJson, account);
+	fromString(inputJson, account);
+	std::cout << toString(account);
 
-	std::cout << JsonWrite::toString(account);
-
+	/*
 	Json::Value changes(Json::objectValue);
 	changes["nameLast"] = "Fartface";
 	changes["age"] = 34;
@@ -31,13 +53,14 @@ int main()
 	changes["foods"][1]["name"] = "Some Kind Crazy Food";
 	changes["foods"][2]["foodGroup"]["name"] = "Crazy Food Group";
 	std::cout << writer.write(changes);
-	JsonCppApplyDiff changeBinder(changes);
-	account.bindMembers(changeBinder);
+	//JsonCppApplyDiff changeBinder(changes);
+	//account.bindMembers(changeBinder);
 
 	Json::Value root(Json::objectValue);
-	JsonWrite writeBinder(root);
+	nbdl::JsonWrite writeBinder(root);
 	account.bindMembers(writeBinder);
 	std::cout << writer.write(root);
+	*/
 }
 
 /*

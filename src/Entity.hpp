@@ -12,16 +12,11 @@
 
 namespace nbdl {
 
-template<typename Impl>
-struct EntityTraits;
-
 class EntityBase {};
 
 template<class Impl>
 class Entity : public EntityBase
 {
-	using Members = typename EntityTraits<Impl>::Members;
-
 	Impl *impl() 
 	{
 		return static_cast<Impl *>(this);
