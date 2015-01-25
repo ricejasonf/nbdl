@@ -16,13 +16,6 @@ class JsonRead : public Binder<JsonRead>
 	void bind(const std::string, double &);
 	void bind(const std::string, std::string &);
 
-	template<class EntityType>
-	void bindEntity(const std::string name, EntityType &entity)
-	{
-		JsonRead reader = createObjectReader(name);
-		entity.bindMembers(reader);
-	}
-
 	JsonRead createObjectReader(const std::string name);
 
 	const Json::Value &jsonVal;
@@ -30,6 +23,12 @@ class JsonRead : public Binder<JsonRead>
 	public:
 
 	JsonRead(const Json::Value &value);
+
+	template<class Entity>
+	JsonRead getSubBinder(const std::string name, Entity &entity)
+	{
+		return createObjectReader(name);
+	}
 
 	template<class EntityType>
 	static void fromString(std::string &json, EntityType &entity)

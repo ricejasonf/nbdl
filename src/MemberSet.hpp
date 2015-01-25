@@ -1,8 +1,8 @@
 #ifndef MEMBERSET_HPP
 #define MEMBERSET_HPP
 
-#include<iostream>
-#include<string>
+#include<type_traits>
+#include "EntityTraits.hpp"
 
 namespace nbdl {
 
@@ -69,15 +69,34 @@ struct Member
 #define NBDL_MEMBER(mptr) Member<typename MemberTraits<decltype(mptr)>::OwnerType, typename MemberTraits<decltype(mptr)>::MemberType, mptr>
 
 template<class NameFormat, class Mptr>
-struct MemberName
-{
-	static constexpr const char *name = "undefined";
-};
+struct MemberName;
 
 #define NBDL_MEMBER_NAME(Owner, member_name) \
 template<class Format> \
 struct MemberName<Format, NBDL_MEMBER(&Owner::member_name)> \
 { static constexpr const char *name = #member_name; };
+
+template<typename NameFormat, typename Binder, typename M, typename Enable = void>
+struct BindMemberHelper
+{
+	static void bindMember(Binder &binder, typename M::OwnerType &owner)
+	{
+		binder.bindMember(MemberName<NameFormat, M>::name, owner.*M::ptr);
+	}
+};
+//enable if the member has mapped fields
+template<typename NameFormat, typename Binder, typename M>
+struct BindMemberHelper<NameFormat, Binder, M,
+	typename EntityTraits<typename M::MemberType>::Members>
+{
+	static void bindMember(Binder &binder, typename M::OwnerType &owner)
+	{
+		bind(
+			binder.getSubBinder(MemberName<NameFormat, M>::name, owner), 
+			owner.*M::ptr
+		);
+	}
+};
 
 template<typename... Mn>
 struct MemberSet
@@ -89,7 +108,6 @@ struct MemberSet
 template<typename M1, typename... Mn>
 struct MemberSet<M1, Mn...>
 {
-	//todo make M1
 	using Offsets = NumberSet<M1::offset, Mn::offset...>;
 
 	template<typename M>
@@ -101,10 +119,12 @@ struct MemberSet<M1, Mn...>
 	template<typename NameFormat, typename Binder>
 	static void bindMembers(Binder &binder, typename M1::OwnerType &owner)
 	{
-		binder.bindMember(MemberName<NameFormat, M1>::name, owner.*M1::ptr);
+		BindMemberHelper<NameFormat, Binder, M1>::bindMember(binder, owner);
+		//binder.bindMember(MemberName<NameFormat, M1>::name, owner.*M1::ptr);
 		MemberSet<Mn...>::template bindMembers<NameFormat>(binder, owner);
 	}
 };
+
 
 } //nbdl
 

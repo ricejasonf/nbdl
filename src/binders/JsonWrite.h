@@ -9,6 +9,8 @@ namespace nbdl {
 
 class JsonWrite : public Binder<JsonWrite>
 {
+	Json::Value &jsonVal;
+
 	public:
 
 	JsonWrite(Json::Value &value) :
@@ -32,18 +34,12 @@ class JsonWrite : public Binder<JsonWrite>
 	}
 
 	template<class Entity>
-	void bindEntity(const std::string name, Entity &entity)
+	JsonWrite getSubBinder(const std::string name, Entity &entity)
 	{
 		auto obj = Json::Value(Json::objectValue);
 		JsonWrite writer(obj);
-		entity.bindMembers(writer);
-		if (obj.size())
-			jsonVal[name] = obj;
+		return writer;
 	}
-			
-	private: 
-	
-	Json::Value &jsonVal;
 		
 };
 
