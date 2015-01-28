@@ -33,14 +33,15 @@ class JsonWrite : public Binder<JsonWrite>
 		jsonVal[name] = field; 
 	}
 
-	template<class Entity>
-	JsonWrite getSubBinder(const std::string name, Entity &entity)
+	template<class BinderFn>
+	void bindEntity(const std::string name, BinderFn bind)
 	{
 		auto obj = Json::Value(Json::objectValue);
 		JsonWrite writer(obj);
-		return writer;
+		bind(writer);
+		jsonVal[name] = obj;
 	}
-		
+
 };
 
 }//nbdl

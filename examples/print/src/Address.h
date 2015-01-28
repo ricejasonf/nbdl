@@ -2,9 +2,10 @@
 #define ADDRESS_H
 
 #include <string>
-#include <Entity.hpp>
+#include <EntityTraits.hpp>
+//#include <Entity.hpp>
 
-class Address : public Entity<Address>
+struct Address
 {
 	std::string line1;
 	std::string line2;
@@ -12,8 +13,7 @@ class Address : public Entity<Address>
 	std::string state;
 	std::string zipCode;
 
-	friend class Entity<Address>;
-
+	/*todo move to diff class
 	template<class ValidationBinder>
 	void validate(ValidationBinder &e)
 	{
@@ -42,6 +42,24 @@ class Address : public Entity<Address>
 		member(b, "state", state);
 		member(b, "zipCode", zipCode);
 	}
+	*/
 };
+namespace nbdl {
+template<>
+struct EntityTraits<Address>
+{
+	using Members = MemberSet<
+		NBDL_MEMBER(&Address::line1),
+		NBDL_MEMBER(&Address::line2),
+		NBDL_MEMBER(&Address::city),
+		NBDL_MEMBER(&Address::state),
+		NBDL_MEMBER(&Address::zipCode) >;
+};
+NBDL_MEMBER_NAME(Address, line1);
+NBDL_MEMBER_NAME(Address, line2);
+NBDL_MEMBER_NAME(Address, city);
+NBDL_MEMBER_NAME(Address, state);
+NBDL_MEMBER_NAME(Address, zipCode);
+}//nbdl
 
 #endif

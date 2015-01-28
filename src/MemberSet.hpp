@@ -84,17 +84,16 @@ struct BindMemberHelper
 		binder.bindMember(MemberName<NameFormat, M>::name, owner.*M::ptr);
 	}
 };
-//enable if the member has mapped fields
+//enable if the member is an entity
 template<typename NameFormat, typename Binder, typename M>
 struct BindMemberHelper<NameFormat, Binder, M,
-	typename EntityTraits<typename M::MemberType>::Members>
+	typename std::enable_if<IsEntity<typename M::MemberType>::value>::type>
 {
 	static void bindMember(Binder &binder, typename M::OwnerType &owner)
 	{
-		bind(
-			binder.getSubBinder(MemberName<NameFormat, M>::name, owner), 
-			owner.*M::ptr
-		);
+		binder.bindEntity(MemberName<NameFormat, M>::name, [&owner](Binder &binder) {
+			bind<NameFormat>(binder, owner.*M::ptr);
+		});
 	}
 };
 
