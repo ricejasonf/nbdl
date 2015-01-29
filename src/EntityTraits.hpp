@@ -28,6 +28,8 @@ void bind(Binder &binder, Entity &entity)
 	EntityTraits<Entity>::Members::template bindMembers<NameFormat>(binder, entity);
 }
 #include "MemberSet.hpp"
+#include "macros/NBDL_ENTITY.hpp"
+
 
 }//nbdl
 #endif

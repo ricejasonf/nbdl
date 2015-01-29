@@ -30,22 +30,12 @@ struct Account
 	}
 
 };
-namespace nbdl {
-template<>
-struct EntityTraits<Account>
-{
-	using Members = MemberSet<
-		NBDL_MEMBER(&Account::nameFirst),
-		NBDL_MEMBER(&Account::nameLast),
-		NBDL_MEMBER(&Account::phoneNumber),
-		NBDL_MEMBER(&Account::age), 
-		NBDL_MEMBER(&Account::address) >;
-};
-NBDL_MEMBER_NAME(Account, nameFirst);
-NBDL_MEMBER_NAME(Account, nameLast);
-NBDL_MEMBER_NAME(Account, phoneNumber);
-NBDL_MEMBER_NAME(Account, age);
-NBDL_MEMBER_NAME(Account, address);
-}//nbdl
+NBDL_ENTITY(
+	Account,
+		nameFirst,
+		nameLast,
+		phoneNumber,
+		age,
+		address );
 
 #endif
