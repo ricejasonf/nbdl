@@ -5,6 +5,7 @@
 #include <EntityTraits.hpp>
 //#include <Entity.hpp>
 #include "Address.h"
+#include "Food.h"
 
 struct Account
 {
@@ -13,6 +14,7 @@ struct Account
 	std::string phoneNumber;
 	unsigned int age;
 	Address address;
+	Food food;
 
 	//todo move validate to diff class
 	template<class ValidationBinder>
@@ -36,6 +38,7 @@ NBDL_ENTITY(
 		nameLast,
 		phoneNumber,
 		age,
-		address );
+		address,
+		food);
 
 #endif

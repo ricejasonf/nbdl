@@ -10,21 +10,9 @@
 		"zipCode":"89015",
 		"state":"NV"
 	},
-	"foods": [
-		{ 
+	"food": { 
 			"id": 1,
 			"name": "Banana", 
 			"foodGroup": { "name": "Fruits" }
-		},
-		{ 
-			"id": 2,
-			"name": "Apple", 
-			"foodGroup": { "name": "Fruits" }
-		},
-		{ 
-			"id": 3,
-			"name": "Meatball", 
-			"foodGroup": { "name": "Meats" }
 		}
-	]
 }

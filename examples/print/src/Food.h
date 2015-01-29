@@ -2,18 +2,18 @@
 #define FOOD_H
 
 #include <string>
-#include <Entity.hpp>
+#include <EntityTraits.hpp>
 #include "FoodGroup.h"
 
-class Food : public Entity
+struct Food
 {
-	void members(Binder &);
-	void validate(ValidationBinder &);
-
 	unsigned id;
 	std::string name;
-
 	FoodGroup foodGroup;
 };
+NBDL_ENTITY(Food,
+	id,
+	name,
+	foodGroup );
 
 #endif
