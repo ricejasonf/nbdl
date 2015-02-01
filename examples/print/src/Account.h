@@ -26,28 +26,29 @@ NBDL_ENTITY(
 		food);
 
 namespace nbdl {
+	//unnecessary macro maybe?
+	//NBDL_SPEC(member_default, &Account::phoneNumber)
 	template<>
-	struct EntityValidator<NBDL_MEMBER(&Account::nameFirst)>
+	struct member_default<NBDL_MEMBER(&Acccount::phoneNumber)>
 	{
-		using Validator = ValidatorString<
-			Required,
-			MaxLength<50>,
-			Matches ??
-				
+		static const std::string value = "7608675309";
 	};
-
-
-
+	//NBDL_SPEC(string_max_length, &Account::phoneNumber)
+	template<>
+	struct string_max_length<NBDL_MEMBER(&Acccount::phoneNumber)>
+	{
+		//default max for all strings should always be 50 or something
+		static const int value = 50;
+	};
 
 	template<class ValidationContext>
 	void validate(ValidationContext &v, Account)
 	{
 		validateString<NBDL_MEMBER(&Account::nameFirst)>(v)
-			.required()
-			.maxLen(50)
-			.minLen(2);
+			.notBlank()
+			.maxLen(50);
 		validateString<NBDL_MEMBER(&Account::nameLast)>(v)
-			.required()
+			.notBlank()
 			.maxLen(50)
 			.minLen(2);
 		validateString<NBDL_MEMBER(&Account::phoneNumber)>(v)
