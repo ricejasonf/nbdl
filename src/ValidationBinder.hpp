@@ -11,7 +11,7 @@ namespace nbdl {
 
 template<class Impl>
 class ValidationBinder : public Binder<Impl>
-j
+{
 	bool hasErrors_;
 	bool isUpdate_;
 	std::unordered_map<uintptr_t, std::vector<std::string>> errors;
