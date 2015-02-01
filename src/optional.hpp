@@ -2,6 +2,7 @@
 #define NBDL_OPTIONAL_HPP
 
 #include<type_traits>
+#include "optional/boost.hpp"
 
 namespace nbdl {
 
@@ -28,12 +29,10 @@ class optional
 	//todo naive implementation of optional
 }
 
-/*
 template<typename T>
 struct is_optional<T, 
 	typename std::enable_if<is_specialization_of<T, optional>::value>::type>
 	: std::true_type {};
-*/
 
 }//nbdl
 #endif;

@@ -3,10 +3,15 @@
 
 #include<boost/optional.hpp>
 
-//recognize boost::optional as an optional value
+/*
+ * recognize boost::optional as an optional value
+ */
+
+namespace nbdl {
 template<typename T>
 struct is_optional<T, 
 	typename std::enable_if<is_specialization_of<T, boost::optional>::value>::type>
 	: std::true_type {};
+}
 
 #endif
