@@ -11,7 +11,7 @@ struct Account
 	std::string nameFirst;
 	std::string nameLast;
 	std::string phoneNumber;
-	nbdl::optional<unsigned int> age;
+	nbdl::Optional<unsigned int> age;
 	Address address;
 	Food food;
 
@@ -26,20 +26,23 @@ NBDL_ENTITY(
 		food);
 
 namespace nbdl {
-	//unnecessary macro maybe?
-	//NBDL_SPEC(member_default, &Account::phoneNumber)
+	NBDL_MEMBER_DEFAULT(&Account::phoneNumber, "7608675309");
+	/*
 	template<>
-	struct member_default<NBDL_MEMBER(&Acccount::phoneNumber)>
+	struct MemberDefault<NBDL_MEMBER(&Acccount::phoneNumber)>
 	{
 		static const std::string value = "7608675309";
 	};
-	//NBDL_SPEC(string_max_length, &Account::phoneNumber)
+	*/
+	NBDL_MEMBER_MAXLENGTH(&Account::phoneNumber, 5000);
+	/*
 	template<>
-	struct string_max_length<NBDL_MEMBER(&Acccount::phoneNumber)>
+	struct MemberStringMaxLength<NBDL_MEMBER(&Acccount::phoneNumber)>
 	{
 		//default max for all strings should always be 50 or something
 		static const int value = 50;
 	};
+	*/
 
 	template<class ValidationContext>
 	void validate(ValidationContext &v, Account)
