@@ -49,9 +49,9 @@ struct MemberName<Format, NBDL_MEMBER(&Owner::member_name)> \
 { static constexpr const char *name = #member_name; };
 
 #define NBDL_MEMBER_DEFAULT(mptr, val) template<> struct MemberDefault<NBDL_MEMBER(mptr)> \
-{ static const decltype(NBDL_MEMBER(mptr)::MemberType) value = val; };
+{  static constexpr decltype(val) value = val; };
 
-#define NBDL_MEMBER_MAXLENGTH(mptr) template<> struct MemberStringMaxLength<NBDL_MEMBER(mptr, v)> \
+#define NBDL_MEMBER_MAXLENGTH(mptr, v) template<> struct MemberStringMaxLength<NBDL_MEMBER(mptr)> \
 { static const int value = v; };
 
 
