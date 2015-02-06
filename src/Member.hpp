@@ -36,6 +36,12 @@ struct MemberStringMaxLength
 	static const int value = 50;
 };
 
+template<class M>
+struct MemberStringMinLength;
+
+template<class M>
+struct MemberMatch;
+
 }//nbdl
 
 /*
@@ -49,10 +55,16 @@ struct MemberName<Format, NBDL_MEMBER(&Owner::member_name)> \
 { static constexpr const char *name = #member_name; };
 
 #define NBDL_MEMBER_DEFAULT(mptr, val) template<> struct MemberDefault<NBDL_MEMBER(mptr)> \
-{  static constexpr decltype(val) value = val; };
+{ static constexpr decltype(val) value = val; };
 
 #define NBDL_MEMBER_MAXLENGTH(mptr, v) template<> struct MemberStringMaxLength<NBDL_MEMBER(mptr)> \
-{ static const int value = v; };
+{ static const unsigned value = v; };
+
+#define NBDL_MEMBER_MINLENGTH(mptr, v) template<> struct MemberStringMinLength<NBDL_MEMBER(mptr)> \
+{ static const unsigned value = v; };
+
+#define NBDL_MEMBER_MATCH(mptr, reg) template<> struct MemberMatch<NBDL_MEMBER(mptr)> \
+{ static constexpr const char *value = reg; };
 
 
 #endif

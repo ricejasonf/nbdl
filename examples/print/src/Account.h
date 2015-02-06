@@ -33,16 +33,14 @@ namespace nbdl {
 	void validate(ValidationContext &v, Account)
 	{
 		validateString<NBDL_MEMBER(&Account::nameFirst)>(v)
-			.notBlank()
 			.maxLen(50);
 		validateString<NBDL_MEMBER(&Account::nameLast)>(v)
-			.notBlank()
 			.maxLen(50)
 			.minLen(2);
 		validateString<NBDL_MEMBER(&Account::phoneNumber)>(v)
-			.optional()
 			.matches("^[0-9]{10}$");
 	}
+	NBDL_MEMBER_MATCH(&Account::phoneNumber, "^[0-9]{10}$");
 }//nbdl
 
 #endif
