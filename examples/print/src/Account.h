@@ -16,31 +16,20 @@ struct Account
 	Food food;
 
 };
-NBDL_ENTITY(
-	Account,
-		nameFirst,
-		nameLast,
-		phoneNumber,
-		age,
-		address,
-		food);
-
 namespace nbdl {
+	NBDL_ENTITY(
+		Account,
+			nameFirst,
+			nameLast,
+			phoneNumber,
+			age,
+			address,
+			food);
+	NBDL_MEMBER_MINLENGTH(&Account::nameFirst, 2);
+	NBDL_MEMBER_MINLENGTH(&Account::nameLast, 2);
+	NBDL_MEMBER_MATCH(&Account::phoneNumber, "^[0-9]{10}$");
 	NBDL_MEMBER_DEFAULT(&Account::phoneNumber, "7608675309");
 	NBDL_MEMBER_MAXLENGTH(&Account::phoneNumber, 5000);
-
-	template<class ValidationContext>
-	void validate(ValidationContext &v, Account)
-	{
-		validateString<NBDL_MEMBER(&Account::nameFirst)>(v)
-			.maxLen(50);
-		validateString<NBDL_MEMBER(&Account::nameLast)>(v)
-			.maxLen(50)
-			.minLen(2);
-		validateString<NBDL_MEMBER(&Account::phoneNumber)>(v)
-			.matches("^[0-9]{10}$");
-	}
-	NBDL_MEMBER_MATCH(&Account::phoneNumber, "^[0-9]{10}$");
 }//nbdl
 
 #endif

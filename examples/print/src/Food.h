@@ -11,9 +11,11 @@ struct Food
 	std::string name;
 	FoodGroup foodGroup;
 };
-NBDL_ENTITY(Food,
-	id,
-	name,
-	foodGroup );
+namespace nbdl {
+	NBDL_ENTITY(Food,
+		id,
+		name,
+		foodGroup );
+}//nbdl
 
 #endif

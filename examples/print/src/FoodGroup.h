@@ -8,6 +8,8 @@ struct FoodGroup
 {
 	std::string name;
 };
-NBDL_ENTITY(FoodGroup, name);
+namespace nbdl {
+	NBDL_ENTITY(FoodGroup, name);
+}//nbdl
 
 #endif

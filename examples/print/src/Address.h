@@ -12,11 +12,13 @@ struct Address
 	std::string state;
 	std::string zipCode;
 };
-NBDL_ENTITY(
-	Address,
-		line1,
-		line2,
-		city,
-		state,
-		zipCode );
+namespace nbdl {
+	NBDL_ENTITY(
+		Address,
+			line1,
+			line2,
+			city,
+			state,
+			zipCode );
+}//nbdl
 #endif
