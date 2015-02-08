@@ -12,7 +12,7 @@ namespace detail {
 template<class Binder, class = void>
 struct IsGnosticBinder : std::false_type {};
 
-template<class Binder
+template<class Binder>
 struct IsGnosticBinder<Binder, 
 	typename Void<typename Binder::GnosticBinder>::type>
 	: std::true_type {};
@@ -22,7 +22,7 @@ struct BindMemberHelperGnostic
 {
 	static void call(Binder &binder, typename M::OwnerType &owner)
 	{
-		binder.bindMember<M>(owner);
+		binder.template bindMember<M>(owner);
 	}
 };
 template<typename Binder, typename M>
@@ -31,7 +31,7 @@ struct BindMemberHelperGnostic<Binder, M,
 {
 	static void call(Binder &binder, typename M::OwnerType &owner)
 	{
-		binder.bindEntity<M>(owner);
+		binder.template bindEntity<M>(owner);
 	}
 };
 
@@ -52,7 +52,7 @@ struct BindMemberHelperAgnostic<Binder, M,
 	static void call(Binder &binder, typename M::OwnerType &owner, NameFormat)
 	{
 		binder.bindEntity(MemberName<NameFormat, M>::name, [&owner](Binder &binder) {
-			bind(binder, owner.*M::ptr, NameFormat);
+			bind(binder, owner.*M::ptr, NameFormat{});
 		});
 	}
 };
@@ -60,67 +60,63 @@ struct BindMemberHelperAgnostic<Binder, M,
 template<typename M, class Binder, class = void>
 struct BindMember
 {
-	template<typename NameFormat, typename Binder>
+	template<typename NameFormat>
 	static void call(Binder &binder, typename M::OwnerType &owner, NameFormat)
 	{
-		BindMemberHelperAgnostic<Binder, M>::bindMember(binder, owner, NameFormat);
-		BindMember<Mn...>::call(binder, owner, NameFormat);
+		BindMemberHelperAgnostic<Binder, M>::call(binder, owner, NameFormat{});
 	}
 };
-template<typename M, class Binder, 
+/* compile error i can't figure out at 4am
+template<typename M, class Binder>
+struct BindMember<typename M, class Binder, 
 	typename std::enable_if<IsGnosticBinder<Binder>::value>::type>
-struct BindMember
 {
-	template<typename NameFormat, typename Binder>
+	template<typename NameFormat>
 	static void call(Binder &binder, typename M::OwnerType &owner, NameFormat)
 	{
-		BindMemberHelperGnostic<Binder, M>::bindMember(binder, owner);
-		BindMember<Mn...>::call(binder, owner);
+		BindMemberHelperGnostic<Binder, M>::call(binder, owner);
 	}
 };
+*/
 
 namespace { 
 template<class Mset, class = void>
 struct IsLast : std::false_type {};
 
-template<class Mset
-struct IsLast<Mset, 
-	typename Void<typename Mset::Next::Terminating>::type>
+template<class Mset>
+struct IsLast<Mset, typename Void<typename Mset::Next>::type>
 	: std::true_type {};
 }//unnamed namespace
 
-template<typename Mset, class = void>
-struct BinderMembers
+template<typename NameFormat, typename Binder, typename Entity, typename Mset, class = void>
+struct BindMembers
 {
-	static void call(Binder &binder, typename M::OwnerType &owner, NameFormat)
+	static void call(Binder &binder, typename Mset::Tail::OwnerType &owner)
 	{
-		BinderMember<Mset::Tail, Binder>::call(binder, owner, NameFormat);	
-		BindMembers<Mset::Next>::call(binder, owner, NameFormat);
+		BindMember<typename Mset::Tail, Binder>::call(binder, owner, NameFormat{});	
+		BindMembers<NameFormat, Binder, Entity, typename Mset::Next>::call(binder, owner, NameFormat{});
 	}
 };
-template<typename Mset
-struct BinderMembers<Mset, typename std::enable_if<IsLast<Mset>::value>::type>
+template<typename NameFormat, typename Binder, typename Entity, typename Mset>
+struct BindMembers<NameFormat, Binder, Entity, Mset, typename std::enable_if<IsLast<Mset>::value>::type>
 {
-	static void call(Binder &binder, typename M::OwnerType &owner, NameFormat)
-	{
-		BinderMember<Mset::Tail, Binder>::call(binder, owner, NameFormat);	
-	}
+	static void call(Binder &binder, Entity &owner) {}
 };
 
-struct DefaultNameFormat;
+struct DefaultNameFormat {};
 
 }//detail
 
 template<typename NameFormat, typename Binder, typename Entity>
 void bind(Binder &binder, Entity &entity, NameFormat)
 {
-	EntityTraits<Entity>::Members::bindMembers(binder, entity, NameFormat);
+	detail::BindMembers<NameFormat, Binder, Entity, typename EntityTraits<Entity>::Members>::call(binder, entity);
 }
 
 template<typename Binder, typename Entity>
 void bind(Binder &binder, Entity &entity)
 {
-	bind(binder, entity, detail::DefaultNameFormat);
+	bind(binder, entity, detail::DefaultNameFormat{});
 }
 
 }//nbdl

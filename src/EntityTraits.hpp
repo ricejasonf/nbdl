@@ -22,11 +22,13 @@ struct IsEntity<T, typename Void<typename EntityTraits<T>::Members>::type>
 	enum { value = 1 };
 };
 
+/*
 template<typename NameFormat, typename Binder, typename Entity>
 void bind(Binder &binder, Entity &entity, NameFormat)
 {
 	EntityTraits<Entity>::Members::template bindMembers<NameFormat>(binder, entity);
 }
+*/
 
 
 //todo remove these

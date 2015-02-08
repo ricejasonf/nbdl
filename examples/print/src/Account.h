@@ -3,6 +3,8 @@
 
 #include <string>
 #include <EntityTraits.hpp>
+#include <MemberSet.hpp>
+#include <Bind.hpp>
 #include "Address.h"
 #include "Food.h"
 

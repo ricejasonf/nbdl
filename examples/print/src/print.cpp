@@ -5,9 +5,11 @@
 #include <binders/JsonWrite.h>
 #include <binders/JsonCppApplyDiff.hpp>
 #include <jsoncpp/json/json.h>
-#include "Account.h"
 
-struct MyNameFormat;
+#include <EntityTraits.hpp>
+#include <MemberSet.hpp>
+#include <Bind.hpp>
+#include "Account.h"
 
 void fromString(std::string &json, Account &account)
 {
@@ -16,7 +18,7 @@ void fromString(std::string &json, Account &account)
 	if (!reader.parse(json, root, false))
 		throw std::runtime_error("JSON parse error");
 	nbdl::JsonRead r(root);
-	nbdl::bind<MyNameFormat>(r, account);
+	nbdl::bind(r, account);
 }
 
 std::string toString(Account &account)
@@ -25,7 +27,7 @@ std::string toString(Account &account)
 	Json::Value root;
 	nbdl::JsonWrite r(root);
 
-	nbdl::bind<MyNameFormat>(r, account);
+	nbdl::bind(r, account);
 	return writer.write(root);
 }
 

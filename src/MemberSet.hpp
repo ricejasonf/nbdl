@@ -76,7 +76,6 @@ struct BindMemberHelper<NameFormat, Binder, M,
 template<typename... Mn>
 struct MemberSet
 {
-	struct Terminating;
 	template<typename NameFormat, typename Binder, typename OwnerType>
 	static void bindMembers(Binder &binder, OwnerType &owner)
 	{}
