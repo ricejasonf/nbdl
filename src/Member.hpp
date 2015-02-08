@@ -42,6 +42,14 @@ struct MemberStringMinLength;
 template<class M>
 struct MemberMatch;
 
+//allow a string to have zero length
+template<class M>
+struct MemberAllowBlank;
+
+//string treated as buffer and does no trim filtering
+template<class M>
+struct MemberRawBuffer;
+
 }//nbdl
 
 /*

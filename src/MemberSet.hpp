@@ -50,7 +50,7 @@ struct NumberSet<p>
 	}
 };
 }//detail
-
+/*
 template<typename NameFormat, typename Binder, typename M, typename Enable = void>
 struct BindMemberHelper
 {
@@ -71,10 +71,12 @@ struct BindMemberHelper<NameFormat, Binder, M,
 		});
 	}
 };
+*/
 
 template<typename... Mn>
 struct MemberSet
 {
+	struct Terminating;
 	template<typename NameFormat, typename Binder, typename OwnerType>
 	static void bindMembers(Binder &binder, OwnerType &owner)
 	{}
@@ -82,6 +84,8 @@ struct MemberSet
 template<typename M1, typename... Mn>
 struct MemberSet<M1, Mn...>
 {
+	using Tail = M1;
+	using Next = MemberSet<Mn...>;
 	using Offsets = detail::NumberSet<M1::offset, Mn::offset...>;
 
 	template<typename M>
@@ -90,12 +94,14 @@ struct MemberSet<M1, Mn...>
 		return Offsets::template indexOf<M::offset>();
 	}
 
+	/*
 	template<typename NameFormat, typename Binder>
 	static void bindMembers(Binder &binder, typename M1::OwnerType &owner)
 	{
 		BindMemberHelper<NameFormat, Binder, M1>::bindMember(binder, owner);
 		MemberSet<Mn...>::template bindMembers<NameFormat>(binder, owner);
 	}
+	*/
 };
 
 

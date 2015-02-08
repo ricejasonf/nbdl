@@ -9,9 +9,9 @@
 
 namespace nbdl {
 template<typename T>
-struct is_optional<T, 
-	typename std::enable_if<is_specialization_of<T, boost::optional>::value>::type>
+struct IsOptional<T, 
+	typename std::enable_if<IsSpecializationOf<T, boost::optional>::value>::type>
 	: std::true_type {};
-}
+}//nbdl
 
 #endif

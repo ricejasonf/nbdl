@@ -23,10 +23,13 @@ struct IsEntity<T, typename Void<typename EntityTraits<T>::Members>::type>
 };
 
 template<typename NameFormat, typename Binder, typename Entity>
-void bind(Binder &binder, Entity &entity)
+void bind(Binder &binder, Entity &entity, NameFormat)
 {
 	EntityTraits<Entity>::Members::template bindMembers<NameFormat>(binder, entity);
 }
+
+
+//todo remove these
 #include "MemberSet.hpp"
 #include "macros/NBDL_ENTITY.hpp"
 
