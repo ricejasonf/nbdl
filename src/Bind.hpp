@@ -79,15 +79,6 @@ struct BindMember<typename M, class Binder,
 };
 */
 
-namespace { 
-template<class Mset, class = void>
-struct IsLast : std::true_type {};
-
-template<class Mset>
-struct IsLast<Mset, typename Void<typename Mset::Next>::type>
-	: std::false_type {};
-}//unnamed namespace
-
 template<typename NameFormat, typename Binder, typename Entity, typename Mset, class = void>
 struct BindMembers
 {
@@ -98,7 +89,7 @@ struct BindMembers
 	}
 };
 template<typename NameFormat, typename Binder, typename Entity, typename Mset>
-struct BindMembers<NameFormat, Binder, Entity, Mset, typename std::enable_if<IsLast<Mset>::value>::type>
+struct BindMembers<NameFormat, Binder, Entity, Mset, typename std::enable_if<MemberSetIsLast<Mset>::value>::type>
 {
 	static void call(Binder &binder, Entity &owner) {}
 };

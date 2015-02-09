@@ -72,6 +72,12 @@ struct MemberSet<M1, Mn...>
 	}
 };
 
+template<class Mset, class = void>
+struct MemberSetIsLast : std::true_type {};
+
+template<class Mset>
+struct MemberSetIsLast<Mset, typename Void<typename Mset::Next>::type>
+	: std::false_type {};
 
 } //nbdl
 
