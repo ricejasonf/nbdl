@@ -50,28 +50,6 @@ struct NumberSet<p>
 	}
 };
 }//detail
-/*
-template<typename NameFormat, typename Binder, typename M, typename Enable = void>
-struct BindMemberHelper
-{
-	static void bindMember(Binder &binder, typename M::OwnerType &owner)
-	{
-		binder.bindMember(MemberName<NameFormat, M>::name, owner.*M::ptr);
-	}
-};
-//enable if the member is an entity
-template<typename NameFormat, typename Binder, typename M>
-struct BindMemberHelper<NameFormat, Binder, M,
-	typename std::enable_if<IsEntity<typename M::MemberType>::value>::type>
-{
-	static void bindMember(Binder &binder, typename M::OwnerType &owner)
-	{
-		binder.bindEntity(MemberName<NameFormat, M>::name, [&owner](Binder &binder) {
-			bind<NameFormat>(binder, owner.*M::ptr);
-		});
-	}
-};
-*/
 
 template<typename... Mn>
 struct MemberSet
@@ -83,7 +61,7 @@ struct MemberSet
 template<typename M1, typename... Mn>
 struct MemberSet<M1, Mn...>
 {
-	using Tail = M1;
+	using Member = M1;
 	using Next = MemberSet<Mn...>;
 	using Offsets = detail::NumberSet<M1::offset, Mn::offset...>;
 
@@ -92,15 +70,6 @@ struct MemberSet<M1, Mn...>
 	{
 		return Offsets::template indexOf<M::offset>();
 	}
-
-	/*
-	template<typename NameFormat, typename Binder>
-	static void bindMembers(Binder &binder, typename M1::OwnerType &owner)
-	{
-		BindMemberHelper<NameFormat, Binder, M1>::bindMember(binder, owner);
-		MemberSet<Mn...>::template bindMembers<NameFormat>(binder, owner);
-	}
-	*/
 };
 
 

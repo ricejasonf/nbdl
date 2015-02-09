@@ -81,20 +81,20 @@ struct BindMember<typename M, class Binder,
 
 namespace { 
 template<class Mset, class = void>
-struct IsLast : std::false_type {};
+struct IsLast : std::true_type {};
 
 template<class Mset>
 struct IsLast<Mset, typename Void<typename Mset::Next>::type>
-	: std::true_type {};
+	: std::false_type {};
 }//unnamed namespace
 
 template<typename NameFormat, typename Binder, typename Entity, typename Mset, class = void>
 struct BindMembers
 {
-	static void call(Binder &binder, typename Mset::Tail::OwnerType &owner)
+	static void call(Binder &binder, typename Mset::Member::OwnerType &owner)
 	{
-		BindMember<typename Mset::Tail, Binder>::call(binder, owner, NameFormat{});	
-		BindMembers<NameFormat, Binder, Entity, typename Mset::Next>::call(binder, owner, NameFormat{});
+		BindMember<typename Mset::Member, Binder>::call(binder, owner, NameFormat{});	
+		BindMembers<NameFormat, Binder, Entity, typename Mset::Next>::call(binder, owner);
 	}
 };
 template<typename NameFormat, typename Binder, typename Entity, typename Mset>
