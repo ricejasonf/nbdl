@@ -57,7 +57,7 @@ struct BindMemberHelperAgnostic<Binder, M,
 	}
 };
 
-template<typename M, class Binder, class = void>
+template<typename M, typename Binder, class = void>
 struct BindMember
 {
 	template<typename NameFormat>
@@ -66,9 +66,9 @@ struct BindMember
 		BindMemberHelperAgnostic<Binder, M>::call(binder, owner, NameFormat{});
 	}
 };
-/* compile error i can't figure out at 4am
-template<typename M, class Binder>
-struct BindMember<typename M, class Binder, 
+
+template<typename M, typename Binder>
+struct BindMember<M, Binder, 
 	typename std::enable_if<IsGnosticBinder<Binder>::value>::type>
 {
 	template<typename NameFormat>
@@ -77,7 +77,6 @@ struct BindMember<typename M, class Binder,
 		BindMemberHelperGnostic<Binder, M>::call(binder, owner);
 	}
 };
-*/
 
 template<typename NameFormat, typename Binder, typename Entity, typename Mset, class = void>
 struct BindMembers
