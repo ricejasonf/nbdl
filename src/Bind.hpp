@@ -88,7 +88,8 @@ struct BindMembers
 	}
 };
 template<typename NameFormat, typename Binder, typename Entity, typename Mset>
-struct BindMembers<NameFormat, Binder, Entity, Mset, typename std::enable_if<MemberSetIsLast<Mset>::value>::type>
+struct BindMembers<NameFormat, Binder, Entity, Mset, 
+	typename std::enable_if<MemberSetIsLast<Mset>::value>::type>
 {
 	static void call(Binder &binder, Entity &owner) {}
 };
