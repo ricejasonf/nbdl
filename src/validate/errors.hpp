@@ -2,15 +2,17 @@
 #define NBDL_VALIDATE_ERRORS_HPP
 
 namespace nbdl {
-namespace errors {
+namespace validate {
 
-	//todo provide an int and string here maybe?
-	struct Required {};
-	struct TooLong {};
-	struct TooShort {};
-	struct MatchFail {};
+	enum Errors 
+	{
+		Invalid,
+		Required,
+		OutOfRange,
+		MatchFail
+	}
 
-}//errors
+}//validate
 }//nbdl
 
 #endif
