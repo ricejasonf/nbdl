@@ -1,5 +1,5 @@
-#ifndef NBDL_ERROR_TOKEN_HPP
-#define NBDL_ERROR_TOKEN_HPP
+#ifndef NBDL_ERRORTOKEN_HPP
+#define NBDL_ERRORTOKEN_HPP
 
 namespace nbdl {
 
@@ -7,7 +7,10 @@ namespace nbdl {
 	{
 		Invalid,
 		Required,
-		OutOfRange,
+		TooLong,
+		TooShort,
+		AboveMax,
+		BelowMin,
 		MatchFail
 	}
 

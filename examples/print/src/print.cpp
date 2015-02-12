@@ -9,6 +9,7 @@
 #include <EntityTraits.hpp>
 #include <MemberSet.hpp>
 #include <Bind.hpp>
+#include <Validate.hpp>
 #include "Account.h"
 
 void fromString(std::string &json, Account &account)

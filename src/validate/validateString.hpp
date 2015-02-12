@@ -1,27 +1,20 @@
-#ifndef NBDL_VALIDATESTRING_HPP
-#define NBDL_VALIDATESTRING_HPP
+#ifndef NBDL_VALIDATE_STDBASICSTRING_HPP
+#define NBDL_VALIDATE_STDBASICSTRING_HPP
 
 namespace nbdl {
-namespace detail {
-
-template<typename M, typename Errors>
-bool validateStringMaxLength(Errors &e, M::MemberType &m)
-{
-	if (m.size() > MemberStringMaxLength<M>::value)
-		e.addError(errors::TooLong{});
-}
-
-template<typename M, typename Errors, typename T>
-void validateString(Errors &e, T& member) {}
+namespace validate {
 
 template<typename M, typename Errors, class T, class Traits, class Alloc>
-void validateString(Errors &e, basic_string<T, Traits, Alloc> &member)
+void validateString(Errors &e, std::basic_string<T, Traits, Alloc> &member)
 {
 	//todo trim whitespace
-	if (!validateStringMaxLength<Errors, M>(errors, member))
+	if (m.size() > MemberStringMaxLength<M>::value)
+	{
+		e.addError(ErrorToken::TooLong);
 		return;
+	}
 }
 
-}//detail
+}//validate
 }//nbdl
 #endif
