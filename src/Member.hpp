@@ -23,8 +23,14 @@ struct MemberTraits<T Owner::*>
 	using MemberType = T;
 };
 
-template<class NameFormat, class Mptr>
+template<class NameFormat, class M>
 struct MemberName;
+
+template<class M>
+struct MemberName<int, M>
+{
+	static constexpr int value = EntityTraits<M>::Members::template indexOf<M>();
+};
 
 template<class M>
 struct MemberDefault;
@@ -60,7 +66,7 @@ struct MemberRawBuffer;
 #define NBDL_MEMBER_NAME(Owner, member_name) \
 template<class Format> \
 struct MemberName<Format, NBDL_MEMBER(&Owner::member_name)> \
-{ static constexpr const char *name = #member_name; };
+{ static constexpr const char *value = #member_name; };
 
 #define NBDL_MEMBER_DEFAULT(mptr, val) template<> struct MemberDefault<NBDL_MEMBER(mptr)> \
 { static constexpr decltype(val) value = val; };

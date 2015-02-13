@@ -22,7 +22,7 @@ enum struct ErrorToken
 	Custom7,
 	Custom8,
 	Custom9
-}
+};
 
 static constexpr const char *toString(ErrorToken t)
 {

@@ -1,9 +1,18 @@
 #ifndef NBDL_VALIDATE_HPP
 #define NBDL_VALIDATE_HPP
 
-#include "validate/validateString.hpp"
+#include "ErrorToken.hpp"
 
 namespace nbdl {
+
+namespace validation { 
+
+template<typename M, typename T, typename AddError>
+void validateString(T&, AddError) {}
+
+}//validation
+
+#include "validate/validateString.hpp"
 
 namespace detail {
 
@@ -22,31 +31,32 @@ class ValidationBinder
 	template<typename M>
 	void bindMember(typename M::OwnerType &entity)
 	{
-		M::MemberType &m = entity.*M::ptr;
-		validateString<M>(errors, m);
-		//todo do other validation stuffs
+		validateMember<M>(entity, [&](ErrorToken token) {
+			errors.addError(MemberName<typename ErrorBinder::NameFormat, M>::value, token);	
+		});
 	}
 	template<typename M>
 	void bindEntity(typename M::OwnerType &entity)
 	{
-		ErrorBinder child = errors.createChild<M>();
+		ErrorBinder child = errors.createChild("moo");
 		validate(child, entity.*M::ptr);
 	}
 };
 
 }//detail
 
-namespace validate { 
-
-template<typename M, typename Errors, typename T>
-void validateString(Errors &e, T& member) {}
-
-}//validate
+template<typename M, class AddError>
+void validateMember(typename M::OwnerType &entity, AddError addError)
+{
+	typename M::MemberType &m = entity.*M::ptr;
+	validation::validateString<M>(m, addError);
+	//todo do other validation stuffs
+}
 
 template<class ErrorBinder, class Entity>
 void validate(ErrorBinder &errorBinder, Entity &entity)
 {
-	ValidationBinder<ErrorBinder> vBinder(errorBinder);
+	detail::ValidationBinder<ErrorBinder> vBinder(errorBinder);
 	bind(vBinder, entity);
 }
 

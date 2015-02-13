@@ -41,7 +41,7 @@ struct BindMemberHelperAgnostic
 	template<typename NameFormat>
 	static void call(Binder &binder, typename M::OwnerType &owner, NameFormat)
 	{
-		binder.bindMember(MemberName<NameFormat, M>::name, owner.*M::ptr);
+		binder.bindMember(MemberName<NameFormat, M>::value, owner.*M::ptr);
 	}
 };
 template<typename Binder, typename M>
@@ -51,7 +51,7 @@ struct BindMemberHelperAgnostic<Binder, M,
 	template<typename NameFormat>
 	static void call(Binder &binder, typename M::OwnerType &owner, NameFormat)
 	{
-		binder.bindEntity(MemberName<NameFormat, M>::name, [&owner](Binder &binder) {
+		binder.bindEntity(MemberName<NameFormat, M>::value, [&owner](Binder &binder) {
 			bind(binder, owner.*M::ptr, NameFormat{});
 		});
 	}
@@ -94,9 +94,9 @@ struct BindMembers<NameFormat, Binder, Entity, Mset,
 	static void call(Binder &binder, Entity &owner) {}
 };
 
-struct DefaultNameFormat {};
-
 }//detail
+
+struct DefaultNameFormat {};
 
 template<typename NameFormat, typename Binder, typename Entity>
 void bind(Binder &binder, Entity &entity, NameFormat)
@@ -107,7 +107,7 @@ void bind(Binder &binder, Entity &entity, NameFormat)
 template<typename Binder, typename Entity>
 void bind(Binder &binder, Entity &entity)
 {
-	bind(binder, entity, detail::DefaultNameFormat{});
+	bind(binder, entity, DefaultNameFormat{});
 }
 
 }//nbdl

@@ -2,19 +2,20 @@
 #define NBDL_VALIDATE_STDBASICSTRING_HPP
 
 namespace nbdl {
-namespace validate {
+namespace validation {
 
-template<typename M, typename Errors, class T, class Traits, class Alloc>
-void validateString(Errors &e, std::basic_string<T, Traits, Alloc> &member)
+template<class M, class T, class Traits, class Alloc, class AddError>
+void validateString<M, std::basic_string<T, Traits, Alloc>, AddErrors>
+	(std::basic_string<T, Traits, Alloc> &member, AddError addError)
 {
 	//todo trim whitespace
-	if (m.size() > MemberStringMaxLength<M>::value)
+	if (member.size() > MemberStringMaxLength<M>::value)
 	{
-		e.addError(ErrorToken::TooLong);
+		addError(ErrorToken::TooLong);
 		return;
 	}
 }
 
-}//validate
+}//validation
 }//nbdl
 #endif

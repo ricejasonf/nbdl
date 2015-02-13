@@ -1,15 +1,18 @@
 #include <iostream>
 #include <string>
 
-#include <binders/JsonRead.h>
-#include <binders/JsonWrite.h>
-#include <binders/JsonCppApplyDiff.hpp>
-#include <jsoncpp/json/json.h>
-
 #include <EntityTraits.hpp>
 #include <MemberSet.hpp>
 #include <Bind.hpp>
 #include <Validate.hpp>
+
+#include <binders/JsonRead.h>
+#include <binders/JsonWrite.h>
+#include <binders/JsonCppErrorBinder.hpp>
+//#include <binders/JsonCppApplyDiff.hpp>
+#include <jsoncpp/json/json.h>
+
+
 #include "Account.h"
 
 void fromString(std::string &json, Account &account)
@@ -32,6 +35,16 @@ std::string toString(Account &account)
 	return writer.write(root);
 }
 
+std::string validate(Account &account)
+{
+	Json::StyledWriter writer;
+	Json::Value root;
+	nbdl::binders::JsonCppValidationErrors e(root);
+
+	nbdl::validate(e, account);
+	return writer.write(root);
+}
+
 int main()
 {
 	Json::StyledWriter writer;
@@ -41,6 +54,8 @@ int main()
 		inputJson += line;
 
 	fromString(inputJson, account);
+
+	std::cout << validate(account);
 	std::cout << toString(account);
 
 	/*

@@ -11,13 +11,27 @@ class JsonCppValidationErrors
 	Json::Value &jsonVal;
 
 	public: 
-	
-	JsonCppValidationErrors(const Json::Value &value)
-		:value(value) {}
 
-	JsonCppValidationErrors(
-	void addError(ErroToken token);
-}
+	using NameFormat = DefaultNameFormat;
+	
+	JsonCppValidationErrors(Json::Value &value)
+		: jsonVal(value) {}
+
+	void addError(std::string name, ErrorToken token)
+	{
+		auto array = Json::Value(Json::arrayValue);
+		array.append(toString(token));
+		jsonVal[name] = array;
+	}
+
+	JsonCppValidationErrors createChild(const std::string name)
+	{
+		auto obj = Json::Value(Json::objectValue);
+		JsonCppValidationErrors error(obj);
+		jsonVal[name] = obj;
+		return error;
+	}
+};
 
 }//binders
 }//nbdl

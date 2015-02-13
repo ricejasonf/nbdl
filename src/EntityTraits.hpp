@@ -22,10 +22,9 @@ struct IsEntity<T, typename Void<typename EntityTraits<T>::Members>::type>
 	enum { value = 1 };
 };
 
+}//nbdl
+
 //todo remove these
-#include "MemberSet.hpp"
 #include "macros/NBDL_ENTITY.hpp"
 
-
-}//nbdl
 #endif
