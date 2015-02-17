@@ -8,11 +8,26 @@ namespace nbdl {
 namespace validation { 
 
 template<typename M, typename T, typename AddError>
-void validateString(T&, AddError) {}
+struct ValidateString
+{
+	static void call(T&, AddError&) {}
+};
+
+template<typename M>
+struct ValidateMember
+{
+	template<class AddError>
+	static void call(typename M::OwnerType &entity, AddError addError)
+	{
+		typename M::MemberType &m = entity.*M::ptr;
+		validation::ValidateString<M, typename M::MemberType, AddError>
+			::call(m, addError);
+		//todo do other validation stuffs
+	}
+};
+
 
 }//validation
-
-#include "validate/validateString.hpp"
 
 namespace detail {
 
@@ -31,7 +46,7 @@ class ValidationBinder
 	template<typename M>
 	void bindMember(typename M::OwnerType &entity)
 	{
-		validateMember<M>(entity, [&](ErrorToken token) {
+		validation::ValidateMember<M>::call(entity, [&](ErrorToken token) {
 			errors.addError(MemberName<typename ErrorBinder::NameFormat, M>::value, token);	
 		});
 	}
@@ -39,19 +54,12 @@ class ValidationBinder
 	void bindEntity(typename M::OwnerType &entity)
 	{
 		ErrorBinder child = errors.createChild("moo");
-		validate(child, entity.*M::ptr);
+		detail::ValidationBinder<ErrorBinder> vBinder(child);
+		bind(vBinder, entity);
 	}
 };
 
 }//detail
-
-template<typename M, class AddError>
-void validateMember(typename M::OwnerType &entity, AddError addError)
-{
-	typename M::MemberType &m = entity.*M::ptr;
-	validation::validateString<M>(m, addError);
-	//todo do other validation stuffs
-}
 
 template<class ErrorBinder, class Entity>
 void validate(ErrorBinder &errorBinder, Entity &entity)
@@ -61,4 +69,7 @@ void validate(ErrorBinder &errorBinder, Entity &entity)
 }
 
 }//nbdl
+
+#include "validate/validateString.hpp"
+
 #endif
