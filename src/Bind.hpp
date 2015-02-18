@@ -96,8 +96,6 @@ struct BindMembers<NameFormat, Binder, Entity, Mset,
 
 }//detail
 
-struct DefaultNameFormat {};
-
 template<typename NameFormat, typename Binder, typename Entity>
 void bind(Binder &binder, Entity &entity, NameFormat)
 {

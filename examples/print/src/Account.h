@@ -31,7 +31,7 @@ namespace nbdl {
 	NBDL_MEMBER_MINLENGTH(&Account::nameLast, 2);
 	NBDL_MEMBER_MATCH(&Account::phoneNumber, "^[0-9]{10}$");
 	NBDL_MEMBER_DEFAULT(&Account::phoneNumber, "7608675309");
-	NBDL_MEMBER_MAXLENGTH(&Account::phoneNumber, 5000);
+	//NBDL_MEMBER_MAXLENGTH(&Account::phoneNumber, 5000);
 }//nbdl
 
 #endif

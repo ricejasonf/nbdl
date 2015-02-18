@@ -23,13 +23,16 @@ struct MemberTraits<T Owner::*>
 	using MemberType = T;
 };
 
+struct DefaultNameFormat {};
+
 template<class NameFormat, class M>
 struct MemberName;
 
+//overlapping specialization problem here
 template<class M>
 struct MemberName<int, M>
 {
-	static constexpr int value = EntityTraits<M>::Members::template indexOf<M>();
+	static constexpr int value = EntityTraits<typename M::OwnerType>::Members::template indexOf<M>();
 };
 
 template<class M>
@@ -64,8 +67,8 @@ struct MemberRawBuffer;
 #define NBDL_MEMBER(mptr) Member<typename MemberTraits<decltype(mptr)>::OwnerType, typename MemberTraits<decltype(mptr)>::MemberType, mptr>
 
 #define NBDL_MEMBER_NAME(Owner, member_name) \
-template<class Format> \
-struct MemberName<Format, NBDL_MEMBER(&Owner::member_name)> \
+template<> \
+struct MemberName<DefaultNameFormat, NBDL_MEMBER(&Owner::member_name)> \
 { static constexpr const char *value = #member_name; };
 
 #define NBDL_MEMBER_DEFAULT(mptr, val) template<> struct MemberDefault<NBDL_MEMBER(mptr)> \
