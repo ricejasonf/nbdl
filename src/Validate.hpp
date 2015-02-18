@@ -53,10 +53,11 @@ class ValidationBinder
 	template<typename M>
 	void bindEntity(typename M::OwnerType &owner)
 	{
-		errors.validateChild("moo", [&owner](ErrorBinder& childErrors) {
-			detail::ValidationBinder<ErrorBinder> vBinder(childErrors);
-			bind(vBinder, owner.*M::ptr);
-		});
+		errors.validateChild(MemberName<typename ErrorBinder::NameFormat, M>::value, 
+			[&owner](ErrorBinder& childErrors) {
+				detail::ValidationBinder<ErrorBinder> vBinder(childErrors);
+				bind(vBinder, owner.*M::ptr);
+			});
 	}
 };
 
