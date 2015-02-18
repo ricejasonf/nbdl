@@ -24,12 +24,13 @@ class JsonCppValidationErrors
 		jsonVal[name] = array;
 	}
 
-	JsonCppValidationErrors createChild(const std::string name)
+	template<typename Functor>
+	void validateChild(const std::string name, Functor fn)
 	{
-		auto obj = Json::Value(Json::objectValue);
-		JsonCppValidationErrors error(obj);
+		Json::Value obj = Json::Value(Json::objectValue);
+		JsonCppValidationErrors errors(obj);
+		fn(errors);
 		jsonVal[name] = obj;
-		return error;
 	}
 };
 
