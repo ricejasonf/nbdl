@@ -2,7 +2,7 @@
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
-bool Regex::match(const std::string reg, const std::string field);
+bool nbdl::Regex::match(const std::string reg, const std::string field);
 { 
 	int match = EM_ASM_INT({
 		var value = Pointer_stringify($0);
@@ -13,7 +13,7 @@ bool Regex::match(const std::string reg, const std::string field);
 }
 #else
 #include <boost/regex.hpp>
-bool Regex::match(const std::string reg, const std::string field)
+bool nbdl::Regex::match(const std::string reg, const std::string field)
 { 
 	 return boost::regex_match(field, boost::regex(reg, boost::regex::ECMAScript));
 }

@@ -71,6 +71,6 @@ void validate(ErrorBinder &errorBinder, Entity &entity)
 
 }//nbdl
 
-#include "validate/validateString.hpp"
+#include "validate/StdBasicString.hpp"
 
 #endif

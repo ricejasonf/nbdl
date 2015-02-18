@@ -39,6 +39,12 @@ template<class M>
 struct MemberDefault;
 
 template<class M>
+struct MemberHasDefault
+{
+	static const bool value = false;
+};
+
+template<class M>
 struct MemberStringMaxLength
 {
 	//default max length of 50 for all strings
@@ -46,18 +52,30 @@ struct MemberStringMaxLength
 };
 
 template<class M>
-struct MemberStringMinLength;
+struct MemberStringMinLength
+{
+	static const int value = 0;
+};
 
 template<class M>
-struct MemberMatch;
+struct MemberMatch
+{
+	static constexpr const char *value = nullptr;
+};
 
 //allow a string to have zero length
 template<class M>
-struct MemberAllowBlank;
+struct MemberAllowBlank
+{
+	static const bool value = false;
+};
 
 //string treated as buffer and does no trim filtering
 template<class M>
-struct MemberRawBuffer;
+struct MemberRawBuffer
+{
+	static const bool value = false;
+};
 
 }//nbdl
 
@@ -72,7 +90,9 @@ struct MemberName<DefaultNameFormat, NBDL_MEMBER(&Owner::member_name)> \
 { static constexpr const char *value = #member_name; };
 
 #define NBDL_MEMBER_DEFAULT(mptr, val) template<> struct MemberDefault<NBDL_MEMBER(mptr)> \
-{ static constexpr decltype(val) value = val; };
+{ static constexpr decltype(val) value = val; }; \
+template<> struct MemberHasDefault<NBDL_MEMBER(mptr)> \
+{ static const bool value = true; }; 
 
 #define NBDL_MEMBER_MAXLENGTH(mptr, v) template<> struct MemberStringMaxLength<NBDL_MEMBER(mptr)> \
 { static const unsigned value = v; };
@@ -82,6 +102,9 @@ struct MemberName<DefaultNameFormat, NBDL_MEMBER(&Owner::member_name)> \
 
 #define NBDL_MEMBER_MATCH(mptr, reg) template<> struct MemberMatch<NBDL_MEMBER(mptr)> \
 { static constexpr const char *value = reg; };
+
+#define NBDL_MEMBER_ALLOWBLANK(mptr) template<> struct MemberAllowBlank<NBDL_MEMBER(mptr)> \
+{ static const bool value = true; };
 
 
 #endif
