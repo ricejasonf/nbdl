@@ -77,6 +77,13 @@ struct MemberRawBuffer
 	static const bool value = false;
 };
 
+template<class M>
+struct MemberCustomValidator
+{
+	template<typename T, typename AddError>
+	static void validate(T&, AddError) {}
+};
+
 }//nbdl
 
 /*

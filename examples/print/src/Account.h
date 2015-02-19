@@ -13,6 +13,7 @@ struct Account
 	std::string nameFirst;
 	std::string nameLast;
 	std::string phoneNumber;
+	std::string email;
 	unsigned int age;
 	Address address;
 	Food food;
@@ -24,6 +25,7 @@ namespace nbdl {
 			nameFirst,
 			nameLast,
 			phoneNumber,
+			email,
 			age,
 			address,
 			food);
@@ -32,6 +34,16 @@ namespace nbdl {
 	NBDL_MEMBER_MATCH(&Account::phoneNumber, "^[0-9]{10}$");
 	NBDL_MEMBER_DEFAULT(&Account::phoneNumber, "7608675309");
 	//NBDL_MEMBER_MAXLENGTH(&Account::phoneNumber, 5000);
+
+	template<> 
+	struct MemberCustomValidator<NBDL_MEMBER(&Account::email)>
+	{
+		template<typename AddError>
+		static void validate(const std::string &value, AddError addError)
+		{
+			addError(ErrorToken::Custom1);
+		}
+	};
 }//nbdl
 
 #endif

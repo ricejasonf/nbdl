@@ -23,6 +23,7 @@ struct ValidateMember
 		validation::ValidateString<M, typename M::MemberType, AddError>
 			::call(m, addError);
 		//todo do other validation stuffs
+		MemberCustomValidator<M>::validate(entity.*M::ptr, addError);
 	}
 };
 
