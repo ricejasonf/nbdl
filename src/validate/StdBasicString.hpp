@@ -19,17 +19,13 @@ namespace {
 template<class M, class T, class Traits, class Alloc, class AddError>
 struct ValidateString<M, std::basic_string<T, Traits, Alloc>, AddError>
 {
-	//todo mitigate template bloat
+	//todo mitigate template bloat as this is created for every member that is a string
 	static void call(std::basic_string<T, Traits, Alloc> &member, AddError addError)
 	{
 		if (!MemberRawBuffer<M>::value)
-		{
 			boost::trim(member);
-		}
 		if (!MemberAllowBlank<M>::value && !member.size())
-		{
 			return addError(ErrorToken::Required);
-		}
 		if (validateStdBasicStringLength(
 					MemberStringMinLength<M>::value,
 					MemberStringMaxLength<M>::value,
