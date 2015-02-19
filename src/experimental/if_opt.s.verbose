@@ -1,0 +1,189 @@
+	.file	"if_opt.cpp"
+	.text
+	.p2align 4,,15
+	.type	_Z3log8LogLevelPKc.part.1, @function
+_Z3log8LogLevelPKc.part.1:
+.LFB1425:
+	.cfi_startproc
+	testq	%rdi, %rdi
+	pushq	%rbx
+	.cfi_def_cfa_offset 16
+	.cfi_offset 3, -16
+	movq	%rdi, %rbx
+	je	.L9
+	call	strlen
+	movq	%rbx, %rsi
+	movq	%rax, %rdx
+	movl	$_ZSt4cout, %edi
+	call	_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l
+.L3:
+	movq	_ZSt4cout(%rip), %rax
+	movq	-24(%rax), %rax
+	movq	_ZSt4cout+240(%rax), %rbx
+	testq	%rbx, %rbx
+	je	.L10
+	cmpb	$0, 56(%rbx)
+	je	.L5
+	movzbl	67(%rbx), %eax
+.L6:
+	movl	$_ZSt4cout, %edi
+	movsbl	%al, %esi
+	call	_ZNSo3putEc
+	popq	%rbx
+	.cfi_remember_state
+	.cfi_def_cfa_offset 8
+	movq	%rax, %rdi
+	jmp	_ZNSo5flushEv
+.L5:
+	.cfi_restore_state
+	movq	%rbx, %rdi
+	call	_ZNKSt5ctypeIcE13_M_widen_initEv
+	movq	(%rbx), %rax
+	movl	$10, %esi
+	movq	%rbx, %rdi
+	call	*48(%rax)
+	jmp	.L6
+.L9:
+	movq	_ZSt4cout(%rip), %rax
+	movq	-24(%rax), %rdi
+	addq	$_ZSt4cout, %rdi
+	movl	32(%rdi), %esi
+	orl	$1, %esi
+	call	_ZNSt9basic_iosIcSt11char_traitsIcEE5clearESt12_Ios_Iostate
+	jmp	.L3
+.L10:
+	call	_ZSt16__throw_bad_castv
+	.cfi_endproc
+.LFE1425:
+	.size	_Z3log8LogLevelPKc.part.1, .-_Z3log8LogLevelPKc.part.1
+	.p2align 4,,15
+	.globl	_Z3log8LogLevelPKc
+	.type	_Z3log8LogLevelPKc, @function
+_Z3log8LogLevelPKc:
+.LFB1266:
+	.cfi_startproc
+	cmpl	$3, %edi
+	jle	.L20
+	rep ret
+	.p2align 4,,10
+	.p2align 3
+.L20:
+	pushq	%rbx
+	.cfi_def_cfa_offset 16
+	.cfi_offset 3, -16
+	subq	$16, %rsp
+	.cfi_def_cfa_offset 32
+	testq	%rsi, %rsi
+	je	.L21
+	movq	%rsi, %rdi
+	movq	%rsi, 8(%rsp)
+	call	strlen
+	movq	8(%rsp), %rsi
+	movq	%rax, %rdx
+	movl	$_ZSt4cout, %edi
+	call	_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l
+.L14:
+	movq	_ZSt4cout(%rip), %rax
+	movq	-24(%rax), %rax
+	movq	_ZSt4cout+240(%rax), %rbx
+	testq	%rbx, %rbx
+	je	.L22
+	cmpb	$0, 56(%rbx)
+	je	.L16
+	movzbl	67(%rbx), %eax
+.L17:
+	movl	$_ZSt4cout, %edi
+	movsbl	%al, %esi
+	call	_ZNSo3putEc
+	addq	$16, %rsp
+	.cfi_remember_state
+	.cfi_def_cfa_offset 16
+	movq	%rax, %rdi
+	popq	%rbx
+	.cfi_restore 3
+	.cfi_def_cfa_offset 8
+	jmp	_ZNSo5flushEv
+	.p2align 4,,10
+	.p2align 3
+.L16:
+	.cfi_restore_state
+	movq	%rbx, %rdi
+	call	_ZNKSt5ctypeIcE13_M_widen_initEv
+	movq	(%rbx), %rax
+	movl	$10, %esi
+	movq	%rbx, %rdi
+	call	*48(%rax)
+	jmp	.L17
+	.p2align 4,,10
+	.p2align 3
+.L21:
+	movq	_ZSt4cout(%rip), %rax
+	movq	-24(%rax), %rdi
+	addq	$_ZSt4cout, %rdi
+	movl	32(%rdi), %esi
+	orl	$1, %esi
+	call	_ZNSt9basic_iosIcSt11char_traitsIcEE5clearESt12_Ios_Iostate
+	jmp	.L14
+.L22:
+	call	_ZSt16__throw_bad_castv
+	.cfi_endproc
+.LFE1266:
+	.size	_Z3log8LogLevelPKc, .-_Z3log8LogLevelPKc
+	.section	.rodata.str1.1,"aMS",@progbits,1
+.LC0:
+	.string	"overly verbose message"
+.LC1:
+	.string	"debug message"
+	.section	.text.startup,"ax",@progbits
+	.p2align 4,,15
+	.globl	main
+	.type	main, @function
+main:
+.LFB1267:
+	.cfi_startproc
+	subq	$8, %rsp
+	.cfi_def_cfa_offset 16
+	movl	$.LC0, %edi
+	call	_Z3log8LogLevelPKc.part.1
+	movl	$.LC1, %edi
+	call	_Z3log8LogLevelPKc.part.1
+	xorl	%eax, %eax
+	addq	$8, %rsp
+	.cfi_def_cfa_offset 8
+	ret
+	.cfi_endproc
+.LFE1267:
+	.size	main, .-main
+	.p2align 4,,15
+	.type	_GLOBAL__sub_I_logLevel, @function
+_GLOBAL__sub_I_logLevel:
+.LFB1423:
+	.cfi_startproc
+	subq	$8, %rsp
+	.cfi_def_cfa_offset 16
+	movl	$_ZStL8__ioinit, %edi
+	call	_ZNSt8ios_base4InitC1Ev
+	movl	$__dso_handle, %edx
+	movl	$_ZStL8__ioinit, %esi
+	movl	$_ZNSt8ios_base4InitD1Ev, %edi
+	addq	$8, %rsp
+	.cfi_def_cfa_offset 8
+	jmp	__cxa_atexit
+	.cfi_endproc
+.LFE1423:
+	.size	_GLOBAL__sub_I_logLevel, .-_GLOBAL__sub_I_logLevel
+	.section	.init_array,"aw"
+	.align 8
+	.quad	_GLOBAL__sub_I_logLevel
+	.globl	logLevel
+	.section	.rodata
+	.align 4
+	.type	logLevel, @object
+	.size	logLevel, 4
+logLevel:
+	.long	3
+	.local	_ZStL8__ioinit
+	.comm	_ZStL8__ioinit,1,1
+	.hidden	__dso_handle
+	.ident	"GCC: (Ubuntu/Linaro 4.8.1-10ubuntu9) 4.8.1"
+	.section	.note.GNU-stack,"",@progbits
