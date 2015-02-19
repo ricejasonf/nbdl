@@ -8,8 +8,7 @@ enum struct ErrorToken
 {
 	Invalid,
 	Required,
-	TooLong,
-	TooShort,
+	OutOfRange,
 	AboveMax,
 	BelowMin,
 	MatchFail,
@@ -28,8 +27,7 @@ static constexpr const char *toString(ErrorToken t)
 {
 	return	t == ErrorToken::Invalid	? "Invalid" 	:
 			t == ErrorToken::Required	? "Required" 	:
-			t == ErrorToken::TooLong	? "TooLong" 	:
-			t == ErrorToken::TooShort	? "TooShort" 	:
+			t == ErrorToken::OutOfRange	? "OutOfRange" 	:
 			t == ErrorToken::AboveMax	? "AboveMax" 	:
 			t == ErrorToken::BelowMin	? "BelowMin" 	:
 			t == ErrorToken::MatchFail	? "MatchFail" 	:

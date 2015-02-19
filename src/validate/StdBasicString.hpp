@@ -1,8 +1,20 @@
 #ifndef NBDL_VALIDATE_STDBASICSTRING_HPP
 #define NBDL_VALIDATE_STDBASICSTRING_HPP
 
+#include<string>
+#include<boost/algorithm/string/trim.hpp>
+#include "Regex.hpp"
+
 namespace nbdl {
 namespace validation {
+namespace {
+	template<class T, class Traits, class Alloc>
+	bool validateStdBasicStringLength(unsigned min, unsigned max, 
+		std::basic_string<T, Traits, Alloc> &str)
+	{
+		return (str.size() > max || str.size() < min);
+	}
+}//anon
 
 template<class M, class T, class Traits, class Alloc, class AddError>
 struct ValidateString<M, std::basic_string<T, Traits, Alloc>, AddError>
@@ -10,12 +22,23 @@ struct ValidateString<M, std::basic_string<T, Traits, Alloc>, AddError>
 	//todo mitigate template bloat
 	static void call(std::basic_string<T, Traits, Alloc> &member, AddError addError)
 	{
-		//todo trim whitespace
-		if (member.size() > MemberStringMaxLength<M>::value)
+		if (!MemberRawBuffer<M>::value)
 		{
-			addError(ErrorToken::TooLong);
-			return;
+			boost::trim(member);
 		}
+		if (!MemberAllowBlank<M>::value && !member.size())
+		{
+			return addError(ErrorToken::Required);
+		}
+		if (validateStdBasicStringLength(
+					MemberStringMinLength<M>::value,
+					MemberStringMaxLength<M>::value,
+					member))
+			return addError(ErrorToken::OutOfRange);
+		if (MemberMatch<M>::value != nullptr 
+			&& !Regex::match(MemberMatch<M>::value, member))
+			return addError(ErrorToken::MatchFail);
+			
 	}
 };
 
