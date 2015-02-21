@@ -82,44 +82,24 @@ int main()
 }
 
 /*
-	//MyArcusEntityRoot arcus();
-	   the arcusContainer should have the backend pointer and the entity root creates
-	   request objects with callbacks
-	arcusContainer.async(arcus.clients(15).accounts(5)
-			.retrieve()
-				.success([](Account &a) { })
-				.notFound([]() {  })
-				.fail([]() {  })
-		);
-	
-	Account account = arcus.clients(15).accounts(5).create();
-	account
-		.nameFirst("Blah")
-		.age(15)
-		.address()
-			.line1("123 Spring Rd.")
-			.city("Henderson")
-			.zipCode(89015)
-		.addRun(Run()
-			.seconds(1045)
-			.miles(1.65))
-		;
-	arcusContainer.async(arcus.clients(15).accounts(5)
-			.save(account)
-				.success([]() {  })
-				.validationFail([]() {  })
-				.fail([]() {  })
-		);
+path("/client/1/property/5/account/27");
 
-	arcusContainer.async(arcus.clients(15).accounts(5)
-			.listen([this](ValueMap diff) {  })
-		);
-			
-	account.address()
-		.setLine1("123 Spork Rd.")
-		.setCity("Henderson")
-		.setState("NV")
-		.setZip("89015");
+path(Client{}, 1, Property{}, 5, Account{}, 27);
 
-}
+key(NBDL_MEMBER(&Account::id), 27);
+
+client.path(Account{}, 1)
+	.get(
+		nbdl::cb::Done([&](Account account) {  }),
+		nbdl::cb::NotFound([&]() { }),
+		nbdl::cb::Fail([&]() {  }) 
+	);
+
+client.path(Account{}, 1)
+	.listen(
+		nbdl::cb::Diff([&](nbdl::Diff<Account> accountDiff) {  }),
+		//below is only for the initial handshake
+		nbdl::cb::NotFound([&]() { }),
+		nbdl::cb::Fail([&]() {  }) 
+	);
 */
