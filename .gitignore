@@ -1,0 +1,4 @@
+build/*
+examples/*/build/*
+*.s
+a.out
