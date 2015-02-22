@@ -1,8 +1,6 @@
 #ifndef BINDER_HPP
 #define BINDER_HPP
 
-#include "Entity.hpp"
-
 namespace nbdl {
 
 template<class Impl>

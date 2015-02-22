@@ -1,10 +1,11 @@
-#ifndef NBDL_EMSCRIPTEN_WRITE_HPP
-#define NBDL_EMSCRIPTEN_WRITE_HPP
+#ifndef NBDL_BINDERS_EMSCRIPTEN_WRITE_HPP
+#define NBDL_BINDERS_EMSCRIPTEN_WRITE_HPP
 
 #include<string>
 #include<emscripten/val.h>
 
 namespace nbdl {
+namespace binders {
 namespace emscripten {
 
 class Write
@@ -32,6 +33,7 @@ class Write
 };
 
 }//emscripten
+}//binders
 }//nbdl
 
 #endif

@@ -1,11 +1,12 @@
-#ifndef NBDL_EMSCRIPTEN_READ_HPP
-#define NBDL_EMSCRIPTEN_READ_HPP
+#ifndef NBDL_BINDERS_EMSCRIPTEN_READ_HPP
+#define NBDL_BINDERS_EMSCRIPTEN_READ_HPP
 
 #include<type_traits>
 #include<string>
 #include<emscripten/val.h>
 
 namespace nbdl {
+namespace binders {
 namespace emscripten {
 
 class Read
@@ -52,6 +53,7 @@ class Read
 };
 
 }//emscripten
+}//binders
 }//nbdl
 /*
 	//ideas

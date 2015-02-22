@@ -13,7 +13,6 @@ struct Account
 	std::string nameFirst;
 	std::string nameLast;
 	std::string phoneNumber;
-	std::string phoneNumber2;
 	std::string email;
 	unsigned int age;
 	Address address;
@@ -26,7 +25,6 @@ namespace nbdl {
 			nameFirst,
 			nameLast,
 			phoneNumber,
-			phoneNumber2,
 			email,
 			age,
 			address,
@@ -35,7 +33,6 @@ namespace nbdl {
 	NBDL_MEMBER_MINLENGTH(&Account::nameFirst, 2);
 	NBDL_MEMBER_MINLENGTH(&Account::nameLast, 2);
 	NBDL_MEMBER_MATCH(&Account::phoneNumber, "^[0-9]{10}$");
-	NBDL_MEMBER_MATCH(&Account::phoneNumber2, "^[0-9]{10}$");
 	NBDL_MEMBER_DEFAULT(&Account::phoneNumber, "7608675309");
 
 	//NBDL_MEMBER_MAXLENGTH(&Account::phoneNumber, 5000);

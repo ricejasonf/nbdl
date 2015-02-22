@@ -6,11 +6,22 @@
 #include <Bind.hpp>
 #include <Validate.hpp>
 
+#ifdef EMSCRIPTEN
+#include <binders/emscripten/Read.h>
+#include <binders/emscripten/Write.h>
+#include <binders/emscripten/ValidationErrors.hpp>
+using Read = typename nbdl::binders::emscripten::Read;
+using Write = nbdl::binders::emscripten::Write;
+using ValidationErrors = nbdl::binders::emscripten::ValidationErrors;
+#else //EMSCRIPTEN
 #include <binders/JsonRead.h>
 #include <binders/JsonWrite.h>
 #include <binders/JsonCppErrorBinder.hpp>
-//#include <binders/JsonCppApplyDiff.hpp>
 #include <jsoncpp/json/json.h>
+using Read = nbdl::JsonRead;
+using Write = nbdl::JsonWrite;
+using ValidationErrors = nbdl::binders::JsonCppValidationErrors;
+#endif //EMSCRIPTEN
 
 
 #include "Account.h"

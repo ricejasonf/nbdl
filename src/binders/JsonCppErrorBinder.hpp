@@ -19,9 +19,7 @@ class JsonCppValidationErrors
 
 	void addError(std::string name, ErrorToken token)
 	{
-		auto array = Json::Value(Json::arrayValue);
-		array.append(toString(token));
-		jsonVal[name] = array;
+		jsonVal[name] = toString(token);
 	}
 
 	template<typename Functor>
