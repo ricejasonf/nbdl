@@ -9,12 +9,12 @@ namespace emscripten {
 
 class Write
 {
-	emscripten::val jsonVal;
+	emscripten::val emVal;
 
 	public:
 
 	Write() :
-		jsonVal(emscripten::val::object()) {}
+		emVal(emscripten::val::object()) {}
 
 	template<typename T>
 	void bindMember(const std::string name, T &t)
@@ -27,7 +27,7 @@ class Write
 	{
 		Write writer();
 		bind(writer);
-		jsonVal.set(name, writer.jsonVal);
+		emVal.set(name, writer.emVal);
 	}
 };
 

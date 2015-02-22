@@ -1,6 +1,7 @@
 #ifndef NBDL_EMSCRIPTEN_READ_HPP
 #define NBDL_EMSCRIPTEN_READ_HPP
 
+#include<type_traits>
 #include<string>
 #include<emscripten/val.h>
 
@@ -12,33 +13,33 @@ class Read
 	//entities will be wrapped by javascript
 	//side code to support duck typing of properties
 	//to fail on invalid inputs
-	emscripten::val &jsonVal;
+	emscripten::val &emVal;
 
 	Read createObjectReader(const std::string name)
 	{
-		Read reader(jsonVal[name]);
+		Read reader(emVal[name]);
 		return reader;
 	}
 
 	public:
 
 	Read(emscripten::val &val) :
-		jsonVal(val) {}
+		emVal(val) {}
 
 	template<typename T>
-	void bindMember(const std::string name, T &t)
+	std::enable_if<std::is_integral<T>::value>::type
+		bindMember(const std::string name, T &member)
 	{
-		//ideas
-		jsonVal.call<void>("requiredString", name);
-		jsonVal.call<void>("requiredIntegral", name);
-		jsonVal.call<void>("requiredNumber", name);
-		jsonVal.call<void>("requiredBoolean", name);
-		jsonVal.call<void>("requiredObject", name);
-		jsonVal.call<void>("optionalString", name);
-		jsonVal.call<void>("optionalIntegral", name);
-		jsonVal.call<void>("optionalNumber", name);
-		jsonVal.call<void>("optionalBoolean", name);
-		jsonVal.call<void>("optionalObject", name);
+		emVal.call<void>("requiredIntegral", name);
+		member = emVal[name];
+	}
+	//todo double, float, bool, optionals
+
+	template<>
+	void bindMember<std::string>(const std::string name, std::string &member)
+	{
+		emVal.call<void>("requiredString", name);
+		member = emVal[name];
 	}
 
 	template<class BinderFn>
@@ -52,5 +53,18 @@ class Read
 
 }//emscripten
 }//nbdl
+/*
+	//ideas
+	emVal.call<void>("requiredIntegral", name);
+	emVal.call<void>("requiredString", name);
+	emVal.call<void>("requiredNumber", name);
+	emVal.call<void>("requiredBoolean", name);
+	emVal.call<void>("requiredObject", name);
+	emVal.call<void>("optionalString", name);
+	emVal.call<void>("optionalIntegral", name);
+	emVal.call<void>("optionalNumber", name);
+	emVal.call<void>("optionalBoolean", name);
+	emVal.call<void>("optionalObject", name);
+*/
 
 #endif
