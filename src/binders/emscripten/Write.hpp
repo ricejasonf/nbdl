@@ -8,11 +8,13 @@ namespace nbdl {
 namespace binders {
 namespace emscripten {
 
+namespace emscripten = ::emscripten;
+
 class Write
 {
-	emscripten::val emVal;
-
 	public:
+
+	emscripten::val emVal;
 
 	Write() :
 		emVal(emscripten::val::object()) {}
@@ -20,13 +22,13 @@ class Write
 	template<typename T>
 	void bindMember(const std::string name, T &t)
 	{
-		jsvonVal.set(name, emscripten::val(t))
+		emVal.set(name, emscripten::val(t));
 	}
 
 	template<class BinderFn>
 	void bindEntity(const std::string name, BinderFn bind)
 	{
-		Write writer();
+		Write writer;
 		bind(writer);
 		emVal.set(name, writer.emVal);
 	}

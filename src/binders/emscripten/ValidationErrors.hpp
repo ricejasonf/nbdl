@@ -8,15 +8,17 @@ namespace nbdl {
 namespace binders {
 namespace emscripten {
 
+namespace emscripten = ::emscripten;
+
 class ValidationErrors
 {
-	emscripten::val &emVal;
-
 	public:
+
+	emscripten::val emVal;
 
 	using NameFormat = DefaultNameFormat;
 
-	Errors() :
+	ValidationErrors() :
 		emVal(emscripten::val::object()) {}
 
 	void addError(std::string name, ErrorToken token)
@@ -27,7 +29,7 @@ class ValidationErrors
 	template<typename Functor>
 	void validateChild(const std::string name, Functor fn)
 	{
-		ValidationErrors errors();
+		ValidationErrors errors;
 		fn(errors);
 		emVal.set(name, errors.emVal);
 	}

@@ -6,26 +6,44 @@
 #include <Bind.hpp>
 #include <Validate.hpp>
 
+#include "Account.h"
+
 #ifdef EMSCRIPTEN
-#include <binders/emscripten/Read.h>
-#include <binders/emscripten/Write.h>
+#include <binders/emscripten/Read.hpp>
+#include <binders/emscripten/Write.hpp>
 #include <binders/emscripten/ValidationErrors.hpp>
+#include <emscripten/val.h>
 using Read = typename nbdl::binders::emscripten::Read;
 using Write = nbdl::binders::emscripten::Write;
 using ValidationErrors = nbdl::binders::emscripten::ValidationErrors;
+void fromString(std::string &json, Account &account)
+{
+	//todo create js object from json string
+	emscripten::val emVal = emscripten::val::global("JSON").call<emscripten::val>("parse", json);
+	Read r(emVal);
+	nbdl::bind(r, account);
+}
+
+std::string toString(Account &account)
+{
+	Write r;
+
+	nbdl::bind(r, account);
+	return r.emVal.template as<std::string>();
+}
+
+std::string validate(Account &account)
+{
+	ValidationErrors e;
+
+	nbdl::validate(e, account);
+	return e.emVal.template as<std::string>();
+}
 #else //EMSCRIPTEN
 #include <binders/JsonRead.h>
 #include <binders/JsonWrite.h>
 #include <binders/JsonCppErrorBinder.hpp>
 #include <jsoncpp/json/json.h>
-using Read = nbdl::JsonRead;
-using Write = nbdl::JsonWrite;
-using ValidationErrors = nbdl::binders::JsonCppValidationErrors;
-#endif //EMSCRIPTEN
-
-
-#include "Account.h"
-
 void fromString(std::string &json, Account &account)
 {
 	Json::Reader reader;
@@ -55,10 +73,10 @@ std::string validate(Account &account)
 	nbdl::validate(e, account);
 	return writer.write(root);
 }
+#endif //EMSCRIPTEN
 
 int main()
 {
-	Json::StyledWriter writer;
 	auto account = Account();
 	std::string inputJson, outputJson;
 	for (std::string line; std::getline(std::cin, line);)
@@ -68,28 +86,6 @@ int main()
 
 	std::cout << validate(account);
 	std::cout << toString(account);
-
-	/*
-	Json::Value changes(Json::objectValue);
-	changes["nameLast"] = "Fartface";
-	changes["age"] = 34;
-	changes["address"] = Json::Value(Json::objectValue);
-	changes["address"]["city"] = "Hendertucky";
-	changes["foods"] = Json::Value(Json::arrayValue);
-	changes["foods"].append(Json::Value(Json::objectValue));
-	changes["foods"].append(Json::Value(Json::objectValue));
-	changes["foods"].append(Json::Value(Json::objectValue));
-	changes["foods"][1]["name"] = "Some Kind Crazy Food";
-	changes["foods"][2]["foodGroup"]["name"] = "Crazy Food Group";
-	std::cout << writer.write(changes);
-	//JsonCppApplyDiff changeBinder(changes);
-	//account.bindMembers(changeBinder);
-
-	Json::Value root(Json::objectValue);
-	nbdl::JsonWrite writeBinder(root);
-	account.bindMembers(writeBinder);
-	std::cout << writer.write(root);
-	*/
 }
 
 /*

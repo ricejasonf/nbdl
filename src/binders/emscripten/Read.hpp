@@ -9,13 +9,13 @@ namespace nbdl {
 namespace binders {
 namespace emscripten {
 
+namespace emscripten = ::emscripten;
+
 class Read
 {
 	//entities will be wrapped by javascript
 	//side code to support duck typing of properties
 	//to fail on invalid inputs
-	emscripten::val &emVal;
-
 	Read createObjectReader(const std::string name)
 	{
 		Read reader(emVal[name]);
@@ -24,24 +24,20 @@ class Read
 
 	public:
 
-	Read(emscripten::val &val) :
+	emscripten::val emVal;
+
+	Read(emscripten::val val) :
 		emVal(val) {}
 
 	template<typename T>
-	std::enable_if<std::is_integral<T>::value>::type
+	//typename std::enable_if<std::is_integral<T>::value>::type
+	void
 		bindMember(const std::string name, T &member)
 	{
 		emVal.call<void>("requiredIntegral", name);
 		member = emVal[name];
 	}
 	//todo double, float, bool, optionals
-
-	template<>
-	void bindMember<std::string>(const std::string name, std::string &member)
-	{
-		emVal.call<void>("requiredString", name);
-		member = emVal[name];
-	}
 
 	template<class BinderFn>
 	void bindEntity(const std::string name, BinderFn bind)
@@ -51,6 +47,13 @@ class Read
 	}
 			
 };
+template<>
+void Read::bindMember<std::string>(const std::string name, std::string &member)
+{
+	emVal.call<void>("requiredString", name);
+	emscripten::val temp = emVal[name];
+	member = temp.as<std::string>();
+}
 
 }//emscripten
 }//binders

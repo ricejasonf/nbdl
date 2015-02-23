@@ -2,7 +2,7 @@
 #define NBDL_VALIDATE_STDBASICSTRING_HPP
 
 #include<string>
-#include<boost/algorithm/string/trim.hpp>
+//#include<boost/algorithm/string/trim.hpp>
 #include "Regex.hpp"
 
 namespace nbdl {
@@ -22,8 +22,10 @@ struct ValidateString<M, std::basic_string<T, Traits, Alloc>, AddError>
 	//todo mitigate template bloat as this is created for every member that is a string
 	static void call(std::basic_string<T, Traits, Alloc> &member, AddError addError)
 	{
+		/* emscripten build unable to find boost for include path
 		if (!MemberRawBuffer<M>::value)
 			boost::trim(member);
+		*/
 		if (!MemberAllowBlank<M>::value && !member.size())
 			return addError(ErrorToken::Required);
 		if (validateStdBasicStringLength(
