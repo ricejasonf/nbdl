@@ -37,7 +37,7 @@ std::string validate(Account &account)
 	ValidationErrors e;
 
 	nbdl::validate(e, account);
-	return e.emVal.template as<std::string>();
+	return emscripten::val::global("JSON").call<std::string>("stringify", e.emVal);
 }
 #else //EMSCRIPTEN
 #include <binders/JsonRead.h>
@@ -88,7 +88,7 @@ int main()
 
 	fromString(inputJson, account);
 
-	//std::cout << validate(account);
+	std::cout << validate(account);
 	std::cout << toString(account);
 	std::cout << std::endl;
 	std::cout << +nbdl::MemberId<NBDL_MEMBER(&Account::nameFirst)>::value;
