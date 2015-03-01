@@ -29,7 +29,7 @@ std::string toString(Account &account)
 	Write r;
 
 	nbdl::bind(r, account);
-	return r.emVal.template as<std::string>();
+	return emscripten::val::global("JSON").call<std::string>("stringify", r.emVal);
 }
 
 std::string validate(Account &account)
@@ -79,12 +79,16 @@ int main()
 {
 	auto account = Account();
 	std::string inputJson, outputJson;
+	/*
 	for (std::string line; std::getline(std::cin, line);)
 		inputJson += line;
+		*/
+
+	inputJson = " { \"nameFirst\": \"Jason\", \"nameLast\": \"Rice\", \"phoneNumber\": \"7024569874...................................................\", \"email\": \"ricejasonf@gmail.com\", \"age\": 29, \"address\": { \"line1\":\"  123 Spork Rd.  \", \"line2\":\"\", \"city\":\"Las Vegas\", \"zipCode\":\"89015\", \"state\":\"NV\" }, \"food\": { \"id\": 1, \"name\": \"Banana\", \"foodGroup\": { \"name\": \"Fruits\" } } }";
 
 	fromString(inputJson, account);
 
-	std::cout << validate(account);
+	//std::cout << validate(account);
 	std::cout << toString(account);
 	std::cout << std::endl;
 	std::cout << +nbdl::MemberId<NBDL_MEMBER(&Account::nameFirst)>::value;

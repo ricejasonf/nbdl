@@ -34,7 +34,7 @@ class Read
 	void
 		bindMember(const std::string name, T &member)
 	{
-		emVal.call<void>("requiredIntegral", name);
+		//emVal.call<void>("requiredIntegral", name);
 		emscripten::val temp = emVal[name];
 		member = temp.as<T>();
 	}
@@ -48,13 +48,15 @@ class Read
 	}
 			
 };
+/*
 template<>
 void Read::bindMember<std::string>(const std::string name, std::string &member)
 {
-	emVal.call<void>("requiredString", name);
+	//emVal.call<void>("requiredString", name);
 	emscripten::val temp = emVal[name];
 	member = temp.as<std::string>();
 }
+*/
 
 }//emscripten
 }//binders
