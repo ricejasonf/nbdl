@@ -17,17 +17,17 @@ else (${NBDL_APP_BIN_NAME})
 endif (${NBDL_APP_BIN_NAME})
 #regex stuff
 if (${EMSCRIPTEN})
-# apparently the newer version (1.29.) of emscripten didn't need this stuff??
-# don't delete it just yet
-#	if (NOT ${PROJECT_NAME} STREQUAL "nbdl")
-#		#run em++ to compile bitcode into javascript
+	if (NOT ${PROJECT_NAME} STREQUAL "nbdl")
+# below is deprecated use 
+# emcmake cmake -DCMAKE_BUILD_TYPE=blah ../../src/
+# this runs em++ to compile bitcode into javascript (obsoleted by emcmake)
 #		add_custom_target("${PROJECT_NAME}.js"
 #			ALL
 #			cp ${NBDL_APP_BIN_NAME} ${NBDL_APP_BIN_NAME}.bc
 #				&& em++ --bind ${NBDL_APP_BIN_NAME}.bc -o ${PROJECT_NAME}.js
 #			COMMENT "Building Javascript with emscripten..."
 #			)
-#	endif (NOT ${PROJECT_NAME} STREQUAL "nbdl")
+	endif (NOT ${PROJECT_NAME} STREQUAL "nbdl")
 else (${EMSCRIPTEN})
 	set(Boost_USE_STATIC_LIBS ON)
 	set(Boost_USE_MULTITHREADED ON)
