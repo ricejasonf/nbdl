@@ -86,6 +86,13 @@ int main()
 
 	std::cout << validate(account);
 	std::cout << toString(account);
+	std::cout << std::endl;
+	std::cout << +nbdl::MemberId<NBDL_MEMBER(&Account::nameFirst)>::value;
+	std::cout << std::endl;
+	std::cout << +nbdl::MemberId<NBDL_MEMBER(&Account::nameLast)>::value;
+	std::cout << std::endl;
+	std::cout << +nbdl::MemberId<NBDL_MEMBER(&Account::phoneNumber)>::value;
+	std::cout << std::endl;
 }
 
 /*

@@ -35,7 +35,8 @@ class Read
 		bindMember(const std::string name, T &member)
 	{
 		emVal.call<void>("requiredIntegral", name);
-		member = emVal[name];
+		emscripten::val temp = emVal[name];
+		member = temp.as<T>();
 	}
 	//todo double, float, bool, optionals
 

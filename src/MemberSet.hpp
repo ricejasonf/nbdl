@@ -8,6 +8,7 @@
 namespace nbdl {
 namespace detail {
 template<uintptr_t p1, uintptr_t... pN>
+//i believe that NumberSet is no longer used
 struct NumberSet : NumberSet<pN...>
 {
 	template<uintptr_t t, int i = 0, bool passed = false> 
@@ -63,13 +64,7 @@ struct MemberSet<M1, Mn...>
 {
 	using Member = M1;
 	using Next = MemberSet<Mn...>;
-	using Offsets = detail::NumberSet<M1::offset, Mn::offset...>;
-
-	template<typename M>
-	static constexpr int indexOf()
-	{
-		return Offsets::template indexOf<M::offset>();
-	}
+	static const unsigned size = sizeof...(Mn) + 1;
 };
 
 template<class Mset, class = void>

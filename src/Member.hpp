@@ -2,6 +2,7 @@
 #define NBDL_MEMBER_HPP
 
 #include<string>
+#include<cstdint>
 
 namespace nbdl {
 
@@ -10,9 +11,10 @@ struct Member
 {
 	using OwnerType = Owner;
 	using MemberType = T;
-	static constexpr uintptr_t offset = (uintptr_t)&((Owner*)nullptr->*p);
 	static constexpr T Owner::*ptr = p;
 };
+template<class M>
+struct MemberId;
 
 template<typename T>
 struct MemberTraits;
@@ -89,7 +91,10 @@ struct MemberCustomValidator
 /*
  * MACROS
  */
-#define NBDL_MEMBER(mptr) Member<typename MemberTraits<decltype(mptr)>::OwnerType, typename MemberTraits<decltype(mptr)>::MemberType, mptr>
+#define NBDL_MEMBER(mptr) ::nbdl::Member<typename ::nbdl::MemberTraits<decltype(mptr)>::OwnerType, typename ::nbdl::MemberTraits<decltype(mptr)>::MemberType, mptr>
+
+#define NBDL_MEMBER_ID(mptr, v) template<> struct MemberId<NBDL_MEMBER(mptr)> \
+{ static const uint8_t value = v; };
 
 #define NBDL_MEMBER_NAME(Owner, member_name) \
 template<> \
