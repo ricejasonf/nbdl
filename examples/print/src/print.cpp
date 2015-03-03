@@ -106,18 +106,36 @@ path(Client{}, 1, Property{}, 5, Account{}, 27);
 
 key(NBDL_MEMBER(&Account::id), 27);
 
-client.path(Account{}, 1)
+client.path<Account>()
+	.createNew(accountObj,
+		nbdl::cb::Done([&](Account account) {  }),
+		nbdl::cb::Fail([&]() {  }) 
+	)
+	.change([&](nbdl::Diff<Account> accountDiff) {  
+		//do stuff
+	});
+client.path<Account>(5)
+	.update(accountDiff,
+		nbdl::cb::Done([&](Account account) {  }),
+		nbdl::cb::NotFound([&]() { }),
+		nbdl::cb::Fail([&]() {  }) 
+	)
+	.change([&](nbdl::Diff<Account> accountDiff) {  
+		//do stuff
+	});
+client.path<Account>(5)
 	.get(
 		nbdl::cb::Done([&](Account account) {  }),
 		nbdl::cb::NotFound([&]() { }),
 		nbdl::cb::Fail([&]() {  }) 
-	);
-
-client.path(Account{}, 1)
-	.listen(
-		nbdl::cb::Diff([&](nbdl::Diff<Account> accountDiff) {  }),
-		//below is only for the initial handshake
+	)
+	.change([&](nbdl::Diff<Account> accountDiff) {  
+		//do stuff
+	});
+client.path<Account>(5)
+	.delete(
+		nbdl::cb::Done([&]() {  }),
 		nbdl::cb::NotFound([&]() { }),
 		nbdl::cb::Fail([&]() {  }) 
-	);
+	)
 */

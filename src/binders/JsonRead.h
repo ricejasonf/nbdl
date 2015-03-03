@@ -3,13 +3,11 @@
 
 #include<string>
 #include<jsoncpp/json/json.h>
-#include "../Binder.hpp"
 
 namespace nbdl {
 
-class JsonRead : public Binder<JsonRead>
+class JsonRead
 {
-	friend class Binder<JsonRead>;
 	void bind(const std::string, bool &);
 	void bind(const std::string, unsigned int &);
 	void bind(const std::string, int &);
@@ -22,11 +20,17 @@ class JsonRead : public Binder<JsonRead>
 
 	public:
 
+	template<typename T>
+	void bindMember(const std::string name, T &field)
+	{
+		bind(name, field);
+	}
+
 	template<class BinderFn>
-	void bindEntity(const std::string name, BinderFn bind)
+	void bindEntity(const std::string name, BinderFn bindFn)
 	{
 		JsonRead reader = createObjectReader(name);
-		bind(reader);
+		bindFn(reader);
 	}
 
 	JsonRead(const Json::Value &value);

@@ -4,7 +4,7 @@ project(nbdl)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-add_definitions(-std=c++11 --bind)
+add_definitions(-std=c++11)
 
 #all header library is looking pretty good right now
 if (${EMSCRIPTEN})
