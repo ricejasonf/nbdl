@@ -17,11 +17,14 @@ struct Promise
 	void setValue(Type v)
 	{
 		value = v;
+		//todo call all callbacks for this resource... hmmm..
 	}
 
 	template<typename Fn>
 	Promise<typename LambdaTraits<Fn>::ReturnType> then(Fn fn)
 	{
+		//initialize a request
+		//todo register callback in static map/vector thingy
 		return PromiseFulfill<typename LambdaTraits<Fn>::ReturnType, Type, Fn>::call(value, fn);
 	}
 };

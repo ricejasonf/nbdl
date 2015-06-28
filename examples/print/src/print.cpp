@@ -99,43 +99,39 @@ int main()
 	std::cout << std::endl;
 }
 
-/*
-path("/client/1/property/5/account/27");
+/* the desired interface so far... i think
+   where the heck would i use this?
 
-path(Client{}, 1, Property{}, 5, Account{}, 27);
+ref = nbdl::makeNetRef<Account>(5);
+nbdl::Promise(
+	ref.get(),
+	nbdl::Promise::NotFound([]() {
+		nbdl::log("not found");
+	}),
+	nbdl::Promise::Fail([]() {
+		nbdl::log("Something bad happened while just trying to get the entity.");
+	}),
+	[](Account account) {
+		account.first_name = "Foo";
+		return nbdl::save(account);
+	},
+	[]() {
+		nbdl::log("A message returned saying that the save operation was completed successfully, but we typically assume everything went okay immediately.");
+	},
+	nbdl::Promise::Fail([]() {
+		nbdl::log("Save failed so the ui should roll stuff back or display an error or something.");
+	})
+);
 
-key(NBDL_MEMBER(&Account::id), 27);
+nbdl::Promise promise = ref.read();
+promise
+	.resolve([](Account account) {})
+	.notFound([]() {})
+	.fail([]() {})
+	;
 
-client.path<Account>()
-	.createNew(accountObj,
-		nbdl::cb::Done([&](Account account) {  }),
-		nbdl::cb::Fail([&]() {  }) 
-	)
-	.change([&](nbdl::Diff<Account> accountDiff) {  
-		//do stuff
-	});
-client.path<Account>(5)
-	.update(accountDiff,
-		nbdl::cb::Done([&](Account account) {  }),
-		nbdl::cb::NotFound([&]() { }),
-		nbdl::cb::Fail([&]() {  }) 
-	)
-	.change([&](nbdl::Diff<Account> accountDiff) {  
-		//do stuff
-	});
-client.path<Account>(5)
-	.get(
-		nbdl::cb::Done([&](Account account) {  }),
-		nbdl::cb::NotFound([&]() { }),
-		nbdl::cb::Fail([&]() {  }) 
-	)
-	.change([&](nbdl::Diff<Account> accountDiff) {  
-		//do stuff
-	});
-client.path<Account>(5)
-	.delete(
-		nbdl::cb::Done([&]() {  }),
-		nbdl::cb::NotFound([&]() { }),
-		nbdl::cb::Fail([&]() {  }) 
-	)
+
+account.listen([](nbdl::Diff<Account>, nbdl::makeNetRef) {
+	nbdl::log << "The account changed."
+});
 */
