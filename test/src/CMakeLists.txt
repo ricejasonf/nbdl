@@ -11,6 +11,9 @@ add_executable(test
 	test.cpp
 	factorial.cpp
 	bind_json.cpp
+	access_point.cpp
+	msg_id.cpp
+	api_read.cpp
 	)
 
 SET(LIBNBDL_DIR

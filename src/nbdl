@@ -1,0 +1,32 @@
+#ifndef NBDL_MAIN_HEADER_FILE
+#define NBDL_MAIN_HEADER_FILE
+
+#include <EntityTraits.hpp>
+#include <MemberSet.hpp>
+#include <Bind.hpp>
+#include <Validate.hpp>
+
+#include <Bind.hpp>
+//#include <Context.hpp>
+#include <EntityTraits.hpp>
+#include <ErrorToken.hpp>
+#include <LambdaTraits.hpp>
+#include <Member.hpp>
+//#include <NetRef.hpp>
+#include <Optional.hpp>
+//#include <Promise.hpp>
+#include <Regex.hpp>
+#include <AccessPoint.hpp>
+
+#include <binders/JsonCppApplyDiff.hpp>
+#include <binders/JsonCppErrorBinder.hpp>
+//DEPRECATED #include <binders/JsonCppValidation.h>
+#include <binders/JsonRead.h>
+#include <binders/JsonWrite.h>
+
+#include <validate/StdBasicString.hpp>
+#include <optional/boost.hpp>
+
+#include <msg/MsgId.hpp>
+
+#endif

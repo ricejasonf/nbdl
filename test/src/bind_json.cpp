@@ -1,16 +1,20 @@
 #include <string>
 
+/*
 #include <EntityTraits.hpp>
 #include <MemberSet.hpp>
 #include <Bind.hpp>
 #include <Validate.hpp>
+*/
 
-#include "assets/AccountEntity.hpp"
-
+#include <nbdl>
+/*
 #include <binders/JsonRead.h>
 #include <binders/JsonWrite.h>
 #include <binders/JsonCppErrorBinder.hpp>
+*/
 #include <jsoncpp/json/json.h>
+#include "assets/AccountEntity.hpp"
 
 void fromString(std::string &json, Account &account)
 {

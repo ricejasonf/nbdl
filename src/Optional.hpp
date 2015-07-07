@@ -24,6 +24,4 @@ struct EnableIfOptional<T, R, typename std::enable_if<IsOptional<T>::value>::typ
 
 }//nbdl
 
-#include "optional/boost.hpp"
-
-#endif;
+#endif
