@@ -28,12 +28,19 @@ struct MyApi
 	//NBDL_API_STUB_READ(MyEntityPath);
 };
 
+struct Server
+{
+	//read 
+	//check store
+	//returns promise		
+}
+
 //todo create the Server interface
 //and have a wrapper that uses the api
 
 TEST_CASE("Read an entity from an Api.", "[api]") 
 {
-	nbdl::Api<MyApi> api;
+	nbdl::Context<MyApi> api;
 	MyApi::ClientPath clientPath(1);
 	api.read(clientPath)
 		.then([](Client client) {
