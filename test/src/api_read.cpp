@@ -30,37 +30,31 @@ struct MyApi
 
 struct Server
 {
-	//read 
-	//check store
-	//returns promise		
-}
+	template<typename Fn>
+	void read(MyApi::ClientPath path, Fn fn)
+	{
+		Client client;
+		client.id = path.key;
+		fn(client);
+	}
+};
 
 //todo create the Server interface
 //and have a wrapper that uses the api
 
-TEST_CASE("Read an entity from an Api.", "[api]") 
+TEST_CASE("Start a read from a Context.", "[api]") 
 {
-	nbdl::Context<MyApi> api;
+	nbdl::Context<Server, MyApi> ctz;
 	MyApi::ClientPath clientPath(1);
-	api.read(clientPath)
-		.then([](Client client) {
-			REQUIRE(client.id == 1);
+	ctx.read(clientPath,
+		[](nbdl::Unresolved) {
+			REQUIRE(true)
+		},
+		[](nbdl::NotFound) {
+			REQUIRE(false)
+		},
+		[](const Client& client) {
+			REQUIRE(false)
+			//REQUIRE(client.id == 1);
 		});
 }
-/*
-TEST_CASE("Read an entity and then its child from an Api.", "[api]") 
-{
-	MyApi api;
-	MyApi::ClientPath clientPath(1);
-	MyApi::MyEntityPath myEntityPath(5, clientPath);
-	api.read(MyApi::ClientPath(1))
-		.then([clientPath](Client client) {
-			REQUIRE(client.id == 1);
-			return api.read(MyApi::MyEntityPath(5, clientPath))
-		})
-		.then(api.read(MyApi::MyEntityPath(5, MyApi::ClientPath(1))))
-		.then([](MyEntity ent) {
-			REQUIRE(ent.id == 5);
-		});
-}
-*/

@@ -1,7 +1,9 @@
 #ifndef NBDL_PROMISE_HPP
 #define NBDL_PROMISE_HPP
 
-#include<boost/optional.hpp>
+#include<boost/variant.hpp>
+#include<vector>
+#include<functional>
 #include "LambdaTraits.hpp"
 
 namespace nbdl {
@@ -12,9 +14,13 @@ struct PromiseFulfill;
 template<typename Type>
 struct Promise
 {
-	boost::optional<Type> value;
+	//tag dispatch types
+	struct Indeterminate {};
+	struct Fail {};
+	struct ValidationFail {};
+	struct NotFound {};
 
-	void setValue(Type v)
+	void resolve(Type v)
 	{
 		value = v;
 		//todo call all callbacks for this resource... hmmm..
@@ -23,10 +29,16 @@ struct Promise
 	template<typename Fn>
 	Promise<typename LambdaTraits<Fn>::ReturnType> then(Fn fn)
 	{
-		//initialize a request
-		//todo register callback in static map/vector thingy
+		//check if values exist
+		//store wrapper for fn	
 		return PromiseFulfill<typename LambdaTraits<Fn>::ReturnType, Type, Fn>::call(value, fn);
 	}
+
+	private:
+
+	boost::variant<Type> value;
+	std::vector<std::function()> callbacks;
+
 };
 template<>
 struct Promise<void> {};
@@ -37,7 +49,7 @@ struct PromiseFulfill
 	static Promise<ReturnType> call(Type value, Fn fn)
 	{
 		Promise<ReturnType> next;
-		next.setValue(fn(value));
+		next.resolve(fn(value));
 		return next;
 	}
 };

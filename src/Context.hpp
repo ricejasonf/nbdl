@@ -1,24 +1,25 @@
 #ifndef NBDL_CONTEXT_HPP
 #define NBDL_CONTEXT_HPP
 
-namepace nbdl {
+namespace nbdl {
 
 template<typename Server, typename Api>
 class Context
 {
-	Server conn;
+	Server server;
 	Api api;
 
 	public:
-	//todo server
-	//todo message id generator
-	template<typename Path>
-	Promise<Path::Entity> read(Path path)
+/*
+	template<typename Path, typename... MatchFns>
+	void read(Path path, MatchFns...)
 	{
 		//create msg with callback
 		//send to server
-		callback = Api::read(server, path);
+		MsgCreate<Path::Entity> msg;
+		Api::read(server, path);
 	}
+	*/
 };
 
 }//nbdl

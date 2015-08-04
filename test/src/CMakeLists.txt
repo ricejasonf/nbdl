@@ -13,7 +13,8 @@ add_executable(test
 	bind_json.cpp
 	access_point.cpp
 	msg_id.cpp
-	api_read.cpp
+	#api_read.cpp
+	variant.cpp
 	)
 
 SET(LIBNBDL_DIR

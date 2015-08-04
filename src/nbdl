@@ -14,9 +14,11 @@
 #include <Member.hpp>
 //#include <NetRef.hpp>
 #include <Optional.hpp>
+#include <Variant.hpp>
 //#include <Promise.hpp>
 #include <Regex.hpp>
 #include <AccessPoint.hpp>
+#include <Context.hpp>
 
 #include <binders/JsonCppApplyDiff.hpp>
 #include <binders/JsonCppErrorBinder.hpp>
