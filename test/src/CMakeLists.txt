@@ -15,6 +15,7 @@ add_executable(test
 	msg_id.cpp
 	#api_read.cpp
 	variant.cpp
+	variant_callback.cpp
 	)
 
 SET(LIBNBDL_DIR

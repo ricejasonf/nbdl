@@ -22,6 +22,13 @@ struct IsEntity<T, typename Void<typename EntityTraits<T>::Members>::type>
 	enum { value = 1 };
 };
 
+template<class Set, class = void>
+struct TypeSetIsLast : std::true_type {};
+
+template<class Set>
+struct TypeSetIsLast<Set, typename Void<typename Set::Next>::type>
+	: std::false_type {};
+
 }//nbdl
 
 //todo remove these

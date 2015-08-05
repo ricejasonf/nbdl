@@ -29,7 +29,7 @@ struct VariantTypeSet<V1, Vn...>
 	using Next = VariantTypeSet<Vn...>;
 	static const unsigned id = sizeof...(Vn);
 };
-
+/*
 template<typename Set, unsigned id>
 struct GetVariantType
 {
@@ -39,6 +39,7 @@ struct GetVariantType
 			return 
 	}
 };
+*/
 
 }//details
 
