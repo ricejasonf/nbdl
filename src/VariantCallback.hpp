@@ -2,7 +2,6 @@
 #define NBDL_VARIANT_CALLBACK_HPP
 
 #include<type_traits>
-#include<tuple>
 #include "LambdaTraits.hpp"
 
 namespace nbdl {
@@ -22,7 +21,7 @@ struct VariantFnSet<Fn1, Fns...>
 	static const size_t size = sizeof...(Fns);
 };
 
-template<typename Type,	typename FnSet, class = void>
+template<typename Type,	typename FnSet, unsigned arity, class = void>
 struct VariantCallbackCaller {};
 
 //match if no functions matched and return type is void (do nothing)
@@ -37,37 +36,12 @@ template<typename Type, typename FnSet>
 struct VariantCallbackHelper<Type, FnSet,
 	typename std::enable_if<(FnSet::size > 0)>::type>
 {
-	template<typename... Fns>
-	static void call(Type value, Fns... fns)
-	{
-		return VariantCallbackCaller<Type, FnSet>::call(value, fns...);
-	}
-};
-
-//match if lambda takes no arguments (catch all)
-template<typename Type, typename FnSet>
-struct VariantCallbackCaller<Type, FnSet>
-	typename std::enable_if<LambdaTraits<typename FnSet::Fn>::arity == 0>::type>
-{
 	using Fn = typename FnSet::Fn;
 	using ReturnType = typename LambdaTraits<Fn>::ReturnType;
 	template<typename... Fns>
-	static ReturnType call(Type value, Fn fn, Fns... fns)
+	static ReturnType call(Type value, Fns... fns)
 	{
-		return fn();
-	}
-};
-//match if lambda takes an argument
-template<typename Type, typename FnSet>
-struct VariantCallbackCaller<Type, FnSet>
-	typename std::enable_if<LambdaTraits<typename FnSet::Fn>::arity == 1>::type>
-{
-	using Fn = typename FnSet::Fn;
-	using ReturnType = typename LambdaTraits<Fn>::ReturnType;
-	template<typename... Fns>
-	static ReturnType call(Type value, Fn fn, Fns... fns)
-	{
-		return VariantCalbackCallerWithArg<Type, FnSet<Fns...>>::call(value, fn, fns...);
+		return VariantCallbackCaller<Type, FnSet, LambdaTraits<Fn>::arity>::call(value, fns...);
 	}
 };
 
@@ -81,19 +55,48 @@ struct VariantCallbackCallerWithArg
 	static ReturnType call(Type value, Fn fn, Fns... fns)
 	{
 		//call the next fn because there wasn't a match
-		return VariantCallbackHelper<Type, FnSet<Fns...>>::call(value, fns...);
+		return VariantCallbackHelper<Type, VariantFnSet<Fns...>>::call(value, fns...);
 	}
 };
 template<typename Type, typename FnSet>
-struct VariantCallbackCallerWithArg<Type, FnSet>
+struct VariantCallbackCallerWithArg<Type, FnSet,
 	typename std::enable_if< 
-		std::is_same<Type, typename LambdaTraits<Fn>::Arg<0>>::value 
+		std::is_same<Type, typename LambdaTraits<typename FnSet::Fn>::template Arg<0>>::value 
 	>::type>
 {
-	using ReturnType = typename LambdaTraits<Fn>::ReturnType;
+	using Fn = typename FnSet::Fn;
+	using ReturnType = typename LambdaTraits<typename FnSet::Fn>::ReturnType;
+	template<typename... Fns>
 	static ReturnType call(Type value, Fn fn, Fns... fns)
 	{
 		return fn(value);
+	}
+};
+
+//match if lambda takes no arguments (catch all)
+template<typename Type, typename FnSet, unsigned arity>
+struct VariantCallbackCaller<Type, FnSet, arity,
+	typename std::enable_if<LambdaTraits<typename FnSet::Fn>::arity == 0>::type>
+{
+	using Fn = typename FnSet::Fn;
+	using ReturnType = typename LambdaTraits<Fn>::ReturnType;
+	template<typename... Fns>
+	static ReturnType call(Type value, Fn fn, Fns... fns)
+	{
+		return fn();
+	}
+};
+//match if lambda takes an argument
+template<typename Type, typename FnSet, unsigned arity>
+struct VariantCallbackCaller<Type, FnSet, arity,
+	typename std::enable_if<LambdaTraits<typename FnSet::Fn>::arity == 1>::type>
+{
+	using Fn = typename FnSet::Fn;
+	using ReturnType = typename LambdaTraits<Fn>::ReturnType;
+	template<typename... Fns>
+	static ReturnType call(Type value, Fn fn, Fns... fns)
+	{
+		return VariantCallbackCallerWithArg<Type, VariantFnSet<Fns...>>::call(value, fn, fns...);
 	}
 };
 
@@ -105,10 +108,10 @@ struct VariantCallbackCallerWithArg<Type, FnSet>
 */
 struct VariantCallback
 {
-	template<typename Type, typename... Fns>
-	static ReturnType call(Type value, Fns... fns)
+	template<typename Type, typename Fn1, typename... Fns>
+	static typename LambdaTraits<Fn1>::ReturnType call(Type value, Fn1 fn, Fns... fns)
 	{
-		return details::VariantCallbackHelper<Type, details::VariantFnSet<Fns...>>::call(value, fns...);
+		return details::VariantCallbackHelper<Type, details::VariantFnSet<Fns...>>::call(value, fn, fns...);
 	}
 };
 
