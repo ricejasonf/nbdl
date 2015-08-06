@@ -1,7 +1,8 @@
 #include<nbdl>
 #include "catch.hpp"
 
-TEST_CASE("MaxSizeOf should always return the largeset type.")
+//todo remove MaxSizeOf when std::aligned_union is used in Variant
+TEST_CASE("MaxSizeOf should always return the largest type.")
 {
 	size_t size;
 	struct LargeType

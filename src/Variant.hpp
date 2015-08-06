@@ -2,6 +2,8 @@
 #define NBDL_VARIANT_HPP
 
 #include<type_traits>
+#include "LambdaTraits.hpp"
+#include "VariantCallback.hpp"
 
 namespace nbdl {
 
@@ -69,6 +71,15 @@ struct VariantHelper<T, Tn...>
 		else
 			Next::destroy(value_type_id, value);
 	}
+
+	template<Fn1, Fns...>
+	static typename LambdaTraits<Fn1>::ReturnType match(std::size_t value_type_id, void *value, Fn1 fn, Fns... fns)
+	{
+		if (value_type_id == type_id)
+			return VariantCallback<T, Fn1, Fns...>::call(value, fn, fns...);
+		else
+			return Next::match(value_type_id, value, fn, fns...);
+	}
 	
 };
 
@@ -114,6 +125,13 @@ class Variant
 		new (&data) Type(val);
 		type_id = Helper::getTypeId<Type>();
 	}
+
+	template<typename Fn1, typename... Fns>
+	typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn, Fns... fns)
+	{
+		Helper::match<Fn1, Fns...>(type_id, value_, fn, fns...);
+	}
+
 };
 
 }//details
