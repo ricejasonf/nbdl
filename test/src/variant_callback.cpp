@@ -9,13 +9,13 @@ template<typename T>
 int getInt(T tag)
 {
 	return  nbdl::VariantCallback::call(tag,
-		[](const Type2&) {
+		[](Type2) {
 			return 2;
 		},
-		[](const Type1&) {
+		[](Type1) {
 			return 1;
 		},
-		[](const Type4&) {
+		[](Type4) {
 			return 4;
 		});
 }
@@ -23,13 +23,13 @@ template<typename T>
 void modifyInt(int &i, T tag)
 {
 	return  nbdl::VariantCallback::call(tag,
-		[&](const Type2&) {
+		[&](Type2) {
 			i = 2;
 		},
-		[&](const Type1&) {
+		[&](Type1) {
 			i = 1;
 		},
-		[&](const Type4&) {
+		[&](Type4) {
 			i = 4;
 		});
 }

@@ -9,7 +9,7 @@ TEST_CASE("Create 50000 message ids that are unique.", "[api]")
 
 	MsgId::RandomGenerator gen;
 	Set set;
-	const unsigned max_count = 50000;
+	const unsigned max_count = 5;
 
 	for (unsigned i = 0; i < max_count; i++)
 	{

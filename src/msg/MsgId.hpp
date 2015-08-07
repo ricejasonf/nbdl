@@ -19,6 +19,12 @@ class MsgId
 	using Uuid = boost::uuids::uuid;
 	using RandomGenerator = boost::uuids::random_generator;
 
+	private:
+
+	Uuid id;
+
+	public:
+
 	MsgId(RandomGenerator& gen) : id(gen()) {}
 
 	Uuid getId() const { return id; }
@@ -27,8 +33,6 @@ class MsgId
 	{
 		return (id == other.id);
 	}
-
-	const Uuid id;
 };
 
 }//nbdl
@@ -40,7 +44,7 @@ struct hash<nbdl::MsgId>
 {
 	size_t operator () (const nbdl::MsgId& msgId) const
 	{
-		return boost::hash<nbdl::MsgId::Uuid>()(msgId.id);
+		return boost::hash<nbdl::MsgId::Uuid>()(msgId.getId());
 	}
 };
 

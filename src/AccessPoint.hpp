@@ -10,8 +10,8 @@ struct AccessPoint
 	using Key = KeyType;
 
 	AccessPoint(Key k, ParentAccessPoint p) : 
-		key(k), 
-		parent(p) {}	
+		parent(p),
+		key(k) {}
 	ParentAccessPoint parent;
 	Key key;
 };

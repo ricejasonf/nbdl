@@ -52,7 +52,7 @@ struct VariantMatcher<VtSet, FnSet,
 {
 	using Type = typename VtSet::Type;
 	template<typename... Fns>
-	static typename LambdaTraits<typename FnSet::Fn>::ReturnType call(std::size_t value_type_id, void *value, Fns... fns)
+	static typename LambdaTraits<typename FnSet::Fn>::ReturnType call(std::size_t, void *value, Fns... fns)
 	{
 		//any invalid type_id (if it were possible) would result in the default type
 		return VariantCallback::call(*reinterpret_cast<Type*>(value), fns...);
@@ -62,18 +62,13 @@ struct VariantMatcher<VtSet, FnSet,
 template<typename... Tn>
 struct VariantHelper
 {
-	static void copy(std::size_t src_type_id, void* src, void* dest) {}
-	static void move(std::size_t src_type_id, void* src, void* dest) {}
-	static void destroy(std::size_t type_id, void* value) {}
+	static void copy(std::size_t, void*, void*) {}
+	static void move(std::size_t, void*, void*) {}
+	static void destroy(std::size_t, void*) {}
 	template<typename Type>
 	static std::size_t getTypeId()
 	{
 		return 0;
-	}
-	template<typename Fn1, typename... Fns>
-	static typename LambdaTraits<Fn1>::ReturnType match(std::size_t value_type_id, void *value, Fn1 fn, Fns... fns)
-	{
-		return VariantCallback::call(value, fn, fns...);
 	}
 };
 template<typename T, typename... Tn>
@@ -113,15 +108,6 @@ struct VariantHelper<T, Tn...>
 			return type_id;
 		else
 			return Next::template getTypeId<Type>();
-	}
-
-	template<typename Fn1, typename... Fns>
-	static typename LambdaTraits<Fn1>::ReturnType match(std::size_t value_type_id, void *value, Fn1 fn, Fns... fns)
-	{
-		if (value_type_id == type_id)
-			return VariantCallback::call(value, fn, fns...);
-		else
-			return Next::match(value_type_id, value, fn, fns...);
 	}
 	
 };
@@ -174,7 +160,7 @@ class Variant
 	typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn, Fns... fns)
 	{
 		using FnSet = VariantFnSet<Fn1, Fns...>;
-		VariantMatcher<VtSet, FnSet>::call(type_id, &value_, fn, fns...);
+		return VariantMatcher<VtSet, FnSet>::call(type_id, &value_, fn, fns...);
 	}
 
 };

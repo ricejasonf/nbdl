@@ -7,16 +7,16 @@ TEST_CASE("Assign a value to a variant and use the callback interface to retriev
 	
 	Number number = 5;
 	REQUIRE(number.match(
-		[](const nbdl::Unresolved&) {
-			return 0;
+		[](nbdl::Unresolved) {
+			return 56;
 		},
-		[](const std::string&) {
+		[](std::string) {
 			return 1;
 		},
-		[](const int& value) {
+		[](int value) {
 			return value;
 		},
-		[](const float&) {
+		[](float) {
 			return 3;
 		}) == 5);
 }
