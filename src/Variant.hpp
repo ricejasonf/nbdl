@@ -21,32 +21,67 @@ struct MaxSizeOf<T1, Tn...>
 		MaxSizeOf<Tn...>::value : sizeof(T1);
 };
 
-template<typename Tn...>
+template<typename... Tn>
+struct VariantTypeSet {};
+template<typename T1, typename... Tn>
+struct VariantTypeSet
+{
+	using Type = T1;
+	using Next = VariantTypeSet<Tn...>;
+	static bool is_last = sizeof...(Tn) == 0;
+	static const std::size_t type_id = sizeof...(Tn) + 1;
+};
+
+template<typename VtSet, typename FnSet, class = void>
+struct VariantMatcher
+{
+	using Type = VtSet::Type;
+	using Next = VariantMatcher<VtSet::Next, FnSet>;
+	template<typename Fn1, typename... Fns>
+	static typename LambdaTraits<typename FnSet::Fn>::ReturnType call(std::size_t value_type_id, void *value, Fn1 fn, Fns... fns)
+	{
+		if (value_type_id == type_id)
+			return VariantCallback::call(*reinterpret_cast<Type*>(value), fn, fns...);
+		else
+			return Next::call(value_type_id, value, fn, fns...);
+	}
+}
+template<typenameVset>
+template<typename VtSet, typename FnSet>
+struct VariantMatcher<VtSet, FnSet,
+	typename std::enable_if<VtSet::is_last>::type>
+{
+	using Type = VtSet::Type;
+	template<typename Fn1, typename... Fns>
+	static typename LambdaTraits<typename FnSet::Fn>::ReturnType call(std::size_t value_type_id, void *value, Fn1 fn, Fns... fns)
+	{
+		//any invalid type_id (if it were possible) would result in the default type
+		return VariantCallback::call(*reinterpret_cast<Type*>(value), fn, fns...);
+	}
+}
+
+template<typename... Tn>
 struct VariantHelper
 {
 	static void copy(std::size_t src_type_id, void* src, void* dest) {}
 	static void move(std::size_t src_type_id, void* src, void* dest) {}
 	static void destroy(std::size_t type_id, void* value) {}
 	template<typename Type>
-	std::size_t getTypeId()
+	static std::size_t getTypeId()
 	{
 		return 0;
 	}
-}
+	template<typename Fn1, typename... Fns>
+	static typename LambdaTraits<Fn1>::ReturnType match(std::size_t value_type_id, void *value, Fn1 fn, Fns... fns)
+	{
+		return VariantCallback::call(value, fn, fns...);
+	}
+};
 template<typename T, typename... Tn>
 struct VariantHelper<T, Tn...>
 {
 	using Next = VariantHelper<Tn...>;
-	static const std::size_t type_id = sizeof...(Tn) + 1;
-
-	template<typename Type>
-	std::size_t getTypeId()
-	{
-		if (std::is_same<Type, T>::value)
-			return type_id;
-		else
-			return Next::getTypeId<Type>();
-	}
+	static const std::size_t type_id = VariantTypeSet::type_id;
 
 	static void copy(std::size_t src_type_id, void* src, void* dest)
 	{
@@ -72,11 +107,20 @@ struct VariantHelper<T, Tn...>
 			Next::destroy(value_type_id, value);
 	}
 
-	template<Fn1, Fns...>
+	template<typename Type>
+	static std::size_t getTypeId()
+	{
+		if (std::is_same<Type, T>::value)
+			return type_id;
+		else
+			return Next::template getTypeId<Type>();
+	}
+
+	template<typename Fn1, typename... Fns>
 	static typename LambdaTraits<Fn1>::ReturnType match(std::size_t value_type_id, void *value, Fn1 fn, Fns... fns)
 	{
 		if (value_type_id == type_id)
-			return VariantCallback<T, Fn1, Fns...>::call(value, fn, fns...);
+			return VariantCallback::call(value, fn, fns...);
 		else
 			return Next::match(value_type_id, value, fn, fns...);
 	}
@@ -86,11 +130,11 @@ struct VariantHelper<T, Tn...>
 template<typename DefaultType, typename... Tn>
 class Variant
 {
-	static_assert(std::is_empty(DefaultType)::value, "DefaultType must be an empty tag struct");
+	static_assert(std::is_empty<DefaultType>::value, "DefaultType must be an empty tag struct");
 	//todo switch to use std::aligned_union once gcc 5.0 is available
 	using Storage = typename std::aligned_storage<sizeof(details::MaxSizeOf<Tn...>::value)>::type;
 	using Helper = VariantHelper<Tn..., DefaultType>;
-	static std::size_t type_id;
+	std::size_t type_id;
 	Storage value_;
 
 	public:
@@ -108,7 +152,7 @@ class Variant
 	}
 	~Variant()
 	{
-		Helper::destroy(type_id, &value_)
+		Helper::destroy(type_id, &value_);
 	}
 	Variant& operator= (Variant src)
 	{
@@ -122,14 +166,14 @@ class Variant
 	{
 		type_id = 0; //in case shit goes horribly wrong
 		Helper::destroy(type_id, &value_);
-		new (&data) Type(val);
-		type_id = Helper::getTypeId<Type>();
+		new (&value_) Type(val);
+		type_id = Helper::template getTypeId<Type>();
 	}
 
 	template<typename Fn1, typename... Fns>
 	typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn, Fns... fns)
 	{
-		Helper::match<Fn1, Fns...>(type_id, value_, fn, fns...);
+		Helper::match(type_id, value_, fn, fns...);
 	}
 
 };
@@ -141,10 +185,10 @@ struct Unresolved {};
 struct Null {};
 
 template<typename... Tn>
-class Variant : public details::Variant<Unresolved, Tn...> {};
+using Variant = details::Variant<Unresolved, Tn...>;
 
 template<typename T>
-class Optional : public details::Variant<Null, T> {};
+using Optional = details::Variant<Null, T>;
 
 }//nbdl
 

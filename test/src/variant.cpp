@@ -1,7 +1,27 @@
 #include<nbdl>
 #include "catch.hpp"
 
-//todo remove MaxSizeOf when std::aligned_union is used in Variant
+TEST_CASE("Assign a value to a variant and use the callback interface to retrieve it.", "[api]") 
+{
+	using Number = nbdl::Variant<int, std::string, float>;
+	
+	Number number = 5;
+	REQUIRE(number.match(
+		[](nbdl::Unresolved) {
+			return 0;
+		},
+		[](std::string) {
+			return 1;
+		},
+		[](int) {
+			return 1;
+		},
+		[](float) {
+			return 3;
+		}) == 1);
+}
+
+//todo remove tests of MaxSizeOf when std::aligned_union is used in Variant
 TEST_CASE("MaxSizeOf should always return the largest type.")
 {
 	size_t size;
@@ -23,22 +43,3 @@ TEST_CASE("MaxSizeOf should always return the largest type.")
 	size = MaxSizeOf<double, int, LargeType, int>::value;
 	REQUIRE(size == sizeof(LargeType));
 }
-
-/*
-TEST_CASE("Assign a value to a variant and use the callback interface to retrieve it.", "[api]") 
-{
-	using Number = nbdl::Variant<int, std::string, float>;
-	
-	Number number = 5;
-	number.value(
-		[&](int v) {
-			REQUIRE(v == number);
-		},
-		[&](std::string) {
-			REQUIRE(false);
-		},
-		[&](float) {
-			REQUIRE(false);
-		});
-}
-*/
