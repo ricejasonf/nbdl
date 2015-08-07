@@ -7,18 +7,18 @@ TEST_CASE("Assign a value to a variant and use the callback interface to retriev
 	
 	Number number = 5;
 	REQUIRE(number.match(
-		[](nbdl::Unresolved) {
+		[](const nbdl::Unresolved&) {
 			return 0;
 		},
-		[](std::string) {
+		[](const std::string&) {
 			return 1;
 		},
-		[](int) {
-			return 1;
+		[](const int& value) {
+			return value;
 		},
-		[](float) {
+		[](const float&) {
 			return 3;
-		}) == 1);
+		}) == 5);
 }
 
 //todo remove tests of MaxSizeOf when std::aligned_union is used in Variant

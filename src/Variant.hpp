@@ -24,41 +24,40 @@ struct MaxSizeOf<T1, Tn...>
 template<typename... Tn>
 struct VariantTypeSet {};
 template<typename T1, typename... Tn>
-struct VariantTypeSet
+struct VariantTypeSet<T1, Tn...>
 {
 	using Type = T1;
 	using Next = VariantTypeSet<Tn...>;
-	static bool is_last = sizeof...(Tn) == 0;
-	static const std::size_t type_id = sizeof...(Tn) + 1;
+	static const bool is_last = sizeof...(Tn) == 0;
+	static const std::size_t type_id = sizeof...(Tn);
 };
 
 template<typename VtSet, typename FnSet, class = void>
 struct VariantMatcher
 {
-	using Type = VtSet::Type;
-	using Next = VariantMatcher<VtSet::Next, FnSet>;
-	template<typename Fn1, typename... Fns>
-	static typename LambdaTraits<typename FnSet::Fn>::ReturnType call(std::size_t value_type_id, void *value, Fn1 fn, Fns... fns)
+	using Type = typename VtSet::Type;
+	using Next = VariantMatcher<typename VtSet::Next, FnSet>;
+	template<typename... Fns>
+	static typename LambdaTraits<typename FnSet::Fn>::ReturnType call(std::size_t value_type_id, void *value, Fns... fns)
 	{
-		if (value_type_id == type_id)
-			return VariantCallback::call(*reinterpret_cast<Type*>(value), fn, fns...);
+		if (value_type_id == VtSet::type_id)
+			return VariantCallback::call(*reinterpret_cast<Type*>(value), fns...);
 		else
-			return Next::call(value_type_id, value, fn, fns...);
+			return Next::call(value_type_id, value, fns...);
 	}
-}
-template<typenameVset>
+};
 template<typename VtSet, typename FnSet>
 struct VariantMatcher<VtSet, FnSet,
 	typename std::enable_if<VtSet::is_last>::type>
 {
-	using Type = VtSet::Type;
-	template<typename Fn1, typename... Fns>
-	static typename LambdaTraits<typename FnSet::Fn>::ReturnType call(std::size_t value_type_id, void *value, Fn1 fn, Fns... fns)
+	using Type = typename VtSet::Type;
+	template<typename... Fns>
+	static typename LambdaTraits<typename FnSet::Fn>::ReturnType call(std::size_t value_type_id, void *value, Fns... fns)
 	{
 		//any invalid type_id (if it were possible) would result in the default type
-		return VariantCallback::call(*reinterpret_cast<Type*>(value), fn, fns...);
+		return VariantCallback::call(*reinterpret_cast<Type*>(value), fns...);
 	}
-}
+};
 
 template<typename... Tn>
 struct VariantHelper
@@ -81,12 +80,12 @@ template<typename T, typename... Tn>
 struct VariantHelper<T, Tn...>
 {
 	using Next = VariantHelper<Tn...>;
-	static const std::size_t type_id = VariantTypeSet::type_id;
+	static const std::size_t type_id = VariantTypeSet<T, Tn...>::type_id;
 
 	static void copy(std::size_t src_type_id, void* src, void* dest)
 	{
 		if (src_type_id == type_id)
-			new (dest) T(reinterpret_cast<const T*>(src));
+			new (dest) T(*reinterpret_cast<const T*>(src));
 		else
 			Next::copy(src_type_id, src, dest);
 	}
@@ -94,7 +93,7 @@ struct VariantHelper<T, Tn...>
 	static void move(std::size_t src_type_id, void* src, void* dest)
 	{
 		if (src_type_id == type_id)
-			new (dest) T(std::move(reinterpret_cast<const T*>(src)));
+			new (dest) T(std::move(*reinterpret_cast<T*>(src)));
 		else
 			Next::move(src_type_id, src, dest);
 	}
@@ -134,6 +133,7 @@ class Variant
 	//todo switch to use std::aligned_union once gcc 5.0 is available
 	using Storage = typename std::aligned_storage<sizeof(details::MaxSizeOf<Tn...>::value)>::type;
 	using Helper = VariantHelper<Tn..., DefaultType>;
+	using VtSet = VariantTypeSet<Tn..., DefaultType>;
 	std::size_t type_id;
 	Storage value_;
 
@@ -173,7 +173,8 @@ class Variant
 	template<typename Fn1, typename... Fns>
 	typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn, Fns... fns)
 	{
-		Helper::match(type_id, value_, fn, fns...);
+		using FnSet = VariantFnSet<Fn1, Fns...>;
+		VariantMatcher<VtSet, FnSet>::call(type_id, &value_, fn, fns...);
 	}
 
 };
