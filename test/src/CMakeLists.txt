@@ -14,7 +14,7 @@ add_executable(test
 	factorial.cpp
 	bind_json.cpp
 	access_point.cpp
-	msg_id.cpp
+	#msg_id.cpp
 	#api_read.cpp
 	variant.cpp
 	variant_callback.cpp

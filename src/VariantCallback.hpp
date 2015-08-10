@@ -61,8 +61,7 @@ struct VariantCallbackCallerWithArg
 template<typename Type, typename FnSet>
 struct VariantCallbackCallerWithArg<Type, FnSet,
 	typename std::enable_if<
-		(std::is_same<Type, typename LambdaTraits<typename FnSet::Fn>::template Arg<0>>::value 
-			|| std::is_same<const Type&, typename LambdaTraits<typename FnSet::Fn>::template Arg<0>>::value)
+		std::is_same<Type, typename LambdaTraits<typename FnSet::Fn>::template Arg<0>>::value 
 	>::type>
 {
 	using Fn = typename FnSet::Fn;
