@@ -31,5 +31,6 @@
 #include <optional/boost.hpp>
 
 #include <msg/MsgId.hpp>
+#include <Store.hpp>
 
 #endif
