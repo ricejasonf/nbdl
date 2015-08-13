@@ -2,14 +2,18 @@
 #define NBDL_STORE_HASH_MAP_HPP
 
 #include<unordered_map>
+#include "../Variant.hpp"
 
 namespace nbdl {
 namespace store {
 
-template<typename PathType, typename VariantType>
+template<typename PathType, typename EntityType>
 class HashMap
 {
-	using Container = std::unordered_map<PathType, VariantType>;
+	using VariantType = Variant<EntityType, NotFound>;
+	using HashFn = typename PathType::HashFn;
+	using PredFn = typename PathType::PredFn;
+	using Container = std::unordered_map<PathType, VariantType, HashFn, PredFn>;
 	Container map;
 
 	public:
@@ -23,7 +27,7 @@ class HashMap
 	bool hasEntry(const PathType path)
 	{
 		auto iter = map.find(path);
-		return iter == map.end();
+		return iter != map.end();
 	}
 
 	VariantType& get(const PathType path)

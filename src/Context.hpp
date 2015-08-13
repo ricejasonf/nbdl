@@ -7,19 +7,14 @@ template<typename Server, typename Api>
 class Context
 {
 	Server server;
-	Api api;
 
 	public:
-/*
+
 	template<typename Path, typename... MatchFns>
-	void read(Path path, MatchFns...)
+	void read(Path path, MatchFns... fns)
 	{
-		//create msg with callback
-		//send to server
-		MsgCreate<Path::Entity> msg;
-		Api::read(server, path);
+		Api::read(server, path, fns...);
 	}
-	*/
 };
 
 }//nbdl

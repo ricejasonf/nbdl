@@ -1,3 +1,4 @@
+#include<unordered_set> //for unique check
 #include<nbdl>
 #include "catch.hpp"
 
@@ -35,16 +36,19 @@ TEST_CASE("Create a nested access point.", "[api]")
 	REQUIRE(b.getParent().getKey() == 1);
 }
 
-/*
-TEST_CASE("Access point greater that returns greater value.")
+/* test takes a long time
+TEST_CASE("Hashed AccessPoints should be unique.")
 {
 	using A = nbdl::AccessPoint<Client, int>;
 	using B = nbdl::AccessPoint<MyEntity, int, A>;
 
-	REQUIRE( (B(2, A(1)) > B(2, A(1))) == false);
-	REQUIRE( (B(1, A(1)) > B(2, A(1))) == false);
-	REQUIRE( (B(2, A(1)) > B(1, A(1))) == true);
-	REQUIRE( (B(2, A(2)) > B(2, A(1))) == true);
-	REQUIRE( (B(2, A(1)) > B(2, A(2))) == false);
+	using Set = std::unordered_set<B, typename B::HashFn, typename B::PredFn>;
+
+	Set set;
+
+	for (int i = 0; i < 1000; i++)
+		for (int j = 0; j < 1000; j++)
+			set.emplace(B(i, A(j)));
+	REQUIRE(set.size() == 1000 * 1000);
 }
 */

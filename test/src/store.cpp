@@ -52,7 +52,11 @@ TEST_CASE("Force assign and access a value from a store.", "[store]")
 	bool did_make_request = false;
 	store.forceAssign(path, my_entity);
 
-	bool result = store.get([&](MyEntityPath ) { did_make_request = true; }, path,
+	bool result = store.get(
+		[&](MyEntityPath ) { 
+			did_make_request = true; 
+		}, 
+		path,
 		[](MyEntity entity) {
 			REQUIRE(entity.id == 5);
 			return true;	
@@ -65,14 +69,57 @@ TEST_CASE("Force assign and access a value from a store.", "[store]")
 	REQUIRE(did_make_request == false);
 }
 
-/*
 TEST_CASE("Suggest a value to a store.", "[store]") 
 {
+	nbdl::Store<MyEntity> store;
+	MyEntityPath path = MyEntityPath(5, ClientPath(1));
+	MyEntity my_entity = { 5, 1 };
+	bool did_make_request = false;
+	store.suggestAssign(path, my_entity);
+
+	bool result = store.get(
+		[&](MyEntityPath ) { 
+			did_make_request = true; 
+		}, 
+		path,
+		[](MyEntity entity) {
+			REQUIRE(entity.id == 5);
+			return true;	
+		},
+		[]() {
+			return false;
+		});
+
+	REQUIRE(result == true);
+	REQUIRE(did_make_request == false);
 	
 }
 
 TEST_CASE("Suggest a value to a store where the value already exists.", "[store]") 
 {
-	
+	nbdl::Store<MyEntity> store;
+	MyEntityPath path = MyEntityPath(5, ClientPath(1));
+	MyEntity my_entity = { 5, 1 };
+	bool did_make_request = false;
+	store.get(
+		[&](MyEntityPath) {}, 
+		path, 
+		[](){});
+	store.suggestAssign(path, my_entity);
+
+	bool result = store.get(
+		[&](MyEntityPath) { 
+			did_make_request = true; 
+		}, 
+		path,
+		[](MyEntity entity) {
+			REQUIRE(entity.id == 5);
+			return false;	
+		},
+		[]() {
+			return true;
+		});
+
+	REQUIRE(result == true);
+	REQUIRE(did_make_request == false);
 }
-*/

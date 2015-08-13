@@ -42,10 +42,11 @@ class Store
 	typename LambdaTraits<Fn1>::ReturnType get(RequestFn request, const PathType path, Fn1 fn, Fns... fns)
 	{
 		if (!impl.hasEntry(path))
+		{
 			impl.assign(path, Unresolved{});
 			request(path);
-			
-		return impl.get(path).match(fns...);
+		}
+		return impl.get(path).match(fn, fns...);
 	}
 };
 

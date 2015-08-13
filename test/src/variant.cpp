@@ -75,6 +75,22 @@ TEST_CASE("Use the catch all to catch an unspecified tag", "[variant]")
 			return 9;
 		}) == 25);
 }
+TEST_CASE("Catch should not be called if there is a valid match.", "[variant]")
+{
+	using Number = nbdl::Variant<int, std::string, float>;
+	Number number = 185;
+
+	REQUIRE(number.match(
+		[](nbdl::Unresolved) {
+			return 56;
+		},
+		[](int) {
+			return 76;
+		},
+		[]() {
+			return 25;
+		}) == 76);
+}
 
 //todo perhaps a matchRef function could allow mutable values in variants
 TEST_CASE("Modify a struct's member in a variant", "[variant]")

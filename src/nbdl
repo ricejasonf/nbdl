@@ -1,6 +1,13 @@
 #ifndef NBDL_MAIN_HEADER_FILE
 #define NBDL_MAIN_HEADER_FILE
 
+//tags
+namespace nbdl {
+
+struct NotFound {};
+
+}//nbdl
+
 #include <EntityTraits.hpp>
 #include <MemberSet.hpp>
 #include <Bind.hpp>
