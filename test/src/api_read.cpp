@@ -22,13 +22,24 @@ namespace nbdl {
 
 struct MyApi
 {
-	using ClientPath = nbdl::AccessPoint<Client, int>;
-	using MyEntityPath = nbdl::AccessPoint<MyEntity, int, ClientPath>;
-	//NBDL_API_STUB_READ(ClientPath);
-	//NBDL_API_STUB_READ(MyEntityPath);
+	using A = nbdl::AccessPoint;
+	using Path = nbdl::Path;
+	using Read = nbdl::api::Read;
+
+	using Definitions = nbdl::ApiDefintions<
+		AccessPoint<
+			Path<Client, MyEntity>, 
+			Actions<
+				Create,
+				Read,
+				Update,
+				Delete
+			>
+		>
+	>;
 };
 
-struct Server
+struct TestServer
 {
 	template<typename Fn>
 	void read(MyApi::ClientPath path, Fn fn)

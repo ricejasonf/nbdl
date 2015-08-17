@@ -2,6 +2,7 @@
 #define MEMBERSET_HPP
 
 #include<type_traits>
+#include<cstdint>
 #include "EntityTraits.hpp"
 #include "Member.hpp"
 

@@ -1,9 +1,6 @@
 #ifndef NBDL_MEMBER_HPP
 #define NBDL_MEMBER_HPP
 
-#include<string>
-#include<cstdint>
-
 namespace nbdl {
 
 template<class Owner, typename T, T Owner::*p>
