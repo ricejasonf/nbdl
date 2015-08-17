@@ -41,25 +41,25 @@ namespace nbdl {
 
 TEST_CASE("Create a root level access point.", "[api]") 
 {
-	using A = nbdl::AccessPoint<Client, int>;
+	using A = nbdl::Path<Client, int>;
 	A a(5);
 	REQUIRE(a.getKey() == 5);
 }
 TEST_CASE("Create a nested access point.", "[api]") 
 {
-	using A = nbdl::AccessPoint<Client, int>;
-	using B = nbdl::AccessPoint<MyEntity, int, A>;
+	using A = nbdl::Path<Client, int>;
+	using B = nbdl::Path<MyEntity, int, A>;
 	B b = B(25, A(1));
 	REQUIRE(b.getKey() == 25);
 	REQUIRE(b.getParent().getKey() == 1);
 }
 TEST_CASE("Create a deeply nested access point.", "[api]") 
 {
-	using A = typename nbdl::CreateAccessPoint<
-		nbdl::AccessPoint<Client, int>,
-		nbdl::AccessPoint<MyEntity, int>,
-		nbdl::AccessPoint<MyEntityAttribute, int>,
-		nbdl::AccessPoint<AttributeStatus, int>
+	using A = typename nbdl::CreatePath<
+		nbdl::Path<Client, int>,
+		MyEntity,
+		nbdl::Path<MyEntityAttribute, int>,
+		nbdl::Path<AttributeStatus, int>
 	>::Type;
 	//lexicographic orderings
 	A a(1, 2, 3, 4);
@@ -76,10 +76,10 @@ TEST_CASE("Create a deeply nested access point.", "[api]")
 }
 
 /* test takes a long time
-TEST_CASE("Hashed AccessPoints should be unique.")
+TEST_CASE("Hashed Paths should be unique.")
 {
-	using A = nbdl::AccessPoint<Client, int>;
-	using B = nbdl::AccessPoint<MyEntity, int, A>;
+	using A = nbdl::Path<Client, int>;
+	using B = nbdl::Path<MyEntity, int, A>;
 
 	using Set = std::unordered_set<B, typename B::HashFn, typename B::PredFn>;
 

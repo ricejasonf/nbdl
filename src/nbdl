@@ -25,7 +25,7 @@ struct NotFound {};
 #include <VariantCallback.hpp>
 //#include <Promise.hpp>
 #include <Regex.hpp>
-#include <AccessPoint.hpp>
+#include <Path.hpp>
 #include <Context.hpp>
 
 #include <binders/JsonCppApplyDiff.hpp>

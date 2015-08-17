@@ -10,8 +10,8 @@ struct MyEntity
 	int id;
 	int client_id;
 };
-using ClientPath = nbdl::AccessPoint<Client, int>;
-using MyEntityPath = nbdl::AccessPoint<MyEntity, int, ClientPath>;
+using ClientPath = nbdl::Path<Client, int>;
+using MyEntityPath = nbdl::Path<MyEntity, int, ClientPath>;
 namespace nbdl {
 	NBDL_ENTITY(
 		Client,

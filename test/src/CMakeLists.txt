@@ -13,7 +13,7 @@ add_executable(test
 	test.cpp
 	factorial.cpp
 	bind_json.cpp
-	access_point.cpp
+	path.cpp
 	#msg_id.cpp
 	#api_read.cpp
 	variant.cpp

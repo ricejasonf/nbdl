@@ -13,7 +13,7 @@ class Context
 	template<typename Path, typename... MatchFns>
 	void read(Path path, MatchFns... fns)
 	{
-		Api::read(server, path, fns...);
+		CallApiAccessPoint<Api>::call(server, path, fns...);
 	}
 };
 

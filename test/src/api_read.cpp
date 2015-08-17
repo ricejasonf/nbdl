@@ -23,18 +23,13 @@ namespace nbdl {
 struct MyApi
 {
 	using A = nbdl::AccessPoint;
-	using Path = nbdl::Path;
+	using Path = nbdl::CreatePath;
 	using Read = nbdl::api::Read;
 
 	using Definitions = nbdl::ApiDefintions<
 		AccessPoint<
 			Path<Client, MyEntity>, 
-			Actions<
-				Create,
-				Read,
-				Update,
-				Delete
-			>
+			Actions<Read>
 		>
 	>;
 };
