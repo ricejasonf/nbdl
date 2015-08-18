@@ -77,10 +77,16 @@ TEST_CASE("Defined API should indicate specified AccessPoints.", "[api]")
 	using Def = MyApi::Definition;
 
 	CHECK_FALSE((Def::template HasAction<Path<Client>, nbdl::actions::Create>::value));
+	CHECK_FALSE((Def::template HasAction<Path<Client>, nbdl::actions::Update>::value));
 	CHECK((Def::template HasAction<Path<Client>, nbdl::actions::Read>::value));
 
 	CHECK((Def::template HasAction<Path<Client, MyEntity>, nbdl::actions::Create>::value));
 	CHECK((Def::template HasAction<Path<Client, MyEntity>, nbdl::actions::Read>::value));
 	CHECK((Def::template HasAction<Path<Client, MyEntity>, nbdl::actions::Update>::value));
 	CHECK((Def::template HasAction<Path<Client, MyEntity>, nbdl::actions::Delete>::value));
+
+	CHECK((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, nbdl::actions::Create>::value));
+	CHECK((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, nbdl::actions::Read>::value));
+	CHECK_FALSE((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, nbdl::actions::Update>::value));
+	CHECK_FALSE((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, nbdl::actions::Delete>::value));
 }

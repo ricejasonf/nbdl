@@ -25,10 +25,7 @@ class ApiDefinition<T, Ts...>
 	};
 	template<typename PathType, typename ActionType>
 	struct HasAction_<PathType, ActionType,
-		typename std::enable_if<(
-			std::is_same<typename T::Path, PathType>::value
-			&& std::is_same<typename T::Actions, ActionType>::value
-		)>::type>
+		typename std::enable_if<std::is_same<typename T::Path, PathType>::value>::type>
 	{
 		static constexpr bool value = T::Actions::template HasAction<ActionType>::value;
 	};

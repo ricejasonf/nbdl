@@ -38,15 +38,18 @@ class Actions<T, Ts...>
 	};
 
 	//restrict to valid actions
-	static bool constexpr hasAction(actions::Create) { return HasAction_<actions::Create>::value; }
-	static bool constexpr hasAction(actions::Read) { return HasAction_<actions::Read>::value; }
-	static bool constexpr hasAction(actions::Update) { return HasAction_<actions::Update>::value; }
-	static bool constexpr hasAction(actions::Delete) { return HasAction_<actions::Delete>::value; }
+	static constexpr bool hasAction(actions::Create) { return HasAction_<actions::Create>::value; }
+	static constexpr bool hasAction(actions::Read) { return HasAction_<actions::Read>::value; }
+	static constexpr bool hasAction(actions::Update) { return HasAction_<actions::Update>::value; }
+	static constexpr bool hasAction(actions::Delete) { return HasAction_<actions::Delete>::value; }
 
 	public:
 
 	template<typename ActionType>
-	struct HasAction {};
+	struct HasAction 
+	{
+		static constexpr bool value = hasAction(ActionType{});
+	};
 };
 /*
 template<typename T, typename... Ts> struct Actions<T, Ts...>::template HasAction<actions::Create> { static constexpr bool value = HasAction_<actions::Create>::value; };
