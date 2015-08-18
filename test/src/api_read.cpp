@@ -26,7 +26,7 @@ struct MyApi
 	using Path = nbdl::CreatePath;
 	using Read = nbdl::api::Read;
 
-	using Definitions = nbdl::ApiDefintions<
+	using Definition = nbdl::ApiDefinition<
 		AccessPoint<
 			Path<Client, MyEntity>, 
 			Actions<Read>

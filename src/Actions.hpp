@@ -1,5 +1,5 @@
-#ifndef #NBDL_ACTIONS_HPP
-#define #NBDL_ACTIONS_HPP
+#ifndef NBDL_ACTIONS_HPP
+#define NBDL_ACTIONS_HPP
 
 namespace nbdl {
 
@@ -27,7 +27,7 @@ class Actions<T, Ts...>
 	template<typename ActionType, class = void>
 	struct HasAction_
 	{
-		using Next = Actions<Ts...>::template HasAction<ActionType>;
+		using Next = typename Actions<Ts...>::template HasAction<ActionType>;
 		static constexpr bool value = Next::value;
 	};
 	template<typename ActionType>
@@ -37,16 +37,23 @@ class Actions<T, Ts...>
 		static constexpr bool value = true;
 	};
 
+	//restrict to valid actions
+	static bool constexpr hasAction(actions::Create) { return HasAction_<actions::Create>::value; }
+	static bool constexpr hasAction(actions::Read) { return HasAction_<actions::Read>::value; }
+	static bool constexpr hasAction(actions::Update) { return HasAction_<actions::Update>::value; }
+	static bool constexpr hasAction(actions::Delete) { return HasAction_<actions::Delete>::value; }
+
 	public:
 
-	//restrict to valid actions
 	template<typename ActionType>
 	struct HasAction {};
-	template<> struct HasAction<actions::Create> { static constexpr bool value = HasAction_<actions::Create>::value; };
-	template<> struct HasAction<actions::Read> { static constexpr bool value = HasAction_<actions::Read>::value; };
-	template<> struct HasAction<actions::Update> { static constexpr bool value = HasAction_<actions::Update>::value; };
-	template<> struct HasAction<actions::Delete> { static constexpr bool value = HasAction_<actions::Delete>::value; };
 };
+/*
+template<typename T, typename... Ts> struct Actions<T, Ts...>::template HasAction<actions::Create> { static constexpr bool value = HasAction_<actions::Create>::value; };
+template<typename T, typename... Ts> struct Actions<T, Ts...>::template HasAction<actions::Read> { static constexpr bool value = HasAction_<actions::Read>::value; };
+template<typename T, typename... Ts> struct Actions<T, Ts...>::template HasAction<actions::Update> { static constexpr bool value = HasAction_<actions::Update>::value; };
+template<typename T, typename... Ts> struct Actions<T, Ts...>::template HasAction<actions::Delete> { static constexpr bool value = HasAction_<actions::Delete>::value; };
+*/
 
 
 }//nbdl

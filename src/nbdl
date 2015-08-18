@@ -26,6 +26,9 @@ struct NotFound {};
 //#include <Promise.hpp>
 #include <Regex.hpp>
 #include <Path.hpp>
+#include <Actions.hpp>
+#include <AccessPoint.hpp>
+#include <ApiDefinition.hpp>
 #include <Context.hpp>
 
 #include <binders/JsonCppApplyDiff.hpp>

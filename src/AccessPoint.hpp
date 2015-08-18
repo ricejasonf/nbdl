@@ -8,7 +8,7 @@ struct AccessPoint
 {
 	using Path = PathType;
 	using Actions = ActionsType;
-}
+};
 
 }//nbdl
 
