@@ -27,7 +27,7 @@ namespace nbdl {
 	};
 }//nbdl
 
-TEST_CASE("Access an unitialized value from a store.", "[store]") 
+TEST_CASE("Access an uninitialized value from a store.", "[store]") 
 {
 	nbdl::Store<MyEntity> store;
 	MyEntityPath path = MyEntityPath(5, ClientPath(1));

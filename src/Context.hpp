@@ -8,15 +8,15 @@ class Context
 {
 	Server server;
 
+	
+
 	public:
 
-	/*
 	template<typename Path, typename... MatchFns>
 	void read(Path path, MatchFns... fns)
 	{
 		CallApiAccessPoint<Api>::call(server, path, fns...);
 	}
-	*/
 };
 
 }//nbdl
