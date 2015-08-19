@@ -42,6 +42,7 @@ namespace nbdl {
 template<typename... Ts>
 using Path = nbdl::CreatePath<Ts...>;
 
+//todo ditch the wrapper
 struct MyApi
 {
 	using Definition = nbdl::ApiDefinition<

@@ -29,6 +29,7 @@ struct NotFound {};
 #include <Actions.hpp>
 #include <AccessPoint.hpp>
 #include <ApiDefinition.hpp>
+#include <Store.hpp>
 #include <Context.hpp>
 
 #include <binders/JsonCppApplyDiff.hpp>
@@ -41,6 +42,6 @@ struct NotFound {};
 #include <optional/boost.hpp>
 
 #include <msg/MsgId.hpp>
-#include <Store.hpp>
+
 
 #endif

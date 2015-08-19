@@ -10,18 +10,18 @@
 
 namespace nbdl {
 
-namespace {
+namespace details {
 
 //todo break this out and give it a start and a stop
 template<int ...>
-struct NumberSequence {};
+struct PathNumberSequence {};
 template<int n, int... sequence>
-struct GenerateNumberSequence
+struct PathGenerateNumberSequence
 {
 	using Type = typename GenerateNumberSequence<n - 1, n - 1, sequence...>::Type;
 };
 template<int... sequence>
-struct GenerateNumberSequence<1, sequence...>
+struct PathGenerateNumberSequence<1, sequence...>
 {
 	using Type = NumberSequence<sequence...>;
 };
@@ -49,10 +49,6 @@ struct PredPathFn
 		return t1.tuple == t2.tuple;
 	}
 };
-
-}//anon
-
-namespace details {
 
 template<typename PathType, typename EntityType, int i, class = void>
 struct FindPath
@@ -116,7 +112,7 @@ class Path
 
 	ParentPath getParent()
 	{
-		return ParentPath(makeParentTuple(typename GenerateNumberSequence<std::tuple_size<Tuple>::value>::Type()));
+		return ParentPath(makeParentTuple(typename PathGenerateNumberSequence<std::tuple_size<Tuple>::value>::Type()));
 	}
 
 	template<int i, typename T>
