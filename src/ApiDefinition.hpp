@@ -16,6 +16,7 @@ class ApiDefinition
 
 	template<int index, int current_index = 0>
 	using GetPath = void;
+	static constexpr std::size_t size = 0;
 };
 
 template<typename T, typename... Ts>
@@ -60,6 +61,7 @@ class ApiDefinition<T, Ts...>
 	{
 		using Type = typename GetPath_<index, current_index>::Type;
 	};
+	static constexpr std::size_t size = 1 + ApiDefinition<Ts...>::size;
 };
 
 template<typename... Us, typename... Ts>
@@ -68,10 +70,12 @@ class ApiDefinition<ApiDefinition<Us...>, Ts...>
 	public:
 
 	template<typename PathType, typename ActionType>
-	using HasAction = typename ApiDefinition<Us...>::template HasValue<PathType, ActionType>::value;
+	using HasAction = typename ApiDefinition<Us...>::template HasAction<PathType, ActionType>::value
+		|| typename ApiDefinition<Ts...>::template HasAction<PathType, ActionType>::value;
 
 	template<int index, int current_index>
 	using GetPath = typename ApiDefinition<Us...>::template GetPath<index, current_index>::Type;
+	static constexpr std::size_t size = ApiDefinition<Us...>::size + ApiDefinition<Ts...>::size;
 };
 
 }//nbdl

@@ -48,6 +48,8 @@ class Store
 		}
 		return impl.get(path).match(fn, fns...);
 	}
+
+	//todo purge function
 };
 
 }//nbdl

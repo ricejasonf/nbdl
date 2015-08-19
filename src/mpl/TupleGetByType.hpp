@@ -43,7 +43,7 @@ struct TupleIndexByType<T, std::tuple<U, Ts...>>
 template<typename T, typename Tuple>
 struct TupleGetByType
 {
-	T get(const Tuple& tuple)
+	T& get(const Tuple& tuple)
 	{
 		return std::get<TupleIndexByType<T, Tuple>::value>(tuple);
 	}
