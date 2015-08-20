@@ -20,6 +20,7 @@ add_executable(test
 	variant_callback.cpp
 	store.cpp
 	api_definition.cpp
+	context_read.cpp
 	)
 
 SET(LIBNBDL_DIR

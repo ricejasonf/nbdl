@@ -10,7 +10,12 @@ namespace store {
 template<typename PathType, typename EntityType>
 class HashMap
 {
+	public:
+
 	using VariantType = Variant<EntityType, NotFound>;
+
+	private:
+
 	using HashFn = typename PathType::HashFn;
 	using PredFn = typename PathType::PredFn;
 	using Container = std::unordered_map<PathType, VariantType, HashFn, PredFn>;

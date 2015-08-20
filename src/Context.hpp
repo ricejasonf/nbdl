@@ -12,7 +12,7 @@ class Context
 	StoreCollection<ApiDef> store;
 	
 	template<typename PathType>
-	using VariantType = typename StoreCollection<ApiDef>::VariantType<PathType>;
+	using VariantType = typename StoreCollection<ApiDef>::template VariantType<PathType>;
 
 	public:
 

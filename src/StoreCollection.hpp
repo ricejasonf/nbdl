@@ -3,28 +3,32 @@
 
 #include<tuple>
 #include "LambdaTraits.hpp"
+#include "mpl/NumberSequence.hpp"
 #include "mpl/Unique.hpp"
 #include "mpl/TupleGetByType.hpp"
 #include "Store.hpp"
 
 namespace nbdl {
 
-namespace detail {
+namespace details {
 
-template<typename ApiDef, typename = CreateNumberSequence<ApiDef::size>>
-struct StoreTupleFromApiApiDefinition;
-template<typename ApiDef, typename Ns...>
-struct StoreTupleFromApiApiDefinition<ApiDef, NumberSequence<Ns...>>
+template<typename ApiDef, typename = mpl::CreateNumberSequence<ApiDef::size>>
+struct StoreTupleFromApiDefinition;
+template<typename ApiDef, int... sequence>
+struct StoreTupleFromApiDefinition<ApiDef, mpl::NumberSequence<sequence...>>
 {
-	using Type = typename mpl::Unique<std::tuple<Store<typename ApiDef::GetPath<Ns>::Type::Path::Entity> ...>>::Type;
+	template<int n>
+	using Store_ = Store<typename ApiDef::template GetPath<n>::Type::Path::Entity>;
+
+	using Type = typename mpl::Unique<std::tuple<Store_<sequence>...>>::Type;
 };
 
-}//detail
+}//details
 
 template<typename ApiDef>
 class StoreCollection
 {
-	using Tuple	= typename EntityTupleFromApiDefinition<ApiDef>::Type;
+	using Tuple	= typename details::StoreTupleFromApiDefinition<ApiDef>::Type;
 
 	Tuple tuple;
 
@@ -37,21 +41,23 @@ class StoreCollection
 	void forceAssign(PathType path, T value)
 	{
 		using StoreType = Store<typename PathType::Entity>;
-		StoreType& store = TupleGetByType<StoreType>::get(tuple);
+		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
 		store.forceAssign(path, value);
 	}
 
 	template<typename PathType, typename T>
 	void suggestAssign(PathType path, T value)
 	{
-		StoreType& store = TupleGetByType<StoreType>::get(tuple);
+		using StoreType = Store<typename PathType::Entity>;
+		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
 		store.suggestAssign(path, value);
 	}
 	template<typename PathType, typename RequestFn, typename Fn1, typename... Fns>
 	typename LambdaTraits<Fn1>::ReturnType get(RequestFn request, const PathType path, Fn1 fn, Fns... fns)
 	{
-		StoreType& store = TupleGetByType<StoreType>::get(tuple);
-		return store.get(path, value);
+		using StoreType = Store<typename PathType::Entity>;
+		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
+		return store.get(path, fn, fns...);
 	}
 
 	//todo purge function
