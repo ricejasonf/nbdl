@@ -17,7 +17,7 @@ struct UniquePrepend
 };
 
 template<typename T, typename... Ts>
-struct UniquePrepend<T, std::tuple<Ts...>>
+struct UniquePrepend<T, std::tuple<Ts...>,
 	typename std::enable_if<(!HasType<T, std::tuple<Ts...>>::value)>::type>
 {
 	using Type = std::tuple<T, Ts...>;
@@ -37,10 +37,10 @@ struct Unique<std::tuple<Ts...>>
 template<typename T, typename... Ts>
 struct Unique<std::tuple<T, Ts...>>
 {
-	using Type = details::UniquePrepend<T, Unique<std::tuple<Ts...>>;
+	using Type = details::UniquePrepend<T, typename Unique<std::tuple<Ts...>>::Type>;
 };
 
-}\\mpl
-}\\nbdl
+}//mpl
+}//nbdl
 
 #endif

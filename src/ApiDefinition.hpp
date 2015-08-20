@@ -70,8 +70,7 @@ class ApiDefinition<ApiDefinition<Us...>, Ts...>
 	public:
 
 	template<typename PathType, typename ActionType>
-	using HasAction = typename ApiDefinition<Us...>::template HasAction<PathType, ActionType>::value
-		|| typename ApiDefinition<Ts...>::template HasAction<PathType, ActionType>::value;
+	using HasAction = typename ApiDefinition<Us...>::template HasAction<PathType, ActionType>::value;
 
 	template<int index, int current_index>
 	using GetPath = typename ApiDefinition<Us...>::template GetPath<index, current_index>::Type;

@@ -30,6 +30,9 @@ class StoreCollection
 
 	public:
 
+	template<typename PathType>
+	using VariantType = typename Store<typename PathType::Entity>::VariantType;
+
 	template<typename PathType, typename T>
 	void forceAssign(PathType path, T value)
 	{

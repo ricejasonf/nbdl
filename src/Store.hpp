@@ -25,6 +25,8 @@ class Store
 
 	public:
 
+	using VariantType = typename Impl::VariantType;
+
 	template<typename T>
 	void forceAssign(PathType path, T value)
 	{
@@ -34,8 +36,10 @@ class Store
 	template<typename T>
 	void suggestAssign(PathType path, T value)
 	{
-		if (!impl.hasEntry(path))
-			impl.assign(path, value);
+		impl.get(path).match(
+			[&](Unresolved) {
+				impl.assign(path, value);
+			});
 	}
 
 	template<typename RequestFn, typename Fn1, typename... Fns>

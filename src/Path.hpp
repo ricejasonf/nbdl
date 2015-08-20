@@ -10,18 +10,18 @@
 
 namespace nbdl {
 
-namespace details {
+namespace path_details {
 
 //todo break this out and give it a start and a stop
 template<int ...>
-struct PathNumberSequence {};
+struct NumberSequence {};
 template<int n, int... sequence>
-struct PathGenerateNumberSequence
+struct GenerateNumberSequence
 {
 	using Type = typename GenerateNumberSequence<n - 1, n - 1, sequence...>::Type;
 };
 template<int... sequence>
-struct PathGenerateNumberSequence<1, sequence...>
+struct GenerateNumberSequence<1, sequence...>
 {
 	using Type = NumberSequence<sequence...>;
 };
@@ -65,7 +65,7 @@ struct FindPath<PathType, EntityType, i,
 	static const int value = i;
 };
 
-}//details
+}//path_details
 
 template<typename EntityType, typename KeyType, typename ParentPath = void>
 class Path
@@ -78,15 +78,15 @@ class Path
 	using Tuple = decltype(std::tuple_cat(std::declval<std::tuple<KeyType>>(), std::declval<ParentTuple>()));
 	using Key = KeyType;
 	using Entity = EntityType;
-	using HashFn = HashPathFn<Path>;
-	using PredFn = PredPathFn<Path>;
+	using HashFn = path_details::HashPathFn<Path>;
+	using PredFn = path_details::PredPathFn<Path>;
 	template<typename E, int i = 0>
-	using FindPath = details::FindPath<Path, E, i>;
+	using FindPath = path_details::FindPath<Path, E, i>;
 
 	Tuple tuple;
 
 	template<int... sequence>
-	ParentTuple makeParentTuple(NumberSequence<sequence...>)
+	ParentTuple makeParentTuple(path_details::NumberSequence<sequence...>)
 	{
 		return std::make_tuple(std::get<sequence>(tuple)...);
 	}
@@ -112,7 +112,7 @@ class Path
 
 	ParentPath getParent()
 	{
-		return ParentPath(makeParentTuple(typename PathGenerateNumberSequence<std::tuple_size<Tuple>::value>::Type()));
+		return ParentPath(makeParentTuple(typename path_details::GenerateNumberSequence<std::tuple_size<Tuple>::value>::Type()));
 	}
 
 	template<int i, typename T>
@@ -135,8 +135,8 @@ class Path<EntityType, KeyType, void>
 	using Tuple = std::tuple<KeyType>;
 	using Key = KeyType;
 	using Entity = EntityType;
-	using HashFn = HashPathFn<Path>;
-	using PredFn = PredPathFn<Path>;
+	using HashFn = path_details::HashPathFn<Path>;
+	using PredFn = path_details::PredPathFn<Path>;
 
 	Tuple tuple;
 
