@@ -62,7 +62,7 @@ struct VariantMatcher<VtSet, FnSet,
 template<typename... Tn>
 struct VariantHelper
 {
-	static void copy(std::size_t, void*, void*) {}
+	static void copy(std::size_t, const void*, void*) {}
 	static void move(std::size_t, void*, void*) {}
 	static void destroy(std::size_t, void*) {}
 	template<typename Type>
@@ -77,7 +77,7 @@ struct VariantHelper<T, Tn...>
 	using Next = VariantHelper<Tn...>;
 	static const std::size_t type_id = VariantTypeSet<T, Tn...>::type_id;
 
-	static void copy(std::size_t src_type_id, void* src, void* dest)
+	static void copy(std::size_t src_type_id, const void* src, void* dest)
 	{
 		if (src_type_id == type_id)
 			new (dest) T(*reinterpret_cast<const T*>(src));

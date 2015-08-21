@@ -43,7 +43,8 @@ struct TupleIndexByType<T, std::tuple<U, Ts...>>
 template<typename T, typename Tuple>
 struct TupleGetByType
 {
-	T& get(const Tuple& tuple)
+	//c++11 std::get<std::tuple> is not yet constexpr
+	static T& get(Tuple& tuple)
 	{
 		return std::get<TupleIndexByType<T, Tuple>::value>(tuple);
 	}

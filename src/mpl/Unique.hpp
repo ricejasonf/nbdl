@@ -37,7 +37,7 @@ struct Unique<std::tuple<Ts...>>
 template<typename T, typename... Ts>
 struct Unique<std::tuple<T, Ts...>>
 {
-	using Type = details::UniquePrepend<T, typename Unique<std::tuple<Ts...>>::Type>;
+	using Type = typename details::UniquePrepend<T, typename Unique<std::tuple<Ts...>>::Type>::Type;
 };
 
 }//mpl

@@ -20,17 +20,18 @@ namespace nbdl {
 			client_id );
 }//nbdl
 
+using OnlySupportedPath = typename nbdl::CreatePath<Client, MyEntity>::Type;
 using MyApi = nbdl::ApiDefinition<
 	nbdl::AccessPoint<
-		nbdl::CreatePath<Client, MyEntity>, 
-		nbdl::Actions<Read>
+		OnlySupportedPath,
+		nbdl::Actions<nbdl::actions::Read>
 	>
 >;
 
 struct TestServer
 {
 	template<typename Fn>
-	void read(nbdl::CreatePath<Client, MyEntity> path, Fn fn)
+	void read(OnlySupportedPath path, Fn fn)
 	{
 		if (path.getKey<Client>() == 1 && path.getKey<MyEntity>() == 5)
 		{
@@ -44,13 +45,12 @@ struct TestServer
 	}
 };
 
-TEST_CASE("Read an object from a context.", "[context]") 
+TEST_CASE("Read an object from a context.", "[context][moo]") 
 {
 	bool result;
-	TestServer server;
-	nbdl::Context<Server, MyApi> ctx(server);
+	nbdl::Context<TestServer, MyApi> ctx(TestServer{});
 
-	result = ctx.read(nbdl::CreatePath<Client, MyEntity> path(1, 5),
+	result = ctx.read(OnlySupportedPath(1, 5),
 		[](nbdl::Unresolved) {
 			return false;
 		},
@@ -58,43 +58,50 @@ TEST_CASE("Read an object from a context.", "[context]")
 			return false;
 		},
 		[](MyEntity m) {
-			return (m.id == 5 && m.client_id = 1)
+			return (m.id == 5 && m.client_id == 1);
+		},
+		[]() {
+			return false;
 		});
 	CHECK(result);
 }
 TEST_CASE("Context should propagate NotFound from server callback.", "[context]") 
 {
-	bool result;
-	TestServer server;
-	nbdl::Context<Server, MyApi> ctz(server);
+	bool result = false;
+	nbdl::Context<TestServer, MyApi> ctx(TestServer{});
 
-	result = ctx.read(nbdl::CreatePath<Client, MyEntity> path(1, 6),
+	result = ctx.read(OnlySupportedPath(1, 6),
 		[](nbdl::Unresolved) {
 			return false;
 		},
 		[](nbdl::NotFound) {
 			return true;
 		},
-		[](MyEntity m) {
+		[](MyEntity) {
+			return false;
+		},
+		[]() {
 			return false;
 		});
 	CHECK(result);
 }
+//in c++ land invalid paths should not compile
+/*
 TEST_CASE("Context should return NotFound for invalid paths.", "[context]") 
 {
 	bool result;
-	TestServer server;
-	nbdl::Context<Server, MyApi> ctz(server);
+	nbdl::Context<TestServer, MyApi> ctx(TestServer{});
 
-	result = ctx.read(nbdl::CreatePath<MyEntity> path(5),
+	result = ctx.read(typename nbdl::CreatePath<MyEntity>::Type(5),
 		[](nbdl::Unresolved) {
 			return false;
 		},
 		[](nbdl::NotFound) {
 			return true;
 		},
-		[](MyEntity m) {
+		[](MyEntity) {
 			return false;
 		});
 	CHECK(result);
 }
+*/

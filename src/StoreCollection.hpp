@@ -12,13 +12,16 @@ namespace nbdl {
 
 namespace details {
 
-template<typename ApiDef, typename = mpl::CreateNumberSequence<ApiDef::size>>
-struct StoreTupleFromApiDefinition;
+template<typename ApiDef, typename = void>
+struct StoreTupleFromApiDefinition
+{
+	using Type = typename StoreTupleFromApiDefinition<ApiDef, typename mpl::CreateNumberSequence<ApiDef::size>::Type>::Type;
+};
 template<typename ApiDef, int... sequence>
 struct StoreTupleFromApiDefinition<ApiDef, mpl::NumberSequence<sequence...>>
 {
 	template<int n>
-	using Store_ = Store<typename ApiDef::template GetPath<n>::Type::Path::Entity>;
+	using Store_ = Store<typename ApiDef::template GetPath<n>::Type::Path>;
 
 	using Type = typename mpl::Unique<std::tuple<Store_<sequence>...>>::Type;
 };
@@ -35,12 +38,12 @@ class StoreCollection
 	public:
 
 	template<typename PathType>
-	using VariantType = typename Store<typename PathType::Entity>::VariantType;
+	using VariantType = typename Store<PathType>::VariantType;
 
 	template<typename PathType, typename T>
 	void forceAssign(PathType path, T value)
 	{
-		using StoreType = Store<typename PathType::Entity>;
+		using StoreType = Store<PathType>;
 		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
 		store.forceAssign(path, value);
 	}
@@ -48,16 +51,16 @@ class StoreCollection
 	template<typename PathType, typename T>
 	void suggestAssign(PathType path, T value)
 	{
-		using StoreType = Store<typename PathType::Entity>;
+		using StoreType = Store<PathType>;
 		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
 		store.suggestAssign(path, value);
 	}
 	template<typename PathType, typename RequestFn, typename Fn1, typename... Fns>
 	typename LambdaTraits<Fn1>::ReturnType get(RequestFn request, const PathType path, Fn1 fn, Fns... fns)
 	{
-		using StoreType = Store<typename PathType::Entity>;
+		using StoreType = Store<PathType>;
 		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
-		return store.get(path, fn, fns...);
+		return store.get(request, path, fn, fns...);
 	}
 
 	//todo purge function

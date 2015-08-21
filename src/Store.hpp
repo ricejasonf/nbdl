@@ -6,20 +6,16 @@
 
 namespace nbdl {
 
-template<typename Entity>
-struct StorePath {};
-
-template<typename Entity>
+template<typename PathType>
 struct StoreImpl
 {
-	using Type = store::HashMap<typename StorePath<Entity>::Type, Entity>;
+	using Type = store::HashMap<PathType>;
 };
 
-template<typename Entity>
+template<typename PathType>
 class Store
 {
-	using PathType = typename StorePath<Entity>::Type;
-	using Impl = typename StoreImpl<Entity>::Type;
+	using Impl = typename StoreImpl<PathType>::Type;
 
 	Impl impl;
 

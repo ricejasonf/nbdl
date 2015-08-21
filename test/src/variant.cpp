@@ -6,7 +6,7 @@ TEST_CASE("Unitialized variant should match Unresolved.", "[variant]")
 {
 	using Number = nbdl::Variant<int, std::string, float>;
 	Number number;
-	REQUIRE(number.match(
+	CHECK(number.match(
 		[](nbdl::Unresolved) {
 			return 56;
 		},
@@ -26,7 +26,7 @@ TEST_CASE("Assign a value to a variant and use the callback interface to retriev
 	using Number = nbdl::Variant<int, std::string, float>;
 	
 	Number number = 512;
-	REQUIRE(number.match(
+	CHECK(number.match(
 		[](nbdl::Unresolved) {
 			return 56;
 		},
@@ -41,12 +41,33 @@ TEST_CASE("Assign a value to a variant and use the callback interface to retriev
 		}) == 512);
 }
 
+TEST_CASE("Copy a variant value.", "[variant]") 
+{
+	using Number = nbdl::Variant<int, float>;
+	Number number1, number2;
+	number1 = 123;
+	number2 = Number(number1);
+	CHECK(number2.match(
+		[](nbdl::Unresolved) {
+			return 56;
+		},
+		[](std::string) {
+			return 1;
+		},
+		[](int value) {
+			return value;
+		},
+		[](float) {
+			return 3;
+		}) == 123);
+}
+
 TEST_CASE("Use the catch all to catch an unspecified tag", "[variant]")
 {
 	using Number = nbdl::Variant<int, std::string, float>;
 	
 	Number number = 185;
-	REQUIRE(number.match(
+	CHECK(number.match(
 		[](nbdl::Unresolved) {
 			return 56;
 		},
@@ -60,7 +81,7 @@ TEST_CASE("Use the catch all to catch an unspecified tag", "[variant]")
 			return 123;
 		}) == 123);
 	number = 93;
-	REQUIRE(number.match(
+	CHECK(number.match(
 		[](nbdl::Unresolved) {
 			return 56;
 		},
@@ -80,7 +101,7 @@ TEST_CASE("Catch should not be called if there is a valid match.", "[variant]")
 	using Number = nbdl::Variant<int, std::string, float>;
 	Number number = 185;
 
-	REQUIRE(number.match(
+	CHECK(number.match(
 		[](nbdl::Unresolved) {
 			return 56;
 		},
@@ -109,13 +130,13 @@ TEST_CASE("Modify a struct's member in a variant", "[variant]")
 		});
 	bool proof = var.match(
 		[](Person person) {
-			REQUIRE(person.name_last == "Ricez");
+			CHECK(person.name_last == "Ricez");
 			return true;
 		},
 		[]() {
 			return false;
 		});
-	REQUIRE(proof == true);
+	CHECK(proof);
 }
 
 //todo remove tests of MaxSizeOf when std::aligned_union is used in Variant
@@ -128,15 +149,15 @@ TEST_CASE("MaxSizeOf should always return the largest type.", "[variant]")
 	};
 	using nbdl::details::MaxSizeOf;
 	size = MaxSizeOf<int, double>::value;
-	REQUIRE(size == sizeof(double));
+	CHECK(size == sizeof(double));
 	size = MaxSizeOf<int, double, char>::value;
-	REQUIRE(size == sizeof(double));
+	CHECK(size == sizeof(double));
 	size = MaxSizeOf<double, int>::value;
-	REQUIRE(size == sizeof(double));
+	CHECK(size == sizeof(double));
 	size = MaxSizeOf<double, LargeType, int>::value;
-	REQUIRE(size == sizeof(LargeType));
+	CHECK(size == sizeof(LargeType));
 	size = MaxSizeOf<double, int, LargeType>::value;
-	REQUIRE(size == sizeof(LargeType));
+	CHECK(size == sizeof(LargeType));
 	size = MaxSizeOf<double, int, LargeType, int>::value;
-	REQUIRE(size == sizeof(LargeType));
+	CHECK(size == sizeof(LargeType));
 }

@@ -7,12 +7,12 @@
 namespace nbdl {
 namespace store {
 
-template<typename PathType, typename EntityType>
+template<typename PathType>
 class HashMap
 {
 	public:
 
-	using VariantType = Variant<EntityType, NotFound>;
+	using VariantType = Variant<typename PathType::Entity, NotFound>;
 
 	private:
 

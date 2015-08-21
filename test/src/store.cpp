@@ -20,16 +20,11 @@ namespace nbdl {
 		MyEntity,
 			id,
 			client_id);
-	template<>
-	struct StorePath<MyEntity>
-	{
-		using Type = MyEntityPath;
-	};
 }//nbdl
 
 TEST_CASE("Access an uninitialized value from a store.", "[store]") 
 {
-	nbdl::Store<MyEntity> store;
+	nbdl::Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(5, ClientPath(1));
 	bool did_make_request = false;
 
@@ -46,7 +41,7 @@ TEST_CASE("Access an uninitialized value from a store.", "[store]")
 }
 TEST_CASE("Force assign and access a value from a store.", "[store]") 
 {
-	nbdl::Store<MyEntity> store;
+	nbdl::Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(5, ClientPath(1));
 	MyEntity my_entity = { 5, 1 };
 	bool did_make_request = false;
@@ -71,7 +66,7 @@ TEST_CASE("Force assign and access a value from a store.", "[store]")
 
 TEST_CASE("Suggest a value to a store.", "[store]") 
 {
-	nbdl::Store<MyEntity> store;
+	nbdl::Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(5, ClientPath(1));
 	MyEntity my_entity = { 5, 1 };
 	bool did_make_request = false;
@@ -97,7 +92,7 @@ TEST_CASE("Suggest a value to a store.", "[store]")
 
 TEST_CASE("Suggest a value to a store where the value already exists.", "[store]") 
 {
-	nbdl::Store<MyEntity> store;
+	nbdl::Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(5, ClientPath(1));
 	MyEntity my_entity_original = { 6, 1 };
 	MyEntity my_entity = { 5, 1 };
