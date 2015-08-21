@@ -5,6 +5,7 @@
 #include<tuple>
 #include<boost/functional/hash.hpp>
 
+#include "mpl/Reverse.hpp"
 #include "EntityTraits.hpp"
 #include "EntityKey.hpp"
 
@@ -21,7 +22,7 @@ struct GenerateNumberSequence
 	using Type = typename GenerateNumberSequence<n - 1, n - 1, sequence...>::Type;
 };
 template<int... sequence>
-struct GenerateNumberSequence<1, sequence...>
+struct GenerateNumberSequence<0, sequence...>
 {
 	using Type = NumberSequence<sequence...>;
 };
@@ -54,7 +55,7 @@ template<typename PathType, typename EntityType, int i, class = void>
 struct FindPath
 {
 	using Parent = typename PathType::Parent;
-	static const int value = FindPath<Parent, EntityType, (i + 1)>::value;
+	static const int value = FindPath<Parent, EntityType, (i - 1)>::value;
 };
 template<typename PathType, typename EntityType, int i>
 struct FindPath<PathType, EntityType, i,
@@ -75,15 +76,17 @@ class Path
 	using Parent = ParentPath;
 	using ParentTuple = typename ParentPath::Tuple;
 	using ParentKey = typename ParentPath::Key;
-	using Tuple = decltype(std::tuple_cat(std::declval<std::tuple<KeyType>>(), std::declval<ParentTuple>()));
+	using Tuple = decltype(std::tuple_cat(std::declval<ParentTuple>(), std::declval<std::tuple<KeyType>>()));
 	using Key = KeyType;
 	using Entity = EntityType;
 	using HashFn = path_details::HashPathFn<Path>;
 	using PredFn = path_details::PredPathFn<Path>;
-	template<typename E, int i = 0>
+	template<typename E, int i = std::tuple_size<Tuple>::value - 1>
 	using FindPath = path_details::FindPath<Path, E, i>;
 
 	Tuple tuple;
+
+	private:
 
 	template<int... sequence>
 	ParentTuple makeParentTuple(path_details::NumberSequence<sequence...>)
@@ -91,8 +94,10 @@ class Path
 		return std::make_tuple(std::get<sequence>(tuple)...);
 	}
 
+	public:
+
 	Path(Key k, ParentPath p) : 
-		tuple(std::tuple_cat(std::make_tuple(k), p.tuple))
+		tuple(std::tuple_cat(p.tuple, std::make_tuple(k)))
 	{}
 
 	Path(Tuple t) :
@@ -100,8 +105,8 @@ class Path
 	{}
 
 	template<typename... Args>
-	Path(Key k, ParentKey pk, Args... args) : 
-		tuple(std::make_tuple(k, pk, args...))
+	Path(Args... args) :
+		tuple(std::make_tuple(args...))
 	{}
 
 	template<typename E = EntityType>
@@ -112,7 +117,7 @@ class Path
 
 	ParentPath getParent()
 	{
-		return ParentPath(makeParentTuple(typename path_details::GenerateNumberSequence<std::tuple_size<Tuple>::value>::Type()));
+		return ParentPath(makeParentTuple(typename path_details::GenerateNumberSequence<(std::tuple_size<Tuple>::value - 1)>::Type()));
 	}
 
 	template<int i, typename T>
@@ -178,16 +183,27 @@ struct CreatePathNode<EntityType,
 	using Type = Path<EntityType, typename PrimaryKey<EntityType>::MemberType>;
 };
 
+template<typename Tuple>
+struct CreatePathFromReversedTuple;
+
 template<typename... Args>
-struct CreatePath 
+struct CreatePathFromReversedTuple<std::tuple<Args...>>
 {
 	using Type = void;
 };
+
 template<typename PathType, typename... Args>
-struct CreatePath<PathType, Args...>
+struct CreatePathFromReversedTuple<std::tuple<PathType, Args...>>
 {
 	using PathNode = typename CreatePathNode<PathType>::Type;
-	using Type = Path<typename PathNode::Entity, typename PathNode::Key, typename CreatePath<Args...>::Type>;
+	using Type = Path<typename PathNode::Entity, typename PathNode::Key, typename CreatePathFromReversedTuple<std::tuple<Args...>>::Type>;
+};
+
+template<typename... Args>
+struct CreatePath
+{
+	using ReversedTuple = typename mpl::Reverse<std::tuple<Args...>>::Type;
+	using Type = typename CreatePathFromReversedTuple<ReversedTuple>::Type;	
 };
 
 }//nbdl

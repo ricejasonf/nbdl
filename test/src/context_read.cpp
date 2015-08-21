@@ -21,6 +21,7 @@ namespace nbdl {
 }//nbdl
 
 using OnlySupportedPath = typename nbdl::CreatePath<Client, MyEntity>::Type;
+static_assert(std::is_same<typename OnlySupportedPath::Entity, MyEntity>::value, "Only supported type entity is not MyEntity.");
 using MyApi = nbdl::ApiDefinition<
 	nbdl::AccessPoint<
 		OnlySupportedPath,

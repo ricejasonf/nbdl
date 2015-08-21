@@ -12,8 +12,6 @@ class Context
 	Server server;
 	StoreCollection<ApiDef> store;
 	
-	template<typename PathType>
-	using VariantType = typename StoreCollection<ApiDef>::template VariantType<PathType>;
 
 	public:
 
@@ -23,10 +21,12 @@ class Context
 	template<typename Path, typename MatchFn1, typename... MatchFns>
 	typename LambdaTraits<MatchFn1>::ReturnType read(Path path, MatchFn1 fn1, MatchFns... fns)
 	{
+		using VariantType = typename StoreCollection<ApiDef>::template VariantType<Path>;
+
 		return store.get(
 			[&](const Path path) {
 				//request from server
-				server.read(path, [&](VariantType<Path> value) {
+				server.read(path, [&](VariantType value) {
 					store.suggestAssign(path, value);
 				});
 			},

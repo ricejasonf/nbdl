@@ -43,15 +43,17 @@ TEST_CASE("Create a root level access point.", "[api]")
 {
 	using A = nbdl::Path<Client, int>;
 	A a(5);
-	REQUIRE(a.getKey() == 5);
+	CHECK(a.getKey() == 5);
 }
 TEST_CASE("Create a nested access point.", "[api]") 
 {
 	using A = nbdl::Path<Client, int>;
 	using B = nbdl::Path<MyEntity, int, A>;
 	B b = B(25, A(1));
-	REQUIRE(b.getKey() == 25);
-	REQUIRE(b.getParent().getKey() == 1);
+	static_assert(std::is_same<typename B::Entity, MyEntity>::value, "Path's entity is not correct.");
+	CHECK(b.getKey<MyEntity>() == 25);
+	CHECK(b.getKey() == 25);
+	CHECK(b.getParent().getKey() == 1);
 }
 TEST_CASE("Create a deeply nested access point.", "[api]") 
 {
@@ -63,16 +65,16 @@ TEST_CASE("Create a deeply nested access point.", "[api]")
 	>::Type;
 	//lexicographic orderings
 	A a(1, 2, 3, 4);
-	
-	REQUIRE(a.getKey<Client>() == 1);
-	REQUIRE(a.getKey<MyEntity>() == 2);
-	REQUIRE(a.getKey<MyEntityAttribute>() == 3);
-	REQUIRE(a.getKey<AttributeStatus>() == 4);
 
-	REQUIRE(a.getKey() == 1);
-	REQUIRE(a.getParent().getKey() == 2);
-	REQUIRE(a.getParent().getParent().getKey() == 3);
-	REQUIRE(a.getParent().getParent().getParent().getKey() == 4);
+	CHECK(a.getKey<Client>() == 1);
+	CHECK(a.getKey<MyEntity>() == 2);
+	CHECK(a.getKey<MyEntityAttribute>() == 3);
+	CHECK(a.getKey<AttributeStatus>() == 4);
+
+	CHECK(a.getKey() == 4);
+	CHECK(a.getParent().getKey() == 3);
+	CHECK(a.getParent().getParent().getKey() == 2);
+	CHECK(a.getParent().getParent().getParent().getKey() == 1);
 }
 
 /* test takes a long time
@@ -88,6 +90,6 @@ TEST_CASE("Hashed Paths should be unique.")
 	for (int i = 0; i < 1000; i++)
 		for (int j = 0; j < 1000; j++)
 			set.emplace(B(i, A(j)));
-	REQUIRE(set.size() == 1000 * 1000);
+	CHECK(set.size() == 1000 * 1000);
 }
 */
