@@ -22,7 +22,14 @@ struct MaxSizeOf<T1, Tn...>
 };
 
 template<typename... Tn>
-struct VariantTypeSet {};
+struct VariantTypeSet
+{
+	template<typename T>
+	struct HasType
+	{
+		static constexpr bool value = false;
+	};
+};
 template<typename T1, typename... Tn>
 struct VariantTypeSet<T1, Tn...>
 {
@@ -30,6 +37,17 @@ struct VariantTypeSet<T1, Tn...>
 	using Next = VariantTypeSet<Tn...>;
 	static const bool is_last = sizeof...(Tn) == 0;
 	static const std::size_t type_id = sizeof...(Tn);
+
+	template<typename T, class = void>
+	struct HasType
+	{
+		static constexpr bool value = Next::template HasType<T>::value;
+	};
+	template<typename T>
+	struct HasType<T, typename std::enable_if<std::is_same<T, T1>::value>::type>
+	{
+		static constexpr bool value = true;
+	};
 };
 
 template<typename VtSet, typename FnSet, class = void>
@@ -125,6 +143,9 @@ class Variant
 
 	public:
 
+	template<typename Type>
+	using HasType = typename VtSet::template HasType<Type>;
+
 	Variant() : type_id(0) {}
 	Variant(const Variant& old)
 		: type_id(old.type_id)
@@ -150,6 +171,8 @@ class Variant
 	template<typename Type>
 	Variant(Type val)
 	{
+		//it is critical that types are restricted to types supported by the Variant
+		static_assert(HasType<Type>::value, "Failed to convert from invalid type.");
 		type_id = 0; //in case shit goes horribly wrong
 		Helper::destroy(type_id, &value_);
 		new (&value_) Type(val);
