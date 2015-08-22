@@ -46,7 +46,7 @@ struct TestServer
 	}
 };
 
-TEST_CASE("Read an object from a context.", "[context][moo]") 
+TEST_CASE("Read an object from a context.", "[context]") 
 {
 	bool result;
 	nbdl::Context<TestServer, MyApi> ctx(TestServer{});
@@ -86,23 +86,3 @@ TEST_CASE("Context should propagate NotFound from server callback.", "[context]"
 		});
 	CHECK(result);
 }
-//in c++ land invalid paths should not compile
-/*
-TEST_CASE("Context should return NotFound for invalid paths.", "[context]") 
-{
-	bool result;
-	nbdl::Context<TestServer, MyApi> ctx(TestServer{});
-
-	result = ctx.read(typename nbdl::CreatePath<MyEntity>::Type(5),
-		[](nbdl::Unresolved) {
-			return false;
-		},
-		[](nbdl::NotFound) {
-			return true;
-		},
-		[](MyEntity) {
-			return false;
-		});
-	CHECK(result);
-}
-*/
