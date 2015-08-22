@@ -24,18 +24,18 @@ class HashMap
 	public:
 
 	template<typename T>
-	void assign(const PathType path, const T value)
+	void assign(const PathType path, T&& value)
 	{
-		map[path] = value;
+		map[path] = std::forward<T>(value);
 	}
 
-	bool hasEntry(const PathType path)
+	bool hasEntry(const PathType& path)
 	{
 		auto iter = map.find(path);
 		return iter != map.end();
 	}
 
-	VariantType& get(const PathType path)
+	VariantType& get(const PathType& path)
 	{
 		return map[path];
 	}

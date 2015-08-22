@@ -24,17 +24,17 @@ class Store
 	using VariantType = typename Impl::VariantType;
 
 	template<typename T>
-	void forceAssign(PathType path, T value)
+	void forceAssign(PathType path, T&& value)
 	{
-		impl.assign(path, value);
+		impl.assign(path, std::forward<T>(value));
 	}
 
 	template<typename T>
-	void suggestAssign(PathType path, T value)
+	void suggestAssign(PathType path, T&& value)
 	{
 		impl.get(path).match(
 			[&](Unresolved) {
-				impl.assign(path, value);
+				impl.assign(path, std::forward<T>(value));
 			});
 	}
 

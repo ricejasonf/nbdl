@@ -41,19 +41,19 @@ class StoreCollection
 	using VariantType = typename Store<PathType>::VariantType;
 
 	template<typename PathType, typename T>
-	void forceAssign(PathType path, T value)
+	void forceAssign(PathType path, T&& value)
 	{
 		using StoreType = Store<PathType>;
 		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
-		store.forceAssign(path, value);
+		store.forceAssign(path, std::forward<T>(value));
 	}
 
 	template<typename PathType, typename T>
-	void suggestAssign(PathType path, T value)
+	void suggestAssign(PathType path, T&& value)
 	{
 		using StoreType = Store<PathType>;
 		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
-		store.suggestAssign(path, value);
+		store.suggestAssign(path, std::forward<T>(value));
 	}
 	template<typename PathType, typename RequestFn, typename Fn1, typename... Fns>
 	typename LambdaTraits<Fn1>::ReturnType get(RequestFn request, const PathType path, Fn1 fn, Fns... fns)

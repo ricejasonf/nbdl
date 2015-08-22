@@ -26,8 +26,8 @@ class Context
 		return store.get(
 			[&](const Path path) {
 				//request from server
-				server.read(path, [&](VariantType value) {
-					store.suggestAssign(path, value);
+				server.read(path, [&](VariantType&& value) {
+					store.suggestAssign(path, std::forward<VariantType>(value));
 				});
 			},
 			path, fn1, fns...);
