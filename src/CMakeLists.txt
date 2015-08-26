@@ -13,7 +13,7 @@ if (${EMSCRIPTEN})
 		)
 else (${EMSCRIPTEN})
 	add_library(nbdl STATIC 
-		binders/JsonRead.cpp
+		binders/jsoncpp/Read.cpp
 		Regex.cpp
 		)
 endif (${EMSCRIPTEN})

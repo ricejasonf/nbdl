@@ -1,18 +1,20 @@
-#ifndef JSONWRITE_H
-#define JSONWRITE_H
+#ifndef NBDL_BINDERS_JSONCPP_WRITE_HPP
+#define NBDL_BINDERS_JSONCPP_WRITE_HPP
 
 #include<string>
 #include<jsoncpp/json/json.h>
 
 namespace nbdl {
+namespace binders {
+namespace jsoncpp {
 
-class JsonWrite
+class Write
 {
 	Json::Value &jsonVal;
 
 	public:
 
-	JsonWrite(Json::Value &value) :
+	Write(Json::Value &value) :
 		jsonVal(value)
 	{}
 
@@ -26,13 +28,15 @@ class JsonWrite
 	void bindEntity(const std::string name, BinderFn bind)
 	{
 		auto obj = Json::Value(Json::objectValue);
-		JsonWrite writer(obj);
+		Write writer(obj);
 		bind(writer);
 		jsonVal[name] = obj;
 	}
 
 };
 
+}//jsoncpp
+}//binders
 }//nbdl
 
 #endif

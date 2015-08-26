@@ -1,12 +1,13 @@
-#ifndef NBDL_BINDERS_JSONCPPVALIDATIONERRORS_HPP
-#define NBDL_BINDERS_JSONCPPVALIDATIONERRORS_HPP
+#ifndef NBDL_BINDERS_JSONCPP_VALIDATION_ERRORS_HPP
+#define NBDL_BINDERS_JSONCPP_VALIDATION_ERRORS_HPP
 
 #include<jsoncpp/json/json.h>
 
 namespace nbdl {
 namespace binders {
+namespace jsoncpp {
 
-class JsonCppValidationErrors
+class ValidationErrors
 {
 	Json::Value &jsonVal;
 
@@ -14,7 +15,7 @@ class JsonCppValidationErrors
 
 	using NameFormat = DefaultNameFormat;
 	
-	JsonCppValidationErrors(Json::Value &value)
+	ValidationErrors(Json::Value &value)
 		: jsonVal(value) {}
 
 	void addError(std::string name, ErrorToken token)
@@ -26,12 +27,13 @@ class JsonCppValidationErrors
 	void validateChild(const std::string name, Functor fn)
 	{
 		Json::Value obj = Json::Value(Json::objectValue);
-		JsonCppValidationErrors errors(obj);
+		ValidationErrors errors(obj);
 		fn(errors);
 		jsonVal[name] = obj;
 	}
 };
 
+}//jsoncpp
 }//binders
 }//nbdl
 #endif

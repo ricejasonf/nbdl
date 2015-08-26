@@ -32,11 +32,11 @@ struct NotFound {};
 #include <Store.hpp>
 #include <Context.hpp>
 
-#include <binders/JsonCppApplyDiff.hpp>
-#include <binders/JsonCppErrorBinder.hpp>
-//DEPRECATED #include <binders/JsonCppValidation.h>
-#include <binders/JsonRead.h>
-#include <binders/JsonWrite.h>
+#include <binders/jsoncpp/Read.hpp>
+#include <binders/jsoncpp/Write.hpp>
+#include <binders/jsoncpp/ApplyDiff.hpp>
+#include <binders/jsoncpp/Error.hpp>
+//DEPRECATED #include <binders/jsoncpp/Validation.hpp>
 
 #include <validate/StdBasicString.hpp>
 #include <optional/boost.hpp>

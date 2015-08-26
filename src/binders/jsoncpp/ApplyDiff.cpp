@@ -1,16 +1,18 @@
 #include<stdexcept>
-#include "JsonCppApplyDiff.hpp"
+#include "ApplyDiff.hpp"
 
 namespace nbdl {
+namespace binders {
+namespace jsoncpp {
 
-JsonCppApplyDiff::JsonCppApplyDiff(const Json::Value &value) :
+ApplyDiff::ApplyDiff(const Json::Value &value) :
 	jsonVal(value)
 {
 	if (!jsonVal.isObject())
 		throw std::runtime_error("JSON Object expected");
 }
 
-void JsonCppApplyDiff::bind(const std::string name, bool &field)
+void ApplyDiff::bind(const std::string name, bool &field)
 {
 	if (!jsonVal.isMember(name))
 		return;
@@ -20,7 +22,7 @@ void JsonCppApplyDiff::bind(const std::string name, bool &field)
 	field = obj.asBool();
 }
 
-void JsonCppApplyDiff::bind(const std::string name, unsigned int &field)
+void ApplyDiff::bind(const std::string name, unsigned int &field)
 {
 	if (!jsonVal.isMember(name))
 		return;
@@ -30,7 +32,7 @@ void JsonCppApplyDiff::bind(const std::string name, unsigned int &field)
 	field = obj.asUInt();
 }
 
-void JsonCppApplyDiff::bind(const std::string name, int &field)
+void ApplyDiff::bind(const std::string name, int &field)
 {
 	if (!jsonVal.isMember(name))
 		return;
@@ -40,7 +42,7 @@ void JsonCppApplyDiff::bind(const std::string name, int &field)
 	field = obj.asInt();
 }
 
-void JsonCppApplyDiff::bind(const std::string name, double &field)
+void ApplyDiff::bind(const std::string name, double &field)
 {
 	if (!jsonVal.isMember(name))
 		return;
@@ -50,7 +52,7 @@ void JsonCppApplyDiff::bind(const std::string name, double &field)
 	field = obj.asDouble();
 }
 
-void JsonCppApplyDiff::bind(const std::string name, std::string &field)
+void ApplyDiff::bind(const std::string name, std::string &field)
 {
 	if (!jsonVal.isMember(name))
 		return;
@@ -60,12 +62,14 @@ void JsonCppApplyDiff::bind(const std::string name, std::string &field)
 	field = obj.asString();
 }
 
-JsonCppApplyDiff JsonCppApplyDiff::createObjectReader(const std::string name)
+ApplyDiff ApplyDiff::createObjectReader(const std::string name)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isObject())
 		throw std::runtime_error("JSON Object expected");
-	return JsonCppApplyDiff(obj);
+	return ApplyDiff(obj);
 }
 
+}//jsoncpp
+}//binders
 }//nbdl

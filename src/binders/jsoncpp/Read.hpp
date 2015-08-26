@@ -1,12 +1,14 @@
-#ifndef JSONREAD_H
-#define JSONREAD_H
+#ifndef NBDL_BINDERS_JSONCPP_READ_HPP
+#define NBDL_BINDERS_JSONCPP_READ_HPP
 
 #include<string>
 #include<jsoncpp/json/json.h>
 
 namespace nbdl {
+namespace binders {
+namespace jsoncpp {
 
-class JsonRead
+class Read
 {
 	void bind(const std::string, bool &);
 	void bind(const std::string, unsigned int &);
@@ -14,7 +16,7 @@ class JsonRead
 	void bind(const std::string, double &);
 	void bind(const std::string, std::string &);
 
-	JsonRead createObjectReader(const std::string name);
+	Read createObjectReader(const std::string name);
 
 	const Json::Value &jsonVal;
 
@@ -29,11 +31,11 @@ class JsonRead
 	template<class BinderFn>
 	void bindEntity(const std::string name, BinderFn bindFn)
 	{
-		JsonRead reader = createObjectReader(name);
+		Read reader = createObjectReader(name);
 		bindFn(reader);
 	}
 
-	JsonRead(const Json::Value &value);
+	Read(const Json::Value &value);
 
 	template<class EntityType>
 	static void fromString(std::string &json, EntityType &entity)
@@ -44,12 +46,14 @@ class JsonRead
 		{
 			throw std::runtime_error("JSON parse error");
 		}
-		JsonRead r(root);
+		Read r(root);
 		entity.bindMembers(r);
 	}
 			
 };
 
+}//jsoncpp
+}//binders
 }//nbdl
 
 #endif

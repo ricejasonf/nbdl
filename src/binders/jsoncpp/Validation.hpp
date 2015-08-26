@@ -1,19 +1,21 @@
-//DEPRECATED
-#ifndef JSONCPPVALIDATION_H
-#define JSONCPPVALIDATION_H
+#ifndef NBDL_BINDERS_JSONCPP_VALIDATION_HPP
+#define NBDL_BINDERS_JSONCPP_VALIDATION_HPP
+//DEPRECATED or needs refactoring
 
 #include "ValidationBinder.hpp"
 
 namespace nbdl {
+namespace binders {
+namespace jsoncpp {
 
 class Entity;
 class EntityListBase;
 
-class JsonCppValidation : public ValidationBinder<JsonCppValidation>
+class Validation : public ValidationBinder<Validation>
 {
 	public:
 
-	JsonCppValidation(Json::Value &value) :
+	Validation(Json::Value &value) :
 		jsonVal(value) {}
 
 	template<typename T>
@@ -35,6 +37,8 @@ class JsonCppValidation : public ValidationBinder<JsonCppValidation>
 		
 };
 
+}//jsoncpp
+}//binders
 }//nbdl
 
 #endif

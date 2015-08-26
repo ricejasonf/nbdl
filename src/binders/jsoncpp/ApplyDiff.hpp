@@ -1,15 +1,18 @@
-#ifndef JSONCPPAPPLYDIFF_HPP
-#define JSONCPPAPPLYDIFF_HPP
+#ifndef NBDL_BINDERS_JSONCPP_APPLY_DIFF_HPP
+#define NBDL_BINDERS_JSONCPP_APPLY_DIFF_HPP
 
 #include<string>
 #include<jsoncpp/json/json.h>
-#include "../Binder.hpp"
+#include "../../Binder.hpp"
 
+//this needs refactoring
 namespace nbdl {
+namespace binders {
+namespace jsoncpp {
 
-class JsonCppApplyDiff : public Binder<JsonCppApplyDiff>
+class ApplyDiff : public Binder<ApplyDiff>
 {
-	friend class Binder<JsonCppApplyDiff>;
+	friend class Binder<ApplyDiff>;
 	void bind(const std::string, bool &);
 	void bind(const std::string, unsigned int &);
 	void bind(const std::string, int &);
@@ -21,17 +24,17 @@ class JsonCppApplyDiff : public Binder<JsonCppApplyDiff>
 	{
 		if (!jsonVal.isMember(name))
 			return;
-		JsonCppApplyDiff reader = createObjectReader(name);
+		ApplyDiff reader = createObjectReader(name);
 		entity.bindMembers(reader);
 	}
 
-	JsonCppApplyDiff createObjectReader(const std::string name);
+	ApplyDiff createObjectReader(const std::string name);
 
 	const Json::Value &jsonVal;
 
 	public:
 
-	JsonCppApplyDiff(const Json::Value &value);
+	ApplyDiff(const Json::Value &value);
 
 	template<class EntityType>
 	static void fromString(std::string &json, EntityType &entity)
@@ -42,12 +45,14 @@ class JsonCppApplyDiff : public Binder<JsonCppApplyDiff>
 		{
 			throw std::runtime_error("JSON parse error");
 		}
-		JsonCppApplyDiff r(root);
+		ApplyDiff r(root);
 		entity.bindMembers(r);
 	}
 			
 };
 
+}//jsoncpp
+}//binders
 }//nbdl
 
 #endif

@@ -1,18 +1,5 @@
 #include <string>
-
-/*
-#include <EntityTraits.hpp>
-#include <MemberSet.hpp>
-#include <Bind.hpp>
-#include <Validate.hpp>
-*/
-
 #include <nbdl>
-/*
-#include <binders/JsonRead.h>
-#include <binders/JsonWrite.h>
-#include <binders/JsonCppErrorBinder.hpp>
-*/
 #include <jsoncpp/json/json.h>
 #include "assets/AccountEntity.hpp"
 
@@ -22,7 +9,7 @@ void fromString(std::string &json, Account &account)
 	Json::Value root;
 	if (!reader.parse(json, root, false))
 		throw std::runtime_error("JSON parse error");
-	nbdl::JsonRead r(root);
+	nbdl::binders::jsoncpp::Read r(root);
 	nbdl::bind(r, account);
 }
 
@@ -30,7 +17,7 @@ std::string toString(Account &account)
 {
 	Json::StyledWriter writer;
 	Json::Value root;
-	nbdl::JsonWrite r(root);
+	nbdl::binders::jsoncpp::Write r(root);
 
 	nbdl::bind(r, account);
 	return writer.write(root);

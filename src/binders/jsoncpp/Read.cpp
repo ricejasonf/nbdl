@@ -1,16 +1,18 @@
 #include<stdexcept>
-#include "JsonRead.h"
+#include "Read.hpp"
 
 namespace nbdl {
+namespace binders {
+namespace jsoncpp {
 
-JsonRead::JsonRead(const Json::Value &value) :
+Read::Read(const Json::Value &value) :
 	jsonVal(value)
 {
 	if (!jsonVal.isObject())
 		throw std::runtime_error("JSON Object expected");
 }
 
-void JsonRead::bind(const std::string name, bool &field)
+void Read::bind(const std::string name, bool &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isBool())
@@ -18,7 +20,7 @@ void JsonRead::bind(const std::string name, bool &field)
 	field = obj.asBool();
 }
 
-void JsonRead::bind(const std::string name, unsigned int &field)
+void Read::bind(const std::string name, unsigned int &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isIntegral())
@@ -26,7 +28,7 @@ void JsonRead::bind(const std::string name, unsigned int &field)
 	field = obj.asUInt();
 }
 
-void JsonRead::bind(const std::string name, int &field)
+void Read::bind(const std::string name, int &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isIntegral())
@@ -34,7 +36,7 @@ void JsonRead::bind(const std::string name, int &field)
 	field = obj.asInt();
 }
 
-void JsonRead::bind(const std::string name, double &field)
+void Read::bind(const std::string name, double &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isNumeric())
@@ -42,7 +44,7 @@ void JsonRead::bind(const std::string name, double &field)
 	field = obj.asDouble();
 }
 
-void JsonRead::bind(const std::string name, std::string &field)
+void Read::bind(const std::string name, std::string &field)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isString())
@@ -50,16 +52,16 @@ void JsonRead::bind(const std::string name, std::string &field)
 	field = obj.asString();
 }
 
-JsonRead JsonRead::createObjectReader(const std::string name)
+Read Read::createObjectReader(const std::string name)
 {
 	const Json::Value &obj = jsonVal[name];
 	if (!obj.isObject())
 		throw std::runtime_error("JSON Object expected");
-	return JsonRead(obj);
+	return Read(obj);
 }
 
 /* i'm getting rid of 'lists' for now but will need this code
-void JsonRead::bind(const std::string name, EntityListBase &list)
+void Read::bind(const std::string name, EntityListBase &list)
 {
 	const Json::Value &array = jsonVal[name];
 	if (!array.isArray())
@@ -69,7 +71,7 @@ void JsonRead::bind(const std::string name, EntityListBase &list)
 	int i = 0;
 	for (auto &obj : array)
 	{
-		JsonRead reader(obj);
+		Read reader(obj);
 		list.getRef(i++).bindMembers(reader);
 		if (i >= listSize)
 			break;
@@ -77,4 +79,6 @@ void JsonRead::bind(const std::string name, EntityListBase &list)
 }
 */
 
+}//jsoncpp
+}//binders
 }//nbdl
