@@ -45,7 +45,7 @@ struct HashPathFn
 template<typename PathType>
 struct PredPathFn
 {
-	constexpr bool operator() (const PathType& t1, const PathType& t2)
+	bool operator() (const PathType& t1, const PathType& t2) const
 	{
 		return t1.tuple == t2.tuple;
 	}

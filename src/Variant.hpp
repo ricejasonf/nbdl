@@ -41,12 +41,12 @@ struct VariantTypeSet<T1, Tn...>
 	template<typename T, class = void>
 	struct HasType
 	{
-		static constexpr bool value = Next::template HasType<T>::value;
+		static constexpr const bool value = Next::template HasType<T>::value;
 	};
 	template<typename T>
 	struct HasType<T, typename std::enable_if<std::is_same<T, T1>::value>::type>
 	{
-		static constexpr bool value = true;
+		static constexpr const bool value = true;
 	};
 };
 

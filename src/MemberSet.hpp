@@ -39,7 +39,7 @@ struct NumberSet<p>
 		return i;
 	}
 
-	constexpr static uintptr_t at(int i)
+	constexpr static uintptr_t at(int /* i */)
 	{
 		//out of range elements 
 		//just assume the last member
@@ -57,7 +57,7 @@ template<typename... Mn>
 struct MemberSet
 {
 	template<typename NameFormat, typename Binder, typename OwnerType>
-	static void bindMembers(Binder &binder, OwnerType &owner)
+	static void bindMembers(Binder&, OwnerType&)
 	{}
 };
 template<typename M1, typename... Mn>
