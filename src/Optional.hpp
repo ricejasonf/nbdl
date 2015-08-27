@@ -5,6 +5,8 @@
 
 namespace nbdl {
 
+//todo refactor optional types
+
 template<typename T, template<typename> class TT>
 struct IsSpecializationOf : std::false_type { };
 

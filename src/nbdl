@@ -39,9 +39,9 @@ struct NotFound {};
 //DEPRECATED #include <binders/jsoncpp/Validation.hpp>
 
 #include <validate/StdBasicString.hpp>
-#include <optional/boost.hpp>
+//#include <optional/boost.hpp>
 
-#include <msg/MsgId.hpp>
+//#include <msg/MsgId.hpp>
 
 
 #endif

@@ -7,14 +7,12 @@
 
 namespace nbdl {
 namespace validation {
-namespace {
 	template<class T, class Traits, class Alloc>
 	bool validateStdBasicStringLength(unsigned min, unsigned max, 
 		std::basic_string<T, Traits, Alloc> &str)
 	{
 		return (str.size() > max || str.size() < min);
 	}
-}//anon
 
 template<class M, class T, class Traits, class Alloc, class AddError>
 struct ValidateString<M, std::basic_string<T, Traits, Alloc>, AddError>
