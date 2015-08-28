@@ -1,5 +1,2 @@
 build/*
 test/build/*
-examples/*/build/*
-*.s
-a.out
