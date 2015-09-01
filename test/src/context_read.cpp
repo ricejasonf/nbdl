@@ -35,7 +35,7 @@ using MyApi = nbdl::ApiDefinition<
 	>
 >;
 
-struct TestServer
+struct TestClient
 {
 	template<typename Fn>
 	void read(OnlySupportedPath path, Fn fn)
@@ -55,7 +55,7 @@ struct TestServer
 TEST_CASE("Read an object from a context.", "[context]") 
 {
 	bool result;
-	nbdl::Context<TestServer, MyApi> ctx(TestServer{});
+	nbdl::Context<TestClient, MyApi> ctx(TestClient{});
 
 	result = ctx.read(OnlySupportedPath(1, 5),
 		[](nbdl::Unresolved) {
@@ -66,16 +66,15 @@ TEST_CASE("Read an object from a context.", "[context]")
 		},
 		[](MyEntity m) {
 			return (m.id == 5 && m.client_id == 1);
-		},
-		[]() {
-			return false;
 		});
+
 	CHECK(result);
 }
+
 TEST_CASE("Context should propagate NotFound from server callback.", "[context]") 
 {
 	bool result = false;
-	nbdl::Context<TestServer, MyApi> ctx(TestServer{});
+	nbdl::Context<TestClient, MyApi> ctx(TestClient{});
 
 	result = ctx.read(OnlySupportedPath(1, 6),
 		[](nbdl::Unresolved) {
@@ -86,9 +85,7 @@ TEST_CASE("Context should propagate NotFound from server callback.", "[context]"
 		},
 		[](MyEntity) {
 			return false;
-		},
-		[]() {
-			return false;
 		});
+
 	CHECK(result);
 }

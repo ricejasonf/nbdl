@@ -68,8 +68,6 @@ class StoreCollection
 		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
 		return store.get(request, path, fn, fns...);
 	}
-
-	//todo purge function
 };
 
 }//nbdl

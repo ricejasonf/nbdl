@@ -9,9 +9,11 @@
 
 #include "LambdaTraits.hpp"
 #include "store/HashMap.hpp"
+#include "store_emitter/HashMap.hpp"
 
 namespace nbdl {
 
+//todo maybe create a way to set default store containers on a per Context basis
 template<typename PathType>
 struct StoreImpl
 {
@@ -19,11 +21,28 @@ struct StoreImpl
 };
 
 template<typename PathType>
+struct StoreEmitterImpl
+{
+	using Type = store_emitter::HashMap<PathType>;
+};
+
+template<typename PathType>
 class Store
 {
 	using Impl = typename StoreImpl<PathType>::Type;
+	using EmitterImpl = typename StoreEmitterImpl<PathType>::Type;
+	//todo listener types will determined by Client type... somehow
+	//using Listener = uhhh
 
 	Impl impl;
+	EmitterImpl emitter;
+
+	void emitChange(const PathType& path)
+	{
+		emitter.emit(path, [](const PathType& path, Listener listener) {
+			listener.onChange(path);
+		});
+	}
 
 	public:
 
@@ -33,6 +52,7 @@ class Store
 	void forceAssign(PathType path, T&& value)
 	{
 		impl.assign(path, std::forward<T>(value));
+		emitChange(path);
 	}
 
 	template<typename T>
@@ -41,6 +61,7 @@ class Store
 		impl.get(path).match(
 			[&](Unresolved) {
 				impl.assign(path, std::forward<T>(value));
+				emitChange(path);
 			});
 	}
 

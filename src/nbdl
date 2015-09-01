@@ -30,6 +30,7 @@ struct NotFound {};
 #include <AccessPoint.hpp>
 #include <ApiDefinition.hpp>
 #include <Store.hpp>
+#include <Listener.hpp>
 #include <Context.hpp>
 
 #include <binders/jsoncpp/Read.hpp>
