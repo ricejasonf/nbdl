@@ -16,17 +16,27 @@ namespace nbdl {
 template<typename Traits>
 class Context : public enable_shared_from_this<Traits>
 {
-	using Ptr = std::shared_ptr<Context>;
-	using Client = typename typename Traits::Client;
-	using ApiDef = typename typename Traits::ApiDef;
+	using SharedPtr = std::shared_ptr<Context>;
+	using WeakPtr = std::weak_ptr<Context>;
+	using Client = typename Traits::Client;
+	using EventHandler = typename Traits::EventHandler;
+	template<typename PathType>
+	using Listener = Listener<PathType, EventHandler>;
+	using ApiDef = typename Traits::ApiDef;
 
 	Client client;
 	StoreCollection<ApiDef> store;
 
 	public:
 
-	//todo clients probably wont be copyable
+	//todo client probably wont be copyable
 	Context(const Client c) : client(c) {}
+
+	template<typename Path, typename... Args>
+	Listener makeListener(Path path, Args... args)
+	{
+		return Listener(shared_from_this(), EventHandler(args...));
+	}	
 
 	template<typename Path, typename MatchFn1, typename... MatchFns>
 	typename LambdaTraits<MatchFn1>::ReturnType read(Path path, MatchFn1 fn1, MatchFns... fns)
@@ -46,10 +56,12 @@ class Context : public enable_shared_from_this<Traits>
 
 template<
 	typename Client,
+	typename EventHandler,
 	typename ApiDef>
 struct ContextTraits
 {
 	using Client = Client;
+	using EventHandler = EventHandler;
 	using ApiDef = ApiDef;
 };
 
