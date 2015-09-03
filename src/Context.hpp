@@ -41,9 +41,8 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 	template<typename PathType, typename... Args>
 	Listener<PathType> makeListener(PathType path, Args... args)
 	{
-		auto handler = ListenerHandler(args...);
-		auto wrapper = Listener<PathType>(path, this->shared_from_this(), ListenerHandler(args...));
-		store.addListener(path, handler);
+		auto wrapper = Listener<PathType>(path, this->shared_from_this(), args...);
+		store.addListener(path, wrapper.handler());
 		return wrapper;
 	}
 	template<typename PathType>
@@ -98,6 +97,8 @@ struct Context
 	using Type = details::Context<details::ContextTraits<ClientType, ListenerHandlerType, ApiDefType>>;
 	using SharedPtr = typename Type::SharedPtr;
 
+	//todo i could probably wrap the shared object and put the logic in here
+	//and eliminate the shared_from_this junk
 	template<typename... Args>
 	static SharedPtr create(Args... args)
 	{

@@ -49,7 +49,7 @@ struct TestClient
 
 using MyContext = nbdl::Context<
 	TestClient,
-	nbdl::ListenerHandlerDummy<std::weak_ptr<int>>,
+	nbdl::ListenerHandlerDummy<>,
 	nbdl::ApiDefinition<
 		nbdl::AccessPoint<
 			OnlySupportedPath,
@@ -126,7 +126,7 @@ std::function<void()> TestClientAsync::m_fn = [](){};
 
 using MyContextAsync = nbdl::Context<
 	TestClientAsync,
-	nbdl::ListenerHandlerDummy<std::weak_ptr<int>>,
+	nbdl::ListenerHandlerDummy<>,
 	nbdl::ApiDefinition<
 		nbdl::AccessPoint<
 			OnlySupportedPath,
@@ -138,13 +138,10 @@ TEST_CASE("Context should emit change to listener", "[context]")
 {
 	int function_was_called = false;
 	int result = 0;
-	auto shared = std::make_shared<int>(5);
 	auto ctx = MyContextAsync::create(TestClientAsync{});
 	OnlySupportedPath path(1, 5);
 
-	//todo maybe the listener itself could be the shared object
-	//i was originally thinking it would use the connection object
-	auto listener = ctx->makeListener(path, shared, [&]() {
+	auto listener = ctx->makeListener(path, [&]() {
 		function_was_called = true;
 		result = ctx->read(path,
 			[](nbdl::Unresolved) {
@@ -159,8 +156,38 @@ TEST_CASE("Context should emit change to listener", "[context]")
 	});
 
 	ctx->read(path, [](){});
-	CHECK_FALSE(result); //Unresolved
+	CHECK_FALSE(result); //does not emit for unresolved
 	TestClientAsync::flush__();
 	CHECK(function_was_called);
 	CHECK(result == 2); //MyEntity
+}
+
+TEST_CASE("Context should not emit to a listener that has been destroyed.", "[context]")
+{
+	int function_was_called = false;
+	int result = 0;
+	auto ctx = MyContextAsync::create(TestClientAsync{});
+	OnlySupportedPath path(1, 5);
+
+	{
+		auto listener = ctx->makeListener(path, [&]() {
+			function_was_called = true;
+			result = ctx->read(path,
+				[](nbdl::Unresolved) {
+					return 1;
+				},
+				[](MyEntity) {
+					return 2;
+				},
+				[](nbdl::NotFound) {
+					return 3;
+				});
+		});
+		ctx->read(path, [](){});
+	} //listener is destroyed and should unregister from the context
+
+	CHECK_FALSE(result); //does not emit for unresolved
+	TestClientAsync::flush__();
+	CHECK_FALSE(function_was_called);
+	CHECK(result == 0);
 }

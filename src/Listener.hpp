@@ -7,21 +7,21 @@
 #ifndef NBDL_LISTENER_HPP
 #define NBDL_LISTENER_HPP
 
+#include<memory>
 #include<functional>
 
 namespace nbdl {
 
-template<typename WeakPtrType, typename Impl>
+using ListenerHandle = std::weak_ptr<int>;
+
+template<typename Impl>
 class ListenerHandlerBase
 {
-	using WeakPtr = WeakPtrType;
-	//weak could be a socket connection or just 
-	//an interal handle for a ui object instance
-	WeakPtr weak;
+	ListenerHandle weak;
 
 	public:
 	
-	ListenerHandlerBase(WeakPtr w) :
+	ListenerHandlerBase(ListenerHandle w) :
 		weak(w)
 	{}
 
@@ -46,12 +46,12 @@ class ListenerHandlerBase
    dummy callback on any kind of 
    state change with no args
 */
-template<typename WeakPtrType, typename Fn = std::function<void()>>
-class ListenerHandlerDummy : public ListenerHandlerBase<WeakPtrType, ListenerHandlerDummy<WeakPtrType, Fn>>
+template<typename Fn = std::function<void()>>
+class ListenerHandlerDummy : public ListenerHandlerBase<ListenerHandlerDummy<Fn>>
 {
-	using ElementType = typename WeakPtrType::element_type;
+	using ElementType = typename ListenerHandle::element_type;
 
-	friend class ListenerHandlerBase<WeakPtrType, ListenerHandlerDummy<WeakPtrType, Fn>>;
+	friend class ListenerHandlerBase<ListenerHandlerDummy<Fn>>;
 
 	Fn fn;
 
@@ -63,12 +63,10 @@ class ListenerHandlerDummy : public ListenerHandlerBase<WeakPtrType, ListenerHan
 
 	public:
 
-	ListenerHandlerDummy(WeakPtrType w, Fn f) :
-		ListenerHandlerBase<WeakPtrType, ListenerHandlerDummy<WeakPtrType, Fn>>(w),
+	ListenerHandlerDummy(ListenerHandle w, Fn f) :
+		ListenerHandlerBase<ListenerHandlerDummy<Fn>>(w),
 		fn(f)
 	{}
-
-	using WeakPtr = WeakPtrType;
 };
 
 namespace details {
@@ -81,30 +79,38 @@ class Listener
 
 	PathType path;
 	ContextWeakPtr context; //needs to delete self with context
-	Handler handler;
+	std::shared_ptr<int> handle_master;
+	Handler handler_;
 
 	public:
 	
-	Listener(PathType p, ContextWeakPtr c, Handler h) :
+	template<typename... Args>
+	Listener(PathType p, ContextWeakPtr c, Args... args) :
 		path(p),
 		context(c),
-		handler(h)
+		handle_master(std::make_shared<int>(0)),
+		handler_(Handler(handle_master, args...))
 	{}
-	//todo copy constructor
+	//todo copy constructor needs to be deleted or something
 
 	~Listener()
 	{
 		auto ctx = context.lock(); 
 		if (ctx)
 		{
-			ctx->removeListener(path, handler);
+			ctx->removeListener(path, handler_);
 		}
 	}
 
 	bool operator== (const Handler& h)
 	{
-		//handler is stored with the store's emitter
-		return handler == h;
+		//handler_ is stored with the store's emitter
+		return handler_ == h;
+	}
+
+	Handler handler()
+	{
+		return handler_;
 	}
 
 	//todo delete self from context
@@ -113,7 +119,7 @@ class Listener
 	template<typename... Args>
 	void notify(Args... args)
 	{
-		handler.notify(args...);
+		handler_.notify(args...);
 	}
 
 };

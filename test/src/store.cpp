@@ -10,7 +10,7 @@
 
 struct Context
 {
-	using ListenerHandler = nbdl::ListenerHandlerDummy<std::weak_ptr<int>>;
+	using ListenerHandler = nbdl::ListenerHandlerDummy<>;
 };
 struct Client
 {
