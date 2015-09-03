@@ -41,7 +41,15 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 	template<typename PathType, typename... Args>
 	Listener<PathType> makeListener(PathType path, Args... args)
 	{
-		return Listener<PathType>(path, this->shared_from_this(), ListenerHandler(args...));
+		auto handler = ListenerHandler(args...);
+		auto wrapper = Listener<PathType>(path, this->shared_from_this(), ListenerHandler(args...));
+		store.addListener(path, handler);
+		return wrapper;
+	}
+	template<typename PathType>
+	void addListener(const PathType& path, const ListenerHandler& listener)
+	{
+		store.addListener(path, listener);
 	}
 	template<typename PathType>
 	void removeListener(const PathType& path, const ListenerHandler& listener)
@@ -55,10 +63,12 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 		using VariantType = typename StoreCollection<Context>::template VariantType<Path>;
 
 		return store.get(
-			[&](const Path path) {
+			//called if store needs to request value
+			[&](const Path& path) {
 				//request from client
-				client.read(path, [&](VariantType&& value) {
-					store.suggestAssign(path, std::forward<VariantType>(value));
+				auto self = this->shared_from_this();
+				client.read(path, [path, self](VariantType&& value) {
+					self->store.suggestAssign(path, std::forward<VariantType>(value));
 				});
 			},
 			path, fn1, fns...);
@@ -83,7 +93,18 @@ template<
 	typename ClientType,
 	typename ListenerHandlerType,
 	typename ApiDefType>
-using Context = details::Context<details::ContextTraits<ClientType, ListenerHandlerType, ApiDefType>>;
+struct Context
+{
+	using Type = details::Context<details::ContextTraits<ClientType, ListenerHandlerType, ApiDefType>>;
+	using SharedPtr = typename Type::SharedPtr;
+
+	template<typename... Args>
+	static SharedPtr create(Args... args)
+	{
+		return std::make_shared<Type>(args...);
+	}
+};
+//using Context = details::Context<details::ContextTraits<ClientType, ListenerHandlerType, ApiDefType>>;
 
 }//nbdl
 

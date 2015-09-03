@@ -51,7 +51,7 @@ class StoreCollection
 	using VariantType = typename Store<Context, PathType>::VariantType;
 
 	template<typename PathType, typename T>
-	void forceAssign(PathType path, T&& value)
+	void forceAssign(const PathType& path, T&& value)
 	{
 		using StoreType = Store<Context, PathType>;
 		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
@@ -59,7 +59,7 @@ class StoreCollection
 	}
 
 	template<typename PathType, typename T>
-	void suggestAssign(PathType path, T&& value)
+	void suggestAssign(const PathType& path, T&& value)
 	{
 		using StoreType = Store<Context, PathType>;
 		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
@@ -74,6 +74,13 @@ class StoreCollection
 	}
 
 	//emitter interface
+	template<typename PathType>
+	void addListener(const PathType& path, const ListenerHandler& listener)
+	{
+		using StoreType = Store<Context, PathType>;
+		StoreType& store = mpl::TupleGetByType<StoreType, Tuple>::get(tuple);
+		store.addListener(path, listener);
+	}
 	template<typename PathType>
 	void removeListener(const PathType& path, const ListenerHandler& listener)
 	{

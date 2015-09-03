@@ -46,12 +46,12 @@ class HashMap
 		}
 	}
 
-	void addListener(PathType path, ListenerHandler listener)
+	void addListener(const PathType& path, ListenerHandler listener)
 	{
 		map[path].push_back(listener);
 	}
 
-	void removeListener(PathType path, const ListenerHandler& listener)
+	void removeListener(const PathType& path, const ListenerHandler& listener)
 	{
 		auto map_node = map.find(path);
 		if (map_node != map.end())

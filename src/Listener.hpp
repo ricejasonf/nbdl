@@ -89,9 +89,8 @@ class Listener
 		path(p),
 		context(c),
 		handler(h)
-	{
-		//perhaps i should add the listener here?
-	}
+	{}
+	//todo copy constructor
 
 	~Listener()
 	{

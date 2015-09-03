@@ -60,9 +60,9 @@ using MyContext = nbdl::Context<
 TEST_CASE("Read an object from a context.", "[context]") 
 {
 	bool result;
-	MyContext ctx(TestClient{});
+	auto ctx = MyContext::create(TestClient{});
 
-	result = ctx.read(OnlySupportedPath(1, 5),
+	result = ctx->read(OnlySupportedPath(1, 5),
 		[](nbdl::Unresolved) {
 			return false;
 		},
@@ -79,9 +79,9 @@ TEST_CASE("Read an object from a context.", "[context]")
 TEST_CASE("Context should propagate NotFound from server callback.", "[context]") 
 {
 	bool result = false;
-	MyContext ctx(TestClient{});
+	auto ctx = MyContext::create(TestClient{});
 
-	result = ctx.read(OnlySupportedPath(1, 6),
+	result = ctx->read(OnlySupportedPath(1, 6),
 		[](nbdl::Unresolved) {
 			return false;
 		},
@@ -109,7 +109,7 @@ class TestClientAsync
 	template<typename Fn>
 	void read(OnlySupportedPath path, Fn fn)
 	{
-		m_fn = [&]() {
+		m_fn = [path, fn]() {
 			if (path.getKey<Client>() == 1 && path.getKey<MyEntity>() == 5)
 			{
 				MyEntity my_entity = { 5, 1 };
@@ -122,7 +122,7 @@ class TestClientAsync
 		};
 	}
 };
-std::function<void()> TestClientAsync::m_fn = std::function<void()>();
+std::function<void()> TestClientAsync::m_fn = [](){};
 
 using MyContextAsync = nbdl::Context<
 	TestClientAsync,
@@ -136,12 +136,16 @@ using MyContextAsync = nbdl::Context<
 
 TEST_CASE("Context should emit change to listener", "[context]")
 {
+	int function_was_called = false;
 	int result = 0;
 	auto shared = std::make_shared<int>(5);
-	auto ctx = std::make_shared<MyContextAsync>(TestClientAsync{});
+	auto ctx = MyContextAsync::create(TestClientAsync{});
 	OnlySupportedPath path(1, 5);
 
+	//todo maybe the listener itself could be the shared object
+	//i was originally thinking it would use the connection object
 	auto listener = ctx->makeListener(path, shared, [&]() {
+		function_was_called = true;
 		result = ctx->read(path,
 			[](nbdl::Unresolved) {
 				return 1;
@@ -154,7 +158,9 @@ TEST_CASE("Context should emit change to listener", "[context]")
 			});
 	});
 
-	CHECK_FALSE(result);
+	ctx->read(path, [](){});
+	CHECK_FALSE(result); //Unresolved
 	TestClientAsync::flush__();
-	CHECK(result == 2);
+	CHECK(function_was_called);
+	CHECK(result == 2); //MyEntity
 }

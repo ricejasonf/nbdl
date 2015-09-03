@@ -50,13 +50,13 @@ class Store
 	using VariantType = typename Impl::VariantType;
 
 	template<typename T>
-	void forceAssign(PathType path, T&& value)
+	void forceAssign(const PathType& path, T&& value)
 	{
 		emitChange(path, impl.assign(path, std::forward<T>(value)));
 	}
 
 	template<typename T>
-	void suggestAssign(PathType path, T&& value)
+	void suggestAssign(const PathType& path, T&& value)
 	{
 		impl.get(path).match(
 			[&](Unresolved) {
@@ -65,7 +65,7 @@ class Store
 	}
 
 	template<typename RequestFn, typename Fn1, typename... Fns>
-	typename LambdaTraits<Fn1>::ReturnType get(RequestFn request, const PathType path, Fn1 fn, Fns... fns)
+	typename LambdaTraits<Fn1>::ReturnType get(RequestFn request, const PathType& path, Fn1 fn, Fns... fns)
 	{
 		if (!impl.hasEntry(path))
 		{
@@ -76,6 +76,10 @@ class Store
 	}
 
 	//emitter interface
+	void addListener(const PathType& path, const ListenerHandler& listener)
+	{
+		emitter.addListener(path, listener);
+	}
 	void removeListener(const PathType& path, const ListenerHandler& listener)
 	{
 		emitter.removeListener(path, listener);

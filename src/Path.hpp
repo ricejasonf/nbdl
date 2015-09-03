@@ -95,7 +95,7 @@ class Path
 	private:
 
 	template<int... sequence>
-	ParentTuple makeParentTuple(path_details::NumberSequence<sequence...>)
+	ParentTuple makeParentTuple(path_details::NumberSequence<sequence...>) const
 	{
 		return std::make_tuple(std::get<sequence>(tuple)...);
 	}
@@ -116,12 +116,12 @@ class Path
 	{}
 
 	template<typename E = EntityType>
-	KeyType getKey()
+	KeyType getKey() const
 	{
 		return std::get<FindPath<E>::value>(tuple);
 	}
 
-	ParentPath getParent()
+	ParentPath getParent() const
 	{
 		return ParentPath(makeParentTuple(typename path_details::GenerateNumberSequence<(std::tuple_size<Tuple>::value - 1)>::Type()));
 	}
