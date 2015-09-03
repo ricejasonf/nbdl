@@ -7,12 +7,77 @@
 #ifndef NBDL_LISTENER_HPP
 #define NBDL_LISTENER_HPP
 
+#include<functional>
+
 namespace nbdl {
 
-template<typename PathType, typename Context, typename Handler>
+template<typename WeakPtrType, typename Impl>
+class ListenerHandlerBase
+{
+	using WeakPtr = WeakPtrType;
+	//weak could be a socket connection or just 
+	//an interal handle for a ui object instance
+	WeakPtr weak;
+
+	public:
+	
+	ListenerHandlerBase(WeakPtr w) :
+		weak(w)
+	{}
+
+	bool operator== (const Impl& h)
+	{
+		//to find in a vector or other lookup
+		return !weak.owner_before(h.weak) && !h.weak.owner_before(weak);
+	}
+
+	template<typename VariantType>
+	void notify_(const VariantType& value)
+	{
+		if (!weak.expired())
+		{
+			static_cast<Impl*>(this)->notify(value);
+		}
+	}
+};
+
+/*
+   this ListenerHandler just calls a 
+   dummy callback on any kind of 
+   state change with no args
+*/
+template<typename WeakPtrType, typename Fn = std::function<void()>>
+class ListenerHandlerDummy : public ListenerHandlerBase<WeakPtrType, ListenerHandlerDummy<WeakPtrType, Fn>>
+{
+	using ElementType = typename WeakPtrType::element_type;
+
+	friend class ListenerHandlerBase<WeakPtrType, ListenerHandlerDummy<WeakPtrType, Fn>>;
+
+	Fn fn;
+
+	template<typename VariantType>
+	void notify(const VariantType&)
+	{
+		fn();
+	}
+
+	public:
+
+	ListenerHandlerDummy(WeakPtrType w, Fn f) :
+		ListenerHandlerBase<WeakPtrType, ListenerHandlerDummy<WeakPtrType, Fn>>(w),
+		fn(f)
+	{}
+
+	using WeakPtr = WeakPtrType;
+};
+
+namespace details {
+
+template<typename Context, typename PathType>
 class Listener
 {
 	using ContextWeakPtr = typename Context::WeakPtr;
+	using Handler = typename Context::ListenerHandler;
 
 	PathType path;
 	ContextWeakPtr context; //needs to delete self with context
@@ -24,14 +89,16 @@ class Listener
 		path(p),
 		context(c),
 		handler(h)
-	{}
+	{
+		//perhaps i should add the listener here?
+	}
 
 	~Listener()
 	{
 		auto ctx = context.lock(); 
 		if (ctx)
 		{
-			ctx->removeListener(listener.getPath(), *this);
+			ctx->removeListener(path, handler);
 		}
 	}
 
@@ -52,58 +119,7 @@ class Listener
 
 };
 
-/*
-   this EventHandler just calls a 
-   dummy callback on any kind of 
-   state change with no args
-*/
-template<typename WeakPtr, typename Fn = std::function<void(typename WeakPtr::element_type&)>>
-class EventHandlerDummy : public EventHandlerBase<EventHandlerDummy<WeakPtr>>
-{
-	using ElementType = typename WeakPtr::element_type;
-
-	Fn fn;
-
-	EventHandlerDummy(WeakPtr w, Fn f) :
-		EventHandlerBase<EventHandlerDummy<WeakPtr>>(w),
-		fn(f)
-	{}
-
-	template<typename... Args>
-	void notify(ElementType& element, Args... args)
-	{
-		fn(element);
-	}
-};
-
-template<typename WeakPtr, typename Impl>
-class EventHandlerBase
-{
-	//weak could be a socket connection or just 
-	//an interal handle for a ui object instance
-	WeakPtr weak;
-
-	public:
-	
-	EventHandlerBase(WeakPtr w) :
-	{}
-
-	bool operator== (const Handler& h)
-	{
-		//to find in a vector or other lookup
-		!weak.owner_before(h.weak) && !h.weak.owner_before(weak);
-	}
-
-	template<typename... Args>
-	void notify_(Args... args)
-	{
-		auto shared = weak.lock();
-		if (shared)
-		{
-			static_cast<Impl*>(this)->notify(*shared, args);
-		}
-	}
-};
+}//details
 
 }//nbdl
 

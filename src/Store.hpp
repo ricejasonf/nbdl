@@ -14,33 +14,34 @@
 namespace nbdl {
 
 //todo maybe create a way to set default store containers on a per Context basis
-template<typename PathType>
+template<typename Context, typename PathType>
 struct StoreImpl
 {
 	using Type = store::HashMap<PathType>;
 };
 
-template<typename PathType>
+template<typename Context, typename PathType>
 struct StoreEmitterImpl
 {
-	using Type = store_emitter::HashMap<PathType>;
+	using Type = store_emitter::HashMap<PathType, typename Context::ListenerHandler>;
+	using ListenerHandler = typename Context::ListenerHandler;
 };
 
-template<typename PathType>
+template<typename Context, typename PathType>
 class Store
 {
-	using Impl = typename StoreImpl<PathType>::Type;
-	using EmitterImpl = typename StoreEmitterImpl<PathType>::Type;
-	//todo listener types will determined by Client type... somehow
-	//using Listener = uhhh
+	using ListenerHandler = typename Context::ListenerHandler;
+	using Impl = typename StoreImpl<Context, PathType>::Type;
+	using EmitterImpl = typename StoreEmitterImpl<Context, PathType>::Type;
 
 	Impl impl;
 	EmitterImpl emitter;
 
-	void emitChange(const PathType& path)
+	template<typename T>
+	void emitChange(const PathType& path, const T& value)
 	{
-		emitter.emit(path, [](const PathType& path, Listener listener) {
-			listener.onChange(path);
+		emitter.emit(path, [&](ListenerHandler& listener) {
+			listener.notify_(value);
 		});
 	}
 
@@ -51,8 +52,7 @@ class Store
 	template<typename T>
 	void forceAssign(PathType path, T&& value)
 	{
-		impl.assign(path, std::forward<T>(value));
-		emitChange(path);
+		emitChange(path, impl.assign(path, std::forward<T>(value)));
 	}
 
 	template<typename T>
@@ -60,8 +60,7 @@ class Store
 	{
 		impl.get(path).match(
 			[&](Unresolved) {
-				impl.assign(path, std::forward<T>(value));
-				emitChange(path);
+				emitChange(path, impl.assign(path, std::forward<T>(value)));
 			});
 	}
 
@@ -76,7 +75,11 @@ class Store
 		return impl.get(path).match(fn, fns...);
 	}
 
-	//todo purge function
+	//emitter interface
+	void removeListener(const PathType& path, const ListenerHandler& listener)
+	{
+		emitter.removeListener(path, listener);
+	}
 };
 
 }//nbdl

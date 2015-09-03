@@ -13,35 +13,46 @@
 
 namespace nbdl {
 
+namespace details {
+
 template<typename Traits>
-class Context : public enable_shared_from_this<Traits>
+class Context : public std::enable_shared_from_this<Context<Traits>>
 {
+	public:
+
 	using SharedPtr = std::shared_ptr<Context>;
 	using WeakPtr = std::weak_ptr<Context>;
 	using Client = typename Traits::Client;
-	using EventHandler = typename Traits::EventHandler;
+	using ListenerHandler = typename Traits::ListenerHandler;
 	template<typename PathType>
-	using Listener = Listener<PathType, EventHandler>;
+	using Listener = details::Listener<Context, PathType>;
 	using ApiDef = typename Traits::ApiDef;
 
+	private:
+
 	Client client;
-	StoreCollection<ApiDef> store;
+	StoreCollection<Context> store;
 
 	public:
 
 	//todo client probably wont be copyable
-	Context(const Client c) : client(c) {}
+	Context(Client c) : client(c) {}
 
-	template<typename Path, typename... Args>
-	Listener makeListener(Path path, Args... args)
+	template<typename PathType, typename... Args>
+	Listener<PathType> makeListener(PathType path, Args... args)
 	{
-		return Listener(shared_from_this(), EventHandler(args...));
-	}	
+		return Listener<PathType>(path, this->shared_from_this(), ListenerHandler(args...));
+	}
+	template<typename PathType>
+	void removeListener(const PathType& path, const ListenerHandler& listener)
+	{
+		store.removeListener(path, listener);
+	}
 
 	template<typename Path, typename MatchFn1, typename... MatchFns>
 	typename LambdaTraits<MatchFn1>::ReturnType read(Path path, MatchFn1 fn1, MatchFns... fns)
 	{
-		using VariantType = typename StoreCollection<ApiDef>::template VariantType<Path>;
+		using VariantType = typename StoreCollection<Context>::template VariantType<Path>;
 
 		return store.get(
 			[&](const Path path) {
@@ -55,15 +66,24 @@ class Context : public enable_shared_from_this<Traits>
 };
 
 template<
-	typename Client,
-	typename EventHandler,
-	typename ApiDef>
+	typename ClientType,
+	typename ListenerHandlerType,
+	typename ApiDefType>
 struct ContextTraits
 {
-	using Client = Client;
-	using EventHandler = EventHandler;
-	using ApiDef = ApiDef;
+	using Client = ClientType;
+	using ListenerHandler = ListenerHandlerType;
+	using ApiDef = ApiDefType;
 };
+
+
+}//details
+
+template<
+	typename ClientType,
+	typename ListenerHandlerType,
+	typename ApiDefType>
+using Context = details::Context<details::ContextTraits<ClientType, ListenerHandlerType, ApiDefType>>;
 
 }//nbdl
 

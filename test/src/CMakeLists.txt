@@ -24,7 +24,7 @@ add_executable(test
 	)
 
 SET(LIBNBDL_DIR
-	/home/jason/Projects/NewHotness
+	/home/jason/Projects/nbdl
 	)
 include_directories(${LIBNBDL_DIR}/src)
 include(${LIBNBDL_DIR}/nbdl.cmake)

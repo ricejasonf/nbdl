@@ -7,29 +7,30 @@
 #ifndef NBDL_STORE_EMITTER_HASH_MAP_HPP
 #define NBDL_STORE_EMITTER_HASH_MAP_HPP
 
+#include<algorithm>
+#include<vector>
 #include<unordered_map>
 
 namespace nbdl {
 namespace store_emitter {
 
-template<typename PathType, typename ListenerType>
+template<typename PathType, typename ListenerHandlerType>
 class HashMap
 {
 	public:
 
 	using VariantType = Variant<typename PathType::Entity, NotFound>;
+	using ListenerHandler = ListenerHandlerType;
 
 	private:
 
 	using HashFn = typename PathType::HashFn;
 	using PredFn = typename PathType::PredFn;
-	using Vector = std::vector<ListenerType>;
+	using Vector = std::vector<ListenerHandler>;
 	using Container = std::unordered_map<PathType, Vector, HashFn, PredFn>;
 	Container map;
 
 	public:
-
-	using Listener = ListenerType;
 
 	template<typename Fn>
 	void emit(const PathType& path, Fn fn)
@@ -38,25 +39,25 @@ class HashMap
 		if (map_node != map.end())
 		{
 			Vector vector = map_node->second;
-			for (ListenerType listener : vector)
+			for (ListenerHandler listener : vector)
 			{
-				fn(path, listener);
+				fn(listener);
 			}
 		}
 	}
 
-	void addListener(PathType path, ListenerType listener)
+	void addListener(PathType path, ListenerHandler listener)
 	{
 		map[path].push_back(listener);
 	}
 
-	void removeListener(PathType path, const ListenerType& listener)
+	void removeListener(PathType path, const ListenerHandler& listener)
 	{
 		auto map_node = map.find(path);
 		if (map_node != map.end())
 		{
 			Vector vector = map_node->second;
-			vector.erase(vector.find(listener));	
+			vector.erase(std::find(vector.begin(), vector.end(), listener));	
 			if (!vector.size())
 			{
 				map.erase(path);

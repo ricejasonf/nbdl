@@ -30,9 +30,9 @@ class HashMap
 	public:
 
 	template<typename T>
-	void assign(const PathType path, T&& value)
+	const VariantType& assign(const PathType path, T&& value)
 	{
-		map[path] = std::forward<T>(value);
+		return map[path] = std::forward<T>(value);
 	}
 
 	bool hasEntry(const PathType& path)
