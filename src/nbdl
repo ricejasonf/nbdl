@@ -8,6 +8,10 @@ struct NotFound {};
 
 }//nbdl
 
+#include <def/Actions.hpp>
+#include <def/AccessPoint.hpp>
+#include <def/Api.hpp>
+
 #include <EntityTraits.hpp>
 #include <MemberSet.hpp>
 #include <Bind.hpp>
@@ -25,9 +29,6 @@ struct NotFound {};
 //#include <Promise.hpp>
 #include <Regex.hpp>
 #include <Path.hpp>
-#include <Actions.hpp>
-#include <AccessPoint.hpp>
-#include <ApiDefinition.hpp>
 #include <Store.hpp>
 #include <Listener.hpp>
 #include <Context.hpp>

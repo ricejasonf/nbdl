@@ -44,56 +44,60 @@ namespace nbdl {
 			attribute_id );
 }//nbdl
 
-//normally do this inside the MyApi scope but the tests need it
-template<typename... Ts>
-using Path = nbdl::CreatePath<Ts...>;
-
-//todo ditch the wrapper
-struct MyApi
+namespace my_api
 {
-	using Definition = nbdl::ApiDefinition<
-		nbdl::AccessPoint<
+	using namespace nbdl_def;
+
+	using Definition = Api<
+		AccessPoint<
 			Path<Client>,
-			nbdl::Actions<nbdl::actions::Read>
+			Actions<Read>
 		>,
-		nbdl::AccessPoint<
+		AccessPoint<
 			Path<Client, MyEntity>, 
-			nbdl::Actions<
-				nbdl::actions::Create,
-				nbdl::actions::Read,
-				nbdl::actions::Update,
-				nbdl::actions::Delete
+			Actions<
+				Create,
+				Read,
+				Update,
+				Delete
 			>
 		>,
-		nbdl::AccessPoint<
+		AccessPoint<
 			Path<Client, MyEntity, MyEntityAttribute>, 
-			nbdl::Actions<nbdl::actions::Read>
+			Actions<Read>
 		>,
-		nbdl::AccessPoint<
+		AccessPoint<
 			Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, 
-			nbdl::Actions<
-				nbdl::actions::Create, 
-				nbdl::actions::Read
+			Actions<
+				Create, 
+				Read
 			>
 		>
 	>;
 };
 
+template<typename... Ts>
+using Path = nbdl_def::Path<Ts...>;
+
 TEST_CASE("Defined API should indicate specified AccessPoints.", "[api]") 
 {
-	using Def = MyApi::Definition;
+	using Def = my_api::Definition;
+	using Create =  nbdl_def::Create;
+	using Read =  nbdl_def::Read;
+	using Update =  nbdl_def::Update;
+	using Delete =  nbdl_def::Delete;
 
-	CHECK_FALSE((Def::template HasAction<Path<Client>, nbdl::actions::Create>::value));
-	CHECK_FALSE((Def::template HasAction<Path<Client>, nbdl::actions::Update>::value));
-	CHECK((Def::template HasAction<Path<Client>, nbdl::actions::Read>::value));
+	CHECK_FALSE((Def::template HasAction<Path<Client>, Create>::value));
+	CHECK_FALSE((Def::template HasAction<Path<Client>, Update>::value));
+	CHECK((Def::template HasAction<Path<Client>, Read>::value));
 
-	CHECK((Def::template HasAction<Path<Client, MyEntity>, nbdl::actions::Create>::value));
-	CHECK((Def::template HasAction<Path<Client, MyEntity>, nbdl::actions::Read>::value));
-	CHECK((Def::template HasAction<Path<Client, MyEntity>, nbdl::actions::Update>::value));
-	CHECK((Def::template HasAction<Path<Client, MyEntity>, nbdl::actions::Delete>::value));
+	CHECK((Def::template HasAction<Path<Client, MyEntity>, Create>::value));
+	CHECK((Def::template HasAction<Path<Client, MyEntity>, Read>::value));
+	CHECK((Def::template HasAction<Path<Client, MyEntity>, Update>::value));
+	CHECK((Def::template HasAction<Path<Client, MyEntity>, Delete>::value));
 
-	CHECK((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, nbdl::actions::Create>::value));
-	CHECK((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, nbdl::actions::Read>::value));
-	CHECK_FALSE((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, nbdl::actions::Update>::value));
-	CHECK_FALSE((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, nbdl::actions::Delete>::value));
+	CHECK((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, Create>::value));
+	CHECK((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, Read>::value));
+	CHECK_FALSE((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, Update>::value));
+	CHECK_FALSE((Def::template HasAction<Path<Client, MyEntity, MyEntityAttribute, AttributeStatus>, Delete>::value));
 }

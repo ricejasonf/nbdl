@@ -50,10 +50,10 @@ struct TestClient
 using MyContext = nbdl::Context<
 	TestClient,
 	nbdl::ListenerHandlerDummy<>,
-	nbdl::ApiDefinition<
-		nbdl::AccessPoint<
+	nbdl_def::Api<
+		nbdl_def::AccessPoint<
 			OnlySupportedPath,
-			nbdl::Actions<nbdl::actions::Read>
+			nbdl_def::Actions<nbdl_def::Read>
 		>
 	>>;
 
@@ -127,10 +127,10 @@ std::function<void()> TestClientAsync::m_fn = [](){};
 using MyContextAsync = nbdl::Context<
 	TestClientAsync,
 	nbdl::ListenerHandlerDummy<>,
-	nbdl::ApiDefinition<
-		nbdl::AccessPoint<
+	nbdl_def::Api<
+		nbdl_def::AccessPoint<
 			OnlySupportedPath,
-			nbdl::Actions<nbdl::actions::Read>
+			nbdl_def::Actions<nbdl_def::Read>
 		>
 	>>;
 

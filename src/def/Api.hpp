@@ -4,16 +4,16 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_API_DEFINITION_HPP
-#define NBDL_API_DEFINITION_HPP
+#ifndef NBDL_DEF_API_DEFINITION_HPP
+#define NBDL_DEF_API_DEFINITION_HPP
 
 #include<type_traits>
-#include "AccessPoint.hpp"
+#include "def/AccessPoint.hpp"
 
-namespace nbdl {
+namespace nbdl_def {
 
 template<typename... Ts>
-class ApiDefinition
+class Api
 {
 	public:
 
@@ -26,12 +26,12 @@ class ApiDefinition
 };
 
 template<typename T, typename... Ts>
-class ApiDefinition<T, Ts...>
+class Api<T, Ts...>
 {
 	template<typename PathType, typename ActionType, class = void>
 	struct HasAction_
 	{
-		using Next = typename ApiDefinition<Ts...>::template HasAction<PathType, ActionType>;
+		using Next = typename Api<Ts...>::template HasAction<PathType, ActionType>;
 		static constexpr bool value = Next::value;
 	};
 	template<typename PathType, typename ActionType>
@@ -44,7 +44,7 @@ class ApiDefinition<T, Ts...>
 	template<int index, int current_index, class = void>
 	struct GetPath_
 	{
-		using Next = typename ApiDefinition<Ts...>::template GetPath<index, (current_index + 1)>;
+		using Next = typename Api<Ts...>::template GetPath<index, (current_index + 1)>;
 		using Type = typename Next::Type;
 	};
 	template<int index, int current_index> 
@@ -67,22 +67,22 @@ class ApiDefinition<T, Ts...>
 	{
 		using Type = typename GetPath_<index, current_index>::Type;
 	};
-	static constexpr std::size_t size = 1 + ApiDefinition<Ts...>::size;
+	static constexpr std::size_t size = 1 + Api<Ts...>::size;
 };
 
 template<typename... Us, typename... Ts>
-class ApiDefinition<ApiDefinition<Us...>, Ts...>
+class Api<Api<Us...>, Ts...>
 {
 	public:
 
 	template<typename PathType, typename ActionType>
-	using HasAction = typename ApiDefinition<Us...>::template HasAction<PathType, ActionType>::value;
+	using HasAction = typename Api<Us...>::template HasAction<PathType, ActionType>::value;
 
 	template<int index, int current_index>
-	using GetPath = typename ApiDefinition<Us...>::template GetPath<index, current_index>::Type;
-	static constexpr std::size_t size = ApiDefinition<Us...>::size + ApiDefinition<Ts...>::size;
+	using GetPath = typename Api<Us...>::template GetPath<index, current_index>::Type;
+	static constexpr std::size_t size = Api<Us...>::size + Api<Ts...>::size;
 };
 
-}//nbdl
+}//nbdl_def
 
 #endif
