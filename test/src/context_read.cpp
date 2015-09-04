@@ -166,10 +166,14 @@ TEST_CASE("Context should not emit to a listener that has been destroyed.", "[co
 {
 	int function_was_called = false;
 	int result = 0;
-	auto ctx = MyContextAsync::create(TestClientAsync{});
 	OnlySupportedPath path(1, 5);
 
 	{
+		auto ctx = MyContextAsync::create(TestClientAsync{});
+		/*
+			in this test if the listener fails
+			to unregister it would result in UB.
+		*/
 		auto listener = ctx->makeListener(path, [&]() {
 			function_was_called = true;
 			result = ctx->read(path,

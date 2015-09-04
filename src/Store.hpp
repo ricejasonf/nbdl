@@ -30,6 +30,7 @@ struct StoreEmitterImpl
 template<typename Context, typename PathType>
 class Store
 {
+	using Entity = typename PathType::Entity;
 	using ListenerHandler = typename Context::ListenerHandler;
 	using Impl = typename StoreImpl<Context, PathType>::Type;
 	using EmitterImpl = typename StoreEmitterImpl<Context, PathType>::Type;
@@ -49,6 +50,19 @@ class Store
 
 	using VariantType = typename Impl::VariantType;
 
+	/*
+	void action(Update action)
+	{
+		VariantType& value = impl.get(action.path);
+		//this doesn't use assign
+		value.match(
+			[&](Entity entity) {
+				action.patch(entity);	
+				value = entity;
+			});
+	}
+	*/
+
 	template<typename T>
 	void forceAssign(const PathType& path, T&& value)
 	{
@@ -56,12 +70,21 @@ class Store
 	}
 
 	template<typename T>
-	void suggestAssign(const PathType& path, T&& value)
+	void suggestAssign(const PathType& path, T&& val)
 	{
-		impl.get(path).match(
-			[&](Unresolved) {
-				emitChange(path, impl.assign(path, std::forward<T>(value)));
+		VariantType& value = impl.get(path);
+		bool unresolved = value.match(
+			[](Unresolved) {
+				return true;
+			},
+			[]() {
+				return false;
 			});
+		if (unresolved)
+		{
+			value = std::forward<T>(val);
+			emitChange(path, value);
+		}
 	}
 
 	template<typename RequestFn, typename Fn1, typename... Fns>
