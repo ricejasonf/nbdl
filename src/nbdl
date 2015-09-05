@@ -42,7 +42,7 @@ struct NotFound {};
 #include <validate/StdBasicString.hpp>
 //#include <optional/boost.hpp>
 
-//#include <msg/MsgId.hpp>
+#include <msg/MsgId.hpp>
 
 
 #endif
