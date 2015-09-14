@@ -14,6 +14,7 @@ else (${EMSCRIPTEN})
 	add_library(nbdl STATIC 
 		binders/jsoncpp/Read.cpp
 		Regex.cpp
+		servers/ws/Parser.cpp
 		)
 endif (${EMSCRIPTEN})
 

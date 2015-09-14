@@ -20,6 +20,7 @@ add_executable(test
 	store.cpp
 	api_definition.cpp
 	context_read.cpp
+	websocket/parse_handshake_request.cpp
 	)
 
 SET(LIBNBDL_DIR

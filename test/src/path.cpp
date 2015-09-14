@@ -83,7 +83,7 @@ TEST_CASE("Create a deeply nested access point.", "[api]")
 	CHECK(a.getParent().getParent().getParent().getKey() == 1);
 }
 
-/* test takes a long time
+/*
 TEST_CASE("Hashed Paths should be unique.")
 {
 	using A = nbdl::Path<Client, int>;
