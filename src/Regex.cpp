@@ -18,9 +18,9 @@ bool nbdl::Regex::match(const std::string reg, const std::string field)
 	return (match != 0);
 }
 #else
-#include <boost/regex.hpp>
+#include <regex>
 bool nbdl::Regex::match(const std::string reg, const std::string field)
 { 
-	 return boost::regex_match(field, boost::regex(reg, boost::regex::ECMAScript));
+	 return std::regex_match(field, std::regex(reg, std::regex::ECMAScript));
 }
 #endif //ifdef EMSCRIPTEN
