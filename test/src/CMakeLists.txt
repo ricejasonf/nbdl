@@ -14,7 +14,7 @@ add_executable(test
 	factorial.cpp
 	bind_json.cpp
 	path.cpp
-	msg_id.cpp
+	#msg_id.cpp #uses boost::uuid
 	variant.cpp
 	variant_callback.cpp
 	store.cpp
