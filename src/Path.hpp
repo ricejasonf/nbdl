@@ -11,6 +11,7 @@
 #include<tuple>
 #include<boost/functional/hash.hpp>
 
+#include "details/Hash.hpp"
 #include "mpl/Reverse.hpp"
 #include "EntityTraits.hpp"
 #include "EntityKey.hpp"
@@ -18,14 +19,6 @@
 namespace nbdl {
 
 namespace path_details {
-
-//hash_combine is sort of excerpted from boost
-template <class T>
-inline void hash_combine(std::size_t& seed, T const& v)
-{
-	std::hash<T> hasher;
-	seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-}
 
 //todo break this out and give it a start and a stop
 template<int ...>
@@ -140,7 +133,7 @@ class Path
 		using ParentHasher = typename ParentPath::template Hasher<(i + 1), T>;
 		static void call(std::size_t& seed, const T& tuple)
 		{
-			path_details::hash_combine(seed, std::get<i>(tuple));	
+			nbdl::details::HashCombine(seed, std::get<i>(tuple));
 			ParentHasher::call(seed, tuple);
 		}
 	};
@@ -177,7 +170,7 @@ class Path<EntityType, KeyType, void>
 	{
 		static void call(std::size_t& seed, const T& tuple)
 		{
-			path_details::hash_combine(seed, std::get<i>(tuple));	
+			nbdl::details::HashCombine(seed, std::get<i>(tuple));
 		}
 	};
 };
