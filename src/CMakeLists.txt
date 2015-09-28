@@ -24,8 +24,6 @@ include(../nbdl.cmake)
 
 if (${EMSCRIPTEN})
 else (${EMSCRIPTEN})
-	target_link_libraries(nbdl
-		PRIVATE OPEN_SSL_LIBRARIES
-		)
+  #target_link_libraries(nbdl PRIVATE OPEN_SSL_LIBRARIES)
 endif (${EMSCRIPTEN})
 
