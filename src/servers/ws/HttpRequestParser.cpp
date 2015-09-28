@@ -6,7 +6,7 @@
 //
 
 #include<cctype> //std::tolower
-#include "Parser.hpp"
+#include "HttpRequestParser.hpp"
 
 namespace ws = nbdl::servers::ws;
 using Result = ws::HttpRequestParser::Result;

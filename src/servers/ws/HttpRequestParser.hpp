@@ -4,8 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_SERVERS_WS_PARSER_HPP
-#define NBDL_SERVERS_WS_PARSER_HPP
+#ifndef NBDL_SERVERS_WS_HTTP_REQUEST_PARSER_HPP
+#define NBDL_SERVERS_WS_HTTP_REQUEST_PARSER_HPP
 
 #include<string>
 

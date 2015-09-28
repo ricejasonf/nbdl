@@ -21,6 +21,7 @@ add_executable(test
 	api_definition.cpp
 	context_read.cpp
 	websocket/parse_handshake_request.cpp
+	websocket/generate_handshake_response.cpp
 	)
 
 SET(LIBNBDL_DIR
@@ -31,6 +32,7 @@ include(${LIBNBDL_DIR}/nbdl.cmake)
 if (${EMSCRIPTEN})
 	target_link_libraries(test ${NBDL_LIB_DIR}/libnbdl.a --bind)
 else (${EMSCRIPTEN})
+	target_link_libraries(test ${OPEN_SSL_LIBRARIES})
 	target_link_libraries(test ${NBDL_LIB_DIR}/libnbdl.a)
 	target_link_libraries(test ${JsonCpp})
 endif (${EMSCRIPTEN})

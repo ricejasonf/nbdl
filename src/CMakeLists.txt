@@ -14,8 +14,18 @@ else (${EMSCRIPTEN})
 	add_library(nbdl STATIC 
 		binders/jsoncpp/Read.cpp
 		Regex.cpp
-		servers/ws/Parser.cpp
+		openssl/Base64Encode.cpp
+		servers/ws/HttpRequestParser.cpp
+		servers/ws/HttpResponse.cpp
 		)
 endif (${EMSCRIPTEN})
 
 include(../nbdl.cmake)
+
+if (${EMSCRIPTEN})
+else (${EMSCRIPTEN})
+	target_link_libraries(nbdl
+		PRIVATE OPEN_SSL_LIBRARIES
+		)
+endif (${EMSCRIPTEN})
+
