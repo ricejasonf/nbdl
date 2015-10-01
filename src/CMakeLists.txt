@@ -17,6 +17,8 @@ else (${EMSCRIPTEN})
 		openssl/Base64Encode.cpp
 		servers/ws/HttpRequestParser.cpp
 		servers/ws/HttpResponse.cpp
+    servers/ws/MessageParser.cpp
+    servers/ws/MessageGenerator.cpp
 		)
 endif (${EMSCRIPTEN})
 

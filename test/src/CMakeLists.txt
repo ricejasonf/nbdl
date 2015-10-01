@@ -22,6 +22,7 @@ add_executable(test
 	context_read.cpp
 	websocket/parse_handshake_request.cpp
 	websocket/generate_handshake_response.cpp
+  websocket/messages.cpp
 	)
 
 SET(LIBNBDL_DIR

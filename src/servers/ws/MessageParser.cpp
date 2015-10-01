@@ -10,14 +10,14 @@
 namespace ws = nbdl::servers::ws;
 using Result = ws::MessageParser::Result;
 
-ws::MessageParser::consume(char c)
+Result ws::MessageParser::consume(unsigned char c)
 {
   switch(state)
   {
     case FRAME_HEADER:
-      return consume_<FRAME_HEADER>(c);
+      return consumeFrameHeader(c);
     case PAYLOAD_LENGTH:
-      return consume_<PAYLOAD_LENGTH>(c);
+      return consumePayloadLength(c);
     case EXTENDED_PAYLOAD_LENGTH_16BIT_1:
       return applyToLength(c, 0);
     case EXTENDED_PAYLOAD_LENGTH_16BIT_2:
@@ -41,11 +41,11 @@ ws::MessageParser::consume(char c)
       state = MASK_KEY_1;
       return applyToLength(c, 7);
     case MASK_KEY_1:
-      return applyToMaskKey(c, 0)
+      return applyToMaskKey(c, 0);
     case MASK_KEY_2:
-      return applyToMaskKey(c, 1)
+      return applyToMaskKey(c, 1);
     case MASK_KEY_3:
-      return applyToMaskKey(c, 2)
+      return applyToMaskKey(c, 2);
     case MASK_KEY_4:
       if (payload_length == 0)
       {
@@ -54,18 +54,22 @@ ws::MessageParser::consume(char c)
       else
       {
         state = READING_PAYLOAD;
-        return applyToMaskKey(c, 3)
+        return applyToMaskKey(c, 3);
       }
     case READING_PAYLOAD:
-      return consume_<READING_PAYLOAD>(c);
+      return consumeReadingPayload(c);
     case FINISHED:
-      return GOOD;
+      return Result::GOOD;
   }
-  return BAD;
+  return Result::BAD;
 }
 
-template<>
-Result ws::MessageParser::consume_<FRAME_HEADER>(char c)
+Result ws::MessageParser::applyToLength(unsigned char c, int i)
+{
+  payload_length |= (c << (8 * i));
+}
+
+Result ws::MessageParser::consumeFrameHeader(unsigned char c)
 {
   int opcode = (c << 4) >> 4;
   switch (opcode)
@@ -74,24 +78,23 @@ Result ws::MessageParser::consume_<FRAME_HEADER>(char c)
     case 0x2:
       is_last_frame = (c >> 7) == 1;
       state = PAYLOAD_LENGTH;
-      return INDETERMINATE;
+      return Result::INDETERMINATE;
       break;
     case 0x8:
-      return CLOSE;
+      return Result::CLOSE;
     case 0x9:
-      return PING;
+      return Result::PING;
     case 0xA:
-      return PONG;
+      return Result::PONG;
   }
-  return BAD;
+  return Result::BAD;
 }
 
-template<>
-Result ws::MessageParser::consume_<PAYLOAD_LENGTH>(char c)
+Result ws::MessageParser::consumePayloadLength(unsigned char c)
 {
   //mask bit must be set the 1
   if ((c >> 7) == 0)
-    return BAD;
+    return Result::BAD;
   c = (c << 1) >> 1;
   switch (c)
   {
@@ -106,27 +109,26 @@ Result ws::MessageParser::consume_<PAYLOAD_LENGTH>(char c)
       state = MASK_KEY_1;
       break;
   }
-  return INDETERMINATE;
+  return Result::INDETERMINATE;
 }
 
-Result ws::MessageParser::applyToMaskKey(char c, int i)
+Result ws::MessageParser::applyToMaskKey(unsigned char c, int i)
 {
-  mask_key[i] = c
-  return INDETERMINATE;
+  mask_key[i] = c;
+  return Result::INDETERMINATE;
 }
 
-Result ws::MessageParser::consume_<READING_PAYLOAD>(char c)
+Result ws::MessageParser::consumeReadingPayload(unsigned char c)
 {
-  body.push_back(c);
+  body.push_back(c ^ mask_key[payload_pos % 4]);
   ++payload_pos;
   if (payload_pos >= payload_length)
     return finish();
-  else
-    return INDETERMINATE;
+  return Result::INDETERMINATE;
 }
 
-Result finish()
+Result ws::MessageParser::finish()
 {
   state = FINISHED;
-  return GOOD;
+  return Result::GOOD;
 }

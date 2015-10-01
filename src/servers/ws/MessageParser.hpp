@@ -7,6 +7,8 @@
 #ifndef NBDL_SERVERS_WS_MESSAGE_PARSER_HPP
 #define NBDL_SERVERS_WS_MESSAGE_PARSER_HPP
 
+#include<array>
+#include<vector>
 #include<cstdint>
 
 namespace nbdl {
@@ -26,6 +28,8 @@ class MessageParser
     INDETERMINATE
   };
 
+  using Buffer = std::vector<char>;
+
   private:
 
   bool expecting_binary;
@@ -33,7 +37,7 @@ class MessageParser
   uint64_t payload_length;
   uint64_t payload_pos;
   std::array<char, 4> mask_key;
-  std::string body; //<-- use fixed array?
+  Buffer body;
   //todo uint64_t max_message_size
 
   enum State {
@@ -57,11 +61,12 @@ class MessageParser
     FINISHED
   } state;
 
-  Result consume(char);
-  template<State s, typename = void>
-  Result consume_(char);
-  Result applyToLength(char, int);
-  Result applyToMaskKey(char, int);
+  Result consume(unsigned char);
+  Result consumeFrameHeader(unsigned char);
+  Result consumePayloadLength(unsigned char);
+  Result consumeReadingPayload(unsigned char);
+  Result applyToLength(unsigned char, int);
+  Result applyToMaskKey(unsigned char, int);
   Result finish();
 
   public:
@@ -74,22 +79,19 @@ class MessageParser
     state(FRAME_HEADER)
   {}
 
-  enum struct Result {
-    GOOD,
-    BAD,
-    INDETERMINATE
-  };
+  const Buffer& getBuffer() const { return body; }
 
 	template<typename InputIterator>
 	Result parse(InputIterator begin, InputIterator end)
 	{
+    //todo handle control frames
 		while (begin != end)
 		{
 			Result r = consume(*begin++);
-			if (r == GOOD || r == BAD)
+			if (r != Result::INDETERMINATE)
 				return r;	
 		}
-		return INDETERMINATE;
+		return Result::INDETERMINATE;
 	}
 
 };
