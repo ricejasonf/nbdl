@@ -21,7 +21,7 @@ Result ws::MessageParser::consume(unsigned char c)
     case EXTENDED_PAYLOAD_LENGTH_16BIT_1:
       return applyToLength(c, 0);
     case EXTENDED_PAYLOAD_LENGTH_16BIT_2:
-      state = MASK_KEY_1;
+      finishReadingLength();
       return applyToLength(c, 1);
     case EXTENDED_PAYLOAD_LENGTH_64BIT_1:
       return applyToLength(c, 0);
@@ -38,13 +38,16 @@ Result ws::MessageParser::consume(unsigned char c)
     case EXTENDED_PAYLOAD_LENGTH_64BIT_7:
       return applyToLength(c, 6);
     case EXTENDED_PAYLOAD_LENGTH_64BIT_8:
-      state = MASK_KEY_1;
+      finishReadingLength();
       return applyToLength(c, 7);
     case MASK_KEY_1:
+      state = MASK_KEY_2;
       return applyToMaskKey(c, 0);
     case MASK_KEY_2:
+      state = MASK_KEY_3;
       return applyToMaskKey(c, 1);
     case MASK_KEY_3:
+      state = MASK_KEY_4;
       return applyToMaskKey(c, 2);
     case MASK_KEY_4:
       if (payload_length == 0)
@@ -71,7 +74,7 @@ Result ws::MessageParser::applyToLength(unsigned char c, int i)
 
 Result ws::MessageParser::consumeFrameHeader(unsigned char c)
 {
-  int opcode = (c << 4) >> 4;
+  unsigned char opcode = c & 0x0F;
   switch (opcode)
   {
     case 0x1:
@@ -93,9 +96,11 @@ Result ws::MessageParser::consumeFrameHeader(unsigned char c)
 Result ws::MessageParser::consumePayloadLength(unsigned char c)
 {
   //mask bit must be set the 1
-  if ((c >> 7) == 0)
+  has_mask = ((c >> 7) != 0);
+  if (has_mask != require_mask)
     return Result::BAD;
-  c = (c << 1) >> 1;
+  //clear the mask bit
+  c &= 0xFF;
   switch (c)
   {
     case 126:
@@ -106,10 +111,18 @@ Result ws::MessageParser::consumePayloadLength(unsigned char c)
       break;
     default:
       payload_length = c;
-      state = MASK_KEY_1;
+      finishReadingLength();
       break;
   }
   return Result::INDETERMINATE;
+}
+
+void ws::MessageParser::finishReadingLength()
+{
+  if (has_mask)
+    state = MASK_KEY_1;
+  else
+    state = READING_PAYLOAD;
 }
 
 Result ws::MessageParser::applyToMaskKey(unsigned char c, int i)

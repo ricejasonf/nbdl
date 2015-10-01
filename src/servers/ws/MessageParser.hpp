@@ -32,6 +32,8 @@ class MessageParser
 
   private:
 
+  bool require_mask;
+  bool has_mask;
   bool expecting_binary;
   bool is_last_frame;
   uint64_t payload_length;
@@ -67,15 +69,18 @@ class MessageParser
   Result consumeReadingPayload(unsigned char);
   Result applyToLength(unsigned char, int);
   Result applyToMaskKey(unsigned char, int);
+  void finishReadingLength();
   Result finish();
 
   public:
 
-  MessageParser(bool use_binary = false) :
+  MessageParser(bool req_mask = false, bool use_binary = false) :
+    require_mask(req_mask),
     expecting_binary(use_binary),
     is_last_frame(false),
     payload_length(0),
     payload_pos(0),
+    mask_key(),
     state(FRAME_HEADER)
   {}
 
