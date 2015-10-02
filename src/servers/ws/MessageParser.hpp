@@ -20,12 +20,12 @@ class MessageParser
   public:
 
   enum struct Result {
-    GOOD,
-    BAD,
+    INDETERMINATE,
+    MESSAGE,
     PING,
     PONG,
     CLOSE,
-    INDETERMINATE
+    BAD,
   };
 
   using Buffer = std::vector<char>;
@@ -61,7 +61,7 @@ class MessageParser
     MASK_KEY_3,
     MASK_KEY_4,
     READING_PAYLOAD,
-    FINISHED
+    FINISHED_MESSAGE
   } state;
 
   Result consume(unsigned char);
@@ -71,7 +71,8 @@ class MessageParser
   Result applyToLength(unsigned char, int);
   Result applyToMaskKey(unsigned char, int);
   void finishReadingLength();
-  Result finish();
+  Result finishFrame();
+  Result finishControlFrame();
 
   public:
 

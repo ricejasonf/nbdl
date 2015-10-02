@@ -16,21 +16,17 @@ TEST_CASE("Create/Parse message in a single, short, unmasked data frame.", "[web
 	using MessageGenerator = nbdl::servers::ws::MessageGenerator;
   const std::string message = "Hello world!";
 
-	MessageGenerator gen(message.size());	
+  auto gen = MessageGenerator::createText(message.size());
   gen.generate(message.begin(), message.end());
   auto gen_buffer = gen.getBuffer();
 
 	MessageParser parser;	
 	auto result = parser.parse(gen_buffer.begin(), gen_buffer.end());
 
-  std::string echoed_message;
 
-	REQUIRE(result == MessageParser::Result::GOOD);
+	REQUIRE(result == MessageParser::Result::MESSAGE);
   auto buffer = parser.getBuffer();
-  for (auto c : buffer)
-  {
-    echoed_message.push_back(c);
-  }
+  std::string echoed_message(buffer.begin(), buffer.end());
 
 	CHECK(message == echoed_message);
 }
@@ -42,21 +38,66 @@ TEST_CASE("Create/Parse message in a single, short, masked data frame.", "[webso
   const std::string message = "Hello world!";
 
   std::array<char, 4> mask = { 4, 5, 6, 7 };
-	MessageGenerator gen(message.size(), mask);	
+  auto gen = MessageGenerator::createText(message.size(), mask);
   gen.generate(message.begin(), message.end());
   auto gen_buffer = gen.getBuffer();
 
 	MessageParser parser = MessageParser(true);	
 	auto result = parser.parse(gen_buffer.begin(), gen_buffer.end());
 
-  std::string echoed_message;
-
-	REQUIRE(result == MessageParser::Result::GOOD);
+	REQUIRE(result == MessageParser::Result::MESSAGE);
   auto buffer = parser.getBuffer();
-  for (auto c : buffer)
-  {
-    echoed_message.push_back(c);
-  }
+  std::string echoed_message(buffer.begin(), buffer.end());
+
+	CHECK(message == echoed_message);
+}
+
+TEST_CASE("Parse fragmented message with interjecting control frame.", "[websocket]") 
+{
+	using MessageParser = nbdl::servers::ws::MessageParser;
+	using MessageGenerator = nbdl::servers::ws::MessageGenerator;
+  const char* message = 
+    "Hello world!"
+    "Hello world!"
+    "Hello world!"
+    "Hello world!"
+    "Hello world!"
+    ;
+  std::vector<MessageGenerator::Buffer> frames;
+
+  auto ping = MessageGenerator::createPing();
+  ping.generate();
+  frames.emplace_back(MessageGenerator::createTextFragment("Hello world!"));
+  frames.emplace_back(MessageGenerator::createContinuation("Hello world!"));
+  frames.emplace_back(MessageGenerator::createContinuation("Hello world!"));
+  frames.emplace_back(ping.getBuffer());
+  frames.emplace_back(MessageGenerator::createContinuation("Hello world!"));
+  frames.emplace_back(MessageGenerator::createFinalContinuation("Hello world!"));
+
+  auto parser = MessageParser();
+  MessageGenerator::Buffer frame;
+  int i = 0;
+  frame = frames[i++];
+	CHECK(parser.parse(frame.begin(), frame.end())
+        == MessageParser::Result::INDETERMINATE);
+  frame = frames[i++];
+	CHECK(parser.parse(frame.begin(), frame.end())
+        == MessageParser::Result::INDETERMINATE);
+  frame = frames[i++];
+	CHECK(parser.parse(frame.begin(), frame.end())
+        == MessageParser::Result::INDETERMINATE);
+  frame = frames[i++];
+	CHECK(parser.parse(frame.begin(), frame.end())
+        == MessageParser::Result::PING);
+  frame = frames[i++];
+	CHECK(parser.parse(frame.begin(), frame.end())
+        == MessageParser::Result::INDETERMINATE);
+  frame = frames[i++];
+	REQUIRE(parser.parse(frame.begin(), frame.end())
+        == MessageParser::Result::MESSAGE);
+
+  auto buffer = parser.getBuffer();
+  std::string echoed_message(buffer.begin(), buffer.end());
 
 	CHECK(message == echoed_message);
 }

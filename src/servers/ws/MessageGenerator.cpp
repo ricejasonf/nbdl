@@ -10,8 +10,8 @@
 namespace ws = nbdl::servers::ws;
 using Result = ws::MessageGenerator::Result;
 
-ws::MessageGenerator::MessageGenerator(int length, MaskKey mask, bool use_binary) :
-  is_binary(use_binary),
+ws::MessageGenerator::MessageGenerator(int length, int opcode_, MaskKey mask) :
+  opcode(opcode_),
   payload_length(length),
   payload_pos(0),
   body(length),
@@ -28,7 +28,6 @@ ws::MessageGenerator::MessageGenerator(int length, MaskKey mask, bool use_binary
 
 void ws::MessageGenerator::generateHeader()
 {
-  char opcode = is_binary ? 2 : 1;
   body.push_back(opcode | (1 << 7)); //apply FIN bit
   generatePayloadLength();
   generateMask();

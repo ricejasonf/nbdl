@@ -52,7 +52,7 @@ Result ws::MessageParser::consume(unsigned char c)
     case MASK_KEY_4:
       if (payload_length == 0)
       {
-        return finish();
+        return finishFrame();
       }
       else
       {
@@ -61,8 +61,11 @@ Result ws::MessageParser::consume(unsigned char c)
       }
     case READING_PAYLOAD:
       return consumeReadingPayload(c);
-    case FINISHED:
-      return finish();
+    case FINISHED_MESSAGE:
+      //start it all over anew
+      //is clear the right choice here?
+      body.clear();
+      consumeFrameHeader(c);
   }
   return Result::BAD;
 }
@@ -77,9 +80,10 @@ Result ws::MessageParser::consumeFrameHeader(unsigned char c)
   unsigned char opcode = c & 0x0F;
   switch (opcode)
   {
+    case 0x0:
     case 0x1:
     case 0x2:
-      is_last_frame = (c >> 7) == 1;
+      is_last_frame = (c >> 7) != 0;
       break;
     case 0x8:
     case 0x9:
@@ -133,20 +137,43 @@ Result ws::MessageParser::applyToMaskKey(unsigned char c, int i)
 
 Result ws::MessageParser::consumeReadingPayload(unsigned char c)
 {
-  body.push_back(c ^ mask_key[payload_pos % 4]);
-  ++payload_pos;
+  if (!control_opcode)
+  {
+    body.push_back(c ^ mask_key[payload_pos % 4]);
+    ++payload_pos;
+  }
   if (payload_pos >= payload_length)
-    return finish();
+    return finishFrame();
   return Result::INDETERMINATE;
 }
 
-Result ws::MessageParser::finish()
+Result ws::MessageParser::finishFrame()
 {
-  state = FINISHED;
+  if (control_opcode)
+    return finishControlFrame();
+
+  payload_pos = 0;
+  if (is_last_frame)
+  {
+    state = FINISHED_MESSAGE;
+    return Result::MESSAGE;
+  }
+  else
+  {
+    //need to read more frames to finish the message
+    state = FRAME_HEADER;
+    return Result::INDETERMINATE;
+  }
+  return Result::BAD;
+}
+
+Result ws::MessageParser::finishControlFrame()
+{
+  //setup to read next frame
+  state = FRAME_HEADER;
+
   switch (control_opcode)
   {
-    case 0:
-      return Result::GOOD;
     case 0x8:
       return Result::CLOSE;
     case 0x9:
