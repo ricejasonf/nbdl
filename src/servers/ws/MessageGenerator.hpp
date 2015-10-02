@@ -42,6 +42,7 @@ class MessageGenerator
   void generateHeader();
   void generatePayloadLength();
   void generateExtendedPayloadLength();
+  void generateMask();
   void writeByte(int, char);
   char applyMaskBit(char);
 

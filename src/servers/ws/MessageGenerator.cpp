@@ -31,6 +31,7 @@ void ws::MessageGenerator::generateHeader()
   char opcode = is_binary ? 2 : 1;
   body.push_back(opcode | (1 << 7)); //apply FIN bit
   generatePayloadLength();
+  generateMask();
 }
 
 void ws::MessageGenerator::generatePayloadLength()
@@ -60,6 +61,17 @@ char ws::MessageGenerator::applyMaskBit(char len)
     },
     [&]() {
       return len | (1 << 7);
+    });
+}
+
+void ws::MessageGenerator::generateMask()
+{
+  mask_key.match(
+    [&](std::array<char, 4> key) {
+      for (int i = 0; i < 4; i++)
+      {
+        body.push_back(key[i]);
+      }
     });
 }
 

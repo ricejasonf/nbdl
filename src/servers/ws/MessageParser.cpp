@@ -62,7 +62,7 @@ Result ws::MessageParser::consume(unsigned char c)
     case READING_PAYLOAD:
       return consumeReadingPayload(c);
     case FINISHED:
-      return Result::GOOD;
+      return finish();
   }
   return Result::BAD;
 }
@@ -80,17 +80,17 @@ Result ws::MessageParser::consumeFrameHeader(unsigned char c)
     case 0x1:
     case 0x2:
       is_last_frame = (c >> 7) == 1;
-      state = PAYLOAD_LENGTH;
-      return Result::INDETERMINATE;
       break;
     case 0x8:
-      return Result::CLOSE;
     case 0x9:
-      return Result::PING;
     case 0xA:
-      return Result::PONG;
+      control_opcode = opcode;
+      break;
+    default:
+      return Result::BAD;
   }
-  return Result::BAD;
+  state = PAYLOAD_LENGTH;
+  return Result::INDETERMINATE;
 }
 
 Result ws::MessageParser::consumePayloadLength(unsigned char c)
@@ -100,7 +100,7 @@ Result ws::MessageParser::consumePayloadLength(unsigned char c)
   if (has_mask != require_mask)
     return Result::BAD;
   //clear the mask bit
-  c &= 0xFF;
+  c &= 127;
   switch (c)
   {
     case 126:
@@ -143,5 +143,16 @@ Result ws::MessageParser::consumeReadingPayload(unsigned char c)
 Result ws::MessageParser::finish()
 {
   state = FINISHED;
-  return Result::GOOD;
+  switch (control_opcode)
+  {
+    case 0:
+      return Result::GOOD;
+    case 0x8:
+      return Result::CLOSE;
+    case 0x9:
+      return Result::PING;
+    case 0xA:
+      return Result::PONG;
+  }
+  return Result::BAD;
 }

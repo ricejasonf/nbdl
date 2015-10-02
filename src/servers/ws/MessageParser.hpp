@@ -39,6 +39,7 @@ class MessageParser
   uint64_t payload_length;
   uint64_t payload_pos;
   std::array<char, 4> mask_key;
+  char control_opcode;
   Buffer body;
   //todo uint64_t max_message_size
 
@@ -81,6 +82,7 @@ class MessageParser
     payload_length(0),
     payload_pos(0),
     mask_key(),
+    control_opcode(0),
     state(FRAME_HEADER)
   {}
 
