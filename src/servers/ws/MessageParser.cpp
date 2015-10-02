@@ -115,6 +115,8 @@ Result ws::MessageParser::consumePayloadLength(unsigned char c)
       break;
     default:
       payload_length = c;
+      if (payload_length == 0)
+        return finishFrame();
       finishReadingLength();
       break;
   }
@@ -172,14 +174,22 @@ Result ws::MessageParser::finishControlFrame()
   //setup to read next frame
   state = FRAME_HEADER;
 
+  Result result;
   switch (control_opcode)
   {
     case 0x8:
-      return Result::CLOSE;
+      result = Result::CLOSE;
+      break;
     case 0x9:
-      return Result::PING;
+      result = Result::PING;
+      break;
     case 0xA:
-      return Result::PONG;
+      result = Result::PONG;
+      break;
+    default:
+      result = Result::BAD;
+      break;
   }
-  return Result::BAD;
+  control_opcode = 0;
+  return result;
 }
