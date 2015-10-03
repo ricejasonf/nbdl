@@ -10,22 +10,6 @@
 namespace ws = nbdl::servers::ws;
 using Result = ws::MessageGenerator::Result;
 
-ws::MessageGenerator::MessageGenerator(int length, int opcode_, MaskKey mask) :
-  opcode(opcode_),
-  payload_length(length),
-  payload_pos(0),
-  body(length),
-  mask_key(mask),
-  has_error(false)
-{
-  if (length < 0 || length > 65536)
-  {
-    //don't support really large messages
-    has_error = true;
-    return;
-  }
-}
-
 void ws::MessageGenerator::generateHeader()
 {
   body.push_back(opcode | (1 << 7)); //apply FIN bit

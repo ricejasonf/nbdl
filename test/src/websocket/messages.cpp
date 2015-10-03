@@ -16,8 +16,8 @@ TEST_CASE("Create/Parse message in a single, short, unmasked data frame.", "[web
 	using MessageGenerator = nbdl::servers::ws::MessageGenerator;
   const std::string message = "Hello world!";
 
-  auto gen = MessageGenerator::createText(message.size());
-  gen.generate(message.begin(), message.end());
+  auto gen = MessageGenerator();
+  gen.generateText(message.begin(), message.end(), message.size());
   auto gen_buffer = gen.getBuffer();
 
 	MessageParser parser;	
@@ -38,8 +38,8 @@ TEST_CASE("Create/Parse message in a single, short, masked data frame.", "[webso
   const std::string message = "Hello world!";
 
   std::array<char, 4> mask = { 4, 5, 6, 7 };
-  auto gen = MessageGenerator::createText(message.size(), mask);
-  gen.generate(message.begin(), message.end());
+  auto gen = MessageGenerator();
+  gen.generateText(message.begin(), message.end(), message.size(), mask);
   auto gen_buffer = gen.getBuffer();
 
 	MessageParser parser = MessageParser(true);	
@@ -56,7 +56,8 @@ TEST_CASE("Parse fragmented message with interjecting control frame.", "[websock
 {
 	using MessageParser = nbdl::servers::ws::MessageParser;
 	using MessageGenerator = nbdl::servers::ws::MessageGenerator;
-  const char* message = 
+  const std::string message = "Hello world!";
+  const char* expected_result = 
     "Hello world!"
     "Hello world!"
     "Hello world!"
@@ -65,14 +66,20 @@ TEST_CASE("Parse fragmented message with interjecting control frame.", "[websock
     ;
   std::vector<MessageGenerator::Buffer> frames;
 
-  auto ping = MessageGenerator::createPing();
-  ping.generate();
-  frames.emplace_back(MessageGenerator::createTextFragment("Hello world!"));
-  frames.emplace_back(MessageGenerator::createContinuation("Hello world!"));
-  frames.emplace_back(MessageGenerator::createContinuation("Hello world!"));
-  frames.emplace_back(ping.getBuffer());
-  frames.emplace_back(MessageGenerator::createContinuation("Hello world!"));
-  frames.emplace_back(MessageGenerator::createFinalContinuation("Hello world!"));
+  auto gen = MessageGenerator();
+  const auto& buf = gen.getBuffer();
+  gen.generateTextFragment(message.begin(), message.end(), message.size());
+  frames.push_back(buf);
+  gen.generateContinuation(message.begin(), message.end(), message.size());
+  frames.push_back(buf);
+  gen.generateContinuation(message.begin(), message.end(), message.size());
+  frames.push_back(buf);
+  gen.generatePing();
+  frames.push_back(buf);
+  gen.generateContinuation(message.begin(), message.end(), message.size());
+  frames.push_back(buf);
+  gen.generateFinalContinuation(message.begin(), message.end(), message.size());
+  frames.push_back(buf);
 
   auto parser = MessageParser();
   MessageGenerator::Buffer frame;
@@ -99,5 +106,5 @@ TEST_CASE("Parse fragmented message with interjecting control frame.", "[websock
   auto buffer = parser.getBuffer();
   std::string echoed_message(buffer.begin(), buffer.end());
 
-	CHECK(message == echoed_message);
+	CHECK(expected_result == echoed_message);
 }

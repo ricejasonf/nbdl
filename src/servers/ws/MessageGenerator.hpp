@@ -34,7 +34,6 @@ class MessageGenerator
 
   int opcode;
   int payload_length;
-  int payload_pos;
   Buffer body;
   MaskKey mask_key;
   bool has_error;
@@ -46,56 +45,14 @@ class MessageGenerator
   void writeByte(int, char);
   char applyMaskBit(char);
 
-  public:
-
-  static MessageGenerator createText(int length, MaskKey mask = Null{})
+  void initFrame(int length, int opcode_, MaskKey mask = Null{})
   {
-    return MessageGenerator(length, 0x1, mask);
+    if (length < 0 || length > 65535)
+      has_error = true;
+    payload_length = length;
+    opcode = opcode_;
+    mask_key = mask;
   }
-  static MessageGenerator createBinary(int length, MaskKey mask = Null{})
-  {
-    return MessageGenerator(length, 0x2, mask);
-  }
-  static MessageGenerator createClose()
-  {
-    return MessageGenerator(0, 0x8);
-  }
-  static MessageGenerator createPing()
-  {
-    return MessageGenerator(0, 0x9);
-  }
-  static MessageGenerator createPong()
-  {
-    return MessageGenerator(0, 0xA);
-  }
-
-  //used only for testing the parser
-  static Buffer createTextFragment(std::string m, MaskKey mask = Null{})
-  {
-    auto g = MessageGenerator(m.size(), 0x1, mask);
-    g.generate(m.begin(), m.end());
-    Buffer buf = g.getBuffer();
-    buf[0] = 0x1; //no fin bit
-    return buf;
-  }
-  static Buffer createFinalContinuation(std::string m, MaskKey mask = Null{})
-  {
-    auto g = MessageGenerator(m.size(), 0x0, mask);
-    g.generate(m.begin(), m.end());
-    return g.getBuffer();
-  }
-  static Buffer createContinuation(std::string m, MaskKey mask = Null{})
-  {
-    auto g = MessageGenerator(m.size(), 0x0, mask);
-    g.generate(m.begin(), m.end());
-    Buffer buf = g.getBuffer();
-    buf[0] = 0x0; //no fin bit
-    return buf;
-  }
-
-  MessageGenerator(int length, int opcode = 0x1, MaskKey mask = Null{});
-
-  const Buffer& getBuffer() const { return body; }
 
 	bool generate()
   {
@@ -123,6 +80,64 @@ class MessageGenerator
 		return true;
 	}
 
+  public:
+
+  const Buffer& getBuffer() const { return body; }
+
+	template<typename InputIterator>
+  bool generateText(InputIterator begin, InputIterator end, int length, MaskKey mask = Null{})
+  {
+    initFrame(length, 0x1, mask);
+    return generate(begin, end);
+  }
+	template<typename InputIterator>
+  bool generateBinary(InputIterator begin, InputIterator end, int length, MaskKey mask = Null{})
+  {
+    initFrame(length, 0x2, mask);
+    return generate(begin, end);
+  }
+  bool generateClose()
+  {
+    initFrame(0, 0x8);
+    return generate();
+  }
+  bool generatePing()
+  {
+    initFrame(0, 0x9);
+    return generate();
+  }
+  bool generatePong()
+  {
+    initFrame(0, 0xA);
+    return generate();
+  }
+
+  //the following are for testing the parser
+	template<typename InputIterator>
+  bool generateTextFragment(InputIterator begin, InputIterator end, int length,
+      MaskKey mask = Null{})
+  {
+    initFrame(length, 0x1, mask);
+    bool result = generate(begin, end);
+    body[0] = 0x1; //no fin bit
+    return result;
+  }
+	template<typename InputIterator>
+  bool generateFinalContinuation(InputIterator begin, InputIterator end, int length,
+      MaskKey mask = Null{})
+  {
+    initFrame(length, 0x0, mask);
+    return generate(begin, end);
+  }
+	template<typename InputIterator>
+  bool generateContinuation(InputIterator begin, InputIterator end, int length,
+      MaskKey mask = Null{})
+  {
+    initFrame(length, 0x0, mask);
+    bool result = generate(begin, end);
+    body[0] = 0x0; //no fin bit
+    return result;
+  }
 };
 
 }//ws
