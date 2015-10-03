@@ -37,7 +37,7 @@ TEST_CASE("Create/Parse message in a single, short, masked data frame.", "[webso
 	using MessageGenerator = nbdl::servers::ws::MessageGenerator;
   const std::string message = "Hello world!";
 
-  std::array<char, 4> mask = { 4, 5, 6, 7 };
+  std::array<char, 4> mask = {{ 4, 5, 6, 7 }};
   auto gen = MessageGenerator();
   gen.generateText(message.begin(), message.end(), message.size(), mask);
   auto gen_buffer = gen.getBuffer();
