@@ -73,6 +73,7 @@ Result ws::MessageParser::consume(unsigned char c)
 Result ws::MessageParser::applyToLength(unsigned char c, int i)
 {
   payload_length |= (c << (8 * i));
+  return Result::INDETERMINATE;
 }
 
 Result ws::MessageParser::consumeFrameHeader(unsigned char c)
