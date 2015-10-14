@@ -1,13 +1,11 @@
+#
+# Copyright Jason Rice 2015
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+#
+
 cmake_minimum_required(VERSION 2.8)
-
-project(test)
-
-add_definitions(-std=c++11)
-add_definitions(-Wall)
-add_definitions(-Wextra)
-if (${EMSCRIPTEN})
-	add_definitions(--bind)
-endif (${EMSCRIPTEN})
 
 add_executable(test
 	test.cpp
@@ -25,15 +23,27 @@ add_executable(test
   websocket/messages.cpp
 	)
 
-SET(LIBNBDL_DIR
-	/home/jason/Projects/nbdl
-	)
-include_directories(${LIBNBDL_DIR}/src)
-include(${LIBNBDL_DIR}/nbdl.cmake)
+#bleh
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../src")
+
+#find externals deps
 if (${EMSCRIPTEN})
-	target_link_libraries(test ${NBDL_LIB_DIR}/libnbdl.a --bind)
 else (${EMSCRIPTEN})
-	target_link_libraries(test ${NBDL_LIB_DIR}/libnbdl.a)
-	target_link_libraries(test ${JsonCpp})
+  message("MOOOOOOOO!!!")
+	find_package(OpenSSL REQUIRED)
+	include_directories(${OPENSSL_INCLUDE_DIR})
+	set(Boost_USE_STATIC_LIBS OFF)
+	set(Boost_USE_MULTITHREADED OFF)
+	set(Boost_USE_STATIC_RUNTIME OFF)
+	find_package(Boost COMPONENTS regex REQUIRED)
+	include_directories(${Boost_INCLUDE_DIR})
+	find_library(JsonCpp jsoncpp)
+endif(${EMSCRIPTEN})
+
+if (${EMSCRIPTEN})
+  target_link_libraries(test nbdl --bind)
+else (${EMSCRIPTEN})
+  target_link_libraries(test nbdl)
+  target_link_libraries(test ${JsonCpp})
   target_link_libraries(test ${OPENSSL_LIBRARIES})
 endif (${EMSCRIPTEN})

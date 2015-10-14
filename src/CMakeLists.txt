@@ -1,10 +1,13 @@
+#
+# Copyright Jason Rice 2015
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+#
+
 cmake_minimum_required(VERSION 2.8)
 
-project(nbdl)
-
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-
-add_definitions(-std=c++11)
+#todo break up components
 
 if (${EMSCRIPTEN})
 	add_library(nbdl STATIC 
@@ -22,10 +25,18 @@ else (${EMSCRIPTEN})
 		)
 endif (${EMSCRIPTEN})
 
-include(../nbdl.cmake)
+#find_package(Hana REQUIRED)
 
-if (${EMSCRIPTEN})
-else (${EMSCRIPTEN})
-  #target_link_libraries(nbdl PRIVATE OPEN_SSL_LIBRARIES)
-endif (${EMSCRIPTEN})
+if (NOT ${EMSCRIPTEN})
+	find_package(OpenSSL REQUIRED)
+	include_directories(${OPENSSL_INCLUDE_DIR})
+	set(Boost_USE_STATIC_LIBS OFF)
+	set(Boost_USE_MULTITHREADED OFF)
+	set(Boost_USE_STATIC_RUNTIME OFF)
+	find_package(Boost COMPONENTS regex REQUIRED)
+	include_directories(${Boost_INCLUDE_DIR})
+	find_library(JsonCpp jsoncpp)
 
+  target_link_libraries(nbdl ${JsonCpp})
+  target_link_libraries(nbdl ${OPENSSL_LIBRARIES})
+endif (NOT ${EMSCRIPTEN})
