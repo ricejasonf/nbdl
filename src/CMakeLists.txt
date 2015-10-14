@@ -29,13 +29,17 @@ endif (${EMSCRIPTEN})
 
 if (NOT ${EMSCRIPTEN})
 	find_package(OpenSSL REQUIRED)
-	include_directories(${OPENSSL_INCLUDE_DIR})
 	set(Boost_USE_STATIC_LIBS OFF)
 	set(Boost_USE_MULTITHREADED OFF)
 	set(Boost_USE_STATIC_RUNTIME OFF)
 	find_package(Boost COMPONENTS regex REQUIRED)
-	include_directories(${Boost_INCLUDE_DIR})
 	find_library(JsonCpp jsoncpp)
+
+  target_include_directories(nbdl
+    PUBLIC ${OPENSSL_INCLUDE_DIR}
+    PUBLIC ${BOOST_HANA_INCLUDE_DIR}
+    PUBLIC ${Boost_INCLUDE_DIR}
+    )
 
   target_link_libraries(nbdl ${JsonCpp})
   target_link_libraries(nbdl ${OPENSSL_LIBRARIES})

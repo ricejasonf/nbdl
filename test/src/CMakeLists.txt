@@ -10,6 +10,7 @@ cmake_minimum_required(VERSION 2.8)
 add_executable(test
 	test.cpp
 	factorial.cpp
+  hana.cpp
 	bind_json.cpp
 	path.cpp
 	#msg_id.cpp #uses boost::uuid
@@ -24,20 +25,24 @@ add_executable(test
 	)
 
 #bleh
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../src")
+target_include_directories(test 
+  PUBLIC ${BOOST_HANA_INCLUDE_DIR}
+  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
+  )
 
 #find externals deps
 if (${EMSCRIPTEN})
 else (${EMSCRIPTEN})
-  message("MOOOOOOOO!!!")
 	find_package(OpenSSL REQUIRED)
-	include_directories(${OPENSSL_INCLUDE_DIR})
 	set(Boost_USE_STATIC_LIBS OFF)
 	set(Boost_USE_MULTITHREADED OFF)
 	set(Boost_USE_STATIC_RUNTIME OFF)
 	find_package(Boost COMPONENTS regex REQUIRED)
-	include_directories(${Boost_INCLUDE_DIR})
 	find_library(JsonCpp jsoncpp)
+  target_include_directories(test 
+    PUBLIC ${OPENSSL_INCLUDE_DIR}
+    PUBLIC ${Boost_INCLUDE_DIR}
+      )
 endif(${EMSCRIPTEN})
 
 if (${EMSCRIPTEN})
