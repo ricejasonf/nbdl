@@ -8,10 +8,13 @@
 #define NBDL_VARIANT_HPP
 
 #include<type_traits>
+#include "boost/hana.hpp"
 #include "LambdaTraits.hpp"
-#include "VariantCallback.hpp"
+//#include "VariantCallback.hpp"
 
 namespace nbdl {
+
+using hana = boost::hana;
 
 namespace details {
 
@@ -25,62 +28,6 @@ struct MaxSizeOf<T1, Tn...>
 {
 	static const std::size_t value = MaxSizeOf<Tn...>::value > sizeof(T1) ?
 		MaxSizeOf<Tn...>::value : sizeof(T1);
-};
-
-template<typename... Tn>
-struct VariantTypeSet
-{
-	template<typename T>
-	struct HasType
-	{
-		static constexpr bool value = false;
-	};
-};
-template<typename T1, typename... Tn>
-struct VariantTypeSet<T1, Tn...>
-{
-	using Type = T1;
-	using Next = VariantTypeSet<Tn...>;
-	static const bool is_last = sizeof...(Tn) == 0;
-	static const std::size_t type_id = sizeof...(Tn);
-
-	template<typename T, class = void>
-	struct HasType
-	{
-		static constexpr const bool value = Next::template HasType<T>::value;
-	};
-	template<typename T>
-	struct HasType<T, typename std::enable_if<std::is_same<T, T1>::value>::type>
-	{
-		static constexpr const bool value = true;
-	};
-};
-
-template<typename VtSet, typename FnSet, class = void>
-struct VariantMatcher
-{
-	using Type = typename VtSet::Type;
-	using Next = VariantMatcher<typename VtSet::Next, FnSet>;
-	template<typename... Fns>
-	static typename LambdaTraits<typename FnSet::Fn>::ReturnType call(std::size_t value_type_id, void *value, Fns... fns)
-	{
-		if (value_type_id == VtSet::type_id)
-			return VariantCallback::call(*reinterpret_cast<Type*>(value), fns...);
-		else
-			return Next::call(value_type_id, value, fns...);
-	}
-};
-template<typename VtSet, typename FnSet>
-struct VariantMatcher<VtSet, FnSet,
-	typename std::enable_if<VtSet::is_last>::type>
-{
-	using Type = typename VtSet::Type;
-	template<typename... Fns>
-	static typename LambdaTraits<typename FnSet::Fn>::ReturnType call(std::size_t, void *value, Fns... fns)
-	{
-		//any invalid type_id (if it were possible) would result in the default type
-		return VariantCallback::call(*reinterpret_cast<Type*>(value), fns...);
-	}
 };
 
 template<typename... Tn>
@@ -143,14 +90,11 @@ class Variant
 	//todo switch to use std::aligned_union once gcc 5.0 is available
 	using Storage = typename std::aligned_storage<sizeof(details::MaxSizeOf<Tn...>::value)>::type;
 	using Helper = VariantHelper<Tn..., DefaultType>;
-	using VtSet = VariantTypeSet<Tn..., DefaultType>;
+  static constexpr auto types = hana::tuple_t<DefaultType, Tn...>;
 	std::size_t type_id;
 	Storage value_;
 
 	public:
-
-	template<typename Type>
-	using HasType = typename VtSet::template HasType<Type>;
 
 	Variant() : type_id(0) {}
 	Variant(const Variant& old)
@@ -178,7 +122,7 @@ class Variant
 	Variant(Type val)
 	{
 		//it is critical that types are restricted to types supported by the Variant
-		static_assert(HasType<Type>::value, "Failed to convert from invalid type.");
+    static_assert(hana::contains(types, hana::type_c<Type>));
 		type_id = 0; //in case shit goes horribly wrong
 		Helper::destroy(type_id, &value_);
 		new (&value_) Type(val);
@@ -186,10 +130,16 @@ class Variant
 	}
 
 	template<typename Fn1, typename... Fns>
-	typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn, Fns... fns)
+	LambdaTraits<Fn1>::ReturnType match(Fn1 fn1, Fns... fns)
 	{
-		using FnSet = VariantFnSet<Fn1, Fns...>;
-		return VariantMatcher<VtSet, FnSet>::call(type_id, &value_, fn, fns...);
+    static constexpr auto callbacks = hana::fold_left(hana::tuple_t<Fn1, Fns...>, hana::make_map(),
+      [](auto map_, auto fn_) {
+        auto fn = hana::decltype_(fn_);
+        auto arg = hana::type_c<typename LambdaTraits<decltype(fn_)>::template Arg<0>>;
+        return hana::insert(map_, hana::make_pair(hana::type_c<Arg>, Fn);
+      });
+    auto matched = hana::from_maybe(hana::type_c<DefaultType>, hana::find_if(types, hana::equal.to(type_id)));
+    return callbacks[matched](*reinterpret_cast<decltype(matched)::type*>(&value_));
 	}
 
 };
