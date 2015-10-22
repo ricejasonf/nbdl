@@ -45,4 +45,4 @@ else (${EMSCRIPTEN})
 
   target_link_libraries(nbdl ${JsonCpp})
   target_link_libraries(nbdl ${OPENSSL_LIBRARIES})
-endif (NOT ${EMSCRIPTEN})
+endif (${EMSCRIPTEN})

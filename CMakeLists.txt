@@ -3,7 +3,8 @@ set(NBDL_TEST 1)
 
 project(nbdl_project)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+#if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+#set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 #CMAKE_CXX_STANDARD 14 doesn't work until cmake 3.1+
 set(CMAKE_CXX_STANDARD 14)
