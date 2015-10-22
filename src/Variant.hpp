@@ -22,7 +22,7 @@ template<typename DefaultType, typename... Tn>
 class Variant
 {
   static_assert(std::is_empty<DefaultType>::value, "DefaultType must be an empty tag struct");
-  using Storage = std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>;
+  using Storage = typename std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>::type;
 
   static constexpr auto types() { return hana::tuple_t<DefaultType, Tn...>; }
   static constexpr auto typeIds()
@@ -118,7 +118,7 @@ class Variant
   {
     static constexpr auto current_type = hana::at(types(), i);
     using T = typename decltype(current_type)::type;
-    if (type_id == hana::value(i))
+    if (type_id == Index::value)
       return VariantCallback::call(*reinterpret_cast<T*>(&value_), fn1, fns...);
     else
       return matchHelper(i + hana::size_c<1>, fn1, fns...);
