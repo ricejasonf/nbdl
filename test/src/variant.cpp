@@ -144,26 +144,3 @@ TEST_CASE("Modify a struct's member in a variant", "[variant]")
 		});
 	CHECK(proof);
 }
-
-//todo remove tests of MaxSizeOf when std::aligned_union is used in Variant
-TEST_CASE("MaxSizeOf should always return the largest type.", "[variant]")
-{
-	size_t size;
-	struct LargeType
-	{
-		unsigned long x, y, z;
-	};
-	using nbdl::details::MaxSizeOf;
-	size = MaxSizeOf<int, double>::value;
-	CHECK(size == sizeof(double));
-	size = MaxSizeOf<int, double, char>::value;
-	CHECK(size == sizeof(double));
-	size = MaxSizeOf<double, int>::value;
-	CHECK(size == sizeof(double));
-	size = MaxSizeOf<double, LargeType, int>::value;
-	CHECK(size == sizeof(LargeType));
-	size = MaxSizeOf<double, int, LargeType>::value;
-	CHECK(size == sizeof(LargeType));
-	size = MaxSizeOf<double, int, LargeType, int>::value;
-	CHECK(size == sizeof(LargeType));
-}

@@ -10,6 +10,7 @@
 #include<type_traits>
 #include<boost/hana.hpp>
 #include "LambdaTraits.hpp"
+#include "VariantCallback.hpp"
 
 namespace nbdl {
 
@@ -24,12 +25,21 @@ class Variant
   using Storage = std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>;
 
   static constexpr auto types = hana::tuple_t<DefaultType, Tn...>;
-  /*
-  static constexpr auto types = hana::unpack(hana::zip_with(hana::make_pair,
-    hana::unpack(hana::make_range(hana::int_c<0>, hana::int_c<(sizeof...(Tn) + 1)>), hana::make_tuple),
-    hana::tuple_t<DefaultType, Tn...>
+  static constexpr auto type_ids = hana::unpack(hana::zip_with(hana::make_pair,
+    hana::tuple_t<DefaultType, Tn...>,
+    hana::unpack(hana::make_range(hana::int_c<0>, hana::int_c<(sizeof...(Tn) + 1)>), hana::make_tuple)
   ), hana::make_map);
-  */
+  using LastTypeId = hana::size_t<hana::length(types) - hana::size_c<1>>;
+
+  std::size_t type_id;
+  Storage value_;
+
+  template<typename T>
+  constexpr std::size_t typeIdFromType(T type)
+  {
+    return *hana::find(type_ids, type);
+  }
+
   template<typename Fn>
   void callByType(const std::size_t value_type_id, Fn&& fn)
   {
@@ -40,9 +50,6 @@ class Variant
           fn(hana::at(types, i));
       });
   }
-
-  std::size_t type_id;
-  Storage value_;
   
   void copy(std::size_t src_type_id, const void* src, void* dest)
   {
@@ -94,34 +101,36 @@ class Variant
   Variant(Type val)
   {
     //it is critical that types are restricted to types supported by the Variant
-    static_assert(hana::contains(types, hana::type_c<Type>), "Variant does not support conversion to Type.");
+    //this check is now redundant, but provides a better error message
+    static_assert(hana::contains(types, hana::type_c<Type>),
+      "Variant does not support conversion to Type.");
     type_id = 0; //in case shit goes horribly wrong
     destroy(type_id, &value_);
     new (&value_) Type(val);
-    type_id = hana::while_(
-      [](auto i) {
-        return (hana::at(types, i) != hana::type_c<Type>);
-      },
-      hana::int_c<0>,
-      [](auto i) {
-        return i + hana::int_c<1>;
-      });
+    type_id = typeIdFromType(hana::type_c<Type>);
   }
 
-  template<typename Fn1, typename... Fns>
-  typename LambdaTraits<Fn1>::ReturnType match(Fn1&& fn1, Fns&&... fns)
+  template<typename Index, typename Fn1, typename... Fns>
+  typename LambdaTraits<Fn1>::ReturnType matchHelper(Index i, Fn1 fn1, Fns... fns)
   {
-    static constexpr auto callbacks = hana::fold_left(hana::tuple_t<Fn1, Fns...>, hana::make_map(),
-      [](auto map_, auto fn_) {
-        auto arg = hana::type_c<typename LambdaTraits<decltype(fn_)>::template Arg<0>>;
-        return hana::insert(map_, hana::make_pair(arg, hana::size_c<hana::length(map_)>));
-      });
-    auto matched = hana::from_maybe(hana::type_c<DefaultType>, hana::at(types, type_id));
-    callByType(type_id, 
-      [&](auto matched) {
-         
-      });
-    return callbacks[matched](*reinterpret_cast<typename decltype(matched)::type*>(&value_));
+    static constexpr auto current_type = hana::at(types, i);
+    using T = typename decltype(current_type)::type;
+    if (type_id == hana::value(i))
+      return VariantCallback::call(*reinterpret_cast<T*>(&value_), fn1, fns...);
+    else
+      return matchHelper(i + hana::size_c<1>, fn1, fns...);
+  }
+  template<typename Fn1, typename... Fns>
+  typename LambdaTraits<Fn1>::ReturnType matchHelper(LastTypeId i, Fn1 fn1, Fns... fns)
+  {
+    static constexpr auto current_type = hana::at(types, i);
+    using T = typename decltype(current_type)::type;
+    return VariantCallback::call(*reinterpret_cast<T*>(&value_), fn1, fns...);
+  }
+  template<typename Fn1, typename... Fns>
+  typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn1, Fns... fns)
+  {
+    return matchHelper(hana::size_c<0>, fn1, fns...);
   }
 
 };
