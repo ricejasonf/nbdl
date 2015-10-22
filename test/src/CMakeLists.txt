@@ -25,7 +25,6 @@ add_executable(test_
 
 #bleh
 target_include_directories(test_ 
-  PUBLIC ${BOOST_HANA_INCLUDE_DIR}
   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
   )
 
