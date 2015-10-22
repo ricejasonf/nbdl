@@ -8,12 +8,12 @@
 #define NBDL_VARIANT_HPP
 
 #include<type_traits>
-#include "boost/hana.hpp"
+#include<boost/hana.hpp>
 #include "LambdaTraits.hpp"
 
 namespace nbdl {
 
-using hana = boost::hana;
+namespace hana = boost::hana;
 
 namespace details {
 
@@ -21,30 +21,49 @@ template<typename DefaultType, typename... Tn>
 class Variant
 {
   static_assert(std::is_empty<DefaultType>::value, "DefaultType must be an empty tag struct");
-  using Storage typename std::aligned_union(sizeof(DefaultType), DefaultType, Tn...);
-  using Helper = VariantHelper<Tn..., DefaultType>;
+  using Storage = std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>;
+
   static constexpr auto types = hana::tuple_t<DefaultType, Tn...>;
+  /*
+  static constexpr auto types = hana::unpack(hana::zip_with(hana::make_pair,
+    hana::unpack(hana::make_range(hana::int_c<0>, hana::int_c<(sizeof...(Tn) + 1)>), hana::make_tuple),
+    hana::tuple_t<DefaultType, Tn...>
+  ), hana::make_map);
+  */
+  template<typename Fn>
+  void callByType(const std::size_t value_type_id, Fn&& fn)
+  {
+    hana::for_each(
+      hana::range_c<int, 0, hana::length(types)>,
+      [&](auto i) {
+        if (value_type_id == hana::value(i))
+          fn(hana::at(types, i));
+      });
+  }
+
   std::size_t type_id;
   Storage value_;
   
   void copy(std::size_t src_type_id, const void* src, void* dest)
   {
-    auto matched = hana::from_maybe(hana::type_c<DefaultType>, hana::find_if(types, hana::equal.to(type_id)));
-    using T = typename decltype(matched)::type;
-    new (dest) T(*reinterpret_cast<const T*>(src));
+    callByType(src_type_id, [&](auto matched) {
+      using T = typename decltype(matched)::type;
+      new (dest) T(*reinterpret_cast<const T*>(src));
+    });
   }
   void move(std::size_t src_type_id, const void* src, void* dest)
   {
-    auto matched = hana::from_maybe(hana::type_c<DefaultType>, hana::find_if(types, hana::equal.to(type_id)));
-    using T = typename decltype(matched)::type;
-    new (dest) T(std::move(*reinterpret_cast<const T*>(src)));
+    callByType(src_type_id, [&](auto matched) {
+      using T = typename decltype(matched)::type;
+      new (dest) T(std::move(*reinterpret_cast<const T*>(src)));
+    });
   }
   void destroy(std::size_t value_type_id, void* value)
   {
-    auto matched = hana::from_maybe(hana::type_c<DefaultType>, hana::find_if(types, hana::equal.to(type_id)));
-    using T = typename decltype(matched)::type;
-    new (dest) T(*reinterpret_cast<const T*>(src));
-    reinterpret_cast<const T*>(value)->~T();
+    callByType(value_type_id, [&](auto matched) {
+      using T = typename decltype(matched)::type;
+      reinterpret_cast<const T*>(value)->~T();
+    });
   }
 
   public:
@@ -58,11 +77,11 @@ class Variant
   Variant(Variant&& old)
     : type_id(old.type_id)
   {
-    Helper::move(old.type_id, &old.value_, &value_);
+    move(old.type_id, &old.value_, &value_);
   }
   ~Variant()
   {
-    Helper::destroy(type_id, &value_);
+    destroy(type_id, &value_);
   }
   Variant& operator= (Variant src)
   {
@@ -75,23 +94,33 @@ class Variant
   Variant(Type val)
   {
     //it is critical that types are restricted to types supported by the Variant
-    static_assert(hana::contains(types, hana::type_c<Type>));
+    static_assert(hana::contains(types, hana::type_c<Type>), "Variant does not support conversion to Type.");
     type_id = 0; //in case shit goes horribly wrong
-    Helper::destroy(type_id, &value_);
+    destroy(type_id, &value_);
     new (&value_) Type(val);
-    type_id = Helper::template getTypeId<Type>();
+    type_id = hana::while_(
+      [](auto i) {
+        return (hana::at(types, i) != hana::type_c<Type>);
+      },
+      hana::int_c<0>,
+      [](auto i) {
+        return i + hana::int_c<1>;
+      });
   }
 
   template<typename Fn1, typename... Fns>
-  LambdaTraits<Fn1>::ReturnType match(Fn1 fn1, Fns... fns)
+  typename LambdaTraits<Fn1>::ReturnType match(Fn1&& fn1, Fns&&... fns)
   {
     static constexpr auto callbacks = hana::fold_left(hana::tuple_t<Fn1, Fns...>, hana::make_map(),
       [](auto map_, auto fn_) {
-        auto fn = hana::decltype_(fn_);
         auto arg = hana::type_c<typename LambdaTraits<decltype(fn_)>::template Arg<0>>;
-        return hana::insert(map_, hana::make_pair(hana::type_c<Arg>, Fn);
+        return hana::insert(map_, hana::make_pair(arg, hana::size_c<hana::length(map_)>));
       });
-    auto matched = hana::from_maybe(hana::type_c<DefaultType>, hana::find_if(types, hana::equal.to(type_id)));
+    auto matched = hana::from_maybe(hana::type_c<DefaultType>, hana::at(types, type_id));
+    callByType(type_id, 
+      [&](auto matched) {
+         
+      });
     return callbacks[matched](*reinterpret_cast<typename decltype(matched)::type*>(&value_));
   }
 
