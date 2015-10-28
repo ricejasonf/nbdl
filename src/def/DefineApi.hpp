@@ -11,12 +11,14 @@
 #include<boost/hana.hpp>
 
 #define NBDL_DEF_DIRECTIVE(NAME) \
-namespace tag { struct NAME{}; } \
+namespace tag { constexpr auto NAME = BOOST_HANA_STRING(#NAME); } \
 template<typename... Tn> constexpr auto NAME(Tn... tn) \
 { return hana::make_tuple(tag::NAME, tn...); }
 
 namespace nbdl_def {
 
+NBDL_DEF_DIRECTIVE(Type)
+NBDL_DEF_DIRECTIVE(ListItem)
 NBDL_DEF_DIRECTIVE(DefineApi)
 NBDL_DEF_DIRECTIVE(Entities)
 NBDL_DEF_DIRECTIVE(ImportApi)
@@ -25,30 +27,18 @@ NBDL_DEF_DIRECTIVE(AccessPoint)
 NBDL_DEF_DIRECTIVE(Path)
 NBDL_DEF_DIRECTIVE(Actions)
 
-template<Tag>
-bool tagMatch(Tag tag)
-{
-  return [tag](auto xs) {
-    return hana::at(xs, 0) == tag;
-  };
-}
+constexpr bool tagMatch = hana::equal.to ^hana::on^ hana::reverse_partial(hana::at, 0);
 
 template<typename Xs, Tag>
-auto getByTag(Xs xs, Tag tag)
+constexpr auto getByTag(Xs xs, Tag tag)
 {
   return hana::filter(xs, tagMatch(tag));
 }
 
 template<typename Xs, Tag>
-auto findByTag(Xs xs, Tag tag)
+constexpr auto findByTag(Xs xs, Tag tag)
 {
   return hana::find_if(xs, tagMatch(tag));
-}
-
-template<typename Xs, Tag>
-auto findLastByTag(Xs xs, Tag tag)
-{
-  return hana::find_if(hana::reverse(xs), tagMatch(tag));
 }
 
 }//nbdl_def

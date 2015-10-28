@@ -15,20 +15,6 @@ namespace nbdl {
 
 namespace details {
 
-
-template<typename ContextType>
-auto storeMap(ContextType ctx)
-{
-  return hana::transform(
-    nbdl_def::getByTag(
-      nbdl_def::findByTag(ctx, nbdl_def::tag::ApiDefinition), 
-      nbdl_def::tag::AccessPoint),
-    [](auto access_point) {
-      auto path = nbdl_def::findByTag(access_point, nbdl_def::tag::Path);
-      return hana::make_pair(path, hana::type_t<Store<ContextType, decltype(path)::type>>);
-    });
-}
-
 }//details
 
 template<typename Context>
