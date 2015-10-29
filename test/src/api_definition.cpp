@@ -49,6 +49,7 @@ namespace nbdl {
       attribute_id );
 }//nbdl
 
+/*
 namespace my_entity_defs {
 
 namespace nbdl_entity_ns = my_entities;
@@ -70,51 +71,51 @@ NBDL_ENTITY_DEF(
     attribute_id );
 
 }//my_entity_defs
+*/
 
 namespace my_server_api
 {
-using namespace nbdl_def;
-using namespace my_entities;
+  using namespace nbdl_ddl;
 
-static constexpr auto Api =
-  ApiDefinition(
-    DefaultStore(HashMap),
-    ImportApi(some_other_def::Api),
-    SetVar(SomeAccessPoint, AccessPoint(
-      LocalPath(SomeUiThing),
-      Actions(Read)
-    )),
-    //ImportExternalApi(some_other_def::Api), //<-- ensures Ids are stripped
-    AccessPoint(
-      LocalPath(SomeUiThing),
-      Actions(Read)
-    ),
-    AccessPoint(
-      Path(Client),
-      Actions(Read)
-    ),
-    AccessPoint(
-      Path(Client, MyEntity), 
-      Actions(
-        Create,
-        Read,
-        Update,
-        Delete
+  static constexpr auto api =
+    Api(
+      DefaultStore(HashMap),
+      ImportApi(some_other_def::Api),
+      SetVar(SomeAccessPoint, AccessPoint(
+        LocalPath(SomeUiThing),
+        Actions(Read)
+      )),
+      //ImportExternalApi(some_other_def::Api), //<-- ensures Ids are stripped
+      AccessPoint(
+        LocalPath(SomeUiThing),
+        Actions(Read)
+      ),
+      AccessPoint(
+        Path(Client),
+        Actions(Read)
+      ),
+      AccessPoint(
+        Path(Client, MyEntity), 
+        Actions(
+          Create,
+          Read,
+          Update,
+          Delete
+        )
+      ),
+      AccessPoint(
+        Id(50),
+        Path(Client, MyEntity, MyEntityAttribute), 
+        Actions(Read)
+      ),
+      AccessPoint(
+        Path(Client, MyEntity, MyEntityAttribute, AttributeStatus),
+        Actions(
+          Create, 
+          Read
+        )
       )
-    ),
-    AccessPoint(
-      Id(50),
-      Path(Client, MyEntity, MyEntityAttribute), 
-      Actions(Read)
-    ),
-    AccessPoint(
-      Path(Client, MyEntity, MyEntityAttribute, AttributeStatus),
-      Actions(
-        Create, 
-        Read
-      )
-    )
-  );
+    );
 }//my_server_api
 
 template<typename... Ts>

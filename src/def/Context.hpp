@@ -7,33 +7,12 @@
 #ifndef NBDL_DEF_CONTEXT_DEFINITION_HPP
 #define NBDL_DEF_CONTEXT_DEFINITION_HPP
 
-#include<boost/hana.hpp>
+#include "directives.hpp"
+#include "../Store.hpp"
 
-namespace nbdl_def {
+namespace nbdl_ddl {
+namespace details {
 
-//get first items from contained defs
-struct pairFromDef_t
-{
-  template<typename KeyTag, typename ValueTag, typename Def>
-  constexpr auto operator()(KeyTag key_tag, ValueTag value_tag, EntitiesDef def)
-  {
-    return hana::make_pair(
-        hana::at(*hana::findByTag(def, key_tag), 1),
-        hana::at(*hana::findByTag(def, value_tag), 1)
-    );
-  }
-}
-constexpr pairFromDef_t pairFromDef{};
-
-template<typename KeyTag, typename ValueTag, typename EntitiesDef>
-constexpr auto mapify(KeyTag key_tag, ValueTag value_tag, EntitiesDef def)
-{
-  return hana::fold_left(
-    hana::drop_front(def),
-    hana::make_map(),
-    hana::insert ^hana::on^ hana::partial(pairFromDef, key_tag, value_tag)
-  );
-}
 template<typename ContextDef, typename Names>
 constexpr auto entitiesFromNames(ContextDef ctx, Names names)
 {
@@ -42,15 +21,17 @@ constexpr auto entitiesFromNames(ContextDef ctx, Names names)
 template<typename AccessPointDef>
 constexpr auto pathType(AccessPointDef access_point)
 {
-  constexpr auto path_def = *findByTag(access_point, tag::Path);
-  return hana::type_t<nbdl::CreatePath>;
+  constexpr auto path_def = *meta::findByTag(access_point, tag::Path);
+  //todo actually use a path definition instead of embedding the type
+  return path_def;
 }
+
 template<typename ContextDef>
 constexpr auto listenerHandler(ContextDef ctx)
 {
   constexpr types = hana::make_map(
-    hana::make_pair(tag::EndPointContextDefinition, hana::type_t<nbdl::ListenerHandlerDummy>),
-    hana::make_pair(tag::ContextDefinition, hana::type_t<nbdl::ListenerHandlerDummy>)
+    hana::make_pair(tag::EndpointContext, hana::type_t<nbdl::ListenerHandlerDummy>),
+    hana::make_pair(tag::Context, hana::type_t<nbdl::ListenerHandlerDummy>)
     //todo create listener handler type for servers ^
   );
   return types[hana::at(ctx, 0)];
@@ -59,15 +40,16 @@ constexpr auto listenerHandler(ContextDef ctx)
 template<typename ContextDef, typename AccessPointDef>
 constexpr auto storeName(ContextDef ctx, AccessPointDef access_point)
 {
-  constexpr store_def = *hana::find_if(
+  constexpr auto store_def = hana::find_if(
     hana::make_tuple(
-      hana::findByTag(ctx, tag::DefaultStore),
-      hana::findByTag(access_point, tag::Store)
+      meta::findByTag(ctx, tag::DefaultStore),
+      meta::findByTag(access_point, tag::Store)
     ),
     hana::not_equal.to(hana::nothing)
   );
-  return hana::at(store_def, 1);
+  return hana::maybe(BOOST_HANA_STRING("HashMap"), hana::second, store_def);
 }
+
 template<typename ContextDef, typename AccessPointDef>
 constexpr auto storeImpl(ContextDef ctx, AccessPointDef access_point)
 {
@@ -75,7 +57,18 @@ constexpr auto storeImpl(ContextDef ctx, AccessPointDef access_point)
   constexpr types = hana::make_map(
     hana::make_pair(BOOST_HANA_STRING("HashMap"), hana::type_t<nbdl::store_impl::HashMap>)
   );
-  return types[hana::at(store_def, 1)];
+  return types[hana::at(store_name, 1)];
+}
+
+template<typename ContextDef>
+constexpr auto storeEmitterImpl(ContextDef ctx)
+{
+  constexpr auto store_name = hana::maybe(BOOST_HANA_STRING("HashMap"), hana::second,
+    meta::findByTag(ctx, tag::StoreEmitter));
+  constexpr types = hana::make_map(
+    hana::make_pair(BOOST_HANA_STRING("HashMap"), hana::type_t<nbdl::store_impl::HashMap>)
+  );
+  return types[hana::second(store_name)];
 }
 
 template<typename ContextDef, typename AccessPointDef>
@@ -89,7 +82,9 @@ auto createStore(ContextDef ctx, AccessPointDef access_point)
     hana::not_equal.to(hana::nothing)
   );
   using StoreImpl_ = decltype(storeImpl(store_def))::type;
-  using ListenerHandler_ = decltype(listenerHandler(ctx))::type
+  using StoreEmitterImpl_ = decltype(storeEmitterImpl(store_def))::type;
+  using ListenerHandler_ = decltype(listenerHandler(ctx))::type;
+  using Path_ = decltype(pathType(access_point))::type;
 }
 
 template<typename ContextDef>
@@ -97,7 +92,7 @@ auto storeMap(ContextDef ctx)
 {
   return hana::transform(
     getByTag(
-      *findByTag(ctx, tag::ApiDefinition), 
+      *findByTag(ctx, tag::Api), 
       tag::AccessPoint),
     [](auto access_point) {
       auto path = *findByTag(access_point, tag::Path);
@@ -106,6 +101,7 @@ auto storeMap(ContextDef ctx)
 }
 
 
+}//details
 }//nbdl_def
 
 #endif
