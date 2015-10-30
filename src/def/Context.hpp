@@ -9,9 +9,12 @@
 
 #include "directives.hpp"
 #include "../Store.hpp"
+#include "../Path.hpp"
+#include "../StoreCollection.hpp"
+#include "../Listener.hpp"
 
 namespace nbdl_ddl {
-namespace details {
+namespace def {
 
 template<typename ContextDef>
 constexpr auto client(ContextDef ctx)
@@ -129,7 +132,23 @@ constexpr auto context(ContextDef ctx)
   return hana::type_t<nbdl::Context<decltype(traits)>>;
 }
 
-}//details
+template<typename Context_>
+struct ContextFactory
+{
+  template<typename... Args>
+  auto operator()(Args... args)
+  {
+    return Context_(args...);
+  }
+}
+template<typename ContextDef>
+auto buildContextFactory(ContextDef ctx_def)
+{
+  using Context_ = decltype(context(ctx_def));
+  return ContextFactory<Context_>{};
+}
+
+}//def
 }//nbdl_ddl
 
 #endif
