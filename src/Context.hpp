@@ -8,8 +8,8 @@
 #define NBDL_CONTEXT_HPP
 
 #include<memory>
+#include "macro/NBDL_TRAITS_IMPORT.hpp"
 #include "LambdaTraits.hpp"
-#include "StoreCollection.hpp"
 
 namespace nbdl {
 
@@ -22,16 +22,23 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 
 	using SharedPtr = std::shared_ptr<Context>;
 	using WeakPtr = std::weak_ptr<Context>;
-	using Client = typename Traits::Client;
-	using ListenerHandler = typename Traits::ListenerHandler;
-	template<typename PathType>
-	using Listener = details::Listener<Context, PathType>;
-	using ApiDef = typename Traits::ApiDef;
+
+  NBDL_TRAITS_IMPORT(Traits,
+      Client_,
+      ListenerHandler_,
+      StoreCollection_ );
+
+  template<typename PathType>
+	using Listener = details::Listener<WeakPtr, PathType>;
+
+  template<typename PathType>
+  using VariantType = typename StoreCollection_::VariantType<PathType>;
+
 
 	private:
 
 	Client client;
-	StoreCollection<Context> store;
+	StoreCollection store;
 
 	public:
 
@@ -59,15 +66,15 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 	template<typename Path, typename MatchFn1, typename... MatchFns>
 	typename LambdaTraits<MatchFn1>::ReturnType read(Path path, MatchFn1 fn1, MatchFns... fns)
 	{
-		using VariantType = typename StoreCollection<Context>::template VariantType<Path>;
+		using Variant_ = VariantType<Path>;
 
 		return store.get(
 			//called if store needs to request value
 			[&](const Path& path) {
 				//request from client
 				auto self = this->shared_from_this();
-				client.read(path, [path, self](VariantType&& value) {
-					self->store.suggestAssign(path, std::forward<VariantType>(value));
+				client.read(path, [path, self](Variant_&& value) {
+					self->store.suggestAssign(path, std::forward<Variant_>(value));
 				});
 			},
 			path, fn1, fns...);

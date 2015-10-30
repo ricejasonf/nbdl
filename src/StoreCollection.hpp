@@ -7,24 +7,15 @@
 #ifndef NBDL_STORE_COLLECTION_HPP
 #define NBDL_STORE_COLLECTION_HPP
 
-#include<boost/hana.hpp>
 #include "LambdaTraits.hpp"
 #include "Store.hpp"
 
 namespace nbdl {
 
-namespace details {
-
-}//details
-
-template<typename Context>
+template<typename StoreMap_, typename ListenerHandler_>
 class StoreCollection
 {
-  using ListenerHandler = typename Context::ListenerHandler;
-  using ApiDef = typename Context::ApiDef;
-  using Stores = decltype(details::storeMap(hana::type_t<Context>))::type;
-
-  Stores stores;
+  StoreMap_ stores;
 
   template<typename PathType>
   auto& getStore(PathType)
@@ -61,13 +52,13 @@ class StoreCollection
 
   //emitter interface
   template<typename PathType>
-  void addListener(const PathType& path, const ListenerHandler& listener)
+  void addListener(const PathType& path, const ListenerHandler_& listener)
   {
     auto& store = getStore(path);
     store.addListener(path, listener);
   }
   template<typename PathType>
-  void removeListener(const PathType& path, const ListenerHandler& listener)
+  void removeListener(const PathType& path, const ListenerHandler_& listener)
   {
     auto& store = getStore(path);
     store.removeListener(path, listener);

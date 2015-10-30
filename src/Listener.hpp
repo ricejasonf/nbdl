@@ -71,10 +71,9 @@ class ListenerHandlerDummy : public ListenerHandlerBase<ListenerHandlerDummy<Fn>
 
 namespace details {
 
-template<typename Context, typename PathType>
+template<typename ContextWeakPtr, typename PathType>
 class Listener
 {
-	using ContextWeakPtr = typename Context::WeakPtr;
 	using Handler = typename Context::ListenerHandler;
 
 	PathType path;
