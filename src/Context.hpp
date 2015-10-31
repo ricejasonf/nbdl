@@ -8,7 +8,7 @@
 #define NBDL_CONTEXT_HPP
 
 #include<memory>
-#include "macro/NBDL_TRAITS_IMPORT.hpp"
+#include "macros/NBDL_TRAITS_IMPORT.hpp"
 #include "LambdaTraits.hpp"
 
 namespace nbdl {
@@ -18,32 +18,32 @@ namespace details {
 template<typename Traits>
 class Context : public std::enable_shared_from_this<Context<Traits>>
 {
-	public:
-
-	using SharedPtr = std::shared_ptr<Context>;
-	using WeakPtr = std::weak_ptr<Context>;
-
   NBDL_TRAITS_IMPORT(Traits,
       Client_,
       ListenerHandler_,
       StoreCollection_ );
 
-  template<typename PathType>
-	using Listener = details::Listener<WeakPtr, PathType>;
+	public:
+
+	using SharedPtr = std::shared_ptr<Context>;
+	using WeakPtr = std::weak_ptr<Context>;
 
   template<typename PathType>
-  using VariantType = typename StoreCollection_::VariantType<PathType>;
+	using Listener = details::Listener<ListenerHandler_, WeakPtr, PathType>;
+
+  template<typename PathType>
+  using VariantType = typename StoreCollection_:: template VariantType<PathType>;
 
 
 	private:
 
-	Client client;
-	StoreCollection store;
+	Client_ client;
+	StoreCollection_ store;
 
 	public:
 
 	//todo client probably wont be copyable
-	Context(Client c) : client(c) {}
+	Context(Client_ c) : client(c) {}
 
 	template<typename PathType, typename... Args>
 	Listener<PathType> makeListener(PathType path, Args... args)
@@ -53,12 +53,12 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 		return wrapper;
 	}
 	template<typename PathType>
-	void addListener(const PathType& path, const ListenerHandler& listener)
+	void addListener(const PathType& path, const ListenerHandler_& listener)
 	{
 		store.addListener(path, listener);
 	}
 	template<typename PathType>
-	void removeListener(const PathType& path, const ListenerHandler& listener)
+	void removeListener(const PathType& path, const ListenerHandler_& listener)
 	{
 		store.removeListener(path, listener);
 	}

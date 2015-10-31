@@ -11,6 +11,7 @@ struct NotFound {};
 #include <def/Actions.hpp>
 #include <def/AccessPoint.hpp>
 #include <def/Api.hpp>
+#include <def/Context.hpp>
 
 #include <EntityTraits.hpp>
 #include <MemberSet.hpp>

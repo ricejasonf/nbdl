@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #ifndef NBDL_MEMBERS_HPP
+#define NBDL_MEMBERS_HPP
 
 #include "VFUNC.hpp"
 

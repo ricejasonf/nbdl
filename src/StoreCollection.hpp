@@ -21,13 +21,14 @@ class StoreCollection
   auto& getStore(PathType)
   {
     //hoping this returns a reference???
-    return stores[hana::type_t<PathType>];
+    return stores[hana::type_c<PathType>];
   } 
 
   public:
 
   template<typename PathType>
-  using VariantType = typename Store<Context, PathType>::VariantType;
+  using VariantType = typename decltype(StoreMap_{}[PathType{}])::type;
+  //using VariantType = typename Store<Context, PathType>::VariantType;
 
   template<typename PathType, typename T>
   void forceAssign(const PathType& path, T&& value)

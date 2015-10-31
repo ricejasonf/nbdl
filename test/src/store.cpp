@@ -10,9 +10,9 @@
 
 template<typename Path_>
 using Store = nbdl::Store<
-  nbdl::store_impl::HashMap,
-  nbdl::store_emitter_impl::HashMap,
-  nbdl::ListenerHandlerDummy,
+  nbdl::store::HashMap<Path_>,
+  nbdl::store_emitter::HashMap<Path_, nbdl::ListenerHandlerDummy<>>,
+  nbdl::ListenerHandlerDummy<>,
   Path_ >;
 
 struct Client
