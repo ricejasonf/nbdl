@@ -7,6 +7,7 @@
 #ifndef NBDL_DEF_CONTEXT_DEFINITION_HPP
 #define NBDL_DEF_CONTEXT_DEFINITION_HPP
 
+#include<type_traits>
 #include "directives.hpp"
 #include "../Store.hpp"
 #include "../Path.hpp"
@@ -103,18 +104,18 @@ constexpr auto store(ContextDef ctx, AccessPointDef access_point)
     Path_ >>;
 }
 
+//really returns a tuple of pairs
+//for default constructibility
 template<typename ContextDef>
 auto storeMap(ContextDef ctx)
 {
-  return hana::fold_left(
+  return hana::transform(
     meta::filterByTag(
       *meta::findByTag(ctx, tag::Api), 
       tag::AccessPoint),
-    hana::make_map(),
-    [](auto state, auto access_point) {
-      auto path = *meta::findByTag(access_point, tag::Path);
-      hana::insert(state, hana::make_pair(path,
-        typename decltype(store(ctx, access_point))::type{}));
+    [](auto access_point) {
+      return hana::make_pair(path(access_point),
+        typename decltype(store(ctx, access_point))::type{});
     });
 }
 
@@ -133,13 +134,21 @@ template<typename ContextDefPair>
 constexpr auto context(ContextDefPair ctx_)
 {
   auto ctx = hana::second(ctx_);
+  using Traits = nbdl::details::ContextTraits<
+    typename decltype(client(ctx))::type,
+    void, //server
+    typename decltype(listenerHandler(hana::first(ctx_)))::type,
+    typename decltype(storeCollection(ctx))::type
+  >;
+
+  /*
   auto traits = hana::make_tuple(
     hana::make_pair(BOOST_HANA_STRING("ListenerHandler_"), listenerHandler(hana::first(ctx_))),
     hana::make_pair(BOOST_HANA_STRING("StoreCollection_"), storeCollection(ctx)),
     hana::make_pair(BOOST_HANA_STRING("Client_"), client(ctx))
   );
-  //promote nbdl::Context to use traits instead of details
-  return hana::type_c<nbdl::details::Context<decltype(traits)>>;
+  */
+  return hana::type_c<nbdl::Context<Traits>>;
 }
 
 template<typename Context_>
@@ -148,7 +157,7 @@ struct ContextFactory
   template<typename... Args>
   auto operator()(Args... args)
   {
-    return Context_(args...);
+    return Context_::create(args...);
   }
 };
 }//def

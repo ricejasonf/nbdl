@@ -7,6 +7,7 @@
 #ifndef NBDL_STORE_COLLECTION_HPP
 #define NBDL_STORE_COLLECTION_HPP
 
+#include<boost/hana.hpp>
 #include "LambdaTraits.hpp"
 #include "Store.hpp"
 
@@ -15,7 +16,9 @@ namespace nbdl {
 template<typename StoreMap_, typename ListenerHandler_>
 class StoreCollection
 {
-  StoreMap_ stores;
+  //workaround for hana map not being default constructible
+  using Stores = decltype(hana::unpack(StoreMap_{}, hana::make_map));
+  Stores stores;
 
   template<typename PathType>
   auto& getStore(PathType)
@@ -26,9 +29,9 @@ class StoreCollection
 
   public:
 
-  template<typename PathType>
-  using VariantType = typename decltype(StoreMap_{}[PathType{}])::type;
-  //using VariantType = typename Store<Context, PathType>::VariantType;
+  StoreCollection() :
+    stores(hana::unpack(StoreMap_{}, hana::make_map))
+  {}
 
   template<typename PathType, typename T>
   void forceAssign(const PathType& path, T&& value)
@@ -45,9 +48,9 @@ class StoreCollection
   }
   template<typename PathType, typename RequestFn, typename Fn1, typename... Fns>
   typename LambdaTraits<Fn1>::ReturnType
-  get(RequestFn request, const PathType path, Fn1 fn, Fns... fns) const
+  get(RequestFn request, const PathType path, Fn1 fn, Fns... fns)
   {
-    const auto& store = getStore(path);
+    auto& store = getStore(path);
     return store.get(request, path, fn, fns...);
   }
 
