@@ -185,7 +185,7 @@ namespace my_nbdl_async {
 
 TEST_CASE("Context should emit change to listener", "[context]")
 {
-  int function_was_called = false;
+  bool function_was_called = false;
   int result = 0;
   //auto ctx = MyContextAsync::create(TestClientAsync{});
   auto ctx = my_nbdl_async::createContext(test_stuff::TestClientAsync{});
@@ -214,13 +214,13 @@ TEST_CASE("Context should emit change to listener", "[context]")
 
 TEST_CASE("Context should not emit to a listener that has been destroyed.", "[context]")
 {
-  int function_was_called = false;
+  bool function_was_called = false;
   int result = 0;
   test_stuff::OnlySupportedPath path(1, 5);
 
   {
     //auto ctx = MyContext::create(TestClient{});
-    auto ctx = my_nbdl::createContext(test_stuff::TestClient{});
+    auto ctx = my_nbdl_async::createContext(test_stuff::TestClientAsync{});
     /*
       in this test if the listener fails
       to unregister it would result in UB.
@@ -241,7 +241,7 @@ TEST_CASE("Context should not emit to a listener that has been destroyed.", "[co
     ctx->read(path, [](){});
   } //listener is destroyed and should unregister from the context
 
-  CHECK_FALSE(result); //does not emit for unresolved
+  CHECK(result == 0); //does not emit for unresolved
   test_stuff::TestClientAsync::flush__();
   CHECK_FALSE(function_was_called);
   CHECK(result == 0);
