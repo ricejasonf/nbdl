@@ -16,7 +16,7 @@ add_executable(test_
 	variant.cpp
 	variant_callback.cpp
 	store.cpp
-	api_definition.cpp
+  #api_definition.cpp
 	context_read.cpp
 	websocket/parse_handshake_request.cpp
 	websocket/generate_handshake_response.cpp

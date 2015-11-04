@@ -27,13 +27,14 @@ struct StoreEmitterImpl
 	using ListenerHandler = typename Context::ListenerHandler;
 };
 
-template<typename Context, typename PathType>
+template<
+  typename Impl,
+  typename EmitterImpl,
+  typename ListenerHandler,
+  typename PathType >
 class Store
 {
 	using Entity = typename PathType::Entity;
-	using ListenerHandler = typename Context::ListenerHandler;
-	using Impl = typename StoreImpl<Context, PathType>::Type;
-	using EmitterImpl = typename StoreEmitterImpl<Context, PathType>::Type;
 
 	Impl impl;
 	EmitterImpl emitter;

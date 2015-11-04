@@ -9,7 +9,6 @@
 
 #include<memory>
 #include "LambdaTraits.hpp"
-#include "StoreCollection.hpp"
 
 namespace nbdl {
 
@@ -18,25 +17,35 @@ namespace details {
 template<typename Traits>
 class Context : public std::enable_shared_from_this<Context<Traits>>
 {
+  using Client_ = typename Traits::Client;
+  using Server_ = typename Traits::Server;
+  using ListenerHandler_ = typename Traits::ListenerHandler;
+  using StoreCollection_ = typename Traits::StoreCollection;
+
 	public:
 
 	using SharedPtr = std::shared_ptr<Context>;
 	using WeakPtr = std::weak_ptr<Context>;
-	using Client = typename Traits::Client;
-	using ListenerHandler = typename Traits::ListenerHandler;
-	template<typename PathType>
-	using Listener = details::Listener<Context, PathType>;
-	using ApiDef = typename Traits::ApiDef;
+
+  template<typename PathType>
+	using Listener = details::Listener<ListenerHandler_, WeakPtr, PathType>;
+
+  /*
+  //todo delete once we know stuff compiles
+  template<typename PathType>
+  using VariantType = typename StoreCollection_:: template VariantType<PathType>;
+  */
+
 
 	private:
 
-	Client client;
-	StoreCollection<Context> store;
+	Client_ client;
+	StoreCollection_ store;
 
 	public:
 
 	//todo client probably wont be copyable
-	Context(Client c) : client(c) {}
+	Context(Client_ c) : client(c) {}
 
 	template<typename PathType, typename... Args>
 	Listener<PathType> makeListener(PathType path, Args... args)
@@ -46,12 +55,12 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 		return wrapper;
 	}
 	template<typename PathType>
-	void addListener(const PathType& path, const ListenerHandler& listener)
+	void addListener(const PathType& path, const ListenerHandler_& listener)
 	{
 		store.addListener(path, listener);
 	}
 	template<typename PathType>
-	void removeListener(const PathType& path, const ListenerHandler& listener)
+	void removeListener(const PathType& path, const ListenerHandler_& listener)
 	{
 		store.removeListener(path, listener);
 	}
@@ -59,15 +68,13 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 	template<typename Path, typename MatchFn1, typename... MatchFns>
 	typename LambdaTraits<MatchFn1>::ReturnType read(Path path, MatchFn1 fn1, MatchFns... fns)
 	{
-		using VariantType = typename StoreCollection<Context>::template VariantType<Path>;
-
 		return store.get(
 			//called if store needs to request value
 			[&](const Path& path) {
 				//request from client
 				auto self = this->shared_from_this();
-				client.read(path, [path, self](VariantType&& value) {
-					self->store.suggestAssign(path, std::forward<VariantType>(value));
+				client.read(path, [path, self](auto&& value) {
+					self->store.suggestAssign(path, std::forward<decltype(value)>(value));
 				});
 			},
 			path, fn1, fns...);
@@ -75,26 +82,25 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 };
 
 template<
-	typename ClientType,
-	typename ListenerHandlerType,
-	typename ApiDefType>
+	typename Client_,
+  typename Server_,
+	typename ListenerHandler_,
+	typename StoreCollection_>
 struct ContextTraits
 {
-	using Client = ClientType;
-	using ListenerHandler = ListenerHandlerType;
-	using ApiDef = ApiDefType;
+	using Client = Client_;
+	using Server = Server_;
+	using ListenerHandler = ListenerHandler_;
+	using StoreCollection = StoreCollection_;
 };
 
 
 }//details
 
-template<
-	typename ClientType,
-	typename ListenerHandlerType,
-	typename ApiDefType>
+template<typename Traits>
 struct Context
 {
-	using Type = details::Context<details::ContextTraits<ClientType, ListenerHandlerType, ApiDefType>>;
+	using Type = details::Context<Traits>;
 	using SharedPtr = typename Type::SharedPtr;
 
 	//todo i could probably wrap the shared object and put the logic in here
@@ -105,7 +111,6 @@ struct Context
 		return std::make_shared<Type>(args...);
 	}
 };
-//using Context = details::Context<details::ContextTraits<ClientType, ListenerHandlerType, ApiDefType>>;
 
 }//nbdl
 

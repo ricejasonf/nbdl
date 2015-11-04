@@ -71,12 +71,9 @@ class ListenerHandlerDummy : public ListenerHandlerBase<ListenerHandlerDummy<Fn>
 
 namespace details {
 
-template<typename Context, typename PathType>
+template<typename Handler, typename ContextWeakPtr, typename PathType>
 class Listener
 {
-	using ContextWeakPtr = typename Context::WeakPtr;
-	using Handler = typename Context::ListenerHandler;
-
 	PathType path;
 	ContextWeakPtr context; //needs to delete self with context
 	std::shared_ptr<int> handle_master;

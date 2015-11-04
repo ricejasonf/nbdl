@@ -8,10 +8,13 @@
 #include<nbdl>
 #include "catch.hpp"
 
-struct Context
-{
-	using ListenerHandler = nbdl::ListenerHandlerDummy<>;
-};
+template<typename Path_>
+using Store = nbdl::Store<
+  nbdl::store::HashMap<Path_>,
+  nbdl::store_emitter::HashMap<Path_, nbdl::ListenerHandlerDummy<>>,
+  nbdl::ListenerHandlerDummy<>,
+  Path_ >;
+
 struct Client
 {
 	int id;
@@ -35,7 +38,7 @@ namespace nbdl {
 
 TEST_CASE("Access an uninitialized value from a store.", "[store]") 
 {
-	nbdl::Store<Context, MyEntityPath> store;
+	Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(5, ClientPath(1));
 	bool did_make_request = false;
 
@@ -52,7 +55,7 @@ TEST_CASE("Access an uninitialized value from a store.", "[store]")
 }
 TEST_CASE("Force assign and access a value from a store.", "[store]") 
 {
-	nbdl::Store<Context, MyEntityPath> store;
+	Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(5, ClientPath(1));
 	MyEntity my_entity = { 5, 1 };
 	bool did_make_request = false;
@@ -77,7 +80,7 @@ TEST_CASE("Force assign and access a value from a store.", "[store]")
 
 TEST_CASE("Suggest a value to a store.", "[store]") 
 {
-	nbdl::Store<Context, MyEntityPath> store;
+	Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(5, ClientPath(1));
 	MyEntity my_entity = { 5, 1 };
 	bool did_make_request = false;
@@ -103,7 +106,7 @@ TEST_CASE("Suggest a value to a store.", "[store]")
 
 TEST_CASE("Suggest a value to a store where the value already exists.", "[store]") 
 {
-	nbdl::Store<Context, MyEntityPath> store;
+	Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(5, ClientPath(1));
 	MyEntity my_entity_original = { 6, 1 };
 	MyEntity my_entity = { 5, 1 };
