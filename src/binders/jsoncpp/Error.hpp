@@ -19,8 +19,6 @@ class ValidationErrors
 
 	public: 
 
-	using NameFormat = DefaultNameFormat;
-	
 	ValidationErrors(Json::Value &value)
 		: jsonVal(value) {}
 

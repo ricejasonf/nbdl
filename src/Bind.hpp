@@ -13,105 +13,39 @@
 
 namespace nbdl {
 
-namespace detail {
+template<typename Binder, typename Entity>
+void bind(Binder& binder, Entity& entity);
 
-template<class Binder, class = void>
-struct IsGnosticBinder : std::false_type {};
+namespace details {
 
-template<class Binder>
-struct IsGnosticBinder<Binder, 
-	typename Void<typename Binder::GnosticBinder>::type>
-	: std::true_type {};
-
-template<typename Binder, typename M, typename Enable = void>
-struct BindMemberHelperGnostic
+static auto bindEntity = [](auto &entity, auto &binder, auto member_type)
+    -> std::enable_if_t<IsEntity<typename decltype(member_type)::type::MemberType>::value>
 {
-	static void call(Binder &binder, typename M::OwnerType &owner)
-	{
-		binder.template bindMember<M>(owner);
-	}
+  using Member_ = typename decltype(member_type)::type;
+  binder.bindEntity(MemberName<Member_>::value,
+    [&entity](auto &binder) {
+      bind(binder, entity.*Member_::ptr);
+    });
 };
-template<typename Binder, typename M>
-struct BindMemberHelperGnostic<Binder, M,
-	typename std::enable_if<IsEntity<typename M::MemberType>::value>::type>
+static auto bindMember = [](auto &entity, auto &binder, auto member_type)
 {
-	static void call(Binder &binder, typename M::OwnerType &owner)
-	{
-		binder.template bindEntity<M>(owner);
-	}
+  using Member_ = typename decltype(member_type)::type;
+  //static_assert(!IsEntity<decltype(value)>::value, "");
+  binder.bindMember(MemberName<Member_>::value, entity.*Member_::ptr);
 };
 
-template<typename Binder, typename M, typename Enable = void>
-struct BindMemberHelperAgnostic
-{
-	template<typename NameFormat>
-	static void call(Binder &binder, typename M::OwnerType &owner, NameFormat)
-	{
-		binder.bindMember(MemberName<NameFormat, M>::value, owner.*M::ptr);
-	}
-};
-template<typename Binder, typename M>
-struct BindMemberHelperAgnostic<Binder, M,
-	typename std::enable_if<IsEntity<typename M::MemberType>::value>::type>
-{
-	template<typename NameFormat>
-	static void call(Binder &binder, typename M::OwnerType &owner, NameFormat)
-	{
-		binder.bindEntity(MemberName<NameFormat, M>::value, [&owner](Binder &binder) {
-			bind(binder, owner.*M::ptr, NameFormat{});
-		});
-	}
-};
-
-template<typename M, typename Binder, class = void>
-struct BindMember
-{
-	template<typename NameFormat>
-	static void call(Binder &binder, typename M::OwnerType &owner, NameFormat)
-	{
-		BindMemberHelperAgnostic<Binder, M>::call(binder, owner, NameFormat{});
-	}
-};
-
-template<typename M, typename Binder>
-struct BindMember<M, Binder, 
-	typename std::enable_if<IsGnosticBinder<Binder>::value>::type>
-{
-	template<typename NameFormat>
-	static void call(Binder &binder, typename M::OwnerType &owner, NameFormat)
-	{
-		BindMemberHelperGnostic<Binder, M>::call(binder, owner);
-	}
-};
-
-template<typename NameFormat, typename Binder, typename Entity, typename Mset, class = void>
-struct BindMembers
-{
-	static void call(Binder &binder, typename Mset::Member::OwnerType &owner)
-	{
-		BindMember<typename Mset::Member, Binder>::call(binder, owner, NameFormat{});	
-		BindMembers<NameFormat, Binder, Entity, typename Mset::Next>::call(binder, owner);
-	}
-};
-template<typename NameFormat, typename Binder, typename Entity, typename Mset>
-struct BindMembers<NameFormat, Binder, Entity, Mset, 
-	typename std::enable_if<MemberSetIsLast<Mset>::value>::type>
-{
-	static void call(Binder &, Entity &) {}
-};
-
-}//detail
-
-template<typename NameFormat, typename Binder, typename Entity>
-void bind(Binder &binder, Entity &entity, NameFormat)
-{
-	detail::BindMembers<NameFormat, Binder, Entity, typename EntityTraits<Entity>::Members>::call(binder, entity);
-}
+}//details
 
 template<typename Binder, typename Entity>
-void bind(Binder &binder, Entity &entity)
+void bind(Binder& binder, Entity& entity)
 {
-	bind(binder, entity, DefaultNameFormat{});
+  hana::for_each(typename EntityTraits<Entity>::Members{},
+    [&](auto member_type) {
+      hana::overload_linearly(
+        details::bindEntity,
+        details::bindMember
+      )(entity, binder, member_type);
+    });
 }
 
 }//nbdl

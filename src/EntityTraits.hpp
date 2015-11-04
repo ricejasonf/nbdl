@@ -7,6 +7,8 @@
 #ifndef NBDL_ENTITYTRAITS_HPP
 #define NBDL_ENTITYTRAITS_HPP
 
+#include<type_traits>
+
 namespace nbdl {
 
 template<typename Impl>
@@ -23,7 +25,7 @@ struct IsEntity
 	enum { value = 0 };
 };
 template<class T>
-struct IsEntity<T, typename Void<typename EntityTraits<T>::Members>::type>
+struct IsEntity<T, typename Void<typename EntityTraits<typename std::decay<T>::type>::Members>::type>
 {
 	enum { value = 1 };
 };

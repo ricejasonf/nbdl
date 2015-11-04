@@ -54,13 +54,13 @@ class ValidationBinder
 	void bindMember(typename M::OwnerType &entity)
 	{
 		validation::ValidateMember<M>::call(entity, [&](ErrorToken token) {
-			errors.addError(MemberName<typename ErrorBinder::NameFormat, M>::value, token);	
+			errors.addError(MemberName<M>::value, token);	
 		});
 	}
 	template<typename M>
 	void bindEntity(typename M::OwnerType &owner)
 	{
-		errors.validateChild(MemberName<typename ErrorBinder::NameFormat, M>::value, 
+		errors.validateChild(MemberName<M>::value, 
 			[&owner](ErrorBinder& childErrors) {
 				detail::ValidationBinder<ErrorBinder> vBinder(childErrors);
 				bind(vBinder, owner.*M::ptr);

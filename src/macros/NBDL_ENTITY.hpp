@@ -12,13 +12,13 @@
 
 #define NBDL_ENTITY(NAME, ...) \
 template<> struct EntityTraits<NAME>								\
-{ using Members = MemberSet<NBDL_MEMBERS(NAME, __VA_ARGS__)>; };	\
+{ using Members = decltype(hana::tuple_t<NBDL_MEMBERS(NAME, __VA_ARGS__)>); }; \
 NBDL_MEMBER_NAMES(NAME, __VA_ARGS__) \
 NBDL_MEMBER_IDS(NAME, __VA_ARGS__) 
 
 #define NBDL_ENTITY_WITHOUT_MEMBER_IDS(NAME, ...) \
 template<> struct EntityTraits<NAME>								\
-{ using Members = MemberSet<NBDL_MEMBERS(NAME, __VA_ARGS__)>; };	\
+{ static constexpr auto members = hana::tuple_t<NBDL_MEMBERS(NAME, __VA_ARGS__)>; };	\
 NBDL_MEMBER_NAMES(NAME, __VA_ARGS__)
 
 #endif
