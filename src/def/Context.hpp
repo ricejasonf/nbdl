@@ -9,7 +9,6 @@
 
 #include<type_traits>
 #include "def.hpp"
-#include "../def/StoreMap.hpp"
 #include "directives.hpp"
 #include "../Store.hpp"
 #include "../Path.hpp"
@@ -106,24 +105,23 @@ constexpr auto store(ContextDef ctx, AccessPointDef access_point)
 }
 
 template<typename ContextDef>
-auto createStoreMapStorage(ContextDef ctx)
+auto storeMap(ContextDef ctx)
 {
-  return hana::fold_left(
+  return hana::transform(
     meta::filterByTag(
       *meta::findByTag(ctx, tag::Api), 
       tag::AccessPoint),
-    hana::make_map(),
-    [](auto state, auto access_point) {
-      return hana::insert(state, hana::make_pair(path(access_point),
-        typename decltype(store(ctx, access_point))::type{}));
+    [](auto access_point) {
+      return hana::make_pair(path(access_point),
+        typename decltype(store(ctx, access_point))::type{});
     });
 }
 
 template<typename ContextDef>
 constexpr auto storeCollection(ContextDef ctx)
 {
-  using StoreMap_ = StoreMap<ContextDef>;
-  //using StoreMap_ = decltype(storeMap(ctx));
+  //using StoreMap_ = StoreMap<ContextDef>;
+  using StoreMap_ = decltype(storeMap(ctx));
   using ListenerHandler_ = typename decltype(listenerHandler(ctx))::type;
   return hana::type_c<nbdl::StoreCollection<
     StoreMap_,
