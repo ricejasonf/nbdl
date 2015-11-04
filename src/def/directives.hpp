@@ -11,8 +11,6 @@
 
 namespace nbdl_ddl {
 
-namespace meta = nbdl_ddl_meta;
-
 NBDL_DDL_DIRECTIVE(Type)
 NBDL_DDL_DIRECTIVE(ListItem)
 

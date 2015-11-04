@@ -8,6 +8,8 @@
 #define NBDL_DEF_CONTEXT_DEFINITION_HPP
 
 #include<type_traits>
+#include "def.hpp"
+#include "../def/StoreMap.hpp"
 #include "directives.hpp"
 #include "../Store.hpp"
 #include "../Path.hpp"
@@ -16,7 +18,6 @@
 #include "../Context.hpp"
 
 namespace nbdl_ddl {
-namespace hana = boost::hana;
 namespace def {
 
 template<typename ContextDef>
@@ -104,25 +105,25 @@ constexpr auto store(ContextDef ctx, AccessPointDef access_point)
     Path_ >>;
 }
 
-//really returns a tuple of pairs
-//for default constructibility
 template<typename ContextDef>
-auto storeMap(ContextDef ctx)
+auto createStoreMapStorage(ContextDef ctx)
 {
-  return hana::transform(
+  return hana::fold_left(
     meta::filterByTag(
       *meta::findByTag(ctx, tag::Api), 
       tag::AccessPoint),
-    [](auto access_point) {
-      return hana::make_pair(path(access_point),
-        typename decltype(store(ctx, access_point))::type{});
+    hana::make_map(),
+    [](auto state, auto access_point) {
+      return hana::insert(state, hana::make_pair(path(access_point),
+        typename decltype(store(ctx, access_point))::type{}));
     });
 }
 
 template<typename ContextDef>
 constexpr auto storeCollection(ContextDef ctx)
 {
-  using StoreMap_ = decltype(storeMap(ctx));
+  using StoreMap_ = StoreMap<ContextDef>;
+  //using StoreMap_ = decltype(storeMap(ctx));
   using ListenerHandler_ = typename decltype(listenerHandler(ctx))::type;
   return hana::type_c<nbdl::StoreCollection<
     StoreMap_,
