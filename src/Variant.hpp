@@ -77,6 +77,10 @@ class Variant
 
   public:
 
+  //used to easily identify variant with sfinae
+  template<typename T = void>
+  using VariantTag = T;
+
   Variant() : type_id(0) {}
   Variant(const Variant& old)
     : type_id(old.type_id)
@@ -110,6 +114,16 @@ class Variant
     destroy(type_id, &value_);
     new (&value_) Type(val);
     type_id = typeIdFromType(hana::type_c<Type>);
+  }
+
+  std::size_t getTypeId()
+  {
+    return type_id;
+  }
+
+  constexpr std::size_t getTypeCount()
+  {
+    return hana::length(types());
   }
 
   template<typename Index, typename Callback, typename ReturnType>
