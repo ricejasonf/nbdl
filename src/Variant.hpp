@@ -10,7 +10,6 @@
 #include<type_traits>
 #include<boost/hana.hpp>
 #include "LambdaTraits.hpp"
-#include "VariantCallback.hpp"
 
 namespace nbdl {
 
@@ -127,27 +126,38 @@ class Variant
     return hana::length(types());
   }
 
-  template<typename Index, typename Fn1, typename... Fns>
-  typename LambdaTraits<Fn1>::ReturnType matchHelper(Index i, Fn1 fn1, Fns... fns)
+  template<typename Index, typename Callback, typename ReturnType>
+  typename ReturnType::type matchHelper(Index i, Callback callback, ReturnType return_type)
   {
     static constexpr auto current_type = hana::at(types(), i);
     using T = typename decltype(current_type)::type;
     if (type_id == Index::value)
-      return VariantCallback::call(*reinterpret_cast<T*>(&value_), fn1, fns...);
+      return callback(*reinterpret_cast<T*>(&value_));
     else
-      return matchHelper(i + hana::size_c<1>, fn1, fns...);
+      return matchHelper(i + hana::size_c<1>, callback, return_type);
   }
-  template<typename Fn1, typename... Fns>
-  typename LambdaTraits<Fn1>::ReturnType matchHelper(LastTypeId i, Fn1 fn1, Fns... fns)
+  template<typename Callback, typename ReturnType>
+  typename ReturnType::type matchHelper(LastTypeId i, Callback callback, ReturnType)
   {
     static constexpr auto current_type = hana::at(types(), i);
     using T = typename decltype(current_type)::type;
-    return VariantCallback::call(*reinterpret_cast<T*>(&value_), fn1, fns...);
+    return callback(*reinterpret_cast<T*>(&value_));
   }
   template<typename Fn1, typename... Fns>
   typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn1, Fns... fns)
   {
-    return matchHelper(hana::size_c<0>, fn1, fns...);
+    static constexpr auto return_type = hana::type_c<typename LambdaTraits<Fn1>::ReturnType>;
+    static_assert(std::is_same<typename LambdaTraits<Fn1>::ReturnType, void>::value,
+       "Variant match with one callback must have void return type.");
+    return matchHelper(hana::size_c<0>,
+      hana::overload_linearly(fn1, fns..., [](auto){}), return_type);
+  }
+  template<typename Fn1, typename Fn2, typename... Fns>
+  typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn1, Fn2 fn2, Fns... fns)
+  {
+    static constexpr auto return_type = hana::type_c<typename LambdaTraits<Fn1>::ReturnType>;
+    return matchHelper(hana::size_c<0>,
+      hana::overload_linearly(fn1, fn2, fns...), return_type);
   }
 
 };
