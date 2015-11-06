@@ -46,7 +46,7 @@ TEST_CASE("Access an uninitialized value from a store.", "[store]")
 		[](nbdl::Unresolved) {
 			return true;
 		},
-		[]() {
+		[](auto) {
 			return false;
 		});
 
@@ -70,7 +70,7 @@ TEST_CASE("Force assign and access a value from a store.", "[store]")
 			CHECK(entity.id == 5);
 			return true;	
 		},
-		[]() {
+		[](auto) {
 			return false;
 		});
 
@@ -95,7 +95,7 @@ TEST_CASE("Suggest a value to a store.", "[store]")
 			CHECK(entity.id == 5);
 			return true;	
 		},
-		[]() {
+		[](auto) {
 			return false;
 		});
 
@@ -125,7 +125,7 @@ TEST_CASE("Suggest a value to a store where the value already exists.", "[store]
 			CHECK(entity.id == 6);
 			return true;
 		},
-		[]() {
+		[](auto) {
 			return false;
 		});
 

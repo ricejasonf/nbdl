@@ -78,7 +78,7 @@ class Store
 			[](Unresolved) {
 				return true;
 			},
-			[]() {
+			[](auto) {
 				return false;
 			});
 		if (unresolved)

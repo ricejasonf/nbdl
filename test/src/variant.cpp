@@ -8,9 +8,11 @@
 #include<nbdl>
 #include "catch.hpp"
 
+struct SomeTag {};
+
 TEST_CASE("Unitialized variant should match Unresolved.", "[variant]") 
 {
-	using Number = nbdl::Variant<int, std::string, float>;
+	using Number = nbdl::Variant<int, std::string, SomeTag>;
 	Number number;
 	CHECK(number.match(
 		[](nbdl::Unresolved) {
@@ -22,14 +24,14 @@ TEST_CASE("Unitialized variant should match Unresolved.", "[variant]")
 		[](int value) {
 			return value;
 		},
-		[](float) {
+		[](SomeTag) {
 			return 3;
 		}) == 56);
 }
 
 TEST_CASE("Assign a value to a variant and use the callback interface to retrieve it.", "[variant]") 
 {
-	using Number = nbdl::Variant<int, std::string, float>;
+	using Number = nbdl::Variant<int, std::string, SomeTag>;
 	
 	Number number = 512;
 	CHECK(number.match(
@@ -42,14 +44,14 @@ TEST_CASE("Assign a value to a variant and use the callback interface to retriev
 		[](int value) {
 			return value;
 		},
-		[](float) {
+		[](SomeTag) {
 			return 3;
 		}) == 512);
 }
 
 TEST_CASE("Copy a variant value.", "[variant]") 
 {
-	using Number = nbdl::Variant<int, float>;
+	using Number = nbdl::Variant<int, SomeTag>;
 	Number number1, number2;
 	number1 = 123;
 	number2 = Number(number1);
@@ -63,14 +65,14 @@ TEST_CASE("Copy a variant value.", "[variant]")
 		[](int value) {
 			return value;
 		},
-		[](float) {
+		[](SomeTag) {
 			return 3;
 		}) == 123);
 }
 
 TEST_CASE("Use the catch all to catch an unspecified tag", "[variant]")
 {
-	using Number = nbdl::Variant<int, std::string, float>;
+	using Number = nbdl::Variant<int, std::string, SomeTag>;
 	
 	Number number = 185;
 	CHECK(number.match(
@@ -80,10 +82,10 @@ TEST_CASE("Use the catch all to catch an unspecified tag", "[variant]")
 		[](std::string) {
 			return 1;
 		},
-		[](float) {
+		[](SomeTag) {
 			return 3;
 		},
-		[]() {
+		[](auto) {
 			return 123;
 		}) == 123);
 	number = 93;
@@ -95,16 +97,16 @@ TEST_CASE("Use the catch all to catch an unspecified tag", "[variant]")
 			return 1;
 		},
 		//not last position
-		[]() {
+		[](auto) {
 			return 25;
 		},
-		[](float) {
+		[](SomeTag) {
 			return 9;
 		}) == 25);
 }
 TEST_CASE("Catch should not be called if there is a valid match.", "[variant]")
 {
-	using Number = nbdl::Variant<int, std::string, float>;
+	using Number = nbdl::Variant<int, std::string, SomeTag>;
 	Number number = 185;
 
 	CHECK(number.match(
@@ -114,7 +116,7 @@ TEST_CASE("Catch should not be called if there is a valid match.", "[variant]")
 		[](int) {
 			return 76;
 		},
-		[]() {
+		[](auto) {
 			return 25;
 		}) == 76);
 }
@@ -126,7 +128,7 @@ TEST_CASE("Modify a struct's member in a variant", "[variant]")
 		std::string name_first;
 		std::string name_last;
 	};
-	using MyVar = nbdl::Variant<Person, int, std::string, float>;
+	using MyVar = nbdl::Variant<Person, int, std::string, SomeTag>;
 	
 	MyVar var = Person { "Jason", "Rice" };
 	var.match(
@@ -139,7 +141,7 @@ TEST_CASE("Modify a struct's member in a variant", "[variant]")
 			CHECK(person.name_last == "Ricez");
 			return true;
 		},
-		[]() {
+		[](auto) {
 			return false;
 		});
 	CHECK(proof);

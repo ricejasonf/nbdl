@@ -42,7 +42,7 @@ char ws::MessageGenerator::applyMaskBit(char len)
     [&](Null) {
       return len;
     },
-    [&]() {
+    [&](auto) {
       return len | (1 << 7);
     });
 }
