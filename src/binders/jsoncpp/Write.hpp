@@ -39,6 +39,14 @@ class Write
 		jsonVal[name] = obj;
 	}
 
+  template<typename Variant_>
+  void bindVariant(const std::string name, Variant_ variant)
+  {
+    variant.match([&](auto val) {
+      
+    });
+  }
+
 };
 
 }//jsoncpp
