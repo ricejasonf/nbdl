@@ -40,7 +40,8 @@ namespace nbdl {
 namespace test_stuff {
 
 using OnlySupportedPath = typename nbdl::CreatePath<Client, MyEntity>::Type;
-static_assert(std::is_same<typename OnlySupportedPath::Entity, MyEntity>::value, "Only supported type entity is not MyEntity.");
+static_assert(std::is_same<typename OnlySupportedPath::Entity, MyEntity>::value,
+    "Only supported type entity is not MyEntity.");
 
 struct TestClient
 {
@@ -90,17 +91,6 @@ std::function<void()> TestClientAsync::m_fn = [](){};
 
 }//test_stuff
 
-/*
-using MyContext = nbdl::Context<
-  TestClient,
-  nbdl::ListenerHandlerDummy<>,
-  nbdl_def::Api<
-    nbdl_def::AccessPoint<
-      OnlySupportedPath,
-      nbdl_def::Actions<nbdl_def::Read>
-    >
-  >>;
-*/
 namespace my_nbdl {
   using namespace nbdl_ddl;
 

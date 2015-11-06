@@ -73,6 +73,7 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 			[&](const Path& path) {
 				//request from client
 				auto self = this->shared_from_this();
+        //todo client should not be getting a callback
 				client.read(path, [path, self](auto&& value) {
 					self->store.suggestAssign(path, std::forward<decltype(value)>(value));
 				});

@@ -19,7 +19,7 @@ void bind(Binder& binder, Entity& entity);
 namespace details {
 
 static auto bindEntity = [](auto &entity, auto &binder, auto member_type)
-    -> std::enable_if_t<IsEntity<typename decltype(member_type)::type::MemberType>::value>
+  -> std::enable_if_t<IsEntity<typename decltype(member_type)::type::MemberType>::value>
 {
   using Member_ = typename decltype(member_type)::type;
   binder.bindEntity(MemberName<Member_>::value,
@@ -27,6 +27,15 @@ static auto bindEntity = [](auto &entity, auto &binder, auto member_type)
       bind(binder, entity.*Member_::ptr);
     });
 };
+
+static auto bindVariant = [](auto &entity, auto &binder, auto member_type)
+  -> typename decltype(member_type)::type::MemberType::VariantTag
+{
+  using Member_ = typename decltype(member_type)::type;
+  //static_assert(!IsEntity<decltype(value)>::value, "");
+  binder.bindVariant(MemberName<Member_>::value, entity.*Member_::ptr);
+};
+
 static auto bindMember = [](auto &entity, auto &binder, auto member_type)
 {
   using Member_ = typename decltype(member_type)::type;
@@ -43,6 +52,7 @@ void bind(Binder& binder, Entity& entity)
     [&](auto member_type) {
       hana::overload_linearly(
         details::bindEntity,
+        details::bindVariant,
         details::bindMember
       )(entity, binder, member_type);
     });
