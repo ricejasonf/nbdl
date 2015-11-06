@@ -8,23 +8,25 @@
 #include <nbdl>
 #include <jsoncpp/json/json.h>
 
-void fromString(std::string &json, Account &account)
+template<typename T>
+void fromString(std::string &json, T &my_entity)
 {
   Json::Reader reader;
   Json::Value root;
   if (!reader.parse(json, root, false))
     throw std::runtime_error("JSON parse error");
   nbdl::binders::jsoncpp::Read r(root);
-  nbdl::bind(r, account);
+  nbdl::bind(r, my_entity);
 }
 
-std::string toString(Account &account)
+template<typename T>
+std::string toString(T &my_entity)
 {
   Json::StyledWriter writer;
   Json::Value root;
   nbdl::binders::jsoncpp::Write r(root);
 
-  nbdl::bind(r, account);
+  nbdl::bind(r, my_entity);
   return writer.write(root);
 }
 
@@ -54,14 +56,14 @@ std::string test_json_1 =
 std::string test_json_2 =
   "{\n"
   "   \"foo\" : [\n"
-  "     1,
+  "     1,\n"
   "     \"a string\"\n"
   "   ]\n"
   "}\n";
 std::string test_json_3 =
   "{\n"
   "   \"foo\" : [\n"
-  "     2,
+  "     2,\n"
   "     {\n"
   "         \"value\" : \"bar\"\n"
   "     }\n"
