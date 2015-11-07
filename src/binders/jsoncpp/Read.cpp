@@ -12,76 +12,70 @@ namespace binders {
 namespace jsoncpp {
 
 Read::Read(const Json::Value &value) :
-	jsonVal(value)
+  json_val(value)
 {
-	if (!jsonVal.isObject())
-		throw std::runtime_error("JSON Object expected");
+  if (!json_val.isObject())
+    throw std::runtime_error("JSON Object expected");
 }
 
-void Read::bind(const std::string name, bool &field)
+void Read::bind_(const Json::Value& obj, bool &field)
 {
-	const Json::Value &obj = jsonVal[name];
-	if (!obj.isBool())
-		throw std::runtime_error("JSON Boolean expected");
-	field = obj.asBool();
+  if (!obj.isBool())
+    throw std::runtime_error("JSON Boolean expected");
+  field = obj.asBool();
 }
 
-void Read::bind(const std::string name, unsigned int &field)
+void Read::bind_(const Json::Value& obj, unsigned int &field)
 {
-	const Json::Value &obj = jsonVal[name];
-	if (!obj.isIntegral())
-		throw std::runtime_error("JSON Integral expected");
-	field = obj.asUInt();
+  if (!obj.isIntegral())
+    throw std::runtime_error("JSON Integral expected");
+  field = obj.asUInt();
 }
 
-void Read::bind(const std::string name, int &field)
+void Read::bind_(const Json::Value& obj, int &field)
 {
-	const Json::Value &obj = jsonVal[name];
-	if (!obj.isIntegral())
-		throw std::runtime_error("JSON Integral expected");
-	field = obj.asInt();
+  if (!obj.isIntegral())
+    throw std::runtime_error("JSON Integral expected");
+  field = obj.asInt();
 }
 
-void Read::bind(const std::string name, double &field)
+void Read::bind_(const Json::Value& obj, double &field)
 {
-	const Json::Value &obj = jsonVal[name];
-	if (!obj.isNumeric())
-		throw std::runtime_error("JSON Number expected");
-	field = obj.asDouble();
+  if (!obj.isNumeric())
+    throw std::runtime_error("JSON Number expected");
+  field = obj.asDouble();
 }
 
-void Read::bind(const std::string name, std::string &field)
+void Read::bind_(const Json::Value& obj, std::string &field)
 {
-	const Json::Value &obj = jsonVal[name];
-	if (!obj.isString())
-		throw std::runtime_error("JSON String expected");
-	field = obj.asString();
+  if (!obj.isString())
+    throw std::runtime_error("JSON String expected");
+  field = obj.asString();
 }
 
-Read Read::createObjectReader(const std::string name)
+Read Read::createObjectReader(const Json::Value& obj)
 {
-	const Json::Value &obj = jsonVal[name];
-	if (!obj.isObject())
-		throw std::runtime_error("JSON Object expected");
-	return Read(obj);
+  if (!obj.isObject())
+    throw std::runtime_error("JSON Object expected");
+  return Read(obj);
 }
 
 /* i'm getting rid of 'lists' for now but will need this code
-void Read::bind(const std::string name, EntityListBase &list)
+void Read::bind_(const Json::Value& obj, EntityListBase &list)
 {
-	const Json::Value &array = jsonVal[name];
-	if (!array.isArray())
-		throw std::runtime_error("JSON Array expected");
-	list.initWithSize(array.size());
-	int listSize = list.size();
-	int i = 0;
-	for (auto &obj : array)
-	{
-		Read reader(obj);
-		list.getRef(i++).bindMembers(reader);
-		if (i >= listSize)
-			break;
-	}
+  const Json::Value &array = json_val[name];
+  if (!array.isArray())
+    throw std::runtime_error("JSON Array expected");
+  list.initWithSize(array.size());
+  int listSize = list.size();
+  int i = 0;
+  for (auto &obj : array)
+  {
+    Read reader(obj);
+    list.getRef(i++).bindMembers(reader);
+    if (i >= listSize)
+      break;
+  }
 }
 */
 

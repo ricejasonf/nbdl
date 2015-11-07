@@ -26,7 +26,6 @@ struct NotFound {};
 //#include <NetRef.hpp>
 #include <Optional.hpp>
 #include <Variant.hpp>
-#include <VariantCallback.hpp>
 //#include <Promise.hpp>
 #include <Regex.hpp>
 #include <Path.hpp>

@@ -25,7 +25,7 @@ class Write
 	{}
 
 	template<typename T>
-	void bindMember(const std::string name, T & field)
+	void bindMember(const std::string name, const T& field)
 	{ 
 		jsonVal[name] = field; 
 	}
@@ -39,12 +39,31 @@ class Write
 		jsonVal[name] = obj;
 	}
 
-  template<typename Variant_>
-  void bindVariant(const std::string name, Variant_ variant)
+  void bindVariantEmpty(const std::string name, const int type_id)
   {
-    variant.match([&](auto val) {
-      
-    });
+    jsonVal[name] = type_id;
+  }
+
+	template<class BinderFn>
+  void bindVariantEntity(const std::string name, const int type_id, BinderFn bind)
+  {
+		auto obj = Json::Value(Json::objectValue);
+		Write writer(obj);
+		bind(writer);
+
+	  auto array = Json::Value(Json::arrayValue);
+    array.append(type_id);
+    array.append(obj);
+    jsonVal[name] = array;
+  }
+
+  template<typename Value_>
+  void bindVariantValue(const std::string name, const int type_id, const Value_& value)
+  {
+	  auto array = Json::Value(Json::arrayValue);
+    array.append(type_id);
+    array.append(value);
+    jsonVal[name] = array;
   }
 
 };

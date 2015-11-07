@@ -31,19 +31,19 @@ class Variant
       hana::unpack(hana::make_range(hana::int_c<0>, hana::int_c<(sizeof...(Tn) + 1)>), hana::make_tuple)
     ), hana::make_map);
   }
-  using LastTypeId = hana::size_t<hana::length(types()) - hana::size_c<1>>;
+  using LastTypeId = hana::int_<hana::length(types()) - hana::size_c<1>>;
 
-  std::size_t type_id;
+  int type_id;
   Storage value_;
 
   template<typename T>
-  constexpr std::size_t typeIdFromType(T type)
+  constexpr int typeIdFromType(T type)
   {
     return *hana::find(typeIds(), type);
   }
 
   template<typename Fn>
-  void callByType(const std::size_t value_type_id, Fn&& fn)
+  void callByType(const int value_type_id, Fn&& fn)
   {
     hana::for_each(
       hana::range_c<int, 0, hana::length(types())>,
@@ -53,26 +53,40 @@ class Variant
       });
   }
   
-  void copy(std::size_t src_type_id, const void* src, void* dest)
+  void copy(const int src_type_id, const void* src, void* dest)
   {
     callByType(src_type_id, [&](auto matched) {
       using T = typename decltype(matched)::type;
       new (dest) T(*reinterpret_cast<const T*>(src));
     });
   }
-  void move(std::size_t src_type_id, const void* src, void* dest)
+  void move(const int src_type_id, const void* src, void* dest)
   {
     callByType(src_type_id, [&](auto matched) {
       using T = typename decltype(matched)::type;
       new (dest) T(std::move(*reinterpret_cast<const T*>(src)));
     });
   }
-  void destroy(std::size_t value_type_id, void* value)
+  void destroy(const int value_type_id, void* value)
   {
     callByType(value_type_id, [&](auto matched) {
       using T = typename decltype(matched)::type;
       reinterpret_cast<const T*>(value)->~T();
     });
+  }
+
+  template<typename Index, typename Callback, typename ReturnType>
+  typename ReturnType::type callByTypeHelper(Index i, Callback callback, ReturnType return_type)
+  {
+    if (type_id == Index::value)
+      return callback(hana::at(types(), i););
+    else
+      return matchHelper(i + hana::int_c<1>, callback, return_type);
+  }
+  template<typename Callback, typename ReturnType>
+  typename ReturnType::type callByTypeHelper(LastTypeId i, Callback callback, ReturnType)
+  {
+    return callback(hana::at(types(), i));
   }
 
   public:
@@ -116,48 +130,31 @@ class Variant
     type_id = typeIdFromType(hana::type_c<Type>);
   }
 
-  std::size_t getTypeId()
+  //for serialization
+  int getTypeId()
   {
     return type_id;
   }
 
-  constexpr std::size_t getTypeCount()
+  template<typename Callback, typename ReturnType>
+  typename ReturnType::type callByType(Callback callback, ReturnType return_type)
   {
-    return hana::length(types());
+    return callByTypeHelper(hana::int_c<0>, callback, return_type);
   }
 
-  template<typename Index, typename Callback, typename ReturnType>
-  typename ReturnType::type matchHelper(Index i, Callback callback, ReturnType return_type)
-  {
-    static constexpr auto current_type = hana::at(types(), i);
-    using T = typename decltype(current_type)::type;
-    if (type_id == Index::value)
-      return callback(*reinterpret_cast<T*>(&value_));
-    else
-      return matchHelper(i + hana::size_c<1>, callback, return_type);
-  }
-  template<typename Callback, typename ReturnType>
-  typename ReturnType::type matchHelper(LastTypeId i, Callback callback, ReturnType)
-  {
-    static constexpr auto current_type = hana::at(types(), i);
-    using T = typename decltype(current_type)::type;
-    return callback(*reinterpret_cast<T*>(&value_));
-  }
   template<typename Fn1, typename... Fns>
   typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn1, Fns... fns)
   {
     static constexpr auto return_type = hana::type_c<typename LambdaTraits<Fn1>::ReturnType>;
-    static_assert(std::is_same<typename LambdaTraits<Fn1>::ReturnType, void>::value,
-       "Variant match with one callback must have void return type.");
-    return matchHelper(hana::size_c<0>,
-      hana::overload_linearly(fn1, fns..., [](auto){}), return_type);
-  }
-  template<typename Fn1, typename Fn2, typename... Fns>
-  typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn1, Fn2 fn2, Fns... fns)
-  {
-    static constexpr auto return_type = hana::type_c<typename LambdaTraits<Fn1>::ReturnType>;
-    return matchHelper(hana::size_c<0>,
-      hana::overload_linearly(fn1, fn2, fns...), return_type);
+
+    auto overload_ = return_type == hana::type_c<void> ?
+      hana::overload_linearly(fn1, fns..., [](auto){})
+      : hana::overload_linearly(fn1, fns...);
+
+    return callByType([&](auto type) {
+        using T = typename decltype(type)::type;
+        overload_(*reinterpret_cast<T*>(&value_));
+      }, return_type);
   }
 
 };
