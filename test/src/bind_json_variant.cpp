@@ -76,7 +76,7 @@ TEST_CASE("Bind empty variant to JSON.", "[bind][json]")
 {
   MyEntity my_entity;
   fromString(test_json_1, my_entity);
-  bool result = my_entity.match(
+  bool result = my_entity.foo.match(
       [](nbdl::Unresolved) {
         return true;
       },
@@ -91,7 +91,7 @@ TEST_CASE("Bind variant containing string to JSON.", "[bind][json]")
 {
   MyEntity my_entity;
   fromString(test_json_2, my_entity);
-  bool result = my_entity.match(
+  bool result = my_entity.foo.match(
       [](std::string str) {
         return str == "a string";
       },
@@ -106,7 +106,7 @@ TEST_CASE("Bind variant containing entity to JSON.", "[bind][json]")
 {
   MyEntity my_entity;
   fromString(test_json_3, my_entity);
-  bool result = my_entity.match(
+  bool result = my_entity.foo.match(
       [](Bar bar) {
         return bar.value == "bar";
       },

@@ -35,7 +35,7 @@ class Read
   }
 
   template<class BinderFn>
-  void bindEntity(const std::string name, BinderFn bindFn)
+  void bindEntity(const std::string name, BinderFn&& bindFn)
   {
     Read reader = createObjectReader(json_val[name]);
     bindFn(reader);
@@ -44,7 +44,7 @@ class Read
   //fn(int type_id,
   //  onTypeIsEntity()
   //  onTypeIsMember());
-  template<typename T, Fn>
+  template<typename Fn>
   void bindVariant(const std::string name, Fn fn)
   {
     const Json::Value &obj = json_val[name];
@@ -57,8 +57,10 @@ class Read
     }
     else if (obj.isArray() && obj.size() == 2)
     {
-      fn(obj[0u],
-        [&](auto bindEntityFn) {
+      if (!obj[0u].isIntegral())
+        throw std::runtime_error("Variant type_id is not integer.");
+      fn(obj[0u].asInt(),
+        [&](auto&& bindEntityFn) {
           Read reader = createObjectReader(obj[1u]); 
           bindEntityFn(reader);
         },

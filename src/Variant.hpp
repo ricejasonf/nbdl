@@ -75,25 +75,24 @@ class Variant
     });
   }
 
-  template<typename Index, typename Callback, typename ReturnType>
-  typename ReturnType::type callByTypeHelper(Index i, Callback callback, ReturnType return_type)
+  template<typename Index, typename Fn, typename ReturnType>
+  typename ReturnType::type matchByTypeHelper(Index i, const int type_id_x, Fn fn, ReturnType return_type)
   {
-    if (type_id == Index::value)
-      return callback(hana::at(types(), i););
+    if (type_id_x == Index::value)
+      return fn(hana::at(types(), i));
     else
-      return matchHelper(i + hana::int_c<1>, callback, return_type);
+      return matchByTypeHelper(i + hana::int_c<1>, type_id_x, fn, return_type);
   }
-  template<typename Callback, typename ReturnType>
-  typename ReturnType::type callByTypeHelper(LastTypeId i, Callback callback, ReturnType)
+  template<typename Fn, typename ReturnType>
+  typename ReturnType::type matchByTypeHelper(LastTypeId i, const int, Fn fn, ReturnType)
   {
-    return callback(hana::at(types(), i));
+    return fn(hana::at(types(), i));
   }
 
   public:
 
   //used to easily identify variant with sfinae
-  template<typename T = void>
-  using VariantTag = T;
+  using VariantTag = void;
 
   Variant() : type_id(0) {}
   Variant(const Variant& old)
@@ -136,24 +135,46 @@ class Variant
     return type_id;
   }
 
-  template<typename Callback, typename ReturnType>
-  typename ReturnType::type callByType(Callback callback, ReturnType return_type)
+  //calls overload function with type type
+  template<typename Fn1, typename... Fns>
+  typename LambdaTraits<Fn1>::ReturnType matchByType(const int type_id_x, Fn1 fn1, Fns... fns)
   {
-    return callByTypeHelper(hana::int_c<0>, callback, return_type);
+    constexpr auto return_type = hana::type_c<typename LambdaTraits<Fn1>::ReturnType>;
+
+    return matchByTypeHelper(
+        hana::int_c<0>, 
+        type_id_x, 
+        hana::overload_linearly(fn1, fns...), 
+        return_type);
   }
 
+  template<typename ReturnType, typename... Fns>
+  auto matchOverload(ReturnType, Fns... fns)
+  {
+    return hana::overload_linearly(fns...);
+  }
+
+  //for return types of void
+  //don't require a match by
+  //appending a no-op lambda 
+  template<typename... Fns>
+  auto matchOverload(hana::type<void>, Fns... fns)
+  {
+    return hana::overload_linearly(fns..., [](auto){});
+  }
+
+  //calls overload function with value
+  //and allows no match when overloads return void
   template<typename Fn1, typename... Fns>
   typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn1, Fns... fns)
   {
     static constexpr auto return_type = hana::type_c<typename LambdaTraits<Fn1>::ReturnType>;
 
-    auto overload_ = return_type == hana::type_c<void> ?
-      hana::overload_linearly(fn1, fns..., [](auto){})
-      : hana::overload_linearly(fn1, fns...);
+    auto overload_ = matchOverload(return_type, fn1, fns...);
 
-    return callByType([&](auto type) {
+    return matchByTypeHelper(hana::int_c<0>, type_id, [&](auto type) {
         using T = typename decltype(type)::type;
-        overload_(*reinterpret_cast<T*>(&value_));
+        return overload_(*reinterpret_cast<T*>(&value_));
       }, return_type);
   }
 

@@ -35,8 +35,8 @@ struct NotFound {};
 
 #include <binders/jsoncpp/Read.hpp>
 #include <binders/jsoncpp/Write.hpp>
-#include <binders/jsoncpp/ApplyDiff.hpp>
-#include <binders/jsoncpp/Error.hpp>
+//#include <binders/jsoncpp/ApplyDiff.hpp>
+//#include <binders/jsoncpp/Error.hpp>
 //DEPRECATED #include <binders/jsoncpp/Validation.hpp>
 
 #include <validate/StdBasicString.hpp>
