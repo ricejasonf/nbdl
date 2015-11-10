@@ -9,6 +9,7 @@
 
 #include<string>
 #include<jsoncpp/json/json.h>
+#include "../../EntityTraits.hpp"
 
 namespace nbdl {
 namespace binders {
@@ -31,21 +32,25 @@ class Read
     if (obj.isIntegral())
     {
       type_id = obj.asInt();
-      if (!variant.isEmptyType(type_id);
-        throw std::runtime_error("Serialized variant is misrepresented as an empty type.");
+      variant.matchByType(type_id,
+        [&](auto type) -> EnableIfEmpty<decltype(type)> {},
+        [&](auto)
+        {
+          throw std::runtime_error("Serialized variant is misrepresented as an empty type.");
+        });
     }
     else if (obj.isArray() && obj.size() == 2)
     {
       if (!obj[0u].isIntegral())
         throw std::runtime_error("Variant type_id is not integer.");
-      type_id = obj[0u];
+      type_id = obj[0u].asInt();
     }
     else
     {
       throw std::runtime_error("JSON representation of variant type expected");
     }
     if (!variant.isValidTypeId(type_id))
-      throw std::runttime_error("Invalid type_id specified for variant.");
+      throw std::runtime_error("Invalid type_id specified for variant.");
     return type_id;
   }
 

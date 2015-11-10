@@ -31,12 +31,12 @@ struct IsEntity<T, typename Void<typename EntityTraits<typename std::decay<T>::t
 };
 
 //useful alias
-template EnableIfEntity<typename T, typename U = void>
-using std::enable_if_t<IsEntity<T>::value, U>;
+template<typename T, typename U = void>
+using EnableIfEntity = std::enable_if_t<IsEntity<T>::value, U>;
 
 //useful alias
-template EnableIfEmpty<typename T, typename U = void>
-using std::enable_if_t<std::is_empty<T>::value, U>;
+template<typename T, typename U = void>
+using EnableIfEmpty = std::enable_if_t<std::is_empty<T>::value, U>;
 
 }//nbdl
 

@@ -42,7 +42,7 @@ static auto bindVariant = [](auto& entity, auto& binder, auto member_type)
 {
   using Member_ = typename decltype(member_type)::type;
   auto name = MemberName<Member_>::value;
-  auto variant = entity.*Member_::ptr, 
+  auto variant = entity.*Member_::ptr; 
   binder.bindVariant(name, variant, hana::overload(
     [&](auto&& binder_x, auto type) {
       using T = typename decltype(type)::type;

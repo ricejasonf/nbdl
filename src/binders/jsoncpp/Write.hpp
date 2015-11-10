@@ -9,6 +9,7 @@
 
 #include<string>
 #include<jsoncpp/json/json.h>
+#include "../../EntityTraits.hpp"
 
 namespace nbdl {
 namespace binders {
@@ -77,7 +78,7 @@ class Write
       },
       [&](auto val)
       {
-        bindVariantValue(name, type_id, val)
+        bindVariantValue(name, type_id, val);
       });
   }
 

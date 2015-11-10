@@ -84,10 +84,10 @@ class Variant
       return matchByTypeHelper(i + hana::int_c<1>, type_id_x, fn, return_type);
   }
   template<typename Fn, typename ReturnType>
-  typename ReturnType::type matchByTypeHelper(LastTypeId i, const int, Fn fn, ReturnType)
+  typename ReturnType::type matchByTypeHelper(LastTypeId i, const int type_id_x, Fn fn, ReturnType)
   {
     //if type_id_x is invalid, use default, empty type
-    if (type_id_x == Index::value)
+    if (type_id_x == LastTypeId::value)
       return fn(hana::at(types(), i));
     else
       return fn(hana::at(types(), hana::int_c<0>));
@@ -140,10 +140,12 @@ class Variant
   }
 
   //calls overload function with type type
+  //used for serialization
   template<typename Fn1, typename... Fns>
-  typename LambdaTraits<Fn1>::ReturnType matchByType(const int type_id_x, Fn1 fn1, Fns... fns)
+  auto matchByType(const int type_id_x, Fn1 fn1, Fns... fns)
+    -> decltype(hana::overload_linearly(fn1, fns...))
   {
-    constexpr auto return_type = hana::type_c<typename LambdaTraits<Fn1>::ReturnType>;
+    constexpr auto return_type = hana::type_c<decltype(hana::overload_linearly(fn1, fns...))>;
 
     //if type_id_x is invalid it will call with the default, empty type
     return matchByTypeHelper(
