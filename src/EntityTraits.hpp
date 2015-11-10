@@ -30,6 +30,14 @@ struct IsEntity<T, typename Void<typename EntityTraits<typename std::decay<T>::t
 	enum { value = 1 };
 };
 
+//useful alias
+template EnableIfEntity<typename T, typename U = void>
+using std::enable_if_t<IsEntity<T>::value, U>;
+
+//useful alias
+template EnableIfEmpty<typename T, typename U = void>
+using std::enable_if_t<std::is_empty<T>::value, U>;
+
 }//nbdl
 
 //todo remove these

@@ -86,7 +86,11 @@ class Variant
   template<typename Fn, typename ReturnType>
   typename ReturnType::type matchByTypeHelper(LastTypeId i, const int, Fn fn, ReturnType)
   {
-    return fn(hana::at(types(), i));
+    //if type_id_x is invalid, use default, empty type
+    if (type_id_x == Index::value)
+      return fn(hana::at(types(), i));
+    else
+      return fn(hana::at(types(), hana::int_c<0>));
   }
 
   public:
@@ -141,6 +145,7 @@ class Variant
   {
     constexpr auto return_type = hana::type_c<typename LambdaTraits<Fn1>::ReturnType>;
 
+    //if type_id_x is invalid it will call with the default, empty type
     return matchByTypeHelper(
         hana::int_c<0>, 
         type_id_x, 
@@ -148,12 +153,22 @@ class Variant
         return_type);
   }
 
+  bool isValidTypeId(int type_id_x)
+  {
+    return matchByType(type_id_x,
+      [&](auto type) {
+        return (type_id_x != 0 && typeIdFromType(type) == 0);
+      });
+  }
+
+  //todo move to private
   template<typename ReturnType, typename... Fns>
   auto matchOverload(ReturnType, Fns... fns)
   {
     return hana::overload_linearly(fns...);
   }
 
+  //todo move to private
   //for return types of void
   //don't require a match by
   //appending a no-op lambda 
