@@ -8,7 +8,6 @@
 #define NBDL_CONTEXT_HPP
 
 #include<memory>
-#include "LambdaTraits.hpp"
 
 namespace nbdl {
 
@@ -65,8 +64,8 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 		store.removeListener(path, listener);
 	}
 
-	template<typename Path, typename MatchFn1, typename... MatchFns>
-	typename LambdaTraits<MatchFn1>::ReturnType read(Path path, MatchFn1 fn1, MatchFns... fns)
+	template<typename Path,typename... MatchFns>
+	auto read(Path path, MatchFns... fns)
 	{
 		return store.get(
 			//called if store needs to request value
@@ -78,7 +77,7 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 					self->store.suggestAssign(path, std::forward<decltype(value)>(value));
 				});
 			},
-			path, fn1, fns...);
+			path, fns...);
 	}
 };
 

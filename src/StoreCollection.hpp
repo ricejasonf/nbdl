@@ -8,7 +8,6 @@
 #define NBDL_STORE_COLLECTION_HPP
 
 #include<boost/hana.hpp>
-#include "LambdaTraits.hpp"
 #include "Store.hpp"
 
 namespace nbdl {
@@ -42,11 +41,10 @@ class StoreCollection
   {
     getStore(path).suggestAssign(path, std::forward<T>(value));
   }
-  template<typename PathType, typename RequestFn, typename Fn1, typename... Fns>
-  typename LambdaTraits<Fn1>::ReturnType
-  get(RequestFn request, const PathType path, Fn1 fn, Fns... fns)
+  template<typename PathType, typename RequestFn, typename... Fns>
+  auto get(RequestFn request, const PathType path, Fns... fns)
   {
-    return getStore(path).get(request, path, fn, fns...);
+    return getStore(path).get(request, path, fns...);
   }
 
   //emitter interface

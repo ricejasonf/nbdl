@@ -135,7 +135,7 @@ TEST_CASE("Modify a struct's member in a variant", "[variant]")
 		[&](Person person) {
 			person.name_last = "Ricez";
 			var = person;
-		});
+		}, nbdl::noop);
 	bool proof = var.match(
 		[](Person person) {
 			CHECK(person.name_last == "Ricez");

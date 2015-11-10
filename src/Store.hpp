@@ -7,7 +7,6 @@
 #ifndef NBDL_STORE_HPP
 #define NBDL_STORE_HPP
 
-#include "LambdaTraits.hpp"
 #include "store/HashMap.hpp"
 #include "store_emitter/HashMap.hpp"
 
@@ -88,15 +87,15 @@ class Store
 		}
 	}
 
-	template<typename RequestFn, typename Fn1, typename... Fns>
-	typename LambdaTraits<Fn1>::ReturnType get(RequestFn request, const PathType& path, Fn1 fn, Fns... fns)
+	template<typename RequestFn, typename... Fns>
+	auto get(RequestFn request, const PathType& path, Fns... fns)
 	{
 		if (!impl.hasEntry(path))
 		{
 			impl.assign(path, Unresolved{});
 			request(path);
 		}
-		return impl.get(path).match(fn, fns...);
+		return impl.get(path).match(fns...);
 	}
 
 	//emitter interface

@@ -19,7 +19,7 @@ class Write
 {
 	Json::Value &jsonVal;
 
-  Write bindVariantEntity(const std::string name, const int type_id)
+  Write createVariantEntityBinder(const std::string name, const int type_id)
   {
 		auto obj = Json::Value(Json::objectValue);
 		Write writer(obj);
@@ -63,14 +63,15 @@ class Write
 	}
 
   template<typename Variant_, typename EntityBindFn>
-  void bindVariant(const std::string name, const Variant_ variant, EntityBindFn&& entityBind)
+  void bindVariant(const std::string name, const Variant_& variant, EntityBindFn&& entityBind)
   {
     const int type_id = variant.getTypeId();
 
     variant.match(
       [&](auto val) -> EnableIfEntity<decltype(hana::decltype_(val))>
       {
-        entityBind(bindVariantEntity(name, type_id));
+        static_assert(IsEntity<decltype(val)>::value, "");
+        entityBind(createVariantEntityBinder(name, type_id), val);
       },
       [&](auto val) -> EnableIfEmpty<decltype(hana::decltype_(val))>
       {

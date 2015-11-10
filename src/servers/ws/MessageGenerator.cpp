@@ -55,7 +55,7 @@ void ws::MessageGenerator::generateMask()
       {
         body.push_back(key[i]);
       }
-    });
+    }, noop);
 }
 
 void ws::MessageGenerator::writeByte(int pos, char c)

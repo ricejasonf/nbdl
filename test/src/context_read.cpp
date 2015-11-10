@@ -195,7 +195,7 @@ TEST_CASE("Context should emit change to listener", "[context]")
       });
   });
 
-  ctx->read(path, [](){});
+  ctx->read(path, nbdl::noop);
   CHECK_FALSE(result); //does not emit for unresolved
   test_stuff::TestClientAsync::flush__();
   CHECK(function_was_called);
@@ -228,7 +228,7 @@ TEST_CASE("Context should not emit to a listener that has been destroyed.", "[co
           return 3;
         });
     });
-    ctx->read(path, [](){});
+    ctx->read(path, nbdl::noop);
   } //listener is destroyed and should unregister from the context
 
   CHECK(result == 0); //does not emit for unresolved

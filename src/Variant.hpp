@@ -9,15 +9,12 @@
 
 #include<type_traits>
 #include<boost/hana.hpp>
-#include "LambdaTraits.hpp"
 
 namespace nbdl {
 
 namespace hana = boost::hana;
 
 namespace details {
-
-auto noop = [](auto){};
 
 template<typename DefaultType, typename... Tn>
 class Variant
@@ -39,7 +36,7 @@ class Variant
   Storage value_;
 
   template<typename T>
-  constexpr int typeIdFromType(T type)
+  constexpr int typeIdFromType(T type) const
   {
     return *hana::find(typeIds(), type);
   }
@@ -78,7 +75,7 @@ class Variant
   }
 
   template<typename Index, typename Fn>
-  auto matchByTypeHelper(Index i, const int type_id_x, Fn fn)
+  auto matchByTypeHelper(Index i, const int type_id_x, Fn fn) const
     ->  hana::common_t<
           decltype(fn(hana::at(types(), i))),
           decltype(fn(hana::at(types(), hana::int_c<0>)))
@@ -90,7 +87,7 @@ class Variant
       return matchByTypeHelper(i + hana::int_c<1>, type_id_x, fn);
   }
   template<typename Fn>
-  auto matchByTypeHelper(LastTypeId i, const int type_id_x, Fn fn)
+  auto matchByTypeHelper(LastTypeId i, const int type_id_x, Fn fn) const
     ->  hana::common_t<
           decltype(fn(hana::at(types(), i))),
           decltype(fn(hana::at(types(), hana::int_c<0>)))
@@ -101,6 +98,17 @@ class Variant
       return fn(hana::at(types(), i));
     else
       return fn(hana::at(types(), hana::int_c<0>));
+  }
+
+  template<typename Fn1>
+  auto matchOverload(Fn1 fn1) const
+  {
+    return fn1;
+  }
+  template<typename Fn1, typename Fn2, typename... Fns>
+  auto matchOverload(Fn1 fn1, Fn2 fn2, Fns... fns) const
+  {
+    return hana::overload_linearly(fn1, fn2, fns...);
   }
 
   public:
@@ -149,10 +157,18 @@ class Variant
     return type_id;
   }
 
+  bool isValidTypeId(int type_id_x) const
+  {
+    return matchByType(type_id_x,
+      [&](auto type) {
+        return (type_id_x != 0 && typeIdFromType(type) == 0);
+      });
+  }
+
   //calls overload function with type type
   //used for serialization
   template<typename... Fns>
-  auto matchByType(const int type_id_x, Fns... fns)
+  auto matchByType(const int type_id_x, Fns... fns) const
   {
     auto overload_ = matchOverload(hana::type_c<int>, fns...);
 
@@ -164,58 +180,23 @@ class Variant
       );
   }
 
-  bool isValidTypeId(int type_id_x)
+  template<typename... Fns>
+  auto match(Fns... fns) const
   {
-    return matchByType(type_id_x,
-      [&](auto type) {
-        return (type_id_x != 0 && typeIdFromType(type) == 0);
-      });
-  }
-
-  //todo move to private
-  template<typename ReturnType, typename Fn1>
-  auto matchOverload(ReturnType ret, Fn1 fn1)
-    -> std::enable_if_t<ret != hana::type_c<void>,
-        decltype(fn1)>
-  {
-    return fn1;
-  }
-  template<typename ReturnType, typename Fn1, typename Fn2, typename... Fns>
-  auto matchOverload(ReturnType ret, Fn1 fn1, Fn2 fn2, Fns... fns)
-    -> std::enable_if_t<ret != hana::type_c<void>,
-        decltype(hana::overload_linearly(fn1, fn2, fns...))>
-  {
-    return hana::overload_linearly(fn1, fn2, fns...);
-  }
-  //for return types of void
-  //don't require a match by
-  //appending a no-op lambda 
-  template<typename ReturnType, typename... Fns>
-  auto matchOverload(ReturnType ret, Fns... fns)
-    -> std::enable_if_t<ret == hana::type_c<void>,
-        decltype(hana::overload_linearly(fns..., noop))>
-  {
-    return hana::overload_linearly(fns..., noop);
-  }
-
-  //calls overload function with value
-  //and allows no match when overloads return void
-  template<typename Fn1, typename... Fns>
-  typename LambdaTraits<Fn1>::ReturnType match(Fn1 fn1, Fns... fns)
-  {
-    static constexpr auto return_type = hana::type_c<typename LambdaTraits<Fn1>::ReturnType>;
-
-    auto overload_ = matchOverload(return_type, fn1, fns...);
+    auto overload_ = matchOverload(fns...);
 
     return matchByTypeHelper(hana::int_c<0>, type_id, [&](auto type) {
         using T = typename decltype(type)::type;
-        return overload_(*reinterpret_cast<T*>(&value_));
+        return overload_(*reinterpret_cast<const T*>(&value_));
       });
   }
 
 };
 
 }//details
+
+//useful for match catch all
+auto noop = [](auto){};
 
 //tags for empty variant value (always has type_id of 0)
 struct Unresolved {};
