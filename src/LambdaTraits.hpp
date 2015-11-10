@@ -11,8 +11,11 @@
 
 namespace nbdl {
 
+template<typename T, typename = void>
+struct LambdaTraits;
+
 template<typename T>
-struct LambdaTraits
+struct LambdaTraits<T, decltype(&T::operator(), void())>
 {
 	using Traits = LambdaTraits<decltype(&T::operator())>;
 	using ReturnType = typename Traits::ReturnType;
@@ -23,7 +26,7 @@ struct LambdaTraits
 	static const std::size_t arity = Traits::arity;
 };
 template<typename ClassType, typename Return, typename... Args>
-struct LambdaTraits<Return(ClassType::*)(Args...) const>
+struct LambdaTraits<Return(ClassType::*)(Args...) const, void>
 {
 	using ReturnType = Return;
 

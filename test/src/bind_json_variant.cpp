@@ -80,7 +80,7 @@ TEST_CASE("Bind empty variant to JSON.", "[bind][json]")
       [](nbdl::Unresolved) {
         return true;
       },
-      []() {
+      [](auto) {
         return false;
       });
   CHECK(result);
@@ -95,7 +95,7 @@ TEST_CASE("Bind variant containing string to JSON.", "[bind][json]")
       [](std::string str) {
         return str == "a string";
       },
-      []() {
+      [](auto) {
         return false;
       });
   CHECK(result);
@@ -110,7 +110,7 @@ TEST_CASE("Bind variant containing entity to JSON.", "[bind][json]")
       [](Bar bar) {
         return bar.value == "bar";
       },
-      []() {
+      [](auto) {
         return false;
       });
   CHECK(result);

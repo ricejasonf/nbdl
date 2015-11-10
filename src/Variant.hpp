@@ -17,6 +17,8 @@ namespace hana = boost::hana;
 
 namespace details {
 
+auto noop = [](auto){};
+
 template<typename DefaultType, typename... Tn>
 class Variant
 {
@@ -75,16 +77,24 @@ class Variant
     });
   }
 
-  template<typename Index, typename Fn, typename ReturnType>
-  typename ReturnType::type matchByTypeHelper(Index i, const int type_id_x, Fn fn, ReturnType return_type)
+  template<typename Index, typename Fn>
+  auto matchByTypeHelper(Index i, const int type_id_x, Fn fn)
+    ->  hana::common_t<
+          decltype(fn(hana::at(types(), i))),
+          decltype(fn(hana::at(types(), hana::int_c<0>)))
+        >
   {
     if (type_id_x == Index::value)
       return fn(hana::at(types(), i));
     else
-      return matchByTypeHelper(i + hana::int_c<1>, type_id_x, fn, return_type);
+      return matchByTypeHelper(i + hana::int_c<1>, type_id_x, fn);
   }
-  template<typename Fn, typename ReturnType>
-  typename ReturnType::type matchByTypeHelper(LastTypeId i, const int type_id_x, Fn fn, ReturnType)
+  template<typename Fn>
+  auto matchByTypeHelper(LastTypeId i, const int type_id_x, Fn fn)
+    ->  hana::common_t<
+          decltype(fn(hana::at(types(), i))),
+          decltype(fn(hana::at(types(), hana::int_c<0>)))
+        >
   {
     //if type_id_x is invalid, use default, empty type
     if (type_id_x == LastTypeId::value)
@@ -134,25 +144,24 @@ class Variant
   }
 
   //for serialization
-  int getTypeId()
+  int getTypeId() const
   {
     return type_id;
   }
 
   //calls overload function with type type
   //used for serialization
-  template<typename Fn1, typename... Fns>
-  auto matchByType(const int type_id_x, Fn1 fn1, Fns... fns)
-    -> decltype(hana::overload_linearly(fn1, fns...))
+  template<typename... Fns>
+  auto matchByType(const int type_id_x, Fns... fns)
   {
-    constexpr auto return_type = hana::type_c<decltype(hana::overload_linearly(fn1, fns...))>;
+    auto overload_ = matchOverload(hana::type_c<int>, fns...);
 
     //if type_id_x is invalid it will call with the default, empty type
     return matchByTypeHelper(
         hana::int_c<0>, 
         type_id_x, 
-        hana::overload_linearly(fn1, fns...), 
-        return_type);
+        overload_
+      );
   }
 
   bool isValidTypeId(int type_id_x)
@@ -164,20 +173,29 @@ class Variant
   }
 
   //todo move to private
-  template<typename ReturnType, typename... Fns>
-  auto matchOverload(ReturnType, Fns... fns)
+  template<typename ReturnType, typename Fn1>
+  auto matchOverload(ReturnType ret, Fn1 fn1)
+    -> std::enable_if_t<ret != hana::type_c<void>,
+        decltype(fn1)>
   {
-    return hana::overload_linearly(fns...);
+    return fn1;
   }
-
-  //todo move to private
+  template<typename ReturnType, typename Fn1, typename Fn2, typename... Fns>
+  auto matchOverload(ReturnType ret, Fn1 fn1, Fn2 fn2, Fns... fns)
+    -> std::enable_if_t<ret != hana::type_c<void>,
+        decltype(hana::overload_linearly(fn1, fn2, fns...))>
+  {
+    return hana::overload_linearly(fn1, fn2, fns...);
+  }
   //for return types of void
   //don't require a match by
   //appending a no-op lambda 
-  template<typename... Fns>
-  auto matchOverload(hana::type<void>, Fns... fns)
+  template<typename ReturnType, typename... Fns>
+  auto matchOverload(ReturnType ret, Fns... fns)
+    -> std::enable_if_t<ret == hana::type_c<void>,
+        decltype(hana::overload_linearly(fns..., noop))>
   {
-    return hana::overload_linearly(fns..., [](auto){});
+    return hana::overload_linearly(fns..., noop);
   }
 
   //calls overload function with value
@@ -192,7 +210,7 @@ class Variant
     return matchByTypeHelper(hana::int_c<0>, type_id, [&](auto type) {
         using T = typename decltype(type)::type;
         return overload_(*reinterpret_cast<T*>(&value_));
-      }, return_type);
+      });
   }
 
 };
