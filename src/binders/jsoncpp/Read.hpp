@@ -26,7 +26,7 @@ class Read
   Read createObjectReader(const Json::Value&);
 
   template<typename Variant_>
-  int getTypeId(const Json::Value& obj, Variant_ variant)
+  int getTypeId(const Json::Value& obj, const Variant_& variant)
   {
     int type_id;
     if (obj.isIntegral())
@@ -75,25 +75,25 @@ class Read
   //  onTypeIsEntity()
   //  onTypeIsMember());
   template<typename Variant_, typename EntityBindFn>
-  void bindVariant(const std::string name, Variant_ variant, EntityBindFn&& entityBind)
+  void bindVariant(const std::string name, Variant_& variant, EntityBindFn&& entityBind)
   {
     const Json::Value &obj = json_val[name];
     int type_id = getTypeId(obj, variant);
 
     variant.matchByType(type_id,
-      [&](auto type) -> EnableIfEntity<decltype(type)>
+      [&](auto type) -> EnableIfEntity<typename decltype(type)::type>
       {
         Read reader = createObjectReader(obj[1u]); 
         entityBind(reader, type);
       },
-      [&](auto type) -> EnableIfEmpty<decltype(type)>
+      [&](auto type) -> EnableIfEmpty<typename decltype(type)::type>
       {
-        using T =  typename decltype(type)::type;
+        using T = typename decltype(type)::type;
         variant = T{};
       },
       [&](auto type)
       {
-        using T =  typename decltype(type)::type;
+        using T = typename decltype(type)::type;
         T value;
         bind_(obj[1u], value);
         variant = value;

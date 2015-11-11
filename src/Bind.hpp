@@ -23,7 +23,7 @@ static auto bindEntity = [](auto& entity, auto& binder, auto member_type)
 {
   using Member_ = typename decltype(member_type)::type;
   binder.bindEntity(MemberName<Member_>::value,
-    [&entity](auto&& binder_x) {
+    [&entity](auto& binder_x) {
       bind(binder_x, entity.*Member_::ptr);
     });
 };
@@ -40,19 +40,17 @@ static auto bindVariant = [](auto& entity, auto& binder, auto member_type)
   using Member_ = typename decltype(member_type)::type;
   auto& variant = entity.*Member_::ptr; 
   binder.bindVariant(MemberName<Member_>::value, variant, hana::overload_linearly(
-    [&](auto&& binder_x, auto entity)
-      -> EnableIfEntity<decltype(entity)>
+    [&](auto& binder_x, auto entity_)
+      -> EnableIfEntity<decltype(entity_)>
     {
-      variant.match([&](auto entity_) {
-        bind(binder_x, entity_);
-      });
+      bind(binder_x, entity_);
     },
-    [&](auto&& binder_x, auto type)
+    [&](auto& binder_x, auto type)
     {
       using T = typename decltype(type)::type;
       auto entity_ = T{};
       bind(binder_x, entity_);
-      variant = entity;
+      variant = entity_;
     }));
 };
 

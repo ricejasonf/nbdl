@@ -17,50 +17,37 @@ namespace jsoncpp {
 
 class Write
 {
-	Json::Value &jsonVal;
-
-  Write createVariantEntityBinder(const std::string name, const int type_id)
-  {
-		auto obj = Json::Value(Json::objectValue);
-		Write writer(obj);
-
-	  auto array = Json::Value(Json::arrayValue);
-    array.append(type_id);
-    array.append(obj);
-    jsonVal[name] = array;
-
-    return writer;
-  }
+  Json::Value& jsonVal;
 
   template<typename Value_>
   void bindVariantValue(const std::string name, const int type_id, const Value_& value)
   {
-	  auto array = Json::Value(Json::arrayValue);
+    auto array = Json::Value(Json::arrayValue);
     array.append(type_id);
     array.append(value);
     jsonVal[name] = array;
   }
 
-	public:
+  public:
 
-	Write(Json::Value &value) :
-		jsonVal(value)
-	{}
+  Write(Json::Value& value) :
+    jsonVal(value)
+  {}
 
-	template<typename T>
-	void bindMember(const std::string name, const T& field)
-	{ 
-		jsonVal[name] = field; 
-	}
+  template<typename T>
+  void bindMember(const std::string name, const T& field)
+  { 
+    jsonVal[name] = field; 
+  }
 
-	template<class BinderFn>
-	void bindEntity(const std::string name, BinderFn bind)
-	{
-		auto obj = Json::Value(Json::objectValue);
-		Write writer(obj);
-		bind(writer);
-		jsonVal[name] = obj;
-	}
+  template<class BinderFn>
+  void bindEntity(const std::string name, BinderFn bind_)
+  {
+    auto obj = Json::Value(Json::objectValue);
+    Write writer(obj);
+    bind_(writer);
+    jsonVal[name] = obj;
+  }
 
   template<typename Variant_, typename EntityBindFn>
   void bindVariant(const std::string name, const Variant_& variant, EntityBindFn&& entityBind)
@@ -68,12 +55,17 @@ class Write
     const int type_id = variant.getTypeId();
 
     variant.match(
-      [&](auto val) -> EnableIfEntity<decltype(hana::decltype_(val))>
+      [&](auto val) -> EnableIfEntity<decltype(val)>
       {
-        static_assert(IsEntity<decltype(val)>::value, "");
-        entityBind(createVariantEntityBinder(name, type_id), val);
+        auto obj = Json::Value(Json::objectValue);
+        Write writer(obj);
+        entityBind(writer, val);
+        auto array = Json::Value(Json::arrayValue);
+        array.append(type_id);
+        array.append(obj);
+        jsonVal[name] = array;
       },
-      [&](auto val) -> EnableIfEmpty<decltype(hana::decltype_(val))>
+      [&](auto val) -> EnableIfEmpty<decltype(val)>
       {
         jsonVal[name] = type_id;
       },

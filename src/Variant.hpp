@@ -159,10 +159,17 @@ class Variant
 
   bool isValidTypeId(int type_id_x) const
   {
-    return matchByType(type_id_x,
-      [&](auto type) {
-        return (type_id_x != 0 && typeIdFromType(type) == 0);
-      });
+    if (type_id_x == 0)
+    {
+      return true;
+    }
+    else
+    {
+      return matchByType(type_id_x,
+        [&](auto type) {
+          return (type_id_x == typeIdFromType(type));
+        });
+    }
   }
 
   //calls overload function with type type
@@ -170,7 +177,7 @@ class Variant
   template<typename... Fns>
   auto matchByType(const int type_id_x, Fns... fns) const
   {
-    auto overload_ = matchOverload(hana::type_c<int>, fns...);
+    auto overload_ = matchOverload(fns...);
 
     //if type_id_x is invalid it will call with the default, empty type
     return matchByTypeHelper(

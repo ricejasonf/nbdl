@@ -55,18 +55,15 @@ std::string test_json_1 =
   "}\n";
 std::string test_json_2 =
   "{\n"
-  "   \"foo\" : [\n"
-  "     1,\n"
-  "     \"a string\"\n"
-  "   ]\n"
+  "   \"foo\" : [ 1, \"a string\" ]\n"
   "}\n";
 std::string test_json_3 =
   "{\n"
   "   \"foo\" : [\n"
-  "     2,\n"
-  "     {\n"
+  "      3,\n"
+  "      {\n"
   "         \"value\" : \"bar\"\n"
-  "     }\n"
+  "      }\n"
   "   ]\n"
   "}\n";
 
