@@ -23,14 +23,16 @@ class Variant
   using Storage = typename std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>::type;
 
   static constexpr auto types() { return hana::tuple_t<DefaultType, Tn...>; }
-  static constexpr auto typeIds()
-  { 
-    return hana::unpack(hana::zip_with(hana::make_pair,
-      hana::tuple_t<DefaultType, Tn...>,
-      hana::unpack(hana::make_range(hana::int_c<0>, hana::int_c<(sizeof...(Tn) + 1)>), hana::make_tuple)
-    ), hana::make_map);
+  static auto typeIds()
+  {
+    return hana::unpack(hana::range_c<int, 1, sizeof...(Tn)+1>, [](auto ...i) {
+      return hana::make_map(
+        hana::make_pair(hana::type_c<DefaultType>, hana::int_c<0>),
+        hana::make_pair(hana::type_c<Tn>, i)...
+      );
+    });
   }
-  using LastTypeId = hana::int_<hana::length(types()) - hana::size_c<1>>;
+  using LastTypeId = hana::int_<sizeof...(Tn)>;
 
   int type_id;
   Storage value_;
@@ -38,7 +40,7 @@ class Variant
   template<typename T>
   constexpr int typeIdFromType(T type) const
   {
-    return *hana::find(typeIds(), type);
+    return decltype(*hana::find(typeIds(), type))::value;
   }
 
   template<typename Fn>
@@ -51,7 +53,7 @@ class Variant
           fn(hana::at(types(), i));
       });
   }
-  
+
   void copy(const int src_type_id, const void* src, void* dest)
   {
     callByType(src_type_id, [&](auto matched) {
@@ -76,7 +78,7 @@ class Variant
 
   template<typename Index, typename Fn>
   auto matchByTypeHelper(Index i, const int type_id_x, Fn fn) const
-    ->  hana::common_t<
+    ->  std::common_type_t<
           decltype(fn(hana::at(types(), i))),
           decltype(fn(hana::at(types(), hana::int_c<0>)))
         >
@@ -88,7 +90,7 @@ class Variant
   }
   template<typename Fn>
   auto matchByTypeHelper(LastTypeId i, const int type_id_x, Fn fn) const
-    ->  hana::common_t<
+    ->  std::common_type_t<
           decltype(fn(hana::at(types(), i))),
           decltype(fn(hana::at(types(), hana::int_c<0>)))
         >
@@ -181,8 +183,8 @@ class Variant
 
     //if type_id_x is invalid it will call with the default, empty type
     return matchByTypeHelper(
-        hana::int_c<0>, 
-        type_id_x, 
+        hana::int_c<0>,
+        type_id_x,
         overload_
       );
   }
