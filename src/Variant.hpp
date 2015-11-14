@@ -40,7 +40,7 @@ class Variant
   template<typename T>
   constexpr int typeIdFromType(T type) const
   {
-    return decltype(*hana::find(typeIds(), type))::value;
+    return *hana::find(typeIds(), type);
   }
 
   template<typename Fn>
