@@ -38,11 +38,46 @@ namespace def {
     Entity,
   ), Storage)
  */
+template<typename Action, typename AccessPoint>
+auto buildMsgStorage(Action action, AccessPoint access_point)
+{
+  auto path = path(access_point);
+  return hana::make_tuple(
+    path, 
+    uuid, // (Uuid|!)
+    entityStorage(access_point),  // (Entity|Diff)
+    create_info); // (CreateInfo|!)
+    
+}
+
+template<typename Action, typename AccessPoint>
+auto buildMsg(Action action, AccessPoint access_point)
+{
+  return hana::make_pair(
+    hana::make_tuple(action,  path(access_point)),
+    buildMsgStorage(action, access_point));
+}
+
+//messages that go upstream
+template<typename T>
+auto upstreamMsgs(T access_point)
+{
+  hana::unpack(
+    meta::findByTag(access_point, tag::Actions),
+    [](auto... actions) {
+        return hana::transform(
+          hana::filter(
+            hana::make_tuple(something_that_returns_an_optional(actions)...)
+            hana::is_just), 
+          hana::from_just);
+    });
+
+}
 
 template<typename T>
-constexpr auto createMsgs(T access_point)
+constexpr auto downstreamMsgs(T access_point)
 {
-
+  
 }
 
 }//def
