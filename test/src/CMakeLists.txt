@@ -10,6 +10,7 @@ cmake_minimum_required(VERSION 2.8)
 add_executable(test_
 	test.cpp
 	factorial.cpp
+  find_by_key.cpp
 	bind_json.cpp
   bind_json_variant.cpp
 	path.cpp
