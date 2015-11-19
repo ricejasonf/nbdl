@@ -113,6 +113,23 @@ class Variant
     return hana::overload_linearly(fn1, fn2, fns...);
   }
 
+  //provides a better compiler error that outputs 
+  //the type in question should it be invalid
+  template<typename Type, typename TypeType>
+  auto convertFromType(const Type& val, TypeType t)
+    -> std::enable_if_t<hana::contains(types(), t)>
+  {
+    //it is critical that types are restricted to types supported by the Variant
+    //this check is now redundant
+    static_assert(hana::contains(types(), hana::type_c<Type>),
+      "This variant does not support conversion to Type.");
+
+    type_id = 0; //in case shit goes horribly wrong
+    destroy(type_id, &value_);
+    new (&value_) Type(val);
+    type_id = typeIdFromType(hana::type_c<Type>);
+  }
+
   public:
 
   //used to easily identify variant with sfinae
@@ -143,14 +160,7 @@ class Variant
   template<typename Type>
   Variant(Type val)
   {
-    //it is critical that types are restricted to types supported by the Variant
-    //this check is now redundant, but provides a better error message
-    static_assert(hana::contains(types(), hana::type_c<Type>),
-      "Variant does not support conversion to Type.");
-    type_id = 0; //in case shit goes horribly wrong
-    destroy(type_id, &value_);
-    new (&value_) Type(val);
-    type_id = typeIdFromType(hana::type_c<Type>);
+    convertFromType(val, hana::type_c<Type>);
   }
 
   //for serialization
