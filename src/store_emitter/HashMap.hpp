@@ -19,7 +19,7 @@ class HashMap
 {
 	public:
 
-	using VariantType = Variant<typename PathType::Entity, NotFound>;
+	using Variant_ = Variant<typename PathType::Entity, NotFound>;
 	using ListenerHandler = ListenerHandlerType;
 
 	private:

@@ -11,9 +11,10 @@
 
 namespace nbdl_def {
 
+//deprecated
 //import nbdl::CreatePath for convenience and readability
-template<typename... Ts>
-using Path = nbdl::CreatePath<Ts...>;
+//template<typename... Ts>
+//using Path = nbdl::CreatePath<Ts...>;
 
 template<typename PathType, typename ActionsType>
 struct AccessPoint

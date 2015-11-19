@@ -13,35 +13,35 @@
 namespace nbdl {
 namespace store {
 
-template<typename PathType>
+template<typename Path_>
 class HashMap
 {
 	public:
 
-	using VariantType = Variant<typename PathType::Entity, NotFound>;
+	using Variant_ = Variant<typename Path_::Entity, NotFound>;
 
 	private:
 
-	using HashFn = typename PathType::HashFn;
-	using PredFn = typename PathType::PredFn;
-	using Container = std::unordered_map<PathType, VariantType, HashFn, PredFn>;
+	using HashFn = typename Path_::HashFn;
+	using PredFn = typename Path_::PredFn;
+	using Container = std::unordered_map<Path_, Variant_, HashFn, PredFn>;
 	Container map;
 
 	public:
 
 	template<typename T>
-	const VariantType& assign(const PathType& path, T&& value)
+	const Variant_& assign(const Path_& path, T&& value)
 	{
 		return map[path] = std::forward<T>(value);
 	}
 
-	bool hasEntry(const PathType& path)
+	bool hasEntry(const Path_& path)
 	{
 		auto iter = map.find(path);
 		return iter != map.end();
 	}
 
-	VariantType& get(const PathType& path)
+	Variant_& get(const Path_& path)
 	{
 		return map[path];
 	}

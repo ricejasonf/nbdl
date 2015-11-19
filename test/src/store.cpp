@@ -24,8 +24,8 @@ struct MyEntity
 	int id;
 	int client_id;
 };
-using ClientPath = nbdl::Path<Client, int>;
-using MyEntityPath = nbdl::Path<MyEntity, int, ClientPath>;
+//using ClientPath = typename decltype(nbdl::path_type<int, Client>)::type;
+using MyEntityPath = typename decltype(nbdl::path_type<int, Client, MyEntity>)::type;
 namespace nbdl {
 	NBDL_ENTITY(
 		Client,
@@ -39,7 +39,7 @@ namespace nbdl {
 TEST_CASE("Access an uninitialized value from a store.", "[store]") 
 {
 	Store<MyEntityPath> store;
-	MyEntityPath path = MyEntityPath(5, ClientPath(1));
+	MyEntityPath path = MyEntityPath(1, 5);
 	bool did_make_request = false;
 
 	bool result = store.get([&](MyEntityPath ) { did_make_request = true; }, path,
@@ -56,7 +56,7 @@ TEST_CASE("Access an uninitialized value from a store.", "[store]")
 TEST_CASE("Force assign and access a value from a store.", "[store]") 
 {
 	Store<MyEntityPath> store;
-	MyEntityPath path = MyEntityPath(5, ClientPath(1));
+	MyEntityPath path = MyEntityPath(1, 5);
 	MyEntity my_entity = { 5, 1 };
 	bool did_make_request = false;
 	store.forceAssign(path, my_entity);
@@ -81,7 +81,7 @@ TEST_CASE("Force assign and access a value from a store.", "[store]")
 TEST_CASE("Suggest a value to a store.", "[store]") 
 {
 	Store<MyEntityPath> store;
-	MyEntityPath path = MyEntityPath(5, ClientPath(1));
+	MyEntityPath path = MyEntityPath(1, 5);
 	MyEntity my_entity = { 5, 1 };
 	bool did_make_request = false;
 	store.suggestAssign(path, my_entity);
@@ -107,7 +107,7 @@ TEST_CASE("Suggest a value to a store.", "[store]")
 TEST_CASE("Suggest a value to a store where the value already exists.", "[store]") 
 {
 	Store<MyEntityPath> store;
-	MyEntityPath path = MyEntityPath(5, ClientPath(1));
+	MyEntityPath path = MyEntityPath(1, 5);
 	MyEntity my_entity_original = { 6, 1 };
 	MyEntity my_entity = { 5, 1 };
 	bool did_make_request = false;

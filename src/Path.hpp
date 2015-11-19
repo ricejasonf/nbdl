@@ -7,9 +7,11 @@
 #ifndef NBDL_PATH_HPP
 #define NBDL_PATH_HPP
 
+#include<utility>
 #include<type_traits>
 #include<tuple>
-#include<boost/functional/hash.hpp>
+#include<boost/hana.hpp>
+//#include<boost/functional/hash.hpp>
 
 #include "details/Hash.hpp"
 #include "mpl/Reverse.hpp"
@@ -18,33 +20,34 @@
 
 namespace nbdl {
 
+namespace hana = boost::hana;
+
 namespace path_details {
 
-struct Bottom
-{
-  static constexpr auto entityTypes()
-  {
-    return hana::make_map();
-  }
-  using Storage = decltype(hana::make_tuple());
-  Bottom() = delete;
-  Bottom(const Bottom&) = delete;
-};
 
 }//path_details
 
-template<typename Entity_, typename Key, typename ParentPath = path_details::Bottom>
+template<typename Spec>
 class Path
 {
-  //uhh change this back
+  static constexpr auto spec() { return Spec{}; }
+
+  static auto parents()
+  {
+    return hana::unpack(spec(), 
+      [](auto... j) {
+        return hana::make_tuple(hana::first(j)...);
+      });
+  }
+
   static auto entityTypes()
   {
+    constexpr auto spec_ = spec();
     return hana::unpack(
-      hana::range_c<int, 0, sizeof...(ParentEntities) - 1>,
-      [](auto... i) {
-        constexpr auto parents = hana::tuple_t<ParentEntities...>;
+      hana::range_c<int, 0, hana::length(spec_)>,
+      [&](auto... i) {
         return hana::make_map(hana::make_pair(
-          hana::at(parents, i), i)...);
+          hana::at(parents(), i), i)...);
       });
   }
 
@@ -55,49 +58,63 @@ class Path
     return types[type];
   }
 
-	using Storage = decltype(hana::append(
-    typename std::declval<typename ParentPath::Storage>(), std::declval<Key>()));
+  static auto storageType()
+  {
+    return hana::unpack(spec(),
+      [](auto... t) {
+        return hana::type_c<decltype(hana::make_tuple(
+            std::declval<typename decltype(+hana::second(t))::type>()...
+          ))>;
+      });
+  }
 
-	Storage storage;
+  using Key = typename decltype(+hana::second(hana::back(spec())))::type;
+  using ParentPath = Path<decltype(hana::drop_back(spec(), hana::size_c<1>))>;
+	using Storage = typename decltype(storageType())::type;
 
 	public:
 
-	using Entity = Entity_;
+	Storage storage;
 
-	Path(Key k, ParentPath p) : 
-    storage(hana::append(p.storage, hana::type_c<Entity_>, k))
-	{}
+	using Entity = typename decltype(+hana::first(hana::back(spec())))::type;
+
+  static_assert(IsEntity<Entity>::value, "");
 
 	template<typename... Args>
 	Path(Args... args) :
     storage(hana::make_tuple(args...))
 	{}
 
-	template<typename E = Entity_>
-	KeyType getKey() const
+	template<typename E = Entity>
+	Key getKey() const
 	{
-    static constexpr entity_type_index = hana::at_key(entityTypes(), hana::type_c<E>);
-		return hana::at(storage, entityTypeIndex());
+		return hana::at(storage, entityTypeIndex(hana::type_c<E>));
 	}
 
 	ParentPath parent() const
 	{
-    return hana::drop_back(storage, hana::size_c<1>);
+    return hana::unpack(hana::drop_back(storage, hana::size_c<1>),
+      [](auto... n) {
+        return ParentPath(n...);
+      });
 	}
 
   struct HashFn
   {
-    auto operator()(std::size_t& seed, const Storage& storage)
+    std::size_t operator()(const Path& path) const
     {
-      for_each(storage, [&](const auto& x) {
+      std::size_t seed;
+      hana::for_each(path.storage,
+        [&](const auto& x) {
           nbdl::details::HashCombine(seed, x); 
         });
+      return seed;
     }
   };
 
   struct PredFn
   {
-    bool operator() (const PathType& t1, const PathType& t2) const
+    bool operator()(const Path& t1, const Path& t2) const
     {
       return t1.storage == t2.storage;
     }
@@ -105,27 +122,17 @@ class Path
 
 };
 
-//todo makePath function
-template<typename... Args>
-struct CreatePath
-{
-	using ReversedTuple = typename mpl::Reverse<std::tuple<Args...>>::Type;
-	using Type = typename CreatePathFromReversedTuple<ReversedTuple>::Type;	
-};
-
 template<typename... Pairs>
-constexpr auto makePathType(Pairs... pairs)
+constexpr auto makePathTypeFromPairs(Pairs... pairs)
 {
   using Spec = decltype(hana::make_tuple(pairs...));
   return hana::type_c<Path<Spec>>;
 }
 
-//This assumes all entities use int for their primary keys.
-template<typename... EntityTypes>
-constexpr auto makePathTypeFromEntities(EntityTypes... entity_types)
-{
-  return makePathType(entity_types, hana::type_c<int>)...;
-}
+template<typename Key, typename... EntityType>
+constexpr auto path_type = makePathTypeFromPairs(
+    hana::make_pair(hana::type_c<EntityType>, hana::type_c<Key>)...
+  );
 
 }//nbdl
 

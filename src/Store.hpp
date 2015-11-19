@@ -48,12 +48,12 @@ class Store
 
 	public:
 
-	using VariantType = typename Impl::VariantType;
+	using Variant_ = typename Impl::Variant_;
 
 	/*
 	void action(Update action)
 	{
-		VariantType& value = impl.get(action.path);
+		Variant_& value = impl.get(action.path);
 		//this doesn't use assign
 		value.match(
 			[&](Entity entity) {
@@ -72,7 +72,7 @@ class Store
 	template<typename T>
 	void suggestAssign(const PathType& path, T&& val)
 	{
-		VariantType& value = impl.get(path);
+		Variant_& value = impl.get(path);
 		bool unresolved = value.match(
 			[](Unresolved) {
 				return true;

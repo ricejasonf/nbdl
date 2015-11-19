@@ -39,7 +39,7 @@ namespace nbdl {
 
 namespace test_stuff {
 
-using OnlySupportedPath = typename nbdl::CreatePath<Client, MyEntity>::Type;
+using OnlySupportedPath = typename decltype(nbdl::path_type<int, Client, MyEntity>)::type;
 static_assert(std::is_same<typename OnlySupportedPath::Entity, MyEntity>::value,
     "Only supported type entity is not MyEntity.");
 
