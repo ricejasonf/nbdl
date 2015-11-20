@@ -22,11 +22,6 @@ namespace nbdl {
 
 namespace hana = boost::hana;
 
-namespace path_details {
-
-
-}//path_details
-
 template<typename Spec>
 class Path
 {
