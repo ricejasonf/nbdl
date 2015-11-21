@@ -65,34 +65,34 @@ class Path
 
   using Key = typename decltype(+hana::second(hana::back(spec())))::type;
   using ParentPath = Path<decltype(hana::drop_back(spec(), hana::size_c<1>))>;
-	using Storage = typename decltype(storageType())::type;
+  using Storage = typename decltype(storageType())::type;
 
-	public:
+  public:
 
-	Storage storage;
+  Storage storage;
 
-	using Entity = typename decltype(+hana::first(hana::back(spec())))::type;
+  using Entity = typename decltype(+hana::first(hana::back(spec())))::type;
 
   static_assert(IsEntity<Entity>::value, "");
 
-	template<typename... Args>
-	Path(Args... args) :
+  template<typename... Args>
+  Path(Args... args) :
     storage(hana::make_tuple(args...))
-	{}
+  {}
 
-	template<typename E = Entity>
-	Key getKey() const
-	{
-		return hana::at(storage, entityTypeIndex(hana::type_c<E>));
-	}
+  template<typename E = Entity>
+  Key getKey() const
+  {
+    return hana::at(storage, entityTypeIndex(hana::type_c<E>));
+  }
 
-	ParentPath parent() const
-	{
+  ParentPath parent() const
+  {
     return hana::unpack(hana::drop_back(storage, hana::size_c<1>),
       [](auto... n) {
         return ParentPath(n...);
       });
-	}
+  }
 
   struct HashFn
   {
