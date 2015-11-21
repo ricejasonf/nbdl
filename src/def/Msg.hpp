@@ -33,9 +33,10 @@ namespace def {
  * Msg
  *
   ((
-    MsgType
     Path,
+    (Uuid|!)
     Entity,
+    (CreateInfo|!) <-'create' messages only
   ), Storage)
  */
 template<typename Action, typename AccessPoint>
