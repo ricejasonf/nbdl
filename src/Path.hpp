@@ -22,14 +22,19 @@ namespace nbdl {
 
 namespace hana = boost::hana;
 
+struct PathTag {};
+
 template<typename Spec>
 class Path
 {
+  friend struct boost::hana::unpack_impl<nbdl::PathTag>;
+  friend struct boost::hana::equal_impl<nbdl::PathTag, nbdl::PathTag>;
+
   static constexpr auto spec() { return Spec{}; }
 
   static auto parents()
   {
-    return hana::unpack(spec(), 
+    return hana::unpack(spec(),
       [](auto... j) {
         return hana::make_tuple(hana::first(j)...);
       });
@@ -67,10 +72,11 @@ class Path
   using ParentPath = Path<decltype(hana::drop_back(spec(), hana::size_c<1>))>;
   using Storage = typename decltype(storageType())::type;
 
-  public:
-
   Storage storage;
 
+  public:
+
+  using hana_tag = PathTag;
   using Entity = typename decltype(+hana::first(hana::back(spec())))::type;
 
   static_assert(IsEntity<Entity>::value, "");
@@ -101,7 +107,7 @@ class Path
       std::size_t seed;
       hana::for_each(path.storage,
         [&](const auto& x) {
-          nbdl::details::HashCombine(seed, x); 
+          nbdl::details::HashCombine(seed, x);
         });
       return seed;
     }
@@ -111,7 +117,7 @@ class Path
   {
     bool operator()(const Path& t1, const Path& t2) const
     {
-      return t1.storage == t2.storage;
+      return hana::equal(t1.storage, t2.storage);
     }
   };
 
@@ -130,5 +136,34 @@ constexpr auto path_type = makePathTypeFromPairs(
   );
 
 }//nbdl
+
+/*
+ * Specializations for Hana
+ */
+namespace boost { namespace hana {
+
+template<>
+struct unpack_impl<nbdl::PathTag>
+{
+  template<typename Xs, typename F>
+  static constexpr decltype(auto) apply(Xs&& xs, F&& f)
+  {
+    return hana::unpack(static_cast<Xs&&>(xs).storage, static_cast<F&&>(f));
+  }
+};
+
+template<>
+struct equal_impl<nbdl::PathTag, nbdl::PathTag>
+{
+  template<typename X, typename Y>
+  static constexpr decltype(auto) apply(X&& x, Y&& y)
+  {
+    return hana::equal(
+      static_cast<X&&>(x).storage,
+      static_cast<Y&&>(y).storage);
+  }
+};
+
+}}//boost/hana
 
 #endif
