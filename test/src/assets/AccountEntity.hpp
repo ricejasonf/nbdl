@@ -9,8 +9,8 @@
 
 #include <string>
 #include <EntityTraits.hpp>
-#include <MemberSet.hpp>
 #include <Bind.hpp>
+
 struct Address
 {
 	std::string line1;

@@ -9,7 +9,6 @@
 
 #include<type_traits>
 #include "EntityTraits.hpp"
-#include "MemberSet.hpp"
 
 namespace nbdl {
 
