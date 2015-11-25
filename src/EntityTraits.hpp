@@ -8,7 +8,7 @@
 #define NBDL_ENTITYTRAITS_HPP
 
 #include<type_traits>
-#include "EntityTraits.hpp"
+#include "Traits.hpp"
 
 //todo remove these
 #include "macros/NBDL_ENTITY.hpp"

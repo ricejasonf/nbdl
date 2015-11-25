@@ -53,32 +53,6 @@ void Read::bind_(const Json::Value& obj, std::string &field)
   field = obj.asString();
 }
 
-Read Read::createObjectReader(const Json::Value& obj)
-{
-  if (!obj.isObject())
-    throw std::runtime_error("JSON Object expected");
-  return Read(obj);
-}
-
-/* i'm getting rid of 'lists' for now but will need this code
-void Read::bind_(const Json::Value& obj, EntityListBase &list)
-{
-  const Json::Value &array = json_val[name];
-  if (!array.isArray())
-    throw std::runtime_error("JSON Array expected");
-  list.initWithSize(array.size());
-  int listSize = list.size();
-  int i = 0;
-  for (auto &obj : array)
-  {
-    Read reader(obj);
-    list.getRef(i++).bindMembers(reader);
-    if (i >= listSize)
-      break;
-  }
-}
-*/
-
 }//jsoncpp
 }//binders
 }//nbdl

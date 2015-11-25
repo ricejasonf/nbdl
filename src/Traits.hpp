@@ -8,6 +8,7 @@
 #define NBDL_TRAITS_HPP
 
 #include<type_traits>
+#include "Member.hpp"
 
 namespace nbdl {
 
@@ -38,6 +39,28 @@ using EnableIfEntity = std::enable_if_t<IsEntity<T>::value, U>;
 
 template<typename T, typename U = void>
 using EnableIfEmpty = std::enable_if_t<std::is_empty<T>::value, U>;
+
+template<typename E>
+static constexpr auto entityMembers()
+{
+  return typename EntityTraits<typename std::decay<E>::type>::Members{};
+}
+
+//returns reference to member
+template<typename E, typename T>
+static auto& entityMember(E&& entity, T member_type)
+{
+  using Member_ = typename decltype(member_type)::type;
+  return std::forward<E>(entity).*Member_::ptr;
+}
+
+//Traits for Member
+
+template<typename T>
+static constexpr auto memberName(T)
+{
+  return MemberName<typename T::type>::value;
+}
 
 //Traits for Variant
 

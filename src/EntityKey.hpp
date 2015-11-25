@@ -6,6 +6,7 @@
 //
 #ifndef NBDL_ENTITY_KEY_HPP
 #define NBDL_ENTITY_KEY_HPP
+//this way of specifying key types will probably go away
 
 #include "Member.hpp"
 

@@ -7,6 +7,7 @@
 #ifndef NBDL_VALIDATE_HPP
 #define NBDL_VALIDATE_HPP
 
+#include "Member.hpp"
 #include "ErrorToken.hpp"
 
 namespace nbdl {

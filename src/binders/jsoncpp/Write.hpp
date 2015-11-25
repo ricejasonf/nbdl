@@ -10,6 +10,8 @@
 #include<string>
 #include<jsoncpp/json/json.h>
 #include "../../EntityTraits.hpp"
+#include "../../Bind.hpp"
+#include "../../Member.hpp"
 
 namespace nbdl {
 namespace binders {
@@ -17,61 +19,61 @@ namespace jsoncpp {
 
 class Write
 {
-  Json::Value& jsonVal;
-
-  template<typename Value_>
-  void bindVariantValue(const std::string name, const int type_id, const Value_& value)
-  {
-    auto array = Json::Value(Json::arrayValue);
-    array.append(type_id);
-    array.append(value);
-    jsonVal[name] = array;
-  }
+  Json::Value& json_val;
 
   public:
 
   Write(Json::Value& value) :
-    jsonVal(value)
+    json_val(value)
   {}
 
-  template<typename T>
-  void bindMember(const std::string name, const T& field)
-  { 
-    jsonVal[name] = field; 
-  }
-
-  template<class BinderFn>
-  void bindEntity(const std::string name, BinderFn bind_)
+  template<class X>
+  void bindMember(X&& x)
   {
-    auto obj = Json::Value(Json::objectValue);
-    Write writer(obj);
-    bind_(writer);
-    jsonVal[name] = obj;
+    json_val = std::forward<X>(x);
   }
 
-  template<typename Variant_, typename EntityBindFn>
-  void bindVariant(const std::string name, const Variant_& variant, EntityBindFn&& entityBind)
+  template<typename T>
+  void bindEntityMember(const char* name, const T& field)
+  { 
+    json_val[name] = field; 
+  }
+
+  template<typename X>
+  void bindSequence(X&& x)
+  {
+    nbdl::bind(*this, std::forward<X>(x));
+  }
+
+  template<typename X1, typename X2, typename... Xs>
+  void bindSequence(X1&& x1, X2&& x2, Xs&&... xs)
+  {
+    hana::for_each(
+      hana::make_tuple(
+        std::forward<X1>(x1),
+        std::forward<X2>(x2),
+        std::forward<Xs>(xs)...),
+      [&](auto&& x) {
+        Json::Value el;
+        nbdl::bind(Read(el), std::forward<decltype(x)>(x));
+        json_val.append(el);
+      });
+  }
+
+
+  template<typename V>
+  void bindVariant(const V& variant)
   {
     const int type_id = variant.getTypeId();
 
     variant.match(
-      [&](auto val) -> EnableIfEntity<decltype(val)>
-      {
-        auto obj = Json::Value(Json::objectValue);
-        Write writer(obj);
-        entityBind(writer, val);
-        auto array = Json::Value(Json::arrayValue);
-        array.append(type_id);
-        array.append(obj);
-        jsonVal[name] = array;
-      },
       [&](auto val) -> EnableIfEmpty<decltype(val)>
       {
-        jsonVal[name] = type_id;
+        bindSequence(type_id);
       },
       [&](auto val)
       {
-        bindVariantValue(name, type_id, val);
+        bindSequence(type_id, val);
       });
   }
 
@@ -79,6 +81,21 @@ class Write
 
 }//jsoncpp
 }//binders
+
+template<typename T>
+struct BindImpl<binders::jsoncpp::Write, T, EnableIfEntity<T>>
+{
+  template<typename Binder, typename E>
+  static void apply(Binder&& binder, E&& entity)
+  {
+    //todo need to actually bind to json object
+    hana::for_each(typename EntityTraits<E>::Members{},
+      [&](auto&& member_type) {
+        binder.bindEntityMember(memberName(member_type), entityMember(entity, member_type));
+      });
+  }
+};
+
 }//nbdl
 
 #endif

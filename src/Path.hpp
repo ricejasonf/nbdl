@@ -14,9 +14,7 @@
 //#include<boost/functional/hash.hpp>
 
 #include "details/Hash.hpp"
-#include "mpl/Reverse.hpp"
-#include "EntityTraits.hpp"
-#include "EntityKey.hpp"
+#include "Traits.hpp"
 
 namespace nbdl {
 
