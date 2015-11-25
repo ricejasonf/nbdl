@@ -58,17 +58,31 @@ class Read
 
   public:
 
+  Read(const Json::Value &value);
+
   template<typename T>
-  void bindMember(const std::string name, T &field)
+  void bindMember(T& field)
+  {
+    bind_(json_val, field);
+  }
+
+  template<typename T>
+  void bindEntityMember(const char* name, T& field)
   {
     bind_(json_val[name], field);
   }
 
-  template<class BinderFn>
-  void bindEntity(const std::string name, BinderFn&& bindFn)
+
+  template<typename... Xs>
+  void bindSequence(Xs&&... xs)
   {
-    Read reader = createObjectReader(json_val[name]);
-    bindFn(reader);
+    if (!json_val.isArray())
+      throw std::runtime_error("JSON Array expected when binding sequence.");
+    auto iter = json_val.begin();
+    auto f = [&](auto&& x) {
+      nbdl::bind(Read(*iter++), std::forward<decltype(x)>(x));
+    };
+    f(xs)...;
   }
 
   //fn(int type_id,
@@ -100,25 +114,25 @@ class Read
       });
   }
 
-  Read(const Json::Value &value);
-
-  template<class EntityType>
-  static void fromString(std::string &json, EntityType &entity)
-  {
-    Json::Reader reader;
-    Json::Value root;
-    if (!reader.parse(json, root, false))
-    {
-      throw std::runtime_error("JSON parse error");
-    }
-    Read r(root);
-    entity.bindMembers(r);
-  }
-      
 };
 
 }//jsoncpp
 }//binders
+
+template<typename E_>
+struct BindImpl<binders::jsoncpp::Read, E_, EnableIfEntity<E_>>
+{
+  template<typename Binder, typename E>
+  void apply(Binder&& binder, E&& entity)
+  {
+    hana::foreach(EntityTraits<E_>::Members{},
+      [&](auto&& member_type) {
+        using Member_ = typename decltype(member_type)::type;
+        binder.bindEntityMember(MemberName<E_>::value, entity.*Member_::ptr);
+      });
+  }
+};
+
 }//nbdl
 
 #endif

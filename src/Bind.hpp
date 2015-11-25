@@ -7,11 +7,15 @@
 #ifndef NBDL_BIND_HPP
 #define NBDL_BIND_HPP
 
+#include<utility>
 #include<type_traits>
-#include "EntityTraits.hpp"
+#include "Traits.hpp"
 
 namespace nbdl {
 
+namespace hana = boost::hana;
+
+/*
 template<typename Binder, typename Entity>
 void bind(Binder& binder, Entity& entity);
 
@@ -54,18 +58,78 @@ static auto bindVariant = [](auto& entity, auto& binder, auto member_type)
 };
 
 }//details
+*/
 
-template<typename Binder, typename Entity>
-void bind(Binder& binder, Entity& entity)
+template<typename T1, typename T2, typename = void>
+struct BindImpl
 {
-  hana::for_each(typename EntityTraits<Entity>::Members{},
-    [&](auto member_type) {
-      hana::overload_linearly(
-        details::bindEntity,
-        details::bindVariant,
-        details::bindMember
-      )(entity, binder, member_type);
-    });
+  template<typename Binder, typename Xs>
+  void apply(Binder&& binder, Xs&& xs)
+  {
+    binder.bindMember(std::forward<decltype(auto)>(members)...);
+  }
+};
+
+template<typename T1, typename E_>
+struct BindImpl<T1, E_, EnableIfEntity<E_>>
+{
+  template<typename Binder, typename E>
+  void apply(Binder&& binder, E&& entity)
+  {
+    hana::unpack(
+      hana::transform(typename EntityTraits<E_>::Members{},
+        [&](auto member_type) {
+          using Member_ = typename decltype(member_type)::type;
+          return entity.*Member_::ptr;
+        }),
+      [&](auto&&... members) {
+        binder.bindSequence(std::forward<decltype(auto)>(members)...);
+      });
+  }
+};
+
+template<typename T1, typename V_>
+struct BindImpl<T1, V, EnableIfVariant<V_>>
+{
+  template<typename Binder, typename V>
+  void apply(Binder&& binder, V&& variant)
+  {
+    hana::unpack(std::forward<Xs>(xs),
+      [&](auto&&... members) {
+        binder.bindSequence(std::forward<decltype(auto)>(members)...);
+      });
+  }
+  template<typename Binder, typename Xs>
+  void apply(Binder&& binder, const Xs& xs)
+  {
+    binder.bindSequqnce(variant.getTypeId(),
+      variant.match(
+        [](auto value) {
+          
+        }));
+  }
+};
+
+template<typename T1, typename T2>
+struct BindImpl<T1, T2,
+  std::enable_if_t<hana::Foldable<T2>::value>>
+{
+  template<typename Binder, typename Xs>
+  void apply(Binder&& binder, Xs&& xs)
+  {
+    hana::unpack(std::forward<Xs>(xs),
+      [&](auto&&... members) {
+        binder.bindSequence(std::forward<decltype(auto)>(members)...);
+      });
+  }
+};
+
+template<typename Binder, typename Xs>
+void bind(Binder&& binder, Xs&& xs)
+{
+  BindImpl<Binder, Xs>::apply(
+    std::forward<Binder>(binder),
+    std::forward<Xs>(xs));
 }
 
 }//nbdl
