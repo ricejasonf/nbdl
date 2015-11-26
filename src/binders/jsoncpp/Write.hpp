@@ -36,7 +36,7 @@ class Write
   template<typename T>
   void bindEntityMember(const char* name, const T& field)
   { 
-    json_val[name] = field; 
+    nbdl::bind(Write(json_val[name]), field);
   }
 
   template<typename X>
@@ -55,7 +55,7 @@ class Write
         std::forward<Xs>(xs)...),
       [&](auto&& x) {
         Json::Value el;
-        nbdl::bind(Read(el), std::forward<decltype(x)>(x));
+        nbdl::bind(Write(el), std::forward<decltype(x)>(x));
         json_val.append(el);
       });
   }
@@ -89,7 +89,7 @@ struct BindImpl<binders::jsoncpp::Write, T, EnableIfEntity<T>>
   static void apply(Binder&& binder, E&& entity)
   {
     //todo need to actually bind to json object
-    hana::for_each(typename EntityTraits<E>::Members{},
+    hana::for_each(entityMembers<E>(),
       [&](auto&& member_type) {
         binder.bindEntityMember(memberName(member_type), entityMember(entity, member_type));
       });

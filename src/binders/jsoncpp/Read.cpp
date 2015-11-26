@@ -11,13 +11,6 @@ namespace nbdl {
 namespace binders {
 namespace jsoncpp {
 
-Read::Read(const Json::Value &value) :
-  json_val(value)
-{
-  if (!json_val.isObject())
-    throw std::runtime_error("JSON Object expected");
-}
-
 void Read::bind_(const Json::Value& obj, bool &field)
 {
   if (!obj.isBool())

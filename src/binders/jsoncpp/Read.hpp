@@ -7,9 +7,11 @@
 #ifndef NBDL_BINDERS_JSONCPP_READ_HPP
 #define NBDL_BINDERS_JSONCPP_READ_HPP
 
+#include<tuple>
+#include<boost/hana.hpp>
+#include<functional> //std::ref
 #include<string>
 #include<jsoncpp/json/json.h>
-#include<boost/hana.hpp>
 #include "../../Traits.hpp"
 #include "../../Bind.hpp"
 #include "../../Member.hpp"
@@ -60,7 +62,9 @@ class Read
 
   public:
 
-  Read(const Json::Value &value);
+  Read(const Json::Value &value) :
+    json_val(value)
+  { }
 
   template<typename T>
   void bindMember(T&& field)
@@ -88,9 +92,9 @@ class Read
     auto iter = json_val.begin();
     hana::for_each(
       hana::make_tuple(
-        std::forward<X1>(x1),
-        std::forward<X2>(x2),
-        std::forward<Xs>(xs)...),
+        std::ref(x1),
+        std::ref(x2),
+        std::ref(xs)...),
       [&](auto&& x) {
         nbdl::bind(Read(*iter++), std::forward<decltype(x)>(x));
       });

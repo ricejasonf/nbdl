@@ -71,7 +71,7 @@ struct BindImpl<T1, T2,
 template<typename Binder, typename Xs>
 void bind(Binder&& binder, Xs&& xs)
 {
-  BindImpl<Binder, Xs>::apply(
+  BindImpl<typename std::decay<Binder>::type, typename std::decay<Xs>::type>::apply(
     std::forward<Binder>(binder),
     std::forward<Xs>(xs));
 }
