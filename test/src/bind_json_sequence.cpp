@@ -50,13 +50,6 @@ TEST_CASE("Bind a sequence from JSON.", "[bind][json]")
   CHECK(toString(expected_xs) == seq_json);
 }
 
-/*
-TEST_CASE("Bind an rvalue sequence to JSON.", "[bind][json]") 
-{
-  
-}
-*/
-
 std::string seq_json_2 = "\"Moo\"\n";
 auto expected_xs_2 = hana::make_tuple(std::string("Moo"));
 
