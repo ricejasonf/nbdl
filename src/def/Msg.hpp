@@ -50,6 +50,16 @@ auto buildMsgStorage(Action action, AccessPoint access_point)
     create_info); // (CreateInfo|!)
     
 }
+/*
+ * - messages always have a path
+ * - messages will have uuid unless UpstreamOnly is set for that action
+ * - if a 'create' has a uuid then store it in a special store for that entity
+ * - others with uuid will modify the object in the store (update/delete)
+ * - create/update will be diff unless NoDiff is specified
+ * - 'create' messages may have an additional CreateInfo object for secret info
+ *   that is not part of the entity's data model
+ *
+ */
 
 template<typename Action, typename AccessPoint>
 auto buildMsg(Action action, AccessPoint access_point)
