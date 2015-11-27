@@ -36,13 +36,18 @@ add_library(nbdl_servers_ws STATIC
   servers/ws/MessageParser.cpp
   servers/ws/MessageGenerator.cpp
   )
-target_include_directories(nbdl_servers_ws
-  PUBLIC ${OPENSSL_INCLUDE_DIR}
-  #PUBLIC ${Boost_INCLUDE_DIR}
-  )
 
-target_link_libraries(nbdl_binders_jsoncpp ${JsonCpp})
-target_link_libraries(nbdl_servers_ws ${OPENSSL_LIBRARIES})
+if (JsonCpp)
+  target_link_libraries(nbdl_binders_jsoncpp ${JsonCpp})
+endif(JsonCpp)
+
+if (OPENSSL_FOUND)
+  target_link_libraries(nbdl_servers_ws ${OPENSSL_LIBRARIES})
+  target_include_directories(nbdl_servers_ws
+    PUBLIC ${OPENSSL_INCLUDE_DIR}
+    #PUBLIC ${Boost_INCLUDE_DIR}
+    )
+endif (OPENSSL_FOUND)
 
 foreach(t IN LISTS SKIP_TARGETS)
   set_target_properties(${t} PROPERTIES EXCLUDE_FROM_ALL TRUE)
