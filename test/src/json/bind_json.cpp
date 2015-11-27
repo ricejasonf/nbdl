@@ -8,7 +8,7 @@
 #include<boost/hana.hpp>
 #include<nbdl>
 #include<jsoncpp/json/json.h>
-#include "assets/AccountEntity.hpp"
+#include "../assets/AccountEntity.hpp"
 
 void fromString(std::string &json, Account &account)
 {
@@ -30,7 +30,7 @@ std::string toString(Account &account)
   return writer.write(root);
 }
 
-#include "catch.hpp"
+#include "../catch.hpp"
 TEST_CASE("Entity can read and write to and from JSON.", "[bind][json]") 
 {
   Account account = Account();

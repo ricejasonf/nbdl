@@ -4,37 +4,46 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 #
-
 cmake_minimum_required(VERSION 2.8)
 
-#todo break up components
-
-if (${EMSCRIPTEN})
-	add_library(nbdl STATIC 
+if (EMSCRIPTEN)
+	add_library(nbdl_regex STATIC 
 		Regex.cpp
 		)
-else (${EMSCRIPTEN})
-	add_library(nbdl STATIC 
-		binders/jsoncpp/Read.cpp
-		Regex.cpp
-		openssl/Base64Encode.cpp
-		servers/ws/HttpRequestParser.cpp
-		servers/ws/HttpResponse.cpp
-    servers/ws/MessageParser.cpp
-    servers/ws/MessageGenerator.cpp
-		)
-endif (${EMSCRIPTEN})
+  return()
+endif (EMSCRIPTEN)
 
-if (${EMSCRIPTEN})
+if (NOT OPENSSL_FOUND)
+  list(APPEND SKIP_TARGETS "nbdl_servers_ws")
+  message(WARNING "OpenSSL Not Found")
+endif (NOT OPENSSL_FOUND)
 
-else (${EMSCRIPTEN})
+if (NOT JsonCpp)
+  list(APPEND SKIP_TARGETS "nbdl_binders_jsoncpp")
+  message(WARNING "JsonCpp Not Found")
+endif (NOT JsonCpp)
 
-  target_include_directories(nbdl
-    PUBLIC ${OPENSSL_INCLUDE_DIR}
-    #PUBLIC ${Boost_INCLUDE_DIR}
-    )
+add_library(nbdl_regex STATIC 
+  Regex.cpp
+  )
+add_library(nbdl_binders_jsoncpp STATIC 
+  binders/jsoncpp/Read.cpp
+  )
+add_library(nbdl_servers_ws STATIC 
+  openssl/Base64Encode.cpp
+  servers/ws/HttpRequestParser.cpp
+  servers/ws/HttpResponse.cpp
+  servers/ws/MessageParser.cpp
+  servers/ws/MessageGenerator.cpp
+  )
+target_include_directories(nbdl_servers_ws
+  PUBLIC ${OPENSSL_INCLUDE_DIR}
+  #PUBLIC ${Boost_INCLUDE_DIR}
+  )
 
-  target_link_libraries(nbdl ${JsonCpp})
-  target_link_libraries(nbdl ${OPENSSL_LIBRARIES})
+target_link_libraries(nbdl_binders_jsoncpp ${JsonCpp})
+target_link_libraries(nbdl_servers_ws ${OPENSSL_LIBRARIES})
 
-endif (${EMSCRIPTEN})
+foreach(t IN LISTS SKIP_TARGETS)
+  set_target_properties(${t} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endforeach()

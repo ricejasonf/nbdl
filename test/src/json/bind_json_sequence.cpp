@@ -8,7 +8,7 @@
 #include <boost/hana.hpp>
 #include <nbdl>
 #include <jsoncpp/json/json.h>
-#include "catch.hpp"
+#include "../catch.hpp"
 
 namespace hana = boost::hana;
 

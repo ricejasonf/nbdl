@@ -7,6 +7,7 @@
 #include <string>
 #include <nbdl>
 #include <jsoncpp/json/json.h>
+#include "../catch.hpp"
 
 template<typename T>
 void fromString(std::string &json, T &my_entity)
@@ -66,8 +67,6 @@ std::string test_json_3 =
   "      }\n"
   "   ]\n"
   "}\n";
-
-#include "catch.hpp"
 
 TEST_CASE("Bind empty variant to JSON.", "[bind][json]") 
 {
