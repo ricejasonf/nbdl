@@ -8,8 +8,6 @@
 cmake_minimum_required(VERSION 2.8)
 
 if (EMSCRIPTEN)
-  #note that --bind is being passed to the linker... weird
-  #target_link_libraries(test nbdl --bind)
   add_subdirectory(emscripten)
   return()
 endif (EMSCRIPTEN)
@@ -17,7 +15,7 @@ endif (EMSCRIPTEN)
 add_subdirectory(websocket)
 add_subdirectory(json)
 
-add_executable(test
+add_executable(test_core
 	main.cpp
 	factorial.cpp
 	path.cpp
@@ -28,6 +26,6 @@ add_executable(test
 	)
 
 #bleh
-target_include_directories(test
+target_include_directories(test_core
   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
   )
