@@ -28,6 +28,10 @@ else (NBDL_AMAGLAMATED_JSONCPP_DIR)
   find_library(JsonCpp jsoncpp)
 endif (NBDL_AMAGLAMATED_JSONCPP_DIR)
 
+if (BOOST_HANA_INCLUDE_DIR)
+  include_directories(BOOST_HANA_INCLUDE_DIR)
+endif(BOOST_HANA_INCLUDE_DIR)
+
 add_subdirectory(src)
 if (NOT NBDL_SKIP_TESTS)
   add_subdirectory(test/src)
