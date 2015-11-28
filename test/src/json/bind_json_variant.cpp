@@ -6,6 +6,8 @@
 //
 #include <string>
 #include <nbdl>
+#include<binders/jsoncpp/Read.hpp>
+#include<binders/jsoncpp/Write.hpp>
 #include <jsoncpp/json/json.h>
 #include "../catch.hpp"
 
