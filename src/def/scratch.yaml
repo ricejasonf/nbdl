@@ -1,18 +1,20 @@
 --- # example of access point
 AccessPoints:
 
-  - Path: SomePath
+  - Path: 
+      Type: SomePath
     Actions:
       Create:
+        - AdditionalInstructions:
+            Type: my_nbdl::AccountCreateInfo
       Read:
       Update:
         - UpstreamOnly
         - NoDiff
       Delete:
-    CreateInfo: 
-      Type: my_nbdl::AccountCreateInfo
 
-  - Path: SomeOtherPath
+  - Path: 
+      Type: SomeOtherPath
     Actions:
       Create:
       Read:
