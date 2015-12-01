@@ -7,10 +7,11 @@
 #ifndef NBDL_DEF_ENTITY_HPP
 #define NBDL_DEF_ENTITY_HPP
 
-#include "def.hpp"
+#include "../builder.hpp"
+#include "../directives.hpp"
 
 namespace nbdl_def {
-namespace def {
+namespace builder {
 
 /*
  * TODO: Maybe replace the use of the following template specializations
@@ -29,7 +30,7 @@ namespace def {
  *
  */
 
-}//def
+}//builder
 }//nbdl_def
 
 #endif

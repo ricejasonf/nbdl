@@ -8,16 +8,16 @@
 #define NBDL_DEF_CONTEXT_DEFINITION_HPP
 
 #include<type_traits>
-#include "def.hpp"
-#include "directives.hpp"
-#include "../Store.hpp"
-#include "../Path.hpp"
-#include "../StoreCollection.hpp"
-#include "../Listener.hpp"
-#include "../Context.hpp"
+#include "../builder.hpp"
+#include "../directives.hpp"
+#include "../../Store.hpp"
+#include "../../Path.hpp"
+#include "../../StoreCollection.hpp"
+#include "../../Listener.hpp"
+#include "../../Context.hpp"
 
 namespace nbdl_def {
-namespace def {
+namespace builder {
 
 template<typename ContextDef>
 constexpr auto client(ContextDef ctx)
@@ -159,13 +159,13 @@ struct ContextFactory
     return Context_::create(args...);
   }
 };
-}//def
+}//builder
 
 template<typename ContextDef>
 constexpr auto buildContextFactory(ContextDef ctx_def)
 {
-  using Context_ = typename decltype(def::context(ctx_def))::type;
-  return def::ContextFactory<Context_>{};
+  using Context_ = typename decltype(builder::context(ctx_def))::type;
+  return builder::ContextFactory<Context_>{};
 }
 
 }//nbdl_def

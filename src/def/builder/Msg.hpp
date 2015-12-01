@@ -7,8 +7,11 @@
 #ifndef NBDL_DEF_MSG_HPP
 #define NBDL_DEF_MSG_HPP
 
+#include "../builder.hpp"
+#include "../directives.hpp"
+
 namespace nbdl_def {
-namespace def {
+namespace builder {
 
 /*
  * DOWNSTREAM only messages:
@@ -91,5 +94,5 @@ constexpr auto downstreamMsgs(T access_point)
   
 }
 
-}//def
+}//builder
 }//nbdl_def

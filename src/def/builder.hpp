@@ -12,13 +12,13 @@
 #include "directives.hpp"
 
 namespace nbdl_def {
-namespace def {
+namespace builder {
 
   namespace hana = boost::hana;
   namespace meta = nbdl_def_meta;
 
 
-}//def
+}//builder
 }//nbdl_def
 
 #endif
