@@ -4,12 +4,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_DDL_META_DEFINITION_HPP
-#define NBDL_DDL_META_DEFINITION_HPP
+#ifndef NBDL_DEF_META_DEFINITION_HPP
+#define NBDL_DEF_META_DEFINITION_HPP
 
 #include<boost/hana.hpp>
 
-#define NBDL_DDL_DIRECTIVE(NAME)                        \
+#define NBDL_DEF_DIRECTIVE(NAME)                        \
 namespace tag {                                         \
   struct NAME##_t {};                                   \
   constexpr auto NAME = boost::hana::type_c<NAME##_t>;  \
@@ -17,7 +17,7 @@ namespace tag {                                         \
 template<typename... Tn> constexpr auto NAME(Tn... tn)  \
 { return boost::hana::make_pair(tag::NAME, boost::hana::make_tuple(tn...)); }
 
-namespace nbdl_ddl_meta {
+namespace nbdl_def_meta {
 
 namespace hana = boost::hana;
 
@@ -67,6 +67,6 @@ constexpr auto mapify(KeyTag key_tag, ValueTag value_tag, Def def)
   );
 }
 
-}//nbdl_ddl_meta
+}//nbdl_def_meta
 
 #endif

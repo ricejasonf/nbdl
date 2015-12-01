@@ -9,7 +9,7 @@
 
 #include "def.hpp"
 
-namespace nbdl_ddl {
+namespace nbdl_def {
 namespace def {
 
 /*
@@ -30,6 +30,6 @@ namespace def {
  */
 
 }//def
-}//nbdl_ddl
+}//nbdl_def
 
 #endif

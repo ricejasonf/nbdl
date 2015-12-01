@@ -92,10 +92,10 @@ std::function<void()> TestClientAsync::m_fn = [](){};
 }//test_stuff
 
 namespace my_nbdl {
-  using namespace nbdl_ddl;
+  using namespace nbdl_def;
 
-  auto createContext = nbdl_ddl::buildContextFactory(
-    nbdl_ddl::Context(
+  auto createContext = nbdl_def::buildContextFactory(
+    nbdl_def::Context(
       Client(boost::hana::type_c<test_stuff::TestClient>),
       Api(
         AccessPoint(
@@ -159,7 +159,7 @@ using MyContextAsync = nbdl::Context<
   >>;
 */
 namespace my_nbdl_async {
-  using namespace nbdl_ddl;
+  using namespace nbdl_def;
   auto createContext = buildContextFactory(
     Context(
       Client(boost::hana::type_c<test_stuff::TestClientAsync>),

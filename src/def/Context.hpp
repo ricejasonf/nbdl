@@ -16,7 +16,7 @@
 #include "../Listener.hpp"
 #include "../Context.hpp"
 
-namespace nbdl_ddl {
+namespace nbdl_def {
 namespace def {
 
 template<typename ContextDef>
@@ -168,6 +168,6 @@ constexpr auto buildContextFactory(ContextDef ctx_def)
   return def::ContextFactory<Context_>{};
 }
 
-}//nbdl_ddl
+}//nbdl_def
 
 #endif

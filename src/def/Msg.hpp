@@ -7,7 +7,7 @@
 #ifndef NBDL_DEF_MSG_HPP
 #define NBDL_DEF_MSG_HPP
 
-namespace nbdl_ddl {
+namespace nbdl_def {
 namespace def {
 
 /*
@@ -92,4 +92,4 @@ constexpr auto downstreamMsgs(T access_point)
 }
 
 }//def
-}//nbdl_ddl
+}//nbdl_def
