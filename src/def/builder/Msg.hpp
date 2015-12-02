@@ -43,14 +43,14 @@ namespace builder {
   ), Storage)
  */
 template<typename Action, typename AccessPoint>
-auto buildMsgStorage(Action action, AccessPoint access_point)
+auto msgStorage(Action action, AccessPoint access_point)
 {
   auto path = path(access_point);
   return hana::make_tuple(
     path, 
     uuid, // (Uuid|!)
     entityStorage(access_point),  // (Entity|Diff)
-    create_info); // (CreateInfo|!)
+    additional_instructions); // (AdditionalInstructions|!)
     
 }
 /*
@@ -65,7 +65,7 @@ auto buildMsgStorage(Action action, AccessPoint access_point)
  */
 
 template<typename Action, typename AccessPoint>
-auto buildMsg(Action action, AccessPoint access_point)
+auto msg(Action action, AccessPoint access_point)
 {
   return hana::make_pair(
     hana::make_tuple(action,  path(access_point)),
@@ -85,7 +85,6 @@ auto upstreamMsgs(T access_point)
             hana::is_just), 
           hana::from_just);
     });
-
 }
 
 template<typename T>

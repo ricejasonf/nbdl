@@ -99,7 +99,7 @@ namespace my_nbdl {
       Client(boost::hana::type_c<test_stuff::TestClient>),
       Api(
         AccessPoint(
-          Path(boost::hana::type_c<test_stuff::OnlySupportedPath>),
+          Path(Type(boost::hana::type_c<test_stuff::OnlySupportedPath>)),
           Actions(BOOST_HANA_STRING("Read"))
         )
       )
@@ -165,7 +165,7 @@ namespace my_nbdl_async {
       Client(boost::hana::type_c<test_stuff::TestClientAsync>),
       Api(
         AccessPoint(
-          Path(boost::hana::type_c<test_stuff::OnlySupportedPath>),
+          Path(Type(boost::hana::type_c<test_stuff::OnlySupportedPath>)),
           Actions(BOOST_HANA_STRING("Read"))
         )
       )
