@@ -11,6 +11,7 @@
 #include "../builder.hpp"
 #include "../directives.hpp"
 #include "./Path.hpp"
+#include "./AccessPoint.hpp"
 #include "../../Store.hpp"
 #include "../../StoreCollection.hpp"
 #include "../../Listener.hpp"

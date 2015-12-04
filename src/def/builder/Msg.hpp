@@ -9,6 +9,8 @@
 
 #include "../builder.hpp"
 #include "../directives.hpp"
+#include "./Path.hpp"
+#include "./AccessPoint.hpp"
 
 namespace nbdl_def {
 namespace builder {
@@ -42,16 +44,10 @@ namespace builder {
     (CreateInfo|!) <-'create' messages only
   ), Storage)
  */
-template<typename Action, typename AccessPoint>
-auto msgStorage(Action action, AccessPoint access_point)
+template<typename MsgMeta>
+auto msgStorage(MsgMeta meta)
 {
-  auto path = path(access_point);
-  return hana::make_tuple(
-    path, 
-    uuid, // (Uuid|!)
-    entityStorage(access_point),  // (Entity|Diff)
-    additional_instructions); // (AdditionalInstructions|!)
-    
+  //todo filter emtpies and make tuple of denested types
 }
 /*
  * - messages always have a path
@@ -62,14 +58,29 @@ auto msgStorage(Action action, AccessPoint access_point)
  * - 'create' messages may have an additional CreateInfo object for secret info
  *   that is not part of the entity's data model
  *
+ * - structure
+ *   pair:
+ *    first: [ path_type, action_type, uuid_type, payload_1_type, payload_2_type ] 
+ *    second: transform(filter(first, nonEmptyTypes), inner_type)
+ *
  */
+
+template<typename Action, typename AccessPoint>
+auto msgMeta(Action action, AccessPoint access_point)
+{
+  auto path = path(access_point);
+  return hana::make_tuple(
+    action,
+    path(access_point)
+    msgUuid(action, access_point)
+  );
+}
 
 template<typename Action, typename AccessPoint>
 auto msg(Action action, AccessPoint access_point)
 {
+  msgMeta(action
   return hana::make_pair(
-    hana::make_tuple(action,  path(access_point)),
-    buildMsgStorage(action, access_point));
 }
 
 //messages that go upstream
@@ -81,7 +92,7 @@ auto upstreamMsgs(T access_point)
     [](auto... actions) {
         return hana::transform(
           hana::filter(
-            hana::make_tuple(something_that_returns_an_optional(actions)...)
+            hana::make_tuple(something_that_returns_an_optional(actions)...),
             hana::is_just), 
           hana::from_just);
     });
