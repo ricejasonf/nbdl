@@ -56,6 +56,7 @@ class Path
     return types[type];
   }
 
+  //todo filter out empty or void
   static auto storageType()
   {
     return hana::unpack(spec(),
@@ -67,7 +68,6 @@ class Path
   }
 
   using Key = typename decltype(+hana::second(hana::back(spec())))::type;
-  using ParentPath = Path<decltype(hana::drop_back(spec(), hana::size_c<1>))>;
   using Storage = typename decltype(storageType())::type;
 
   Storage storage;
@@ -76,8 +76,15 @@ class Path
 
   using hana_tag = PathTag;
   using Entity = typename decltype(+hana::first(hana::back(spec())))::type;
+  using Parent = Path<decltype(hana::drop_back(spec(), hana::size_c<1>))>;
 
   static_assert(IsEntity<Entity>::value, "");
+
+  template<typename EntityType, typename KeyType>
+  static constexpr auto createChildType(EntityType e, KeyType k)
+  {
+    return hana::type_c<Path<decltype(hana::append(spec(), hana::make_pair(e, k)))>>;
+  }
 
   template<typename... Args>
   Path(Args... args) :
@@ -90,11 +97,11 @@ class Path
     return hana::at(storage, entityTypeIndex(hana::type_c<E>));
   }
 
-  ParentPath parent() const
+  Parent parent() const
   {
     return hana::unpack(hana::drop_back(storage, hana::size_c<1>),
       [](auto... n) {
-        return ParentPath(n...);
+        return Parent(n...);
       });
   }
 

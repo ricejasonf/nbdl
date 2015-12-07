@@ -17,6 +17,18 @@ namespace builder {
   namespace hana = boost::hana;
   namespace meta = nbdl_def_meta;
 
+  namespace action {
+    using Create  = tag::Create_t;
+    using Read    = tag::Read_t;
+    using Update  = tag::Update_t;
+    using Delete  = tag::Delete_t;
+  }//action
+
+  namespace channel {
+    struct Upstream {};
+    struct Downstream {};
+  }//channel
+
 
 }//builder
 }//nbdl_def

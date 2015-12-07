@@ -5,11 +5,10 @@ AccessPoints:
       Type: SomePath
     Actions:
       Create:
-        - AdditionalInstructions:
+        - PrivatePayload:
             Type: my_nbdl::AccountCreateInfo
       Read:
       Update:
-        - UpstreamOnly
         - NoDiff
       Delete:
 
@@ -19,6 +18,5 @@ AccessPoints:
       Create:
       Read:
       Update:
-        - UpstreamOnly
         - NoDiff
       Delete:

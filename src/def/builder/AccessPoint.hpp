@@ -8,7 +8,6 @@
 #define NBDL_DEF_ACCESS_POINT_HPP
 
 #include "../builder.hpp"
-#include "../directives.hpp"
 
 namespace nbdl_def {
 namespace builder {
@@ -17,20 +16,28 @@ namespace builder {
 //but these are some helper functions
 //for getting meta information about them
 
-template<typename AccessPointDef>
-constexpr auto doesAccessPointHaveLocalVersion(AccessPointDef)
+template<typename ContextDef_, typename AccessPointDef_>
+class AccessPoint
 {
-  return hana::bool_c<false>;  
-  //todo stores will have special 'LocalVersion' objects if this is true
-  //todo it also means create and update messages will have a uuid
-}
+  using ContextDef = ContextDef_;
+  using AccessPointDef = AccessPointDef_;
 
-template<typename Action, typename AccessPointDef>
-constexpr auto doesActionUseDiff(Action, AccessPointDef)
-{
-  return hana::bool_c<false>;  
-}
-//todo return true for create and update that don't specify NoDiff
+  ContextDef const& ctx;
+  AccessPointDef const& access_point;
+
+  AccessPoint(ContextDef const& c, AccessPointDef const& a) :
+    ctx(c),
+    access_point(a)
+  {}
+
+  template<typename Action>
+  constexpr auto actionUsesDiff(Action)
+  {
+    return hana::bool_c<false>;  
+  }
+  //todo return true for create and update that don't specify NoDiff
+
+};
 
 }//builder
 }//nbdl_def

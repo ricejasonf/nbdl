@@ -8,10 +8,32 @@
 #define NBDL_DEF_ENTITY_HPP
 
 #include "../builder.hpp"
-#include "../directives.hpp"
+#include "./Path.hpp"
 
 namespace nbdl_def {
 namespace builder {
+
+template<typename AccessPoint>
+auto entityFromAccessPoint(AccessPoint access_point)
+{
+  using Path_ = typename decltype(path(access_point))::type;
+  using Entity_ = typename Path_::Entity;
+  return hana::type_c<Entity_>;
+}
+
+template<typename EntityType>
+auto entityHasValidation(EntityType)
+{
+  return hana::bool_c<false>;
+}
+
+template<typename EntityType>
+constexpr auto entityHasLocalVersion(EntityType)
+{
+  return hana::bool_c<false>;  
+  //todo stores will have special 'LocalVersion' objects if this is true
+  //todo it also means create and update messages will have a uuid
+}
 
 /*
  * TODO: Maybe replace the use of the following template specializations
@@ -32,5 +54,4 @@ namespace builder {
 
 }//builder
 }//nbdl_def
-
 #endif

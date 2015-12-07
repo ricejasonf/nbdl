@@ -18,6 +18,7 @@
 
 namespace nbdl {
 
+//todo make this foldable for serialization
 class MsgId
 {
 	public:
