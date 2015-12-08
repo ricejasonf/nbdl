@@ -4,9 +4,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_DEF_MSG_HPP
-#define NBDL_DEF_MSG_HPP
+#ifndef NBDL_DEF_BUILDER_MSG_HPP
+#define NBDL_DEF_BUILDER_MSG_HPP
 
+#include "../../Make.hpp"
 #include "../builder.hpp"
 #include "../directives.hpp"
 #include "./Path.hpp"
@@ -21,12 +22,12 @@ struct Msg
   using ContextDef = typename AccessPointBuilder::ContextDef;
   using AccessPointDef = typename AccessPointBuilder::AccessPointDef;
 
-  ContextDef const& ctx;
-  AccessPointDef const& access_point;
+  const ContextDef ctx;
+  const AccessPointDef access_point;
 
-  Msg(AccessPointBuilder const& a)
-    ctx(a.ctx),
-    access_point(a.access_point)
+  constexpr Msg(AccessPointBuilder a)
+    ctx(decltype(a.ctx){}),
+    access_point(decltype(a.access_point){})
   {}
 
   /*
@@ -36,6 +37,7 @@ struct Msg
    *  Update
    *  Delete  
    *
+   * todo
    * DOWNSTREAM only messages:
    *  NotFound
    *  ValidationFail
@@ -44,9 +46,13 @@ struct Msg
    */
 
   template<typename MsgMeta>
-  auto storage(MsgMeta meta)
+  auto storage(MsgMeta meta_) const
   {
     //todo filter out nothings and make tuple of denested types
+    return hana::unpack(hana::filter(meta_, hana::is_just),
+      [](auto... x) {
+        return hana::type_c<decltype(hana::make_tuple(typename decltype(*x)::type...))>;
+      });
   }
 
   /*
@@ -66,13 +72,13 @@ struct Msg
    */
 
   template<typename Action, typename Channel>
-  auto path(Action action, Channel channel)
+  auto path(Action action, Channel channel) const
   {
     return builder::path(access_point);
   }
 
   template<typename AccessPoint>
-  auto path(action::Create, channel::Upstream)
+  auto path(action::Create, channel::Upstream) const
   {
     using Path_ = typename decltype(path(access_point))::type;
     return Path_::Parent::createChildType(
@@ -81,7 +87,7 @@ struct Msg
   }
 
   template<typename Action>
-  auto requestId(Action action)
+  auto requestId(Action action) const
   {
     return hana::if_(
       entityHasLocalVersion(ctx, entityFromAccessPoint(access_point))
@@ -90,7 +96,34 @@ struct Msg
   }
 
   template<typename Action, typename Channel>
-  auto meta(Action action, Channel channel)
+  auto payload(Action&& action, Channel&& channel) const
+  {
+    return hana::overload_linearly(
+        [](action::Read, channel::Upstream) {
+          return hana::nothing;
+        },
+        [](action::Create, channel::DownStream) {
+          return hana::nothing;
+        },
+        [](action::Delete, auto) {
+          return hana::nothing;
+        },
+        [&](auto&& /*action*/, auto) {
+          auto entity = entityFromAccessPoint(access_point);
+          /* todo implement Diff
+          return hana::if_(
+            AccessPoint(msg_builder.ctx, msg_builder.access_point)
+              .actionUsesDiff(std::forward<Action>(action)),
+            hana::just(diff(entity)),
+            hana::just(entity));
+          */
+          return hana::just(entity);
+        }
+      )(std::forward<Action>(action), std::forward<Channel>(channel));
+  }
+
+  template<typename Action, typename Channel>
+  auto meta(Action action, Channel channel) const
   {
     return hana::make_tuple(
       hana::just(action),
@@ -103,10 +136,34 @@ struct Msg
   }
 
   template<typename Action, typename Channel>
-  auto msg(Action action, Channel channel)
+  auto build(Action action, Channel channel)
   {
-    msgMeta(action
-    return hana::make_pair(
+    auto meta_ = meta(action, channel);
+    return hana::type_c<decltype(hana::make_pair(
+      meta_,
+      typename decltype(storage(meta_))::type))>;
+  }
+
+  //builds all CRUD messages for AccessPoint
+  auto build()
+  {
+    return hana::unpack(hana::make_tuple(
+      action::Create,
+      action::Read,
+      action::Update,
+      action::Delete)
+    | [](auto t) {
+        return hana::make_tuple(
+          hana::make_pair(t, channel::Upstream),
+          hana::make_pair(t, channel::Downstream)
+        );
+      },
+    [](auto... combo) {
+      return hana::make_tuple(
+        hana::unpack(combo, [](auto action, auto channel) {
+          return build(action, channel);
+        })...);
+    });
   }
 };
 
@@ -133,3 +190,4 @@ constexpr auto downstreamMsgs(T access_point)
 
 }//builder
 }//nbdl_def
+#endif

@@ -16,7 +16,7 @@ namespace builder {
 
 //default should be the Entity or Diff<Entity>
 template<typename MsgBuilder_, typename Action, typename Channel>
-auto msgPayload(MsgBuilder_ const& msg_builder,Action, Channel)
+auto msgPayload(MsgBuilder_ const& msg_builder, Action, Channel)
 {
   using Path_ = typename decltype(path(msg_builder.access_point))::type;
   using Entity_ = typename Path_::Entity;

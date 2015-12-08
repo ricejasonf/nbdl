@@ -13,28 +13,40 @@
 namespace nbdl_def {
 namespace builder {
 
-template<typename AccessPoint>
-auto entityFromAccessPoint(AccessPoint access_point)
+template<typename ContextDef, typename EntityDef>
+struct Entity
 {
-  using Path_ = typename decltype(path(access_point))::type;
-  using Entity_ = typename Path_::Entity;
-  return hana::type_c<Entity_>;
-}
+  ContextDef const& ctx;
+  EntityDef const& access_point;
 
-template<typename EntityType>
-auto entityHasValidation(EntityType)
-{
-  return hana::bool_c<false>;
-}
+  Entity(ContextDef const& c, EntityDef const& a) :
+    ctx(c),
+    access_point(a)
+  {}
 
-template<typename EntityType>
-constexpr auto entityHasLocalVersion(EntityType)
-{
-  return hana::bool_c<false>;  
-  //todo stores will have special 'LocalVersion' objects if this is true
-  //todo it also means create and update messages will have a uuid
-}
+  template<typename AccessPoint>
+  auto entityFromAccessPoint(AccessPoint access_point)
+  {
+    using Path_ = typename decltype(path(access_point))::type;
+    using Entity_ = typename Path_::Entity;
+    return hana::type_c<Entity_>;
+  }
 
+  template<typename EntityType>
+  auto entityHasValidation(EntityType)
+  {
+    return hana::bool_c<false>;
+  }
+
+  template<typename EntityType>
+  constexpr auto entityHasLocalVersion(EntityType)
+  {
+    return hana::bool_c<false>;  
+    //todo stores will have special 'LocalVersion' objects if this is true
+    //todo it also means create and update messages will have a uuid
+  }
+
+};
 /*
  * TODO: Maybe replace the use of the following template specializations
  * that were used to define entities for serialization, validation,

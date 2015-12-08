@@ -4,17 +4,14 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_DEF_ACCESS_POINT_HPP
-#define NBDL_DEF_ACCESS_POINT_HPP
+#ifndef NBDL_DEF_BUILDER_ACCESS_POINT_HPP
+#define NBDL_DEF_BUILDER_ACCESS_POINT_HPP
 
+#include "../../Make.hpp"
 #include "../builder.hpp"
 
 namespace nbdl_def {
 namespace builder {
-
-//no actual AccessPoint object exists
-//but these are some helper functions
-//for getting meta information about them
 
 template<typename ContextDef_, typename AccessPointDef_>
 class AccessPoint
@@ -22,12 +19,12 @@ class AccessPoint
   using ContextDef = ContextDef_;
   using AccessPointDef = AccessPointDef_;
 
-  ContextDef const& ctx;
-  AccessPointDef const& access_point;
+  const ContextDef ctx;
+  const AccessPointDef access_point;
 
-  AccessPoint(ContextDef const& c, AccessPointDef const& a) :
-    ctx(c),
-    access_point(a)
+  constexpr AccessPoint(ContextDef&& c, AccessPointDef&& a) :
+    ctx(std::forward<ContextDef>(c)),
+    access_point(std::forward<AccessPointDef>(a))
   {}
 
   template<typename Action>
@@ -38,6 +35,8 @@ class AccessPoint
   //todo return true for create and update that don't specify NoDiff
 
 };
+
+constexpr auto make_access_point = Make<AccessPoint>{};
 
 }//builder
 }//nbdl_def
