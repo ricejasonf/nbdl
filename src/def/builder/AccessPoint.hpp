@@ -13,19 +13,33 @@
 namespace nbdl_def {
 namespace builder {
 
-template<typename ContextDef_, typename AccessPointDef_>
+template<typename ContextBuilder_, typename AccessPointDef_>
 class AccessPoint
 {
-  using ContextDef = ContextDef_;
+  using ContextBuilder = ContextBuilder_;
   using AccessPointDef = AccessPointDef_;
 
-  const ContextDef ctx;
-  const AccessPointDef access_point;
+  const ContextBuilder ctx;
+  const AccessPointDef def;
 
-  constexpr AccessPoint(ContextDef&& c, AccessPointDef&& a) :
-    ctx(std::forward<ContextDef>(c)),
-    access_point(std::forward<AccessPointDef>(a))
+  constexpr AccessPoint(ContextBuilder&& c, AccessPointDef&& a) :
+    ctx(std::forward<ContextBuilder>(c)),
+    def(std::forward<AccessPointDef>(a))
   {}
+
+  constexpr auto pathType()
+  {
+    auto path_def = *meta::findByTag(*meta::findByTag(def, tag::Path), tag::Type);
+    //todo actually use a path definition instead of embedding the type
+    return hana::at(path_def, hana::int_c<0>);
+  }
+
+  constexpr auto entityType()
+  {
+    using Path_ = typename decltype(pathType())::type;
+    using Entity_ = typename Path_::Entity;
+    return hana::type_c<Entity_>;
+  }
 
   template<typename Action>
   constexpr auto actionUsesDiff(Action)

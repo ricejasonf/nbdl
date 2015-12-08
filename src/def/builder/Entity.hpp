@@ -13,19 +13,19 @@
 namespace nbdl_def {
 namespace builder {
 
-template<typename ContextDef, typename EntityDef>
+template<typename ContextBuilder, typename EntityDef>
 struct Entity
 {
-  ContextDef const& ctx;
-  EntityDef const& access_point;
+  ContextBuilder ctx;
+  EntityDef def;
 
-  Entity(ContextDef const& c, EntityDef const& a) :
+  constexpr Entity(ContextBuilder c, EntityDef a) :
     ctx(c),
     access_point(a)
   {}
 
   template<typename AccessPoint>
-  auto entityFromAccessPoint(AccessPoint access_point)
+  constexpr auto entityFromAccessPoint(AccessPoint access_point)
   {
     using Path_ = typename decltype(path(access_point))::type;
     using Entity_ = typename Path_::Entity;
@@ -33,7 +33,7 @@ struct Entity
   }
 
   template<typename EntityType>
-  auto entityHasValidation(EntityType)
+  constexpr auto entityHasValidation(EntityType)
   {
     return hana::bool_c<false>;
   }
@@ -45,7 +45,6 @@ struct Entity
     //todo stores will have special 'LocalVersion' objects if this is true
     //todo it also means create and update messages will have a uuid
   }
-
 };
 /*
  * TODO: Maybe replace the use of the following template specializations

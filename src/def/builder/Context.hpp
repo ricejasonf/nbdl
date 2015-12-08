@@ -143,6 +143,29 @@ constexpr auto context(ContextDefPair ctx_)
   return hana::type_c<nbdl::Context<Traits>>;
 }
 
+template<typename ContextDef>
+class Context
+{
+  template<typename Def>
+  class AccessPoint
+  {
+    constexpr auto def;
+    public:
+    constexpr AccessPoint(Def d) : def(d) {}
+    constexpr auto pathType();
+    constexpr auto entityType();
+    template<typename Action>
+    constexpr auto actionUsesDiff(Action);
+  };
+  template<typename AccessPoint_>
+  class Msg
+  {
+    constexpr auto access_point;
+    public:
+    constexpr AccessPoint(AccessPoint_ a) : access_point(a) {}
+  }
+};
+
 template<typename Context_>
 struct ContextFactory
 {
