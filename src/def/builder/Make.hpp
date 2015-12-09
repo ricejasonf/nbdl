@@ -33,8 +33,10 @@ struct Make
     using Builder = Builder_<DefPath>;
     static_assert(hana::type_c<typename Builder::Tag> == hana::type_c<decltype(hana::first(def))>,
       "Attempt to construct Builder with invalid definition (ie Tag)");
-    static_assert(hana::type_c<typename Builder::ParentTag>
-      == hana::type_c<decltype(hana::first(hana::at_c<0>(parent_defs)))>,
+    static_assert(
+      hana::in(
+        hana::type_c<decltype(hana::first(hana::at_c<0>(parent_defs)))>,
+        Builder::allowed_parents),
       "Attempt to construct Builder with invalid definition (ie ParentTag)");
     return Builder();
   }

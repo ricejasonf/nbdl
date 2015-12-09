@@ -13,20 +13,14 @@
 namespace nbdl_def {
 namespace builder {
 
-template<typename ContextBuilder_, typename AccessPointDef_>
+template<typename DefPath>
 class AccessPoint
 {
-  using ContextBuilder = ContextBuilder_;
-  using AccessPointDef = AccessPointDef_;
+  using Tag = tag::AccessPoint;
+  static constexpr allowed_parent_tags = hana::tuple_t<tag::AccessPoint, tag::Context>;
+  static constexpr auto def = hana::first(hana::at_c<0>(DefPath{}));
 
-  const ContextBuilder ctx;
-  const AccessPointDef def;
-
-  constexpr AccessPoint(ContextBuilder&& c, AccessPointDef&& a) :
-    ctx(std::forward<ContextBuilder>(c)),
-    def(std::forward<AccessPointDef>(a))
-  {}
-
+  //todo make AccessPoints nestable and get rid of Path directive
   constexpr auto pathType()
   {
     auto path_def = *meta::findByTag(*meta::findByTag(def, tag::Path), tag::Type);
@@ -49,8 +43,6 @@ class AccessPoint
   //todo return true for create and update that don't specify NoDiff
 
 };
-
-constexpr auto make_access_point = Make<AccessPoint>{};
 
 }//builder
 }//nbdl_def

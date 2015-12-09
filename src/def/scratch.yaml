@@ -1,22 +1,38 @@
---- # example of access point
-AccessPoints:
-
-  - Path: 
-      Type: SomePath
-    Actions:
-      Create:
-        - PrivatePayload:
-            Type: my_nbdl::AccountCreateInfo
-      Read:
-      Update:
-        - NoDiff
-      Delete:
-
-  - Path: 
-      Type: SomeOtherPath
-    Actions:
-      Create:
-      Read:
-      Update:
-        - NoDiff
-      Delete:
+--- # prototype of nbdl definition
+Context:
+  - Api:
+      Name: MyApi
+      ClientImpl: Websocket
+      AccessPoints:
+        - AccessPoint:
+            Entity: User
+            PrimaryKey: #default
+              Name: UserId
+              Type: int
+            Actions:
+              - Create:
+                  PrivateInfo:
+                    Entity: PasswordInfo
+              - Read
+              - Update
+              - Delete
+        - AccessPoint:
+            Entity: Client
+            PrimaryKey: #default
+              Name: ClientId
+              Type: int
+            ChildAccessPoints:
+              - AccessPoint:
+                  Entity: Contact
+                  Actions: [ Create, Read, Update, Delete ]
+              - AccessPoint:
+                  Entity: SomethingElseThatBelongsToClient
+                  Actions: [ Create, Read, Update, Delete ]
+  - Api:
+      Name: Local
+      ClientImpl: Local
+      AccessPoints:
+        - AccessPoint:
+            Entity: ContactDisplay
+            PrimaryKey: 
+              PathTo: [ MyApi, Client, Contact ] #???
