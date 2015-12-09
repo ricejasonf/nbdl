@@ -22,7 +22,7 @@ struct Make
     using DefPath = hana::tuple<Def>;
     using Builder = Builder_<DefPath>;
     static_assert(hana::type_c<typename Builder::Tag> == hana::type_c<decltype(hana::first(def))>,
-      "Make Builder must receive definition with matching tag.");
+      "Attempt to construct Builder with invalid definition (ie Tag)");
     return Builder();
   }
 
@@ -33,12 +33,24 @@ struct Make
     using Builder = Builder_<DefPath>;
     static_assert(hana::type_c<typename Builder::Tag> == hana::type_c<decltype(hana::first(def))>,
       "Attempt to construct Builder with invalid definition (ie Tag)");
+    /* Requiring certain parents makes things difficult
+     * something to think about
     static_assert(
       hana::in(
         hana::type_c<decltype(hana::first(hana::at_c<0>(parent_defs)))>,
         Builder::allowed_parents),
       "Attempt to construct Builder with invalid definition (ie ParentTag)");
+    */
     return Builder();
+  }
+
+  template<typename ParentDefs, typename... Defs>
+  constexpr auto operator()(hana::tuple<Defs> defs, ParentDefs parent_defs)
+  {
+    return hana::transform(
+      hana::filter(defs, hana::equal.to(hana::type_c<typename Builder::tag>)
+        ^hana::on^ hana::second),
+      this);
   }
 };
 

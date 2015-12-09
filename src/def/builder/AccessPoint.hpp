@@ -16,9 +16,8 @@ namespace builder {
 template<typename DefPath>
 class AccessPoint
 {
-  using Tag = tag::AccessPoint;
-  static constexpr allowed_parent_tags = hana::tuple_t<tag::AccessPoint, tag::Context>;
-  static constexpr auto def = hana::first(hana::at_c<0>(DefPath{}));
+  using Tag = tag::AccessPoint_t;
+  static constexpr auto children = hana::second(hana::at_c<0>(DefPath{}));
 
   //todo make AccessPoints nestable and get rid of Path directive
   constexpr auto pathType()

@@ -2,7 +2,7 @@
 Context:
   - Api:
       Name: MyApi
-      ClientImpl: Websocket
+      Client: nbdl::client::Websocket
       AccessPoints:
         - AccessPoint:
             Entity: User
@@ -30,7 +30,7 @@ Context:
                   Actions: [ Create, Read, Update, Delete ]
   - Api:
       Name: Local
-      ClientImpl: Local
+      Client: nbdl::client::Local
       AccessPoints:
         - AccessPoint:
             Entity: ContactDisplay

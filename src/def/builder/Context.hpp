@@ -143,10 +143,27 @@ constexpr auto context(ContextDefPair ctx_)
   return hana::type_c<nbdl::Context<Traits>>;
 }
 
-template<typename ContextDef>
+template<typename DefPath>
 class Context
 {
-  
+  static constexpr auto children = hana::second(hana::at_c<0>(DefPath{}));
+
+  public:
+
+  using Tag = tag::AccessPoint_t;
+
+  constexpr auto build()
+  {
+    auto ctx = hana::second(ctx_);
+    using Traits = nbdl::details::ContextTraits<
+      typename decltype(client(ctx))::type,
+      void, //server
+      typename decltype(listenerHandler(hana::first(ctx_)))::type,
+      typename decltype(storeCollection(ctx))::type
+    >;
+
+    return hana::type_c<nbdl::Context<Traits>>;
+  }
 };
 
 template<typename Context_>
