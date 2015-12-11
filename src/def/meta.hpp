@@ -27,22 +27,55 @@ constexpr auto tagMatch(T t)
   return hana::equal.to(t) ^hana::on^ hana::first;
 }
 
-template<typename Xs, typename Tag>
-constexpr auto filterByTag(Xs xs, Tag tag)
+struct FilterByTag
 {
-  return hana::transform(
-    hana::filter(xs, tagMatch(tag)),
-    hana::second
-  );
-}
+  template<typename Xs, typename Tag>
+  constexpr auto operator()(Xs&& xs, Tag&& tag) const
+  {
+    return hana::transform(
+      hana::filter(std::forward<Xs>(xs), tagMatch(std::forward<Tag>(tag))),
+      hana::second
+    );
+  }
+};
+constexpr FilterByTag filterByTag{};
+constexpr auto createTagFilter = hana::curry(hana::flip(filterByTag));
 
-template<typename Xs, typename Tag>
-constexpr auto findByTag(Xs xs, Tag tag)
+struct FindByTag
 {
-  return hana::maybe(hana::nothing, hana::just ^hana::on^ hana::second, 
-    hana::find_if(xs, tagMatch(tag)));
-}
+  template<typename Xs, typename Tag>
+  constexpr auto operator()(Xs&& xs, Tag&& tag) const
+  {
+    return hana::maybe(hana::nothing, hana::just ^hana::on^ hana::second, 
+      hana::find_if(std::forward<Xs>(xs), tagMatch(std::forward<Tag>(tag))));
+  }
+};
+constexpr FindByTag findByTag{};
+constexpr auto createTagFinder = hana::curry(hana::flip(findByTag));
 
+//searches a sequence of parent nodes for a tag from leaf to root
+struct FindSetting
+{
+  template<typename Xs, typename Tag>
+  constexpr auto operator()(Xs&& xs, Tag&& tag)
+  {
+    constexpr auto find = hana::partial(hana::flip(findByTag), std::forward<Tag>(tag));
+    return find(hana::find_if(xs, hana::is_just ^hana::on^ find));
+  }
+};
+constexpr FindSetting findSetting{};
+constexpr auto createSettingFinder = hana::curry(hana::flip(findSetting));
+
+struct FindAllInTree
+{
+  template<typename Tree, typename Pred>
+  constexpr auto operator()(Tree&& tree, Pred&& pred)
+  {
+    //todo finish this 
+  }
+};
+
+//not used?
 //get first items from contained defs
 struct pairFromDef_t
 {
@@ -57,6 +90,9 @@ struct pairFromDef_t
 };
 constexpr pairFromDef_t pairFromDef{};
 
+
+
+//not used??
 template<typename KeyTag, typename ValueTag, typename Def>
 constexpr auto mapify(KeyTag key_tag, ValueTag value_tag, Def def)
 {

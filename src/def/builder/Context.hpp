@@ -97,56 +97,77 @@ constexpr auto store(ContextDef ctx, AccessPointDef access_point)
     Path_ >>;
 }
 
-template<typename ContextDef>
-auto storeMap(ContextDef ctx)
+struct HasActions
 {
-  return hana::transform(
-    meta::filterByTag(
-      *meta::findByTag(ctx, tag::Api), 
-      tag::AccessPoint),
-    [](auto access_point) {
-      return hana::make_pair(path(access_point),
-        typename decltype(store(ctx, access_point))::type{});
-    });
-}
-
-template<typename ContextDef>
-constexpr auto storeCollection(ContextDef ctx)
-{
-  //using StoreMap_ = StoreMap<ContextDef>;
-  using StoreMap_ = decltype(storeMap(ctx));
-  using ListenerHandler_ = typename decltype(listenerHandler(ctx))::type;
-  return hana::type_c<nbdl::StoreCollection<
-    StoreMap_,
-    ListenerHandler_
-  >>;
-}
-
-template<typename ContextDefPair>
-constexpr auto context(ContextDefPair ctx_)
-{
-  auto ctx = hana::second(ctx_);
-  using Traits = nbdl::details::ContextTraits<
-    typename decltype(client(ctx))::type,
-    void, //server
-    typename decltype(listenerHandler(hana::first(ctx_)))::type,
-    typename decltype(storeCollection(ctx))::type
-  >;
-
-  /*
-  auto traits = hana::make_tuple(
-    hana::make_pair(BOOST_HANA_STRING("ListenerHandler_"), listenerHandler(hana::first(ctx_))),
-    hana::make_pair(BOOST_HANA_STRING("StoreCollection_"), storeCollection(ctx)),
-    hana::make_pair(BOOST_HANA_STRING("Client_"), client(ctx))
-  );
-  */
-  return hana::type_c<nbdl::Context<Traits>>;
-}
+  template<typename X>
+  constexpr auto operator()(X&& x)
+  {
+    hana::size(meta::findByTag(x, tag::Actions)) > 
+    
+  }
+};
 
 template<typename DefPath>
 class Context
 {
-  static constexpr auto children = hana::second(hana::at_c<0>(DefPath{}));
+  static constexpr auto def = hana::at_c<0>(DefPath{});
+
+  constexpr auto listenerHandler()
+  {
+    return hana::type_c<nbdl::ListenerHandlerDummy<>>;
+  }
+
+  //todo put this in builder::AccessPoint
+  constexpr auto store(AccessPoint)
+  {
+    using StoreImpl_ = typename decltype(storeImpl(ctx, access_point))::type;
+    using StoreEmitterImpl_ = typename decltype(storeEmitterImpl(ctx, access_point))::type;
+    using ListenerHandler_ = typename decltype(listenerHandler(ctx))::type;
+    using Path_ = typename decltype(path(access_point))::type;
+    return hana::type_c<nbdl::Store<
+      StoreImpl_,
+      StoreEmitterImpl_,
+      ListenerHandler_,
+      Path_ >>;
+  }
+
+  auto accessPoints()
+  {
+    constexpr auto root_access_points = 
+      meta::createTagFilter(tag::Api)(def)
+      | meta::createTagFilter(tag::AccessPoints)
+      | meta::createTagFilter(tag::AccessPoint)
+      ;
+    hana::map(root_access_points
+      
+    return hana::unpack(access_points,
+      [](auto... x) {
+        return make<AccessPoint>(
+          meta::filterByTag(def, tag::AccessPoint),
+          hana::make_tuple(x, def));
+      });
+  }
+
+  auto storeMap()
+  {
+    //create store for every client/api access_point that has any action
+    return hana::unpack(accessPoints(),
+      [](auto... access_point) {
+        return hana::make_tuple(hana::make_pair(
+          access_point.buildPath(),
+          access_point.buildStore())...);
+      });
+  }
+
+  constexpr auto storeCollection()
+  {
+    using StoreMap_ = decltype(storeMap());
+    using ListenerHandler_ = typename decltype(listenerHandler())::type;
+    return hana::type_c<nbdl::StoreCollection<
+      StoreMap_,
+      ListenerHandler_
+    >>;
+  }
 
   public:
 
@@ -154,12 +175,11 @@ class Context
 
   constexpr auto build()
   {
-    auto ctx = hana::second(ctx_);
     using Traits = nbdl::details::ContextTraits<
-      typename decltype(client(ctx))::type,
+      typename decltype(*meta::findSetting(DefPath{}, tag::Client))::type,
       void, //server
-      typename decltype(listenerHandler(hana::first(ctx_)))::type,
-      typename decltype(storeCollection(ctx))::type
+      typename decltype(listenerHandler())::type,
+      typename decltype(storeCollection())::type
     >;
 
     return hana::type_c<nbdl::Context<Traits>>;
