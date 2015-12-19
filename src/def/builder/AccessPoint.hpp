@@ -7,7 +7,6 @@
 #ifndef NBDL_DEF_BUILDER_ACCESS_POINT_HPP
 #define NBDL_DEF_BUILDER_ACCESS_POINT_HPP
 
-#include "../../Make.hpp"
 #include "../builder.hpp"
 
 namespace nbdl_def {
@@ -43,6 +42,24 @@ class AccessPoint
     return hana::bool_c<false>;  
   }
   //todo return true for create and update that don't specify NoDiff
+  
+  constexpr auto buildPath()
+  {
+
+  }
+
+  constexpr auto buildStore()
+  {
+    using StoreImpl_ = typename decltype(storeImpl(ctx, access_point))::type;
+    using StoreEmitterImpl_ = typename decltype(storeEmitterImpl(ctx, access_point))::type;
+    using ListenerHandler_ = typename decltype(listenerHandler(ctx))::type;
+    using Path_ = typename decltype(path(access_point))::type;
+    return hana::type_c<nbdl::Store<
+      StoreImpl_,
+      StoreEmitterImpl_,
+      ListenerHandler_,
+      Path_ >>;
+  }
 
 };
 

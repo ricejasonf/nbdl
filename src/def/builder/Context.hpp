@@ -97,16 +97,6 @@ constexpr auto store(ContextDef ctx, AccessPointDef access_point)
     Path_ >>;
 }
 
-struct HasActions
-{
-  template<typename X>
-  constexpr auto operator()(X&& x)
-  {
-    hana::size(meta::findByTag(x, tag::Actions)) > 
-    
-  }
-};
-
 template<typename DefPath>
 class Context
 {
@@ -118,6 +108,7 @@ class Context
   }
 
   //todo put this in builder::AccessPoint
+  template<typename AccessPoint>
   constexpr auto store(AccessPoint)
   {
     using StoreImpl_ = typename decltype(storeImpl(ctx, access_point))::type;
@@ -133,18 +124,16 @@ class Context
 
   auto accessPoints()
   {
-    constexpr auto root_access_points = 
-      meta::createTagFilter(tag::Api)(def)
-      | meta::createTagFilter(tag::AccessPoints)
-      | meta::createTagFilter(tag::AccessPoint)
-      ;
-    hana::map(root_access_points
+    constexpr auto access_point_def_nodes =
+      meta::findAllInTree(def,
+        [](auto x) {
+          return hana::first(x) == tag::AccessPoint
+            && hana::size(meta::findByTag(tag::Actions)) > hana::size_c<0>;
+        });
       
-    return hana::unpack(access_points,
+    return hana::unpack(access_point_def_nodes,
       [](auto... x) {
-        return make<AccessPoint>(
-          meta::filterByTag(def, tag::AccessPoint),
-          hana::make_tuple(x, def));
+        return hana::make_tuple(hana::unpack(x, make<AccessPoint>)...);
       });
   }
 
@@ -175,6 +164,7 @@ class Context
 
   constexpr auto build()
   {
+    //todo Client should have its own builder too
     using Traits = nbdl::details::ContextTraits<
       typename decltype(*meta::findSetting(DefPath{}, tag::Client))::type,
       void, //server
