@@ -4,7 +4,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include "catch.hpp"
 #include<boost/hana.hpp>
 #include<def/meta.hpp>
 
@@ -25,16 +24,18 @@ constexpr auto def =
     FindMe(B())
   );
 
-TEST_CASE("Find all elements in tree matching a tag.", "[def_meta]") 
+int main()
 {
-  auto x = createAllInTreeFinder(hana::equal.to(tag::FindMe));
-  CHECK(x == 
-    hana::make_tuple(
-      FindMe(A()),
-      FindMe(),
-      FindMe(B()),
-      FindMe(),
-      FindMe(B())
+  {
+    constexpr auto x = createAllInTreeFinder(hana::equal.to(tag::FindMe));
+    BOOST_HANA_CONSTANT_ASSERT(
+      x == hana::make_tuple(
+        FindMe(A()),
+        FindMe(),
+        FindMe(B()),
+        FindMe(),
+        FindMe(B())
+      );
     );
-
+  }
 }

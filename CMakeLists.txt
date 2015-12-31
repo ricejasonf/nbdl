@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 project(nbdl_project)
+enable_testing()
 
 #if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 #set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
@@ -8,6 +9,44 @@ project(nbdl_project)
 #CMAKE_CXX_STANDARD 14 doesn't work until cmake 3.1+
 #set(CMAKE_CXX_STANDARD 14)
 #set(CMAKE_CXX_STANDARD_REQUIRED on)
+add_custom_target(check
+  COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --exclude-regex "individual"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  COMMENT "Running high level tests."
+)
+
+function(nbdl_add_test name)
+  add_executable("${name}" EXCLUDE_FROM_ALL ${ARGN})
+  if (NBDL_ENABLE_MEMCHECK)
+    add_test(
+      NAME ${name}
+      COMMAND ${Valgrind_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/${name} --leak-check=full --error-exitcode=1
+    )
+  else()
+    add_test(
+      NAME ${name}
+      COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${name}
+    )
+  endif()
+  add_custom_target(run.${name}
+    COMMAND ./${name}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Build and run test: ${name}"
+  )
+  add_dependencies(run.${name} ${name})
+endfunction()
+
+function(nbdl_catch_test_suite out suite_name)
+  set(_catch_main ${nbdl_project_SOURCE_DIR}/test/catch_main.cpp)
+  foreach(_source IN ITEMS ${ARGN})
+    string(REPLACE ".cpp" "" _name ${_source})
+    list(APPEND _build_targets "individual.${suite_name}.${_name}")
+    nbdl_add_test("individual.${suite_name}.${_name}" ${_catch_main} ${_source})
+  endforeach()
+  nbdl_add_test(${suite_name} ${_catch_main} ${ARGN})
+  list(APPEND _build_targets "${suite_name}")
+  set(${out} ${_build_targets} PARENT_SCOPE)
+endfunction()
 
 #todo find a cross platform way to set -Wall -Wextra
 add_definitions(-std=c++14)
@@ -32,7 +71,7 @@ if (BOOST_HANA_INCLUDE_DIR)
   include_directories(BOOST_HANA_INCLUDE_DIR)
 endif(BOOST_HANA_INCLUDE_DIR)
 
+include_directories(${nbdl_project_SOURCE_DIR}/src)
+
 add_subdirectory(src)
-if (NOT NBDL_SKIP_TESTS)
-  add_subdirectory(test/src)
-endif (NOT NBDL_SKIP_TESTS)
+add_subdirectory(test)

@@ -5,7 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include<servers/ws/HttpRequestParser.hpp>
-#include "../catch.hpp"
+#include<catch.hpp>
 
 std::string request1 =
 	"GET /chat HTTP/1.1"

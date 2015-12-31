@@ -6,7 +6,7 @@
 //
 #include<memory>
 #include<nbdl>
-#include "catch.hpp"
+#include<catch.hpp>
 
 template<typename Path_>
 using Store = nbdl::Store<

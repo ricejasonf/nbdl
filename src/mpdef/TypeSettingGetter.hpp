@@ -18,7 +18,6 @@ namespace hana = boost::hana;
 template<typename TypeMap, typename DefaultType>
 struct TypeSettingGetter
 {
-
   TypeMap type_map;
   DefaultType default_type;
 
@@ -36,7 +35,6 @@ struct TypeSettingGetter
       | hana::partial(hana::find_if, type_map)
     ).value_or(default_type);
   }
-  
 };
 constexpr auto makeTypeSettingGetter = nbdl::Make<TypeSettingGetter>;
 

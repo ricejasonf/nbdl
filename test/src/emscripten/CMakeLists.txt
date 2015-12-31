@@ -21,7 +21,3 @@ add_executable(test_emscripten
 #note that --bind is being passed to the linker... weird
 #target_link_libraries(test_emscripen nbdl --bind)
 
-#bleh
-target_include_directories(test_emscripten
-  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../../src"
-  )

@@ -7,7 +7,7 @@
 #include<functional>
 #include<boost/hana.hpp>
 #include<nbdl>
-#include "catch.hpp"
+#include<catch.hpp>
 
 namespace hana = boost::hana;
 

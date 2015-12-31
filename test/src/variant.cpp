@@ -6,7 +6,7 @@
 //
 #include<string>
 #include<nbdl>
-#include "catch.hpp"
+#include<catch.hpp>
 
 struct SomeTag {};
 

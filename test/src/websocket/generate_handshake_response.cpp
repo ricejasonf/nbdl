@@ -5,7 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include<servers/ws/HttpResponse.hpp>
-#include "../catch.hpp"
+#include<catch.hpp>
 
 using HttpRequest = nbdl::servers::ws::HttpRequest;
 using HttpResponse = nbdl::servers::ws::HttpResponse;

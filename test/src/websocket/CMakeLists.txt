@@ -5,24 +5,18 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
-cmake_minimum_required(VERSION 2.8)
-
 if (NOT OPENSSL_FOUND)
-  message(WARNING "Skipping test_websocket.")
+  message(WARNING "Skipping websocket tests.")
   return()
 endif (NOT OPENSSL_FOUND)
 
-add_executable(test_websocket
-	main.cpp
+nbdl_catch_test_suite(build_targets test.nbdl.websocket
   generate_handshake_response.cpp
   messages.cpp
   parse_handshake_request.cpp
-	)
+)
 
-#bleh
-target_include_directories(test_websocket
-  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../../src"
-  )
-
-target_link_libraries(test_websocket nbdl_servers_ws)
-target_link_libraries(test_websocket ${OPENSSL_LIBRARIES})
+foreach(_target IN LISTS build_targets)
+  target_link_libraries(${_target} nbdl_servers_ws)
+  target_link_libraries(${_target} ${OPENSSL_LIBRARIES})
+endforeach()

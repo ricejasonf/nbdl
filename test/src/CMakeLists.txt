@@ -15,17 +15,13 @@ endif (EMSCRIPTEN)
 add_subdirectory(websocket)
 add_subdirectory(json)
 
-add_executable(test_core
-	main.cpp
-	factorial.cpp
-	path.cpp
-	variant.cpp
-	store.cpp
-	context_read.cpp
-	#msg_id.cpp #requires boost::uuid
-	)
+nbdl_catch_test_suite(build_targets "test.nbdl.core"
+  factorial.cpp
+  path.cpp
+  variant.cpp
+  store.cpp
+  context_read.cpp
+)
 
-#bleh
-target_include_directories(test_core
-  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
-  )
+#requires boost right now
+#msg_id.cpp 

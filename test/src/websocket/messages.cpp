@@ -8,7 +8,7 @@
 
 #include<servers/ws/MessageParser.hpp>
 #include<servers/ws/MessageGenerator.hpp>
-#include "../catch.hpp"
+#include<catch.hpp>
 
 TEST_CASE("Create/Parse message in a single, short, unmasked data frame.", "[websocket]") 
 {
