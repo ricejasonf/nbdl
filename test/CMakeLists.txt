@@ -7,5 +7,5 @@
 
 include_directories("./include")
 
-#add_subdirectory(mpdef)
+add_subdirectory(mpdef)
 add_subdirectory(src)

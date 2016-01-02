@@ -5,17 +5,6 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
-add_executable(test_core
-	main.cpp
-	factorial.cpp
-	path.cpp
-	variant.cpp
-	store.cpp
-	context_read.cpp
-	#msg_id.cpp #requires boost::uuid
-	)
-
-#bleh
-target_include_directories(test_core
-  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
-  )
+nbdl_add_test("test.mpdef.find_all_in_tree"
+  find_all_in_tree.cpp
+)

@@ -99,27 +99,25 @@ struct AllInTreeFinder
   template<typename Ancestors, typename Tree>
   auto operator()(Ancestors&& ancestors, Tree&& tree)
   {
-    constexpr auto cond = pred(tree);
-    constexpr auto children = hana::second(tree);
-    constexpr auto child_ancestors = hana::prepend(ancestors, tree);
+    auto cond = pred(tree);
+    auto children = hana::second(tree);
+    auto child_ancestors = hana::prepend(ancestors, tree);
     return hana::concat(
-        helper(
-          std::forward<Ancestors>(ancestors),
-          std::forward<Tree>(tree),
-          cond
-        ),
+      helper(
+        std::forward<Ancestors>(ancestors),
+        std::forward<Tree>(tree),
+        cond
+      ),
       hana::flatten(
-        hana::unpack(
-          children,
+        hana::unpack(children,
           [&](auto&&... x) {
-            return hana::make_tuple(this(child_ancestors, x)...);
+            return hana::make_tuple((*this)(child_ancestors, x)...);
           }
         )
-      );
+      )
+    );
   }
 };
-template<typename Pred>
-constexpr AllInTreeFinder<Pred> allInTreeFinder;
 
 }//details
 
@@ -130,9 +128,9 @@ struct FindAllInTree
   constexpr auto operator()(Tree&& tree, Pred const& pred)
   {
     return decltype(
-      detail::allInTreeFinder<Pred>(pred)(
+      details::AllInTreeFinder<Pred>(pred)(
         hana::tuple<>{},
-        std::forward(tree)
+        std::forward<Tree>(tree)
       )
     ){};
   }
