@@ -4,8 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_MPDEF_CREATE_TYPE_SETTING_GETTER_HPP
-#define NBDL_MPDEF_CREATE_TYPE_SETTING_GETTER_HPP
+#ifndef NBDL_MPDEF_FIND_IN_TREE_HPP
+#define NBDL_MPDEF_FIND_IN_TREE_HPP
 
 #include<boost/hana.hpp>
 #include "../Make.hpp"
@@ -15,12 +15,12 @@ namespace nbdl_def_meta {
 namespace details {
 
 template<typename Pred, typename SummarizeAncestry>
-struct TreeFinder
+struct InTreeFinder
 {
   Pred const& pred;
   SummarizeAncestry const& summarizeAncestry;
 
-  TreeFinder(Pred const& p, SummarizeAncestry const& s) :
+  InTreeFinder(Pred const& p, SummarizeAncestry const& s) :
     pred(p),
     summarizeAncestry(s)
   {}
@@ -35,10 +35,8 @@ struct TreeFinder
   constexpr auto helper(Tree const& tree, AncestorSummary const& ancestor_summary, hana::false_)
   {
     auto new_summary = summarizeAncestry(ancestor_summary, tree);
-    return hana::unpack(hana::second(tree),
-      [](auto... child) {
-        return (*this)(child, new_summary);
-      });
+    return hana::flatten(hana::unpack(hana::second(tree),
+      hana::on(hana::make_tuple, hana::reverse_partial(*this, new_summary))));
   }
 
   template<typename Tree, typename AncestrySummary>
@@ -51,23 +49,24 @@ struct TreeFinder
 }//details
 
 //returns ((node, ancestry_summary)...)
-struct FindTree
+struct FindInTree
 {
-  template<typename Tree, typename Pred, typename SummarizeAncestry>
+  template<typename Pred, typename SummarizeAncestry, typename Tree>
   constexpr auto operator()(
-      Tree const& tree,
       Pred const& pred,
-      SummarizeAncestry const& summarizeAncestry)
+      SummarizeAncestry const& summarizeAncestry,
+      Tree const& tree)
   {
     return decltype(
-      details::TreeFinder<Pred, SummarizeAncestry>(pred, summarizeAncestry)(
-        hana::tuple<>{},
-        tree
+      details::InTreeFinder<Pred, SummarizeAncestry>(pred, summarizeAncestry)(
+        tree,
+        hana::make_tuple() //lame placeholder
       )
     ){};
   }
 };
-constexpr FindTree findTree{};
-constexpr auto createTreeFinder = hana::curry<2>(hana::flip(findTree));
+constexpr FindInTree findInTree{};
+constexpr auto createInTreeFinder = hana::curry<3>(findInTree);
 
 }//nbdl_def_meta
+#endif
