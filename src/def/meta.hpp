@@ -9,18 +9,32 @@
 
 #include<boost/hana.hpp>
 
-#define NBDL_DEF_DIRECTIVE(NAME)                        \
+#define MPDEF_DIRECTIVE(NAME)                           \
 namespace tag {                                         \
   struct NAME##_t {};                                   \
   constexpr auto NAME = boost::hana::type_c<NAME##_t>;  \
 }                                                       \
 template<typename... Tn> constexpr auto NAME(Tn... tn)  \
-{ return boost::hana::make_pair(tag::NAME, boost::hana::make_tuple(tn...)); }
+{ return boost::hana::make_pair(tag::NAME, boost::hana::make_map(tn...)); }
+
+#define MPDEF_DIRECTIVE_LIST(NAME)                                              \
+namespace tag {                                                                 \
+  struct NAME##_t {};                                                           \
+  constexpr auto NAME = boost::hana::type_c<NAME##_t>;                          \
+  struct NAME##_li_t {};                                                        \
+  constexpr auto NAME##_li = boost::hana::type_c<NAME##li_t>;                   \
+}                                                                               \
+template<typename... Tn> constexpr auto NAME(Tn... tn)                          \
+{ return                                                                        \
+  boost::hana::make_pair                                                        \
+  (tag::NAME, boost::hana::make_tuple(hana::make_pair(tag::NAME##_li, tn...))); \
+}
 
 namespace nbdl_def_meta {
 
 namespace hana = boost::hana;
 
+/*
 template<typename T>
 constexpr auto tagMatch(T t)
 {
@@ -137,6 +151,7 @@ struct FindAllInTree
 };
 constexpr FindAllInTree findAllInTree{};
 constexpr auto createAllInTreeFinder = hana::curry<2>(hana::flip(findAllInTree));
+*/
 
 }//nbdl_def_meta
 

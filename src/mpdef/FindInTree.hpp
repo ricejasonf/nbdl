@@ -8,10 +8,12 @@
 #define NBDL_MPDEF_FIND_IN_TREE_HPP
 
 #include<boost/hana.hpp>
-#include "../Make.hpp"
-#include "../def/meta.hpp" //FindSetting.hpp
+#include "../def/meta.hpp"
 
 namespace nbdl_def_meta {
+
+namespace hana = boost::hana;
+
 namespace details {
 
 template<typename Pred, typename SummarizeAncestry>
@@ -20,7 +22,7 @@ struct InTreeFinder
   Pred const& pred;
   SummarizeAncestry const& summarizeAncestry;
 
-  InTreeFinder(Pred const& p, SummarizeAncestry const& s) :
+  constexpr InTreeFinder(Pred const& p, SummarizeAncestry const& s) :
     pred(p),
     summarizeAncestry(s)
   {}
@@ -40,7 +42,7 @@ struct InTreeFinder
   }
 
   template<typename Tree, typename AncestrySummary>
-  auto operator()(Tree const& tree, AncestrySummary const& ancestry_summary)
+  constexpr auto operator()(Tree const& tree, AncestrySummary const& ancestry_summary)
   {
     return helper(tree, ancestry_summary, pred(tree));
   }
@@ -51,22 +53,21 @@ struct InTreeFinder
 //returns ((node, ancestry_summary)...)
 struct FindInTree
 {
-  template<typename Pred, typename SummarizeAncestry, typename Tree>
+  template<typename Pred, typename SummarizeAncestry, typename InitialSummary, typename Tree>
   constexpr auto operator()(
       Pred const& pred,
       SummarizeAncestry const& summarizeAncestry,
+      InitialSummary const& initial_summary,
       Tree const& tree)
   {
-    return decltype(
-      details::InTreeFinder<Pred, SummarizeAncestry>(pred, summarizeAncestry)(
-        tree,
-        hana::make_tuple() //lame placeholder
-      )
-    ){};
+    return details::InTreeFinder<Pred, SummarizeAncestry>(pred, summarizeAncestry)(
+      tree,
+      initial_summary
+    );
   }
 };
 constexpr FindInTree findInTree{};
-constexpr auto createInTreeFinder = hana::curry<3>(findInTree);
+constexpr auto createInTreeFinder = hana::curry<4>(findInTree);
 
 }//nbdl_def_meta
 #endif

@@ -11,10 +11,12 @@
 
 namespace hana = boost::hana;
 
-NBDL_DEF_DIRECTIVE(FindMe);
-NBDL_DEF_DIRECTIVE(Root);
-NBDL_DEF_DIRECTIVE(A);
-NBDL_DEF_DIRECTIVE(B);
+MPDEF_DIRECTIVE(FindMe);
+MPDEF_DIRECTIVE(Root);
+MPDEF_DIRECTIVE(A);
+MPDEF_DIRECTIVE(B);
+
+constexpr auto countDepth = hana::demux(hana::partial(hana::plus, hana::int_c<1>))(hana::arg<1>);
 
 constexpr auto def =
   Root(
@@ -32,19 +34,16 @@ int main()
 {
   {
     constexpr auto pred = hana::equal.to(tag::FindMe) ^hana::on^ hana::first;
-    constexpr auto foldFn = hana::always(hana::tuple<>{});
-    constexpr auto x = nbdl_def_meta::createInTreeFinder(pred, foldFn)(def);
+    constexpr auto x = nbdl_def_meta::createInTreeFinder(pred, countDepth, hana::int_c<0>)(def);
     constexpr auto y = hana::make_tuple(
-      hana::make_pair(FindMe(A()) , hana::make_tuple()),
-      hana::make_pair(FindMe()    , hana::make_tuple()),
-      hana::make_pair(FindMe()    , hana::make_tuple()),
-      hana::make_pair(FindMe(B()) , hana::make_tuple()),
-      hana::make_pair(FindMe()    , hana::make_tuple()),
-      hana::make_pair(FindMe(B()) , hana::make_tuple())
+      hana::make_pair(FindMe(A()) , hana::int_c<1>),
+      hana::make_pair(FindMe()    , hana::int_c<2>),
+      hana::make_pair(FindMe()    , hana::int_c<3>),
+      hana::make_pair(FindMe(B()) , hana::int_c<2>),
+      hana::make_pair(FindMe()    , hana::int_c<1>),
+      hana::make_pair(FindMe(B()) , hana::int_c<1>)
     );
-    //std::cout << hana::experimental::print(x) << ";\n";
-    //std::cout << "\n";
-    //std::cout << hana::experimental::print(y) << "\n";
     BOOST_HANA_CONSTANT_ASSERT(x == y);
+    std::cout << hana::experimental::print(x) << ";\n";
   }
 }
