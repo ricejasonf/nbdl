@@ -8,9 +8,9 @@
 #define NBDL_MPDEF_FIND_IN_TREE_HPP
 
 #include<boost/hana.hpp>
-#include "../def/meta.hpp"
+#include<mpdef/CollectSettings.hpp>
 
-namespace nbdl_def_meta {
+namespace mpdef {
 
 namespace hana = boost::hana;
 
@@ -65,9 +65,17 @@ struct FindInTree
       initial_summary
     );
   }
+
+  /*
+  template<typename... Tag>
+  constexpr auto withSettings(Tag&&... tag)
+  {
+    //todo finish
+  }
+  */
 };
 constexpr FindInTree findInTree{};
 constexpr auto createInTreeFinder = hana::curry<4>(findInTree);
 
-}//nbdl_def_meta
+}//mpdef
 #endif

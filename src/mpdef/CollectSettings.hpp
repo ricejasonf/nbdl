@@ -16,7 +16,7 @@ namespace hana = boost::hana;
 struct CollectSettings
 {
   template<typename State, typename X>
-  auto helper(State const& state, X const& x, hana::map_tag) const
+  constexpr auto helper(State const& state, X const& x, hana::map_tag) const
   {
     return
       hana::unpack(hana::keys(state),

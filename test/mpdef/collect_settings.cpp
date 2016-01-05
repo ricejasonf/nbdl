@@ -5,8 +5,6 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include<boost/hana.hpp>
-#include<iostream>
-#include<boost/hana/experimental/printable.hpp>
 #include<mpdef/CollectSettings.hpp>
 
 namespace hana = boost::hana;
@@ -19,6 +17,9 @@ constexpr auto tag4 = hana::type_c<hana::int_<4>>;
 int main()
 {
   {
+    using mpdef::collectSettings;
+    using mpdef::withSettings;
+
     constexpr auto xs = hana::make_tuple(
       hana::make_map(
         hana::make_pair(tag1, hana::int_c<42>),
@@ -34,7 +35,7 @@ int main()
     );
     
     BOOST_HANA_CONSTANT_ASSERT(
-      hana::fold_left(xs, mpdef::withSettings(tag1, tag2, tag3, tag4), mpdef::collectSettings)
+      hana::fold_left(xs, withSettings(tag1, tag2, tag3, tag4), collectSettings)
         ==
       hana::make_map(
         hana::make_pair(tag1, hana::just(hana::int_c<42>)),

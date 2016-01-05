@@ -5,9 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include<boost/hana.hpp>
-#include<iostream>
-#include<boost/hana/experimental/printable.hpp>
 #include<mpdef/FindInTree.hpp>
+#include<def/meta.hpp>
 
 namespace hana = boost::hana;
 
@@ -34,7 +33,7 @@ int main()
 {
   {
     constexpr auto pred = hana::equal.to(tag::FindMe) ^hana::on^ hana::first;
-    constexpr auto x = nbdl_def_meta::createInTreeFinder(pred, countDepth, hana::int_c<0>)(def);
+    constexpr auto x = mpdef::createInTreeFinder(pred, countDepth, hana::int_c<0>)(def);
     constexpr auto y = hana::make_tuple(
       hana::make_pair(FindMe(A()) , hana::int_c<1>),
       hana::make_pair(FindMe()    , hana::int_c<2>),
@@ -44,6 +43,9 @@ int main()
       hana::make_pair(FindMe(B()) , hana::int_c<1>)
     );
     BOOST_HANA_CONSTANT_ASSERT(x == y);
-    std::cout << hana::experimental::print(x) << ";\n";
+  }
+
+  {
+    //constexpr auto pred = hana::equal.to(tag::FindMe) ^hana::on^ hana::first;
   }
 }
