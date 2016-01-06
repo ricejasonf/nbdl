@@ -16,6 +16,24 @@ namespace hana = boost::hana;
 
 namespace details {
 
+// isLeaf
+template<typename T>
+constexpr auto isLeaf(T)
+{
+  return hana::true_c;
+}
+template<typename First, typename ...X>
+constexpr auto isLeaf(hana::pair<First, hana::tuple<X...>>)
+{
+  return hana::false_c;
+}
+template<typename First, typename ...X>
+constexpr auto isLeaf(hana::pair<First, hana::map<X...>>)
+{
+  return hana::false_c;
+}
+
+// InTreeFinder
 template<typename Pred, typename SummarizeAncestry>
 struct InTreeFinder
 {
@@ -27,14 +45,35 @@ struct InTreeFinder
     summarizeAncestry(s)
   {}
 
-  template<typename Tree, typename AncestorSummary>
-  constexpr auto helper_(Tree const& tree, AncestorSummary const& ancestor_summary, hana::true_) const
+  template<typename Tree, typename AncestorSummary, typename IsLeaf>
+  constexpr auto helper(
+    Tree const& tree,
+    AncestorSummary const& ancestor_summary,
+    hana::true_, //pred
+    IsLeaf       //could be branch or leaf
+    ) const
   {
     return hana::make_tuple(hana::make_pair(tree, ancestor_summary));
   }
 
+  template<typename Leaf, typename AncestrySummary>
+  constexpr auto helper(
+    Leaf,
+    AncestrySummary,
+    hana::false_, //pred
+    hana::true_   //is_leaf
+    ) const
+  {
+    return hana::make_tuple();
+  }
+
   template<typename Tree, typename AncestorSummary>
-  constexpr auto helper_(Tree const& tree, AncestorSummary const& ancestor_summary, hana::false_) const
+  constexpr auto helper(
+    Tree const& tree,
+    AncestorSummary const& ancestor_summary,
+    hana::false_, //pred
+    hana::false_   //is_leaf
+    ) const
   {
     auto new_summary = summarizeAncestry(ancestor_summary, tree);
     return hana::flatten(hana::unpack(hana::second(tree),
@@ -42,28 +81,9 @@ struct InTreeFinder
   }
 
   template<typename Tree, typename AncestrySummary>
-  constexpr auto helper(Tree const& tree, AncestrySummary const& ancestry_summary, hana::true_) const
-  {
-    return helper_(tree, ancestry_summary, pred(tree));
-  }
-
-  template<typename Leaf, typename AncestrySummary>
-  constexpr auto helper(Leaf, AncestrySummary, hana::false_) const
-  {
-    return hana::make_tuple();
-  }
-
-  template<typename Tree, typename AncestrySummary>
   constexpr auto operator()(Tree const& tree, AncestrySummary const& ancestry_summary) const
   {
-    return helper(tree, ancestry_summary,
-      hana::type_c<hana::tag_of_t<decltype(hana::second(tree))>>
-      ^hana::in^
-      hana::make_tuple(
-        hana::type_c<hana::tuple_tag>,
-        hana::type_c<hana::map_tag>
-      )
-    );
+    return helper(tree, ancestry_summary, pred(tree), details::isLeaf(tree));
   }
 };
 
@@ -100,7 +120,7 @@ struct FindInTree
             )));
     return hana::curry<2>(hana::demux(collectFinal)
       (
-       //(tree, summarize, pred)
+        //(tree, summarize, pred)
         hana::demux(hana::partial(hana::flip(*this), initial_state))
         (hana::arg<2>, hana::always(mpdef::collectSettings), hana::arg<1>)
       )

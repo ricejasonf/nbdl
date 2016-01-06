@@ -22,12 +22,13 @@ namespace tag {                                                                 
   struct NAME##_t {};                                                           \
   constexpr auto NAME = boost::hana::type_c<NAME##_t>;                          \
   struct NAME##_li_t {};                                                        \
-  constexpr auto NAME##_li = boost::hana::type_c<NAME##li_t>;                   \
+  constexpr auto NAME##_li = boost::hana::type_c<NAME##_li_t>;                  \
 }                                                                               \
 template<typename... Tn> constexpr auto NAME(Tn&&... tn)                        \
 { return                                                                        \
   boost::hana::make_pair                                                        \
-  (tag::NAME, boost::hana::make_tuple(hana::make_pair(tag::NAME##_li, std::forward<Tn>(tn)...))); \
+  (tag::NAME, boost::hana::make_tuple(                                          \
+    nbdl_def_meta::ListDirectiveHelper<decltype(tag::NAME##_li), Tn>::apply(std::forward<Tn>(tn))...));    \
 }
 
 #define MPDEF_DIRECTIVE_LEAF(NAME)                      \
@@ -42,6 +43,25 @@ template<typename T> constexpr auto NAME(T&& t)  \
 namespace nbdl_def_meta {
 
 namespace hana = boost::hana;
+
+template<typename DefaultTag, typename T, typename = void>
+struct ListDirectiveHelper
+{
+  static constexpr auto apply(T&& t)
+  {
+    return hana::make_pair(hana::type_c<DefaultTag>, std::forward<T>(t));
+  }
+};
+
+template<typename DefaultTag, typename T>
+struct ListDirectiveHelper<DefaultTag, T,
+  std::enable_if_t<hana::Product<T>::value>>
+{
+  static constexpr auto apply(T&& t)
+  {
+    return std::forward<T>(t);
+  }
+};
 
 /*
 template<typename T>

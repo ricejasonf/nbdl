@@ -15,6 +15,8 @@ MPDEF_DIRECTIVE(Root);
 MPDEF_DIRECTIVE(A);
 MPDEF_DIRECTIVE(B);
 
+MPDEF_DIRECTIVE_LIST(Widgets);
+
 MPDEF_DIRECTIVE_LEAF(Setting1);
 MPDEF_DIRECTIVE_LEAF(Setting2);
 MPDEF_DIRECTIVE_LEAF(Setting3);
@@ -32,7 +34,13 @@ int main()
           FindMe(B())
         ),
         FindMe(),
-        FindMe(B())
+        FindMe(B()),
+        Widgets(
+          A(),
+          A(),
+          A(FindMe()),
+          A()
+        )
       );
 
     constexpr auto countDepth = hana::demux(hana::partial(hana::plus, hana::int_c<1>))(hana::arg<1>);
@@ -44,7 +52,8 @@ int main()
       hana::make_pair(FindMe()    , hana::int_c<3>),
       hana::make_pair(FindMe(B()) , hana::int_c<2>),
       hana::make_pair(FindMe()    , hana::int_c<1>),
-      hana::make_pair(FindMe(B()) , hana::int_c<1>)
+      hana::make_pair(FindMe(B()) , hana::int_c<1>),
+      hana::make_pair(FindMe()    , hana::int_c<3>)
     );
     BOOST_HANA_CONSTANT_ASSERT(x == y);
   }

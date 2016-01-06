@@ -9,9 +9,6 @@
 
 #include<boost/hana.hpp>
 
-#include<iostream>
-#include<boost/hana/experimental/printable.hpp>
-
 namespace mpdef {
 
 namespace hana = boost::hana;
