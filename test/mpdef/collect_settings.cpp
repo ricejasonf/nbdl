@@ -21,17 +21,21 @@ int main()
     using mpdef::withSettings;
 
     constexpr auto xs = hana::make_tuple(
-      hana::make_map(
-        hana::make_pair(tag1, hana::int_c<42>),
-        hana::make_pair(tag2, hana::int_c<256>)
-      ),
-      hana::make_map(),
-      hana::make_map(
-        hana::make_pair(tag3, hana::int_c<1024>)
-      ),
-      hana::make_map(
-        hana::make_pair(tag2, hana::int_c<512>)
-      )
+      hana::make_pair(hana::type_c<void>,
+        hana::make_map(
+          hana::make_pair(tag1, hana::int_c<42>),
+          hana::make_pair(tag2, hana::int_c<256>)
+        )),
+      hana::make_pair(hana::type_c<void>,
+        hana::make_map()),
+      hana::make_pair(hana::type_c<void>,
+        hana::make_map(
+          hana::make_pair(tag3, hana::int_c<1024>)
+        )),
+      hana::make_pair(hana::type_c<void>,
+        hana::make_map(
+          hana::make_pair(tag2, hana::int_c<512>)
+        ))
     );
     
     BOOST_HANA_CONSTANT_ASSERT(

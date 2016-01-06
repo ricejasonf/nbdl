@@ -90,17 +90,21 @@ struct FindInTree
   constexpr auto withSettings(Tag&&... tag) const
   {
     auto initial_state = mpdef::withSettings(std::forward<Tag>(tag)...);
-    /*
-    return hana::curry<2>(hana::demux(mpdef::collectSettings)
+    auto collectFinal =
+        hana::reverse_partial(hana::transform,
+          hana::reverse_partial(hana::unpack, //pair
+            hana::demux(hana::make_pair)
+            (
+              hana::arg<1>,
+              hana::flip(mpdef::collectSettings)
+            )));
+    return hana::curry<2>(hana::demux(collectFinal)
       (
        //(tree, summarize, pred)
         hana::demux(hana::partial(hana::flip(*this), initial_state))
         (hana::arg<2>, hana::always(mpdef::collectSettings), hana::arg<1>)
       )
     );
-    */
-    return hana::curry<2>(hana::demux(hana::partial(hana::flip(*this), initial_state))
-      (hana::arg<2>, hana::always(mpdef::collectSettings), hana::arg<1>));
   }
 };
 constexpr FindInTree findInTree{};

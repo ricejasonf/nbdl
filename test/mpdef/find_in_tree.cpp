@@ -8,9 +8,6 @@
 #include<mpdef/FindInTree.hpp>
 #include<def/meta.hpp>
 
-#include<iostream>
-#include<boost/hana/experimental/printable.hpp>
-
 namespace hana = boost::hana;
 
 MPDEF_DIRECTIVE(FindMe);
@@ -82,7 +79,7 @@ int main()
       );
 
     constexpr auto pred = hana::compose(hana::equal.to(tag::FindMe), hana::first);
-    constexpr auto x = mpdef::findInTree
+    auto x = mpdef::findInTree
       .withSettings(tag::Setting1, tag::Setting2, tag::Setting3, tag::Setting4)
       (pred)(tree);
     constexpr auto y = hana::make_tuple(
@@ -115,23 +112,24 @@ int main()
         hana::make_pair(tag::Setting4, hana::nothing)
       )),
 
-      hana::make_pair(FindMe(), hana::make_map(
+      hana::make_pair(FindMe(Setting3(hana::int_c<1080>)), hana::make_map(
         hana::make_pair(tag::Setting1, hana::just(hana::int_c<1024>)),
         hana::make_pair(tag::Setting2, hana::just(hana::int_c<768>)),
         hana::make_pair(tag::Setting3, hana::just(hana::int_c<1080>)),
         hana::make_pair(tag::Setting4, hana::nothing)
       )),
 
-      hana::make_pair(FindMe(), hana::make_map(
+      hana::make_pair(FindMe(
+          Setting1(hana::int_c<1>),
+          Setting4(hana::int_c<4>)
+        ), hana::make_map(
         hana::make_pair(tag::Setting1, hana::just(hana::int_c<1>)),
-        hana::make_pair(tag::Setting2, hana::just(hana::int_c<4>)),
+        hana::make_pair(tag::Setting2, hana::nothing),
         hana::make_pair(tag::Setting3, hana::nothing),
-        hana::make_pair(tag::Setting4, hana::nothing)
+        hana::make_pair(tag::Setting4, hana::just(hana::int_c<4>))
       ))
 
     );
-    std::cout << hana::experimental::print(x);
-    std::cout << ";\n";
-    //BOOST_HANA_CONSTANT_ASSERT(x == y);
+    BOOST_HANA_CONSTANT_ASSERT(x == y);
   }
 }

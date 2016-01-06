@@ -9,6 +9,9 @@
 
 #include<boost/hana.hpp>
 
+#include<iostream>
+#include<boost/hana/experimental/printable.hpp>
+
 namespace mpdef {
 
 namespace hana = boost::hana;
@@ -16,7 +19,7 @@ namespace hana = boost::hana;
 struct CollectSettings
 {
   template<typename State, typename X>
-  constexpr auto helper(State const& state, X const& x, hana::map_tag) const
+  constexpr auto helper(State const& state, X const& x, hana::true_) const
   {
     return
       hana::unpack(hana::keys(state),
@@ -34,16 +37,21 @@ struct CollectSettings
       );
   }
 
-  template<typename State, typename X, typename Tag>
-  constexpr auto helper(State&& state, X, Tag) const
+  template<typename State, typename X>
+  constexpr auto helper(State&& state, X, hana::false_) const
   {
-    return std::forward<State>(state); 
+    return std::forward<State>(state);
   }
 
   template<typename State, typename X>
   constexpr auto operator()(State&& state, X&& x) const
   {
-    return helper(std::forward<State>(state), std::forward<X>(x), hana::tag_of_t<X>{});
+    auto children = hana::second(std::forward<X>(x));
+    return helper(
+      std::forward<State>(state),
+      children,
+      hana::is_a<hana::map_tag>(children)
+    );
   }
 };
 constexpr CollectSettings collectSettings{};
