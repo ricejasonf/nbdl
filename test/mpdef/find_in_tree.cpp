@@ -141,4 +141,38 @@ int main()
     );
     BOOST_HANA_CONSTANT_ASSERT(x == y);
   }
+
+  // find leafs
+  {
+    constexpr hana::int_<1> foo{};
+    constexpr auto tree =
+      Root(
+        Setting1(foo),
+        Setting2(foo),
+        A(
+          Setting1(foo),
+          B(Setting1(foo))
+        ),
+        Widgets(
+          A(),
+          Setting1(foo),
+          Setting1(foo),
+          A(Setting1(foo)),
+          A()
+        )
+      );
+
+    constexpr auto countDepth = hana::demux(hana::partial(hana::plus, hana::int_c<1>))(hana::arg<1>);
+    constexpr auto pred = hana::compose(hana::equal.to(tag::Setting1), hana::first);
+    constexpr auto x = mpdef::createInTreeFinder(pred, countDepth, hana::int_c<0>)(tree);
+    constexpr auto y = hana::make_tuple(
+      hana::make_pair(Setting1(foo), hana::int_c<1>),
+      hana::make_pair(Setting1(foo), hana::int_c<2>),
+      hana::make_pair(Setting1(foo), hana::int_c<3>),
+      hana::make_pair(Setting1(foo), hana::int_c<2>),
+      hana::make_pair(Setting1(foo), hana::int_c<2>),
+      hana::make_pair(Setting1(foo), hana::int_c<3>)
+    );
+    BOOST_HANA_CONSTANT_ASSERT(x == y);
+  }
 }
