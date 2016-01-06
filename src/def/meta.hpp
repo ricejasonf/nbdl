@@ -14,8 +14,8 @@ namespace tag {                                         \
   struct NAME##_t {};                                   \
   constexpr auto NAME = boost::hana::type_c<NAME##_t>;  \
 }                                                       \
-template<typename... Tn> constexpr auto NAME(Tn... tn)  \
-{ return boost::hana::make_pair(tag::NAME, boost::hana::make_map(tn...)); }
+template<typename... Tn> constexpr auto NAME(Tn&&... tn)  \
+{ return boost::hana::make_pair(tag::NAME, boost::hana::make_map(std::forward<Tn>(tn)...)); }
 
 #define MPDEF_DIRECTIVE_LIST(NAME)                                              \
 namespace tag {                                                                 \
@@ -24,11 +24,20 @@ namespace tag {                                                                 
   struct NAME##_li_t {};                                                        \
   constexpr auto NAME##_li = boost::hana::type_c<NAME##li_t>;                   \
 }                                                                               \
-template<typename... Tn> constexpr auto NAME(Tn... tn)                          \
+template<typename... Tn> constexpr auto NAME(Tn&&... tn)                        \
 { return                                                                        \
   boost::hana::make_pair                                                        \
-  (tag::NAME, boost::hana::make_tuple(hana::make_pair(tag::NAME##_li, tn...))); \
+  (tag::NAME, boost::hana::make_tuple(hana::make_pair(tag::NAME##_li, std::forward<Tn>(tn)...))); \
 }
+
+#define MPDEF_DIRECTIVE_LEAF(NAME)                      \
+namespace tag {                                         \
+  struct NAME##_t {};                                   \
+  constexpr auto NAME = boost::hana::type_c<NAME##_t>;  \
+}                                                       \
+template<typename T> constexpr auto NAME(T&& t)  \
+{ return boost::hana::make_pair(tag::NAME, std::forward<T>(t)); }
+
 
 namespace nbdl_def_meta {
 

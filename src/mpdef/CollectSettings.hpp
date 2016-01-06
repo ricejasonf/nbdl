@@ -34,8 +34,8 @@ struct CollectSettings
       );
   }
 
-  template<typename State, typename X>
-  constexpr auto helper(State&& state, X, hana::tuple_tag) const
+  template<typename State, typename X, typename Tag>
+  constexpr auto helper(State&& state, X, Tag) const
   {
     return std::forward<State>(state); 
   }
