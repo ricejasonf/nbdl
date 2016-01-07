@@ -5,11 +5,11 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
-if (EMSCRIPTEN)
-  add_subdirectory(emscripten)
-  return()
-endif (EMSCRIPTEN)
-
-add_subdirectory(core)
-add_subdirectory(websocket)
-add_subdirectory(binders/jsoncpp)
+nbdl_catch_test_suite(build_targets "test.nbdl.core"
+  path.cpp
+  variant.cpp
+  store.cpp
+  context_read.cpp
+)
+#requires boost right now
+#msg_id.cpp 
