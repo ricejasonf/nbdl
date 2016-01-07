@@ -4,10 +4,11 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<functional>
-#include<boost/hana.hpp>
 #include<nbdl>
+
+#include<boost/hana.hpp>
 #include<catch.hpp>
+#include<functional>
 
 namespace hana = boost::hana;
 

@@ -109,6 +109,8 @@ class Store
 	}
 };
 
+struct NotFound {};
+
 }//nbdl
 
 #endif

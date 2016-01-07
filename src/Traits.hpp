@@ -7,8 +7,10 @@
 #ifndef NBDL_TRAITS_HPP
 #define NBDL_TRAITS_HPP
 
-#include<type_traits>
 #include "Member.hpp"
+
+#include<utility>
+#include<type_traits>
 
 namespace nbdl {
 

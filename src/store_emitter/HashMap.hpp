@@ -8,8 +8,8 @@
 #define NBDL_STORE_EMITTER_HASH_MAP_HPP
 
 #include<algorithm>
-#include<vector>
 #include<unordered_map>
+#include<vector>
 
 namespace nbdl {
 namespace store_emitter {

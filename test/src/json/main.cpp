@@ -5,4 +5,4 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #define CATCH_CONFIG_MAIN
-#include "../catch.hpp"
+#include<catch.hpp>

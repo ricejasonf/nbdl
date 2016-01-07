@@ -7,9 +7,11 @@
 #ifndef NBDL_BIND_HPP
 #define NBDL_BIND_HPP
 
-#include<utility>
+#include<Traits.hpp>
+
+#include<boost/hana.hpp>
 #include<type_traits>
-#include "Traits.hpp"
+#include<utility>
 
 namespace nbdl {
 

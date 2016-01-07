@@ -4,9 +4,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<unordered_set> //for unique check
-#include<nbdl>
+//
+#include<Traits.hpp>
+#include<Path.hpp>
+#include<macros/NBDL_ENTITY.hpp>
+
 #include<catch.hpp>
+#include<unordered_set> //for unique check
 
 struct Client
 {

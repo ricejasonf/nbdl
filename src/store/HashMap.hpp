@@ -7,10 +7,14 @@
 #ifndef NBDL_STORE_HASH_MAP_HPP
 #define NBDL_STORE_HASH_MAP_HPP
 
+#include<Variant.hpp>
+
 #include<unordered_map>
-#include "../Variant.hpp"
 
 namespace nbdl {
+
+struct NotFound;
+
 namespace store {
 
 template<typename Path_>

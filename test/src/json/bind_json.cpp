@@ -4,13 +4,15 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<string>
-#include<boost/hana.hpp>
-#include<nbdl>
+#include<Bind.hpp>
 #include<binders/jsoncpp/Read.hpp>
 #include<binders/jsoncpp/Write.hpp>
-#include<jsoncpp/json/json.h>
 #include "../assets/AccountEntity.hpp"
+
+#include<boost/hana.hpp>
+#include<catch.hpp>
+#include<jsoncpp/json/json.h>
+#include<string>
 
 void fromString(std::string &json, Account &account)
 {
@@ -32,7 +34,6 @@ std::string toString(Account &account)
   return writer.write(root);
 }
 
-#include "../catch.hpp"
 TEST_CASE("Entity can read and write to and from JSON.", "[bind][json]") 
 {
   Account account = Account();

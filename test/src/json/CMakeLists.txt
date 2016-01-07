@@ -5,24 +5,18 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
-cmake_minimum_required(VERSION 2.8)
-
 if (NOT JsonCpp)
   message(WARNING "Skipping test_json.")
   return()
 endif (NOT JsonCpp)
 
-add_executable(test_json
-	main.cpp
+nbdl_catch_test_suite(build_targets test.nbdl.binders.jsoncpp
   bind_json.cpp
   bind_json_variant.cpp
   bind_json_sequence.cpp
-	)
+)
 
-#bleh
-target_include_directories(test_json
-  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../../src"
-  )
-
-target_link_libraries(test_json nbdl_binders_jsoncpp)
-#target_link_libraries(test_json ${JsonCpp})
+foreach(_target IN LISTS build_targets)
+  target_link_libraries(${_target} nbdl_binders_jsoncpp)
+  target_link_libraries(${_target} ${JsonCpp})
+endforeach()

@@ -1,13 +1,6 @@
 #ifndef NBDL_MAIN_HEADER_FILE
 #define NBDL_MAIN_HEADER_FILE
 
-//tags
-namespace nbdl {
-
-struct NotFound {};
-
-}//nbdl
-
 #include <def/builder/Context.hpp>
 
 #include <EntityTraits.hpp>

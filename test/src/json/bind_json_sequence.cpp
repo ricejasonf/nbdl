@@ -4,13 +4,14 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include <string>
-#include <boost/hana.hpp>
-#include <nbdl>
+#include<Bind.hpp>
 #include<binders/jsoncpp/Read.hpp>
 #include<binders/jsoncpp/Write.hpp>
-#include <jsoncpp/json/json.h>
-#include "../catch.hpp"
+
+#include<boost/hana.hpp>
+#include<catch.hpp>
+#include<jsoncpp/json/json.h>
+#include<string>
 
 namespace hana = boost::hana;
 
