@@ -12,9 +12,6 @@ if (EMSCRIPTEN)
   return()
 endif (EMSCRIPTEN)
 
-add_subdirectory(websocket)
-add_subdirectory(json)
-
 nbdl_catch_test_suite(build_targets "test.nbdl.core"
   factorial.cpp
   path.cpp
@@ -22,6 +19,9 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   store.cpp
   context_read.cpp
 )
+
+add_subdirectory(websocket)
+add_subdirectory(binders/jsoncpp)
 
 #requires boost right now
 #msg_id.cpp 

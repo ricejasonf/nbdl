@@ -6,14 +6,14 @@
 #
 
 if (NOT JsonCpp)
-  message(WARNING "Skipping test_json.")
+  message(WARNING "Skipping test.nbdl.binders.jsoncpp.")
   return()
 endif (NOT JsonCpp)
 
 nbdl_catch_test_suite(build_targets test.nbdl.binders.jsoncpp
-  bind_json.cpp
-  bind_json_variant.cpp
-  bind_json_sequence.cpp
+  bind.cpp
+  bind_variant.cpp
+  bind_sequence.cpp
 )
 
 foreach(_target IN LISTS build_targets)

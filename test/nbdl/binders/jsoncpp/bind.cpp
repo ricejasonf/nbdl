@@ -7,7 +7,7 @@
 #include<Bind.hpp>
 #include<binders/jsoncpp/Read.hpp>
 #include<binders/jsoncpp/Write.hpp>
-#include "../assets/AccountEntity.hpp"
+#include<assets/AccountEntity.hpp>
 
 #include<boost/hana.hpp>
 #include<catch.hpp>
