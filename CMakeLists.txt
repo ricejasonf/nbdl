@@ -17,6 +17,7 @@ add_custom_target(check
 
 function(nbdl_add_test name)
   add_executable("${name}" EXCLUDE_FROM_ALL ${ARGN})
+  add_dependencies(check "${name}")
   if (NBDL_ENABLE_MEMCHECK)
     add_test(
       NAME ${name}
