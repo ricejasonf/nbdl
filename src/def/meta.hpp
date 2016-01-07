@@ -4,8 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_DEF_META_DEFINITION_HPP
-#define NBDL_DEF_META_DEFINITION_HPP
+#ifndef NBDL_MPDEF_DIRECTIVE_HPP
+#define NBDL_MPDEF_DIRECTIVE_HPP
 
 #include<boost/hana.hpp>
 
@@ -28,7 +28,7 @@ template<typename... Tn> constexpr auto NAME(Tn&&... tn)                        
 { return                                                                        \
   boost::hana::make_pair                                                        \
   (tag::NAME, boost::hana::make_tuple(                                          \
-    nbdl_def_meta::ListDirectiveHelper<decltype(tag::NAME##_li), Tn>::apply(std::forward<Tn>(tn))...));    \
+    mpdef::ListDirectiveHelper<decltype(tag::NAME##_li), Tn>::apply(std::forward<Tn>(tn))...));    \
 }
 
 #define MPDEF_DIRECTIVE_LEAF(NAME)                      \
@@ -40,7 +40,7 @@ template<typename T> constexpr auto NAME(T&& t)  \
 { return boost::hana::make_pair(tag::NAME, std::forward<T>(t)); }
 
 
-namespace nbdl_def_meta {
+namespace mpdef {
 
 namespace hana = boost::hana;
 
@@ -182,6 +182,6 @@ constexpr FindAllInTree findAllInTree{};
 constexpr auto createAllInTreeFinder = hana::curry<2>(hana::flip(findAllInTree));
 */
 
-}//nbdl_def_meta
+}//mpdef
 
 #endif
