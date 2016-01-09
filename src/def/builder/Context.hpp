@@ -124,15 +124,20 @@ class Context
 
   constexpr auto accessPoints()
   {
+    constexpr auto append_if = hana::reverse_partial(hana::reverse_partial(hana::if_, hana::id), hana::append);
+    constexpr auto settings = mpdef::withSettings(tag::Store, tag::StoreEmitter);
     auto pred = hana::compose(hana::equal.to(tag::AccessPoint), hana::first);
-    auto collector = hana::demux(hana::make_pair)
+    auto collector = mpdef::composeCollector(
       (
-        hana::compose(mpdef::withSettings(tag::Store, tag::StoreEmitter), hana::first),
-        //tuple of PrimaryKeys within nested Accesspoints
-        hana::lockstep(
+        mpdef::collectSettings,
+        hana::demux(hana::if_)
+        (hana::arg<2>, hana::arg<1>, 
+          
+
         if (pred(x))
           append(state, x[tag::PrimaryKey]
       )
+    );
   }
 
   auto storeMap()
