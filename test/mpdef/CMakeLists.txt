@@ -11,3 +11,6 @@ nbdl_add_test("test.mpdef.find_in_tree"
 nbdl_add_test("test.mpdef.collect_settings"
   collect_settings.cpp
 )
+nbdl_add_test("test.mpdef.compose_collectors"
+  compose_collectors.cpp
+)
