@@ -122,19 +122,17 @@ class Context
       Path_ >>;
   }
 
-  auto accessPoints()
+  constexpr auto accessPoints()
   {
-    constexpr auto access_point_def_nodes =
-      meta::findAllInTree(def,
-        [](auto x) {
-          return hana::first(x) == tag::AccessPoint
-            && hana::size(meta::findByTag(tag::Actions)) > hana::size_c<0>;
-        });
-      
-    return hana::unpack(access_point_def_nodes,
-      [](auto... x) {
-        return hana::make_tuple(hana::unpack(x, make<AccessPoint>)...);
-      });
+    auto pred = hana::compose(hana::equal.to(tag::AccessPoint), hana::first);
+    auto collector = hana::demux(hana::make_pair)
+      (
+        hana::compose(mpdef::withSettings(tag::Store, tag::StoreEmitter), hana::first),
+        //tuple of PrimaryKeys within nested Accesspoints
+        hana::lockstep(
+        if (pred(x))
+          append(state, x[tag::PrimaryKey]
+      )
   }
 
   auto storeMap()

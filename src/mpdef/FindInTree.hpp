@@ -7,8 +7,10 @@
 #ifndef NBDL_MPDEF_FIND_IN_TREE_HPP
 #define NBDL_MPDEF_FIND_IN_TREE_HPP
 
-#include<boost/hana.hpp>
 #include<mpdef/CollectSettings.hpp>
+
+#include<boost/hana.hpp>
+#include<utility>
 
 namespace mpdef {
 
@@ -34,32 +36,33 @@ constexpr auto isLeaf(hana::pair<First, hana::map<X...>>)
 }
 
 // InTreeFinder
-template<typename Pred, typename SummarizeAncestry>
+template<typename Pred, typename Summarize>
 struct InTreeFinder
 {
   Pred const& pred;
-  SummarizeAncestry const& summarizeAncestry;
+  Summarize const& summarize;
 
-  constexpr InTreeFinder(Pred const& p, SummarizeAncestry const& s) :
+  constexpr InTreeFinder(Pred const& p, Summarize const& s) :
     pred(p),
-    summarizeAncestry(s)
+    summarize(s)
   {}
 
-  template<typename Tree, typename AncestorSummary, typename IsLeaf>
+  template<typename Tree, typename Summary, typename IsLeaf>
   constexpr auto helper(
     Tree const& tree,
-    AncestorSummary const& ancestor_summary,
+    Summary const& summary,
     hana::true_, //pred
     IsLeaf       //could be branch or leaf
     ) const
   {
-    return hana::make_tuple(hana::make_pair(tree, ancestor_summary));
+    //matching node
+    return hana::make_tuple(hana::make_pair(tree, summarize(summary, tree)));
   }
 
-  template<typename Leaf, typename AncestrySummary>
+  template<typename Leaf, typename Summary>
   constexpr auto helper(
     Leaf,
-    AncestrySummary,
+    Summary,
     hana::false_, //pred
     hana::true_   //is_leaf
     ) const
@@ -67,39 +70,39 @@ struct InTreeFinder
     return hana::make_tuple();
   }
 
-  template<typename Tree, typename AncestorSummary>
+  template<typename Tree, typename Summary>
   constexpr auto helper(
     Tree const& tree,
-    AncestorSummary const& ancestor_summary,
+    Summary const& summary,
     hana::false_, //pred
-    hana::false_   //is_leaf
+    hana::false_  //is_leaf
     ) const
   {
-    auto new_summary = summarizeAncestry(ancestor_summary, tree);
+    auto new_summary = summarize(summary, tree);
     return hana::flatten(hana::unpack(hana::second(tree),
-      hana::on(hana::make_tuple, hana::reverse_partial(*this, new_summary))));
+      hana::on(hana::make_tuple, hana::reverse_partial(*this, std::move(new_summary)))));
   }
 
-  template<typename Tree, typename AncestrySummary>
-  constexpr auto operator()(Tree const& tree, AncestrySummary const& ancestry_summary) const
+  template<typename Tree, typename Summary>
+  constexpr auto operator()(Tree const& tree, Summary const& summary) const
   {
-    return helper(tree, ancestry_summary, pred(tree), details::isLeaf(tree));
+    return helper(tree, summary, pred(tree), details::isLeaf(tree));
   }
 };
 
 }//details
 
-// returns ((node, ancestry_summary)...)
+// returns ((node, summary)...)
 struct FindInTree
 {
-  template<typename Tree, typename InitialSummary, typename SummarizeAncestry, typename Pred>
+  template<typename Tree, typename InitialSummary, typename Summarize, typename Pred>
   constexpr auto operator()(
       Tree const& tree,
       InitialSummary const& initial_summary,
-      SummarizeAncestry const& summarizeAncestry,
+      Summarize const& summarize,
       Pred const& pred) const
   {
-    return details::InTreeFinder<Pred, SummarizeAncestry>(pred, summarizeAncestry)(
+    return details::InTreeFinder<Pred, Summarize>(pred, summarize)(
       tree,
       initial_summary
     );
@@ -110,20 +113,9 @@ struct FindInTree
   constexpr auto withSettings(Tag&&... tag) const
   {
     auto initial_state = mpdef::withSettings(std::forward<Tag>(tag)...);
-    auto collectFinal =
-        hana::reverse_partial(hana::transform,
-          hana::reverse_partial(hana::unpack, //pair
-            hana::demux(hana::make_pair)
-            (
-              hana::arg<1>,
-              hana::flip(mpdef::collectSettings)
-            )));
-    return hana::curry<2>(hana::demux(collectFinal)
-      (
-        //(tree, summarize, pred)
-        hana::demux(hana::partial(hana::flip(*this), initial_state))
-        (hana::arg<2>, hana::always(mpdef::collectSettings), hana::arg<1>)
-      )
+    return hana::curry<2>( 
+      hana::demux(hana::partial(hana::flip(*this), std::move(initial_state)))
+      (hana::arg<2>, hana::always(mpdef::collectSettings), hana::arg<1>)
     );
   }
 };
