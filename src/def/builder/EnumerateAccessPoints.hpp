@@ -1,0 +1,118 @@
+//
+// Copyright Jason Rice 2015
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+//
+#ifndef NBDL_DEF_BUILDER_ENUMERATE_ACCESS_POINTS_HPP
+#define NBDL_DEF_BUILDER_ENUMERATE_ACCESS_POINTS_HPP
+
+#include<def/builder.hpp>
+#include<mpdef/AppendIf.hpp>
+#include<mpdef/CollectSettings.hpp>
+#include<mpdef/ComposeCollectors.hpp>
+#include<mpdef/FindInTree.hpp>
+
+#include<utility>
+
+#include<iostream>
+#include<boost/hana/experimental/printable.hpp>
+
+namespace nbdl_def {
+namespace builder {
+
+namespace enum_access_points_detail {
+
+constexpr auto settings = mpdef::withSettings(tag::Store, tag::StoreEmitter);
+constexpr auto pred = hana::demux(hana::eval_if)
+(
+  hana::is_a<hana::pair_tag>,
+  hana::make_lazy(hana::compose(hana::equal.to(tag::AccessPoint), hana::first)),
+  hana::always(hana::make_lazy(hana::false_c))
+);
+constexpr auto collector = mpdef::composeCollectors(
+  mpdef::collectSettings,
+  mpdef::appendIf(pred)
+);
+constexpr auto matcher = mpdef::createInTreeFinder(pred, collector,
+  hana::make_tuple(settings, hana::make_tuple()));
+
+// called on result of FindInTree which is (node, summary)
+constexpr auto hasActions = hana::compose(hana::demux(hana::maybe)
+(
+  hana::always(hana::false_c),
+  hana::always(hana::compose(hana::reverse_partial(hana::greater, hana::size_c<0>), hana::length)),
+  hana::compose(hana::reverse_partial(hana::find, tag::Actions), hana::second)
+), hana::first);
+
+struct Helper
+{
+  template<typename Def>
+  constexpr auto operator()(Def&& def) const
+  {
+    using hana::on;
+
+    auto results = matcher(std::forward<Def>(def));
+    return hana::concat(
+      hana::filter(results, hasActions),
+      hana::flatten(hana::flatten(hana::unpack(
+        hana::transform(hana::transform(std::move(results), hana::first), hana::second),
+        hana::make_tuple ^on^ hana::fuse(hana::make_tuple ^on^ (*this)))))
+    );
+  }
+};
+constexpr Helper helper{};
+
+struct ResultHelper
+{
+  template<typename Result>
+  constexpr auto operator()(Result&& result)
+  {
+    auto node_children = hana::second(hana::first(result));
+    auto summary = hana::second(result);
+    auto settings = summary[hana::int_c<0>];
+    auto primary_keys = summary[hana::int_c<1>];
+    return hana::make_map(
+      hana::make_pair(tag::Name, node_children[tag::Name]),
+      hana::make_pair(tag::Actions, node_children[tag::Actions]),
+      hana::make_pair(tag::Store, 
+        settings[tag::Store].value_or(
+          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>
+        )
+      ),
+      hana::make_pair(tag::StoreEmitter,
+        settings[tag::StoreEmitter].value_or(
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>
+        )
+      )/*,
+      hana::make_pair(tag::PrimaryKeys, std::move(primary_keys))
+      */
+    );
+  }
+};
+constexpr ResultHelper resultHelper{};
+
+}//enum_access_points_detail
+
+/*
+ * Gets AccessPoints that have actions. Returns tuple of friendly results
+ * (Name, PrimaryKeys, Actions, Store, StoreImpl)
+ */
+struct EnumerateAccessPoints
+{
+  template<typename Def>
+  constexpr auto operator()(Def&& def) const
+  {
+    using enum_access_points_detail::helper;
+    using enum_access_points_detail::resultHelper;
+    using hana::on;
+
+    return hana::unpack(helper(std::forward<Def>(def)),
+      hana::make_tuple ^on^ resultHelper);
+  }
+};
+constexpr EnumerateAccessPoints enumerateAccessPoints{};
+
+}//builder
+}//nbdl_def
+#endif
