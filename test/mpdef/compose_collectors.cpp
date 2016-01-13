@@ -14,23 +14,35 @@ namespace hana = boost::hana;
 template<int i>
 constexpr auto counter = hana::demux(hana::partial(hana::plus, hana::int_c<i>))(hana::arg<1>);
 
+template<int i>
+constexpr auto mult = hana::demux(hana::append)
+(
+  hana::arg<1>,
+  hana::demux(hana::partial(hana::mult, hana::int_c<i>))(hana::arg<2>)
+);
+
 int main()
 {
   {
     constexpr auto xs = hana::to_tuple(hana::range_c<int, 0, 5>);
     constexpr auto initial_state = hana::make_tuple(
-      hana::int_c<0>,
-      hana::int_c<0>,
-      hana::int_c<0>
+      hana::make_tuple(),
+      hana::make_tuple(),
+      hana::make_tuple()
     );
     constexpr auto collector = mpdef::composeCollectors(
-      counter<1>,
-      counter<2>,
-      counter<3>
+      mult<1>,
+      mult<2>,
+      mult<3>
     );
-    constexpr auto result = collector(initial_state, xs);
+    constexpr auto result = hana::fold(xs, initial_state, collector);
+    constexpr auto expected = hana::make_tuple(
+      hana::tuple_c<int, 0, 1, 2, 3, 4>,
+      hana::tuple_c<int, 0, 2, 4, 6, 8>,
+      hana::tuple_c<int, 0, 3, 6, 9, 12>
+    );
 
-    BOOST_HANA_CONSTANT_ASSERT(result == hana::tuple_c<int, 1, 2, 3>);
+    BOOST_HANA_CONSTANT_ASSERT(result == expected);
   }
 
   {
