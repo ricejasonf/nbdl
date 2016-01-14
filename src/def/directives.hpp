@@ -36,11 +36,8 @@ MPDEF_DIRECTIVE(Delete)
 MPDEF_DIRECTIVE_LEAF(Store)
 MPDEF_DIRECTIVE_LEAF(StoreEmitter)
 
-namespace tag
-{
-  struct PrimaryKeys_t {};
-  constexpr auto PrimaryKeys = boost::hana::type_c<PrimaryKeys_t>;
-}
+MPDEF_DIRECTIVE_LIST(EntityNames)
+MPDEF_DIRECTIVE_LEAF(EntityName)
 
 }//nbdl_def
 

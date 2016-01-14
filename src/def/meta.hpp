@@ -21,14 +21,11 @@ template<typename... Tn> constexpr auto NAME(Tn&&... tn)  \
 namespace tag {                                                                 \
   struct NAME##_t {};                                                           \
   constexpr auto NAME = boost::hana::type_c<NAME##_t>;                          \
-  struct NAME##_li_t {};                                                        \
-  constexpr auto NAME##_li = boost::hana::type_c<NAME##_li_t>;                  \
 }                                                                               \
 template<typename... Tn> constexpr auto NAME(Tn&&... tn)                        \
 { return                                                                        \
   boost::hana::make_pair                                                        \
-  (tag::NAME, boost::hana::make_tuple(                                          \
-    mpdef::ListDirectiveHelper<decltype(tag::NAME##_li), Tn>::apply(std::forward<Tn>(tn))...));    \
+  (tag::NAME, boost::hana::make_tuple(std::forward<Tn>(tn)...));                \
 }
 
 #define MPDEF_DIRECTIVE_LEAF(NAME)                      \

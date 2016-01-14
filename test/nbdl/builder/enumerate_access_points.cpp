@@ -40,13 +40,16 @@ int main()
       AccessPoints(
         AccessPoint(
           Name(names::Nested1),
+          EntityName(names::Nested1),
           Actions(Create(), Read(), Update(), Delete())
         ),
         AccessPoint(
           Name(names::Nested2),
+          EntityName(names::Nested2),
           AccessPoints(
             AccessPoint(
               Name(names::Nested3),
+              EntityName(names::Nested3),
               Actions(Create())
             )
           )
@@ -61,13 +64,16 @@ int main()
         Clients(
           Client(
             Name(names::Client1),
+            EntityName(names::Client1),
             AccessPoints(
               AccessPoint(
                 Name(names::Root1),
+                EntityName(names::Root1),
                 nested_accesspoints
               ),
               AccessPoint(
                 Name(names::Root2),
+                EntityName(names::Root2),
                 Actions(
                   Create(),
                   Read(),
@@ -80,8 +86,10 @@ int main()
           ),
           Client(
             Name(names::Client2),
+            EntityName(names::Client2),
             AccessPoint(
               Name(names::Root3),
+              EntityName(names::Root3),
               Actions(
                 Create()
               ),
@@ -108,7 +116,8 @@ int main()
         hana::make_pair(tag::Store,
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
         hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>)
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
+        EntityNames(names::Root2)
       ),
       // Root3
       hana::make_map(
@@ -121,7 +130,8 @@ int main()
         hana::make_pair(tag::Store,
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
         hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>)
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
+        EntityNames(names::Root3)
       ),
       // Root1/Nested1
       hana::make_map(
@@ -137,7 +147,11 @@ int main()
         hana::make_pair(tag::Store,
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
         hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>)
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
+        EntityNames(
+          names::Root1,
+          names::Nested1
+        )
       ),
       // Root1/Nested2/Nested3
       hana::make_map(
@@ -150,7 +164,12 @@ int main()
         hana::make_pair(tag::Store,
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
         hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>)
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
+        EntityNames(
+          names::Root1,
+          names::Nested2,
+          names::Nested3
+        )
       ),
       // Root2/Nested1
       hana::make_map(
@@ -166,7 +185,11 @@ int main()
         hana::make_pair(tag::Store,
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
         hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>)
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
+        EntityNames(
+          names::Root2,
+          names::Nested1
+        )
       ),
       // Root2/Nested2/Nested3
       hana::make_map(
@@ -179,7 +202,12 @@ int main()
         hana::make_pair(tag::Store,
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
         hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>)
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
+        EntityNames(
+          names::Root2,
+          names::Nested2,
+          names::Nested3
+        )
       ),
       // Root3/Nested1
       hana::make_map(
@@ -195,7 +223,11 @@ int main()
         hana::make_pair(tag::Store,
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
         hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>)
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
+        EntityNames(
+          names::Root3,
+          names::Nested1
+        )
       ),
       // Root3/Nested2/Nested3
       hana::make_map(
@@ -208,7 +240,12 @@ int main()
         hana::make_pair(tag::Store,
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
         hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>)
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
+        EntityNames(
+          names::Root3,
+          names::Nested2,
+          names::Nested3
+        )
       )
     );
 

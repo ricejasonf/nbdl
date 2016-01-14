@@ -15,9 +15,6 @@
 
 #include<utility>
 
-#include<iostream>
-#include<boost/hana/experimental/printable.hpp>
-
 namespace nbdl_def {
 namespace builder {
 
@@ -32,10 +29,24 @@ constexpr auto pred = hana::demux(hana::eval_if)
 );
 constexpr auto collector = mpdef::composeCollectors(
   mpdef::collectSettings,
-  mpdef::appendIf(pred)
+  hana::demux(hana::eval_if)
+  (
+    hana::demux(pred)(hana::arg<2>),
+    hana::make_lazy(
+      hana::demux(hana::append)
+      (
+        hana::arg<1>,
+        hana::demux(hana::reverse_partial(hana::at_key, tag::EntityName))
+        (
+          hana::demux(hana::second)(hana::arg<2>)
+        )
+      )
+    ),
+    hana::make_lazy(hana::arg<1>) 
+  )
 );
-constexpr auto matcher = mpdef::createInTreeFinder(pred, collector,
-  hana::make_tuple(settings, hana::make_tuple()));
+constexpr auto matcher = mpdef::createInTreeFinder(pred, collector);
+constexpr auto initial_summary = hana::make_tuple(settings, hana::make_tuple());
 
 // called on result of FindInTree which is (node, summary)
 constexpr auto hasActions = hana::compose(hana::demux(hana::maybe)
@@ -45,19 +56,30 @@ constexpr auto hasActions = hana::compose(hana::demux(hana::maybe)
   hana::compose(hana::reverse_partial(hana::find, tag::Actions), hana::second)
 ), hana::first);
 
+struct HelperHelper
+{
+  template<typename Helper, typename HelperResult>
+  constexpr auto operator()(Helper const& helper, HelperResult&& result)
+  {
+    return hana::unpack(hana::second(hana::first(result)),
+      hana::make_tuple ^hana::on^ hana::partial(helper, hana::second(result)));
+  }
+};
+constexpr HelperHelper helperhelper{};
+
 struct Helper
 {
-  template<typename Def>
-  constexpr auto operator()(Def&& def) const
+  template<typename Summary, typename Def>
+  constexpr auto operator()(Summary&& summary, Def&& def) const
   {
     using hana::on;
 
-    auto results = matcher(std::forward<Def>(def));
+    auto results = matcher(std::forward<Summary>(summary), std::forward<Def>(def));
     return hana::concat(
       hana::filter(results, hasActions),
-      hana::flatten(hana::flatten(hana::unpack(
-        hana::transform(hana::transform(std::move(results), hana::first), hana::second),
-        hana::make_tuple ^on^ hana::fuse(hana::make_tuple ^on^ (*this)))))
+      hana::flatten(hana::flatten(hana::unpack(std::move(results),
+        hana::make_tuple ^on^ hana::partial(helperhelper, *this)
+      )))
     );
   }
 };
@@ -71,7 +93,7 @@ struct ResultHelper
     auto node_children = hana::second(hana::first(result));
     auto summary = hana::second(result);
     auto settings = summary[hana::int_c<0>];
-    auto primary_keys = summary[hana::int_c<1>];
+    auto entity_names = summary[hana::int_c<1>];
     return hana::make_map(
       hana::make_pair(tag::Name, node_children[tag::Name]),
       hana::make_pair(tag::Actions, node_children[tag::Actions]),
@@ -84,9 +106,8 @@ struct ResultHelper
         settings[tag::StoreEmitter].value_or(
           hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>
         )
-      )/*,
-      hana::make_pair(tag::PrimaryKeys, std::move(primary_keys))
-      */
+      ),
+      hana::make_pair(tag::EntityNames, std::move(entity_names))
     );
   }
 };
@@ -105,9 +126,10 @@ struct EnumerateAccessPoints
   {
     using enum_access_points_detail::helper;
     using enum_access_points_detail::resultHelper;
+    using enum_access_points_detail::initial_summary;
     using hana::on;
 
-    return hana::unpack(helper(std::forward<Def>(def)),
+    return hana::unpack(helper(initial_summary, std::forward<Def>(def)),
       hana::make_tuple ^on^ resultHelper);
   }
 };
