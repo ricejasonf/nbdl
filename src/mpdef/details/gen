@@ -1,0 +1,18 @@
+#!/usr/bin/php
+
+<?php function generate($foo) { ?>
+<?php for ($i = 63; $i > 0; $i--): ?>
+#define <?= $foo ?><?= $i ?>(NAME, ...) \
+  constexpr auto NAME() const { return T<?= $i ?>{}; }
+  <?= $foo ?><?= ($i - 1) ?>(NAME, __VA_ARGS__)
+<?php endfor; ?>
+<?php } ?>
+<?php 
+  if (isset($argv[1])) {
+    generate($argv[1]); 
+  } else {
+    printf("\nGenerates redundant components of a variadic macro.");
+    printf("\n\n  gen <macro name>");
+    printf("\n\n");
+  }
+?>

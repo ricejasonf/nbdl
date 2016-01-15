@@ -8,3 +8,7 @@
 nbdl_add_test("test.builder.enumerate_access_points"
   enumerate_access_points.cpp
 )
+
+nbdl_add_test("test.builder.entity_meta"
+  entity_meta.cpp
+)
