@@ -128,12 +128,16 @@ class Path
 
 };
 
-template<typename... Pairs>
-constexpr auto makePathTypeFromPairs(Pairs... pairs)
+struct MakePathTypeFromPairs
 {
-  using Spec = decltype(hana::make_tuple(pairs...));
-  return hana::type_c<Path<Spec>>;
-}
+  template<typename... Pairs>
+  constexpr auto operator()(Pairs... pairs) const
+  {
+    using Spec = decltype(hana::make_tuple(pairs...));
+    return hana::type_c<Path<Spec>>;
+  }
+};
+constexpr MakePathTypeFromPairs makePathTypeFromPairs{};
 
 template<typename Key, typename... EntityType>
 constexpr auto path_type = makePathTypeFromPairs(

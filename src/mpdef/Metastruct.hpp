@@ -6,6 +6,10 @@
 //
 #ifndef NBDL_MPDEF_METASTRUCT_HPP
 #define NBDL_MPDEF_METASTRUCT_HPP
+
+#include<boost/hana/bool.hpp>
+#include<boost/hana/equal.hpp>
+
 namespace mpdef {
 
 struct MetastructTag {};

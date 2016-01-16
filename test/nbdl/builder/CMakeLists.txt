@@ -16,3 +16,7 @@ nbdl_add_test("test.nbdl.builder.entity_meta"
 nbdl_add_test("test.nbdl.builder.access_point_meta"
   access_point_meta.cpp
 )
+
+nbdl_add_test("test.nbdl.builder.path"
+  path.cpp
+)
