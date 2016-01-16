@@ -103,145 +103,110 @@ int main()
 
     constexpr auto expected = hana::make_tuple(
       // Root2
-      hana::make_map(
-        hana::make_pair(tag::Name, names::Root2),
-        hana::make_pair(tag::Actions,
-          hana::make_map(
-            hana::make_pair(tag::Create,  hana::make_map()),
-            hana::make_pair(tag::Read,    hana::make_map()),
-            hana::make_pair(tag::Update,  hana::make_map()),
-            hana::make_pair(tag::Delete,  hana::make_map())
-          )
+      builder::makeAccessPointMeta(
+        names::Root2,
+        hana::make_map(
+          hana::make_pair(tag::Create,  hana::make_map()),
+          hana::make_pair(tag::Read,    hana::make_map()),
+          hana::make_pair(tag::Update,  hana::make_map()),
+          hana::make_pair(tag::Delete,  hana::make_map())
         ),
-        hana::make_pair(tag::Store,
-          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
-        hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
-        EntityNames(names::Root2)
+        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        hana::make_tuple(names::Root2)
       ),
       // Root3
-      hana::make_map(
-        hana::make_pair(tag::Name, names::Root3),
-        hana::make_pair(tag::Actions,
-          hana::make_map(
-            hana::make_pair(tag::Create,  hana::make_map())
-          )
+      builder::makeAccessPointMeta(
+        names::Root3,
+        hana::make_map(
+          hana::make_pair(tag::Create,  hana::make_map())
         ),
-        hana::make_pair(tag::Store,
-          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
-        hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
-        EntityNames(names::Root3)
+        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        hana::make_tuple(names::Root3)
       ),
       // Root1/Nested1
-      hana::make_map(
-        hana::make_pair(tag::Name, names::Nested1),
-        hana::make_pair(tag::Actions,
-          hana::make_map(
-            hana::make_pair(tag::Create,  hana::make_map()),
-            hana::make_pair(tag::Read,    hana::make_map()),
-            hana::make_pair(tag::Update,  hana::make_map()),
-            hana::make_pair(tag::Delete,  hana::make_map())
-          )
+      builder::makeAccessPointMeta(
+        names::Nested1,
+        hana::make_map(
+          hana::make_pair(tag::Create,  hana::make_map()),
+          hana::make_pair(tag::Read,    hana::make_map()),
+          hana::make_pair(tag::Update,  hana::make_map()),
+          hana::make_pair(tag::Delete,  hana::make_map())
         ),
-        hana::make_pair(tag::Store,
-          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
-        hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
-        EntityNames(
-          names::Root1,
-          names::Nested1
-        )
+        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        hana::make_tuple(names::Root1, names::Nested1)
       ),
       // Root1/Nested2/Nested3
-      hana::make_map(
-        hana::make_pair(tag::Name, names::Nested3),
-        hana::make_pair(tag::Actions,
-          hana::make_map(
-            hana::make_pair(tag::Create,  hana::make_map())
-          )
+      builder::makeAccessPointMeta(
+        names::Nested3,
+        hana::make_map(
+          hana::make_pair(tag::Create,  hana::make_map())
         ),
-        hana::make_pair(tag::Store,
-          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
-        hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
-        EntityNames(
+        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        hana::make_tuple(
           names::Root1,
           names::Nested2,
           names::Nested3
         )
       ),
       // Root2/Nested1
-      hana::make_map(
-        hana::make_pair(tag::Name, names::Nested1),
-        hana::make_pair(tag::Actions,
-          hana::make_map(
-            hana::make_pair(tag::Create,  hana::make_map()),
-            hana::make_pair(tag::Read,    hana::make_map()),
-            hana::make_pair(tag::Update,  hana::make_map()),
-            hana::make_pair(tag::Delete,  hana::make_map())
-          )
+      builder::makeAccessPointMeta(
+        names::Nested1,
+        hana::make_map(
+          hana::make_pair(tag::Create,  hana::make_map()),
+          hana::make_pair(tag::Read,    hana::make_map()),
+          hana::make_pair(tag::Update,  hana::make_map()),
+          hana::make_pair(tag::Delete,  hana::make_map())
         ),
-        hana::make_pair(tag::Store,
-          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
-        hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
-        EntityNames(
+        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        hana::make_tuple(
           names::Root2,
           names::Nested1
         )
       ),
       // Root2/Nested2/Nested3
-      hana::make_map(
-        hana::make_pair(tag::Name, names::Nested3),
-        hana::make_pair(tag::Actions,
-          hana::make_map(
-            hana::make_pair(tag::Create,  hana::make_map())
-          )
+      builder::makeAccessPointMeta(
+        names::Nested3,
+        hana::make_map(
+          hana::make_pair(tag::Create,  hana::make_map())
         ),
-        hana::make_pair(tag::Store,
-          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
-        hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
-        EntityNames(
+        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        hana::make_tuple(
           names::Root2,
           names::Nested2,
           names::Nested3
         )
       ),
       // Root3/Nested1
-      hana::make_map(
-        hana::make_pair(tag::Name, names::Nested1),
-        hana::make_pair(tag::Actions,
-          hana::make_map(
-            hana::make_pair(tag::Create,  hana::make_map()),
-            hana::make_pair(tag::Read,    hana::make_map()),
-            hana::make_pair(tag::Update,  hana::make_map()),
-            hana::make_pair(tag::Delete,  hana::make_map())
-          )
+      builder::makeAccessPointMeta(
+        names::Nested1,
+        hana::make_map(
+          hana::make_pair(tag::Create,  hana::make_map()),
+          hana::make_pair(tag::Read,    hana::make_map()),
+          hana::make_pair(tag::Update,  hana::make_map()),
+          hana::make_pair(tag::Delete,  hana::make_map())
         ),
-        hana::make_pair(tag::Store,
-          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
-        hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
-        EntityNames(
+        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        hana::make_tuple(
           names::Root3,
           names::Nested1
         )
       ),
       // Root3/Nested2/Nested3
-      hana::make_map(
-        hana::make_pair(tag::Name, names::Nested3),
-        hana::make_pair(tag::Actions,
-          hana::make_map(
-            hana::make_pair(tag::Create,  hana::make_map())
-          )
+      builder::makeAccessPointMeta(
+        names::Nested3,
+        hana::make_map(
+          hana::make_pair(tag::Create,  hana::make_map())
         ),
-        hana::make_pair(tag::Store,
-          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
-        hana::make_pair(tag::StoreEmitter,
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
-        EntityNames(
+        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        hana::make_tuple(
           names::Root3,
           names::Nested2,
           names::Nested3
@@ -250,5 +215,26 @@ int main()
     );
 
     BOOST_HANA_CONSTANT_ASSERT(result == expected);
+
+    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].name() == names::Root2);
+    /* map is not default constructible :(
+    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].actions() ==
+      hana::make_map(
+        hana::make_pair(tag::Create,  hana::make_map()),
+        hana::make_pair(tag::Read,    hana::make_map()),
+        hana::make_pair(tag::Update,  hana::make_map()),
+        hana::make_pair(tag::Delete,  hana::make_map())
+      )
+    );
+    */
+    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].store() ==
+      hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>
+    );
+    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].storeEmitter() ==
+      hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>
+    );
+    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].entityNames() ==
+      hana::make_tuple(names::Root2)
+    );
   }
 }

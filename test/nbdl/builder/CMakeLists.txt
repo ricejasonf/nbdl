@@ -5,10 +5,14 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
-nbdl_add_test("test.builder.enumerate_access_points"
+nbdl_add_test("test.nbdl.builder.enumerate_access_points"
   enumerate_access_points.cpp
 )
 
-nbdl_add_test("test.builder.entity_meta"
+nbdl_add_test("test.nbdl.builder.entity_meta"
   entity_meta.cpp
+)
+
+nbdl_add_test("test.nbdl.builder.access_point_meta"
+  access_point_meta.cpp
 )

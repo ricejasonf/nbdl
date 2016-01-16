@@ -8,6 +8,7 @@
 #define NBDL_DEF_BUILDER_ENUMERATE_ACCESS_POINTS_HPP
 
 #include<def/builder.hpp>
+#include<def/builder/AccessPointMeta.hpp>
 #include<mpdef/AppendIf.hpp>
 #include<mpdef/CollectSettings.hpp>
 #include<mpdef/ComposeCollectors.hpp>
@@ -94,20 +95,16 @@ struct ResultHelper
     auto summary = hana::second(result);
     auto settings = summary[hana::int_c<0>];
     auto entity_names = summary[hana::int_c<1>];
-    return hana::make_map(
-      hana::make_pair(tag::Name, node_children[tag::Name]),
-      hana::make_pair(tag::Actions, node_children[tag::Actions]),
-      hana::make_pair(tag::Store, 
-        settings[tag::Store].value_or(
-          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>
-        )
+    return builder::makeAccessPointMeta(
+      node_children[tag::Name],
+      node_children[tag::Actions],
+      settings[tag::Store].value_or(
+        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>
       ),
-      hana::make_pair(tag::StoreEmitter,
-        settings[tag::StoreEmitter].value_or(
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>
-        )
+      settings[tag::StoreEmitter].value_or(
+        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>
       ),
-      hana::make_pair(tag::EntityNames, std::move(entity_names))
+      std::move(entity_names)
     );
   }
 };

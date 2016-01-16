@@ -6,13 +6,14 @@
 //
 #ifndef MPDEF_METASTRUCT
 
+#include<mpdef/Metastruct.hpp>
 #include<mpdef/details/_MPDEF_METASTRUCT_TEMPLATE_PARAMS.hpp>
 #include<mpdef/details/_MPDEF_METASTRUCT_ACCESSORS.hpp>
 
 #define MPDEF_METASTRUCT(NAME, ...) \
 template<_MPDEF_METASTRUCT_TEMPLATE_PARAMS(__VA_ARGS__)> \
 struct NAME { \
+  using hana_tag = mpdef::MetastructTag; \
   _MPDEF_METASTRUCT_ACCESSORS(__VA_ARGS__) \
-};
-
+}; 
 #endif
