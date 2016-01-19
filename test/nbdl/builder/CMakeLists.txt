@@ -24,3 +24,7 @@ nbdl_add_test("test.nbdl.builder.path"
 nbdl_add_test("test.nbdl.builder.store"
   store.cpp
 )
+
+nbdl_add_test("test.nbdl.builder.store_map"
+  store_map.cpp
+)

@@ -40,7 +40,6 @@ constexpr auto entity_map = hana::make_map(
   hana::make_pair(names::Entity3, entity3_)
 );
 
-
 int main()
 {
   {
