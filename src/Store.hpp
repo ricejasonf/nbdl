@@ -12,20 +12,6 @@
 
 namespace nbdl {
 
-//todo maybe create a way to set default store containers on a per Context basis
-template<typename Context, typename PathType>
-struct StoreImpl
-{
-	using Type = store::HashMap<PathType>;
-};
-
-template<typename Context, typename PathType>
-struct StoreEmitterImpl
-{
-	using Type = store_emitter::HashMap<PathType, typename Context::ListenerHandler>;
-	using ListenerHandler = typename Context::ListenerHandler;
-};
-
 template<
   typename Impl,
   typename EmitterImpl,
@@ -49,19 +35,6 @@ class Store
 	public:
 
 	using Variant_ = typename Impl::Variant_;
-
-	/*
-	void action(Update action)
-	{
-		Variant_& value = impl.get(action.path);
-		//this doesn't use assign
-		value.match(
-			[&](Entity entity) {
-				action.patch(entity);	
-				value = entity;
-			});
-	}
-	*/
 
 	template<typename T>
 	void forceAssign(const PathType& path, T&& value)

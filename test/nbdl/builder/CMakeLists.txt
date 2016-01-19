@@ -20,3 +20,7 @@ nbdl_add_test("test.nbdl.builder.access_point_meta"
 nbdl_add_test("test.nbdl.builder.path"
   path.cpp
 )
+
+nbdl_add_test("test.nbdl.builder.store"
+  store.cpp
+)

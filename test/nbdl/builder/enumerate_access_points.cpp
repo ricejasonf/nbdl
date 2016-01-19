@@ -59,7 +59,7 @@ int main()
     constexpr auto def =
       Context(
         PrimaryKey(Type(hana::type_c<unsigned>)),
-        Store(hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
+        StoreContainer(hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
         StoreEmitter(hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
         Clients(
           Client(
@@ -227,7 +227,7 @@ int main()
       )
     );
     */
-    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].store() ==
+    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].storeContainer() ==
       hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>
     );
     BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].storeEmitter() ==

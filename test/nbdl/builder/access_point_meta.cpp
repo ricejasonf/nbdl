@@ -29,7 +29,7 @@ int main()
   );
   BOOST_HANA_CONSTANT_ASSERT(x.name() == name);
   BOOST_HANA_CONSTANT_ASSERT(x.actions() == actions);
-  BOOST_HANA_CONSTANT_ASSERT(x.store() == store);
+  BOOST_HANA_CONSTANT_ASSERT(x.storeContainer() == store);
   BOOST_HANA_CONSTANT_ASSERT(x.storeEmitter() == storeEmitter);
   BOOST_HANA_CONSTANT_ASSERT(x.entityNames() == entityNames);
 }

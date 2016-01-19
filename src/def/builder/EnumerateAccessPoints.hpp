@@ -9,6 +9,7 @@
 
 #include<def/builder.hpp>
 #include<def/builder/AccessPointMeta.hpp>
+#include<Listener.hpp>
 #include<mpdef/AppendIf.hpp>
 #include<mpdef/CollectSettings.hpp>
 #include<mpdef/ComposeCollectors.hpp>
@@ -21,7 +22,7 @@ namespace builder {
 
 namespace enum_access_points_detail {
 
-constexpr auto settings = mpdef::withSettings(tag::Store, tag::StoreEmitter);
+constexpr auto settings = mpdef::withSettings(tag::StoreContainer, tag::StoreEmitter);
 constexpr auto pred = hana::demux(hana::eval_if)
 (
   hana::is_a<hana::pair_tag>,
@@ -98,11 +99,12 @@ struct ResultHelper
     return builder::makeAccessPointMeta(
       node_children[tag::Name],
       node_children[tag::Actions],
-      settings[tag::Store].value_or(
+      settings[tag::StoreContainer].value_or(
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>
       ),
       settings[tag::StoreEmitter].value_or(
-        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>
+        hana::type_c<decltype(hana::partial(hana::template_<nbdl::store_emitter::HashMap>), 
+          hana::type_c<nbdl::ListenerHandlerDummy<>>)>
       ),
       std::move(entity_names)
     );
@@ -113,8 +115,7 @@ constexpr ResultHelper resultHelper{};
 }//enum_access_points_detail
 
 /*
- * Gets AccessPoints that have actions. Returns tuple of friendly results
- * (Name, PrimaryKeys, Actions, Store, StoreImpl)
+ * Gets AccessPoints that have actions. Returns tuple of AccessPointMeta
  */
 struct EnumerateAccessPoints
 {

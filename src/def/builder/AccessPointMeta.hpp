@@ -17,7 +17,7 @@ MPDEF_METASTRUCT(
   AccessPointMeta
   , name
   , actions
-  , store
+  , storeContainer
   , storeEmitter
   , entityNames
 );

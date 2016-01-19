@@ -78,7 +78,7 @@ constexpr auto storeEmitterImpl(ContextDef ctx, AccessPointDef access_point)
     meta::findByTag(ctx, tag::StoreEmitter));
   auto types = hana::make_map(
     hana::make_pair(BOOST_HANA_STRING("HashMap"),
-      hana::type_c<nbdl::store_emitter::HashMap<Path_, ListenerHandler_>>)
+      hana::type_c<nbdl::store_emitter::HashMap<ListenerHandler_, Path_>>)
   );
   return types[name];
 }

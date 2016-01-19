@@ -14,7 +14,7 @@
 namespace nbdl {
 namespace store_emitter {
 
-template<typename PathType, typename ListenerHandlerType>
+template<typename ListenerHandlerType, typename PathType>
 class HashMap
 {
 	public:

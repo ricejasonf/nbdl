@@ -15,7 +15,7 @@
 template<typename Path_>
 using Store = nbdl::Store<
   nbdl::store::HashMap<Path_>,
-  nbdl::store_emitter::HashMap<Path_, nbdl::ListenerHandlerDummy<>>,
+  nbdl::store_emitter::HashMap<nbdl::ListenerHandlerDummy<>, Path_>,
   nbdl::ListenerHandlerDummy<>,
   Path_ >;
 
