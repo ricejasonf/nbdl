@@ -19,8 +19,8 @@ namespace hana = boost::hana;
 
 namespace names {
 
-DEFINE_NAME(Client1);
-DEFINE_NAME(Client2);
+DEFINE_NAME(Provider1);
+DEFINE_NAME(Provider2);
 
 DEFINE_NAME(Root1);
 DEFINE_NAME(Root2);
@@ -61,10 +61,10 @@ int main()
         PrimaryKey(Type(hana::type_c<unsigned>)),
         StoreContainer(hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
         StoreEmitter(hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
-        Clients(
-          Client(
-            Name(names::Client1),
-            EntityName(names::Client1),
+        Providers(
+          Provider(
+            Name(names::Provider1),
+            EntityName(names::Provider1),
             AccessPoints(
               AccessPoint(
                 Name(names::Root1),
@@ -84,9 +84,9 @@ int main()
               )
             )
           ),
-          Client(
-            Name(names::Client2),
-            EntityName(names::Client2),
+          Provider(
+            Name(names::Provider2),
+            EntityName(names::Provider2),
             AccessPoint(
               Name(names::Root3),
               EntityName(names::Root3),
