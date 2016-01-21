@@ -9,7 +9,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   path.cpp
   variant.cpp
   store.cpp
-  context_read.cpp
+  #context_read.cpp
 )
 #requires boost right now
 #msg_id.cpp 
