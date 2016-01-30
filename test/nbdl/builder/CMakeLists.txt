@@ -28,3 +28,7 @@ nbdl_add_test("test.nbdl.builder.store"
 nbdl_add_test("test.nbdl.builder.store_map"
   store_map.cpp
 )
+
+#nbdl_add_test("test.nbdl.builder.provider_map"
+#  provider_map.cpp
+#)

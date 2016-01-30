@@ -121,6 +121,7 @@ int main()
       hana::compose(hana::equal, hana::partial(hana::at_key, result))
     );
 
+    //todo the builder and the ProviderMap should have separate test files
     BOOST_HANA_CONSTANT_CHECK(hana::all_of(provider_1_paths, match(provider_1));
     BOOST_HANA_CONSTANT_CHECK(hana::all_of(provider_2_paths, match(provider_2));
     BOOST_HANA_CONSTANT_CHECK(hana::all_of(provider_3_paths, match(provider_3));
