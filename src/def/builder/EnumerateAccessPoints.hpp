@@ -14,6 +14,7 @@
 #include<mpdef/CollectSettings.hpp>
 #include<mpdef/ComposeCollectors.hpp>
 #include<mpdef/FindInTree.hpp>
+#include<Store.hpp>
 
 #include<utility>
 
