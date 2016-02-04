@@ -46,13 +46,24 @@ struct ProviderMap
         hana::make_map
     ));
 
-    template<typename ...T>
-    ProviderMap(T&&... t)
-        : storage(hana::make_map(std::forward<T>(t)...))
+    constexpr ProviderMap()
+        : storage()
+    { }
+
+    constexpr ProviderMap(Pair&&... p)
+        : storage(hana::make_map(std::forward<Pair>(p)...))
+    { }
+
+    constexpr ProviderMap(Pair const&... p)
+        : storage(hana::make_map(p...))
+    { }
+
+    constexpr ProviderMap(Pair&... p)
+        : storage(hana::make_map(p...))
     { }
 
     template<typename T>
-    constexpr decltype(auto) operator[](T t) {
+    constexpr decltype(auto) operator[](T t) const {
         return hana::at_key(storage, hana::at_key(Lookup{}, t));
     }
 
