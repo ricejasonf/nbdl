@@ -6,7 +6,7 @@
 //
 
 #include<def/builder/AccessPointMeta.hpp>
-#include<def/builder/EntityMeta.hpp>
+#include<def/builder/EntityKeyMeta.hpp>
 #include<def/builder/Path.hpp>
 #include<def/builder/ProviderMap.hpp>
 #include<def/builder/ProviderMeta.hpp>
@@ -37,9 +37,9 @@ namespace entity {
   struct E_2_1 {};
 }//entity
 
-constexpr auto entity_1_1 = builder::makeEntityMeta(hana::type_c<entity::E_1_1>, hana::type_c<int>);
-constexpr auto entity_1_2 = builder::makeEntityMeta(hana::type_c<entity::E_1_2>, hana::type_c<int>);
-constexpr auto entity_2_1 = builder::makeEntityMeta(hana::type_c<entity::E_2_1>, hana::type_c<int>);
+constexpr auto entity_1_1 = builder::makeEntityKeyMeta(hana::type_c<entity::E_1_1>, hana::type_c<int>);
+constexpr auto entity_1_2 = builder::makeEntityKeyMeta(hana::type_c<entity::E_1_2>, hana::type_c<int>);
+constexpr auto entity_2_1 = builder::makeEntityKeyMeta(hana::type_c<entity::E_2_1>, hana::type_c<int>);
 constexpr auto entity_map = hana::make_map(
   hana::make_pair(names::Entity_1_1, entity_1_1),
   hana::make_pair(names::Entity_1_2, entity_1_2),

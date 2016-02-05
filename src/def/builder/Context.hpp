@@ -26,10 +26,11 @@ namespace builder {
 
 struct Context
 {
-  template<typename Def>
-  constexpr auto operator()(Def)
+  template<typename EntityMap, typename Def>
+  constexpr auto operator()(EntityMap, Def)
   {
     constexpr Def def{};
+    constexpr auto entityMetaMap = builder::mapEntityMeta(def);
     constexpr auto providersMeta = builder::enumerateProviders(def);
   } 
 };
