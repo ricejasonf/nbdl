@@ -40,3 +40,7 @@ nbdl_add_test("test.nbdl.builder.provider_map"
 nbdl_add_test("test.nbdl.builder.enumerate_providers"
   enumerate_providers.cpp
 )
+
+nbdl_add_test("test.nbdl.builder.map_entity_meta"
+  map_entity_meta.cpp
+)
