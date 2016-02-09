@@ -85,4 +85,38 @@ int main()
       )
     );
   }
+  // define a single provider
+  {
+    using namespace nbdl_def;
+
+    constexpr auto access_points_def_1 = AccessPoints(
+      AccessPoint(
+        Name(names::Root1),
+        EntityName(names::Root1),
+        Actions(Create())
+      )
+    );
+
+    constexpr auto def =
+      Context(
+        PrimaryKey(Type(hana::type_c<unsigned>)),
+        Provider(
+          Name(names::Provider1Name),
+          Type(names::Provider1),
+          access_points_def_1
+        )
+      );
+
+    constexpr auto result = nbdl_def::builder::enumerateProviders(def);
+
+    BOOST_HANA_CONSTANT_ASSERT(result ==
+      hana::make_tuple(
+        builder::makeProviderMeta(
+          names::Provider1,
+          names::Provider1Name,
+          builder::enumerateAccessPoints(access_points_def_1)
+        )
+      )
+    );
+  }
 }

@@ -23,7 +23,8 @@ struct EnumerateProviders
       [](auto... provider_def) {
         return hana::make_tuple(builder::makeProviderMeta(
           hana::second(provider_def)[tag::Type],
-          hana::second(provider_def)[tag::Name],
+          hana::find(hana::second(provider_def), tag::Name)
+            .value_or(hana::second(provider_def)[tag::Type]),
           builder::enumerateAccessPoints(provider_def)
         )...);
       }
@@ -34,14 +35,18 @@ struct EnumerateProviders
   constexpr auto operator()(Def) const
   {
     constexpr auto children = hana::second(Def{});
-    constexpr auto single_provider = hana::find(children, tag::Provider);
+    constexpr auto single_provider = hana::transform(hana::find(children, tag::Provider),
+        hana::partial(hana::make_pair, tag::Provider));
     constexpr auto providers = hana::find(children, tag::Providers);
     static_assert(hana::value(
       ((single_provider == hana::nothing) || (providers == hana::nothing))
-      && single_provider != providers
-    ) , "A definition of a Provider or Providers is required.");
+      && hana::not_(single_provider == hana::nothing && providers == hana::nothing)
+    ), "A definition of a Provider or Providers is required.");
     return decltype(
-      helper(providers.value_or(hana::maybe(hana::make_tuple(), hana::make_tuple, single_provider)))
+      helper(providers.value_or(
+          hana::maybe(hana::make_tuple(), hana::make_tuple, single_provider)
+        )
+      )
     ){};
   }
 };

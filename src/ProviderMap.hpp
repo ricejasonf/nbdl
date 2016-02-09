@@ -63,7 +63,20 @@ struct ProviderMap
     { }
 
     template<typename T>
-    constexpr decltype(auto) operator[](T t) const {
+    constexpr decltype(auto) operator[](T t) const&
+    {
+        return hana::at_key(storage, hana::at_key(Lookup{}, t));
+    }
+
+    template<typename T>
+    constexpr decltype(auto) operator[](T t) &
+    {
+        return hana::at_key(storage, hana::at_key(Lookup{}, t));
+    }
+
+    template<typename T>
+    constexpr decltype(auto) operator[](T t) &&
+    {
         return hana::at_key(storage, hana::at_key(Lookup{}, t));
     }
 

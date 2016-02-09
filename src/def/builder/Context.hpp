@@ -9,30 +9,49 @@
 
 #include<def/builder.hpp>
 #include<def/directives.hpp>
+#include<def/builder/MapEntityMeta.hpp>
 #include<def/builder/Path.hpp>
+#include<def/builder/ProviderMap.hpp>
 #include<def/builder/EnumerateProviders.hpp>
+#include<def/builder/StoreMap.hpp>
 #include<Context.hpp>
 
 namespace nbdl_def {
 namespace builder {
 
-/*
- * TODO build:
- *  ProviderMap
- *  StoreMap
- *  hardcode ListenerHandler for now
- *
- */
+namespace details {
+
+  struct GetAccessPoints
+  {
+    template<typename S>
+    constexpr auto operator()(S s) const
+    {
+      return hana::unpack(s,
+        [](auto... x) {
+          return hana::flatten(hana::make_tuple(x.accessPoints()...));
+        });
+    }
+  };
+
+}//details
 
 struct Context
 {
-  template<typename EntityMap, typename Def>
-  constexpr auto operator()(EntityMap, Def)
+  template<typename Def>
+  constexpr auto operator()(Def) const
   {
-    constexpr Def def{};
-    constexpr auto entityMetaMap = builder::mapEntityMeta(def);
-    constexpr auto providersMeta = builder::enumerateProviders(def);
-  } 
+    static_assert(hana::first(Def{}) == tag::Context, "");
+    constexpr auto defs = hana::second(Def{});
+    constexpr auto entityMetaMap = builder::mapEntityMeta(defs[tag::Entities]);
+    constexpr auto providersMeta = builder::enumerateProviders(Def{});
+    return hana::template_<nbdl::Context>(
+      hana::template_<nbdl::details::ContextTraits>(
+        builder::providerMap(entityMetaMap, providersMeta),
+        hana::type_c<void>, //Consumers
+        builder::storeMap(entityMetaMap, decltype(details::GetAccessPoints{}(providersMeta)){})
+      )
+    );
+  }
 };
 constexpr Context context{};
 
@@ -40,7 +59,7 @@ template<typename Context_>
 struct ContextFactory
 {
   template<typename... Args>
-  auto operator()(Args... args)
+  auto operator()(Args... args) const
   {
     return Context_::create(args...);
   }

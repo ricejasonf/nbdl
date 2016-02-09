@@ -42,7 +42,7 @@ int main()
         )
       );
     
-    constexpr auto result = builder::mapEntityMeta(entities);
+    constexpr auto result = builder::mapEntityMeta(hana::second(entities));
 
     BOOST_HANA_CONSTANT_ASSERT(result[names::Entity1].keyMeta().entity() == hana::type_c<E1>);
     BOOST_HANA_CONSTANT_ASSERT(result[names::Entity1].keyMeta().key() == hana::type_c<int>);

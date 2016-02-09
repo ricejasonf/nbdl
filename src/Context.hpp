@@ -16,10 +16,10 @@ namespace details {
 template<typename Traits>
 class Context : public std::enable_shared_from_this<Context<Traits>>
 {
-  using Client_ = typename Traits::Client;
-  using Server_ = typename Traits::Server;
-  using ListenerHandler_ = typename Traits::ListenerHandler;
-  using StoreCollection_ = typename Traits::StoreCollection;
+  using ProviderMap = typename Traits::ProviderMap;
+  using StoreMap = typename Traits::StoreMap;
+  using Consumers = typename Traits::Consumers;
+  using ListenerHandler_ = nbdl::ListenerHandlerDummy<>;
 
 	public:
 
@@ -29,52 +29,42 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
   template<typename PathType>
 	using Listener = details::Listener<ListenerHandler_, WeakPtr, PathType>;
 
-  /*
-  //todo delete once we know stuff compiles
-  template<typename PathType>
-  using VariantType = typename StoreCollection_:: template VariantType<PathType>;
-  */
-
-
 	private:
 
-	Client_ client;
-	StoreCollection_ store;
+  ProviderMap providers;
+	StoreMap stores;
 
 	public:
-
-	//todo client probably wont be copyable
-	Context(Client_ c) : client(c) {}
 
 	template<typename PathType, typename... Args>
 	Listener<PathType> makeListener(PathType path, Args... args)
 	{
 		auto wrapper = Listener<PathType>(path, this->shared_from_this(), args...);
-		store.addListener(path, wrapper.handler());
+		stores[hana::type_c<PathType>].addListener(path, wrapper.handler());
 		return wrapper;
 	}
 	template<typename PathType>
 	void addListener(const PathType& path, const ListenerHandler_& listener)
 	{
-		store.addListener(path, listener);
+		stores[hana::type_c<PathType>].addListener(path, listener);
 	}
 	template<typename PathType>
 	void removeListener(const PathType& path, const ListenerHandler_& listener)
 	{
-		store.removeListener(path, listener);
+		stores[hana::type_c<PathType>].removeListener(path, listener);
 	}
 
 	template<typename Path,typename... MatchFns>
 	auto read(Path path, MatchFns... fns)
 	{
-		return store.get(
+		return stores[hana::type_c<Path>].get(
 			//called if store needs to request value
 			[&](const Path& path) {
-				//request from client
+				//request from provider
 				auto self = this->shared_from_this();
-        //todo client should not be getting a callback
-				client.read(path, [path, self](auto&& value) {
-					self->store.suggestAssign(path, std::forward<decltype(value)>(value));
+				providers[hana::type_c<Path>].read(path, [path, self](auto&& value) {
+					self->stores[hana::type_c<Path>]
+            .suggestAssign(path, std::forward<decltype(value)>(value));
 				});
 			},
 			path, fns...);
@@ -82,16 +72,14 @@ class Context : public std::enable_shared_from_this<Context<Traits>>
 };
 
 template<
-	typename Client_,
-  typename Server_,
-	typename ListenerHandler_,
-	typename StoreCollection_>
+	typename ProviderMap_,
+  typename Consumers_,
+	typename StoreMap_>
 struct ContextTraits
 {
-	using Client = Client_;
-	using Server = Server_;
-	using ListenerHandler = ListenerHandler_;
-	using StoreCollection = StoreCollection_;
+	using ProviderMap = ProviderMap_;
+	using Consumers = Consumers_;
+	using StoreMap = StoreMap_;
 };
 
 

@@ -34,7 +34,7 @@ struct ProviderDummy {
     int value;
 
     ProviderDummy()
-        : value(x)
+        : value(0)
     { }
 
     ProviderDummy(ProviderDummy const&) = delete;
@@ -74,6 +74,12 @@ TEST_CASE("Map paths to providers.", "[provider_map]")
         hana::make_pair(hana::make_type(provider_3_paths), ProviderDummy<3>{}),
         hana::make_pair(hana::make_type(provider_4_paths), ProviderDummy<4>{})
     );
+
+    // must be non-const
+    result_map[path_1_1].value = 1;
+    result_map[path_2_1].value = 2;
+    result_map[path_3_1].value = 3;
+    result_map[path_4_1].value = 4;
 
     auto match = hana::curry<2>(
       [&](auto const& expected, auto const& path) {

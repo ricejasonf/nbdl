@@ -6,6 +6,7 @@
 //
 
 #include<def/builder/AccessPointMeta.hpp>
+#include<def/builder/EntityMeta.hpp>
 #include<def/builder/EntityKeyMeta.hpp>
 #include<def/builder/StoreMap.hpp>
 #include<EntityTraits.hpp>
@@ -41,9 +42,18 @@ namespace nbdl {
   NBDL_ENTITY(entity::E3, x);
 }
 
-constexpr auto entity1_ = builder::makeEntityKeyMeta(hana::type_c<entity::E1>, hana::type_c<int>);
-constexpr auto entity2_ = builder::makeEntityKeyMeta(hana::type_c<entity::E2>, hana::type_c<int>);
-constexpr auto entity3_ = builder::makeEntityKeyMeta(hana::type_c<entity::E3>, hana::type_c<int>);
+constexpr auto entity1_ = builder::makeEntityMeta(
+  builder::makeEntityKeyMeta(hana::type_c<entity::E1>, hana::type_c<int>),
+  hana::type_c<void>
+);
+constexpr auto entity2_ = builder::makeEntityMeta(
+  builder::makeEntityKeyMeta(hana::type_c<entity::E2>, hana::type_c<int>),
+  hana::type_c<void>
+);
+constexpr auto entity3_ = builder::makeEntityMeta(
+  builder::makeEntityKeyMeta(hana::type_c<entity::E3>, hana::type_c<int>),
+  hana::type_c<void>
+);
 constexpr auto entity_map = hana::make_map(
   hana::make_pair(names::Entity1, entity1_),
   hana::make_pair(names::Entity2, entity2_),

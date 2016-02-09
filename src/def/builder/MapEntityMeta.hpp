@@ -31,7 +31,7 @@ struct MapEntityMeta
       constexpr auto type = props[tag::Type];
 
       return hana::make_pair(
-        props[tag::Name],
+        hana::find(props, tag::Name).value_or(type),
         builder::makeEntityMeta(
           builder::makeEntityKeyMeta(
             type,
@@ -51,7 +51,7 @@ struct MapEntityMeta
   template<typename Def>
   constexpr auto operator()(Def) const
   {
-    constexpr auto entities = hana::second(Def{});
+    constexpr auto entities = Def{};
     return hana::unpack(entities, hana::make_map ^hana::on^ Helper{});
   }
 };
