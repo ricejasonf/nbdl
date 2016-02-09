@@ -22,10 +22,9 @@ struct MakePathPairFromEntityMeta
   template<typename T>
   constexpr auto operator()(T entity) const
   {
-    return hana::make_pair(entity.entity(), entity.key());
+    return hana::make_pair(entity.keyMeta().entity(), entity.keyMeta().key());
   }
 };
-constexpr MakePathPairFromEntityMeta makePathPairFromEntityMeta{};
 
 }//details
 
@@ -36,7 +35,7 @@ struct Path
   {
     return hana::unpack(
       hana::transform(access_point.entityNames(), hana::partial(hana::at_key, entities)),
-      nbdl::makePathTypeFromPairs ^hana::on^ details::makePathPairFromEntityMeta
+      nbdl::makePathTypeFromPairs ^hana::on^ details::MakePathPairFromEntityMeta{}
     );
   }
 };

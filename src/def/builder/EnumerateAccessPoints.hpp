@@ -14,6 +14,7 @@
 #include<mpdef/CollectSettings.hpp>
 #include<mpdef/ComposeCollectors.hpp>
 #include<mpdef/FindInTree.hpp>
+#include<Store.hpp>
 
 #include<utility>
 
@@ -44,7 +45,7 @@ constexpr auto collector = mpdef::composeCollectors(
         )
       )
     ),
-    hana::make_lazy(hana::arg<1>) 
+    hana::make_lazy(hana::arg<1>)
   )
 );
 constexpr auto matcher = mpdef::createInTreeFinder(pred, collector);
@@ -100,13 +101,13 @@ struct ResultHelper
       node_children[tag::Name],
       node_children[tag::Actions],
       settings[tag::StoreContainer].value_or(
-        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>
+        hana::template_<nbdl::store::HashMap>
       ),
       settings[tag::StoreEmitter].value_or(
-        hana::type_c<decltype(hana::partial(hana::template_<nbdl::store_emitter::HashMap>), 
-          hana::type_c<nbdl::ListenerHandlerDummy<>>)>
+        hana::partial(hana::template_<nbdl::store_emitter::HashMap>,
+          hana::type_c<nbdl::ListenerHandlerDummy<>>)
       ),
-      std::move(entity_names)
+      entity_names
     );
   }
 };

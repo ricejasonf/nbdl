@@ -24,3 +24,23 @@ nbdl_add_test("test.nbdl.builder.path"
 nbdl_add_test("test.nbdl.builder.store"
   store.cpp
 )
+
+nbdl_add_test("test.nbdl.builder.store_map"
+  store_map.cpp
+)
+
+nbdl_add_test("test.nbdl.builder.provider_meta"
+  provider_meta.cpp
+)
+
+nbdl_add_test("test.nbdl.builder.provider_map"
+  provider_map.cpp
+)
+
+nbdl_add_test("test.nbdl.builder.enumerate_providers"
+  enumerate_providers.cpp
+)
+
+nbdl_add_test("test.nbdl.builder.map_entity_meta"
+  map_entity_meta.cpp
+)

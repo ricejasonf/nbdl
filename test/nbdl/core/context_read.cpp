@@ -12,46 +12,75 @@
 
 namespace hana = boost::hana;
 
-namespace test_stuff {
+namespace entity {
+  struct Client
+  {
+    int id;
+  };
+  struct MyEntity
+  {
+    int id;
+    int client_id;
+  };
+}//entity
 
-struct Client
-{
-  int id;
-};
-struct MyEntity
-{
-  int id;
-  int client_id;
-};
-}//test_stuff
-//todo don't use template specialization
-//because it is global and
-//it causes problems like this
-//(specializing inside nbdl namespace)
 namespace nbdl {
   NBDL_ENTITY(
-    test_stuff::Client,
+    entity::Client,
       id);
   NBDL_ENTITY(
-    test_stuff::MyEntity,
+    entity::MyEntity,
       id,
       client_id );
 }//nbdl
 
+
+namespace my_context {
+  using namespace nbdl_def;
+
+  template<typename Provider_>
+  auto create = nbdl_def::buildContextFactory(
+    nbdl_def::Context(
+      Entities(
+        Entity(
+          Type(hana::type_c<entity::Client>)
+        ),
+        Entity(
+          Type(hana::type_c<entity::MyEntity>)
+        )
+      ),
+      Provider(
+        Type(hana::type_c<Provider_>),
+        AccessPoint(
+          Name(hana::type_c<void>),
+          EntityName(hana::type_c<entity::Client>),
+          Actions(Read()),
+          AccessPoint(
+            Name(hana::type_c<void>),
+            EntityName(hana::type_c<entity::MyEntity>),
+            Actions(Read())
+          )
+        )
+      )
+    )
+  );
+}//my_context
+
 namespace test_stuff {
 
-using OnlySupportedPath = typename decltype(nbdl::path_type<int, Client, MyEntity>)::type;
-static_assert(std::is_same<typename OnlySupportedPath::Entity, MyEntity>::value,
+using OnlySupportedPath = typename decltype(
+  nbdl::path_type<int, entity::Client, entity::MyEntity>)::type;
+static_assert(std::is_same<typename OnlySupportedPath::Entity, entity::MyEntity>::value,
     "Only supported type entity is not MyEntity.");
 
-struct TestClient
+struct TestProvider
 {
   template<typename Fn>
   void read(OnlySupportedPath path, Fn fn)
   {
-    if (path.getKey<Client>() == 1 && path.getKey<MyEntity>() == 5)
+    if (path.getKey<entity::Client>() == 1 && path.getKey<entity::MyEntity>() == 5)
     {
-      MyEntity my_entity = { 5, 1 };
+      entity::MyEntity my_entity = { 5, 1 };
       fn(my_entity);
     }
     else
@@ -61,7 +90,7 @@ struct TestClient
   }
 };
 
-class TestClientAsync
+class TestProviderAsync
 {
   static std::function<void()> m_fn;
 
@@ -76,9 +105,9 @@ class TestClientAsync
   void read(OnlySupportedPath path, Fn fn)
   {
     m_fn = [path, fn]() {
-      if (path.getKey<Client>() == 1 && path.getKey<MyEntity>() == 5)
+      if (path.getKey<entity::Client>() == 1 && path.getKey<entity::MyEntity>() == 5)
       {
-        MyEntity my_entity = { 5, 1 };
+        entity::MyEntity my_entity = { 5, 1 };
         fn(my_entity);
       }
       else
@@ -88,31 +117,14 @@ class TestClientAsync
     };
   }
 };
-std::function<void()> TestClientAsync::m_fn = [](){};
+std::function<void()> TestProviderAsync::m_fn = [](){};
 
 }//test_stuff
 
-namespace my_nbdl {
-  using namespace nbdl_def;
-
-  auto createContext = nbdl_def::buildContextFactory(
-    nbdl_def::Context(
-      Client(boost::hana::type_c<test_stuff::TestClient>),
-      Api(
-        AccessPoint(
-          Path(Type(boost::hana::type_c<test_stuff::OnlySupportedPath>)),
-          Actions(BOOST_HANA_STRING("Read"))
-        )
-      )
-    )
-  );
-}//my_nbdl
-
-TEST_CASE("Read an object from a context.", "[context]") 
+TEST_CASE("Read an object from a context.", "[context]")
 {
   bool result;
-  //auto ctx = MyContext::create(TestClient{});
-  auto ctx = my_nbdl::createContext(test_stuff::TestClient{});
+  auto ctx = my_context::create<test_stuff::TestProvider>();
 
   result = ctx->read(test_stuff::OnlySupportedPath(1, 5),
     [](nbdl::Unresolved) {
@@ -121,18 +133,17 @@ TEST_CASE("Read an object from a context.", "[context]")
     [](nbdl::NotFound) {
       return false;
     },
-    [](test_stuff::MyEntity m) {
+    [](entity::MyEntity m) {
       return (m.id == 5 && m.client_id == 1);
     });
 
   CHECK(result);
 }
 
-TEST_CASE("Context should propagate NotFound from server callback.", "[context]") 
+TEST_CASE("Context should propagate NotFound from server callback.", "[context]")
 {
   bool result = false;
-  //auto ctx = MyContext::create(TestClient{});
-  auto ctx = my_nbdl::createContext(test_stuff::TestClient{});
+  auto ctx = my_context::create<test_stuff::TestProvider>();
 
   result = ctx->read(test_stuff::OnlySupportedPath(1, 6),
     [](nbdl::Unresolved) {
@@ -141,45 +152,18 @@ TEST_CASE("Context should propagate NotFound from server callback.", "[context]"
     [](nbdl::NotFound) {
       return true;
     },
-    [](test_stuff::MyEntity) {
+    [](entity::MyEntity const&) {
       return false;
     });
 
   CHECK(result);
 }
 
-/*
-using MyContextAsync = nbdl::Context<
-  TestClientAsync,
-  nbdl::ListenerHandlerDummy<>,
-  nbdl_def::Api<
-    nbdl_def::AccessPoint<
-      OnlySupportedPath,
-      nbdl_def::Actions<nbdl_def::Read>
-    >
-  >>;
-*/
-namespace my_nbdl_async {
-  using namespace nbdl_def;
-  auto createContext = buildContextFactory(
-    Context(
-      Client(boost::hana::type_c<test_stuff::TestClientAsync>),
-      Api(
-        AccessPoint(
-          Path(Type(boost::hana::type_c<test_stuff::OnlySupportedPath>)),
-          Actions(BOOST_HANA_STRING("Read"))
-        )
-      )
-    )
-  );
-}//my_nbdl_async
-
 TEST_CASE("Context should emit change to listener", "[context]")
 {
   bool function_was_called = false;
   int result = 0;
-  //auto ctx = MyContextAsync::create(TestClientAsync{});
-  auto ctx = my_nbdl_async::createContext(test_stuff::TestClientAsync{});
+  auto ctx = my_context::create<test_stuff::TestProviderAsync>();
   test_stuff::OnlySupportedPath path(1, 5);
 
   auto listener = ctx->makeListener(path, [&]() {
@@ -188,7 +172,7 @@ TEST_CASE("Context should emit change to listener", "[context]")
       [](nbdl::Unresolved) {
         return 1;
       },
-      [](test_stuff::MyEntity) {
+      [](entity::MyEntity const&) {
         return 2;
       },
       [](nbdl::NotFound) {
@@ -198,9 +182,9 @@ TEST_CASE("Context should emit change to listener", "[context]")
 
   ctx->read(path, nbdl::noop);
   CHECK_FALSE(result); //does not emit for unresolved
-  test_stuff::TestClientAsync::flush__();
+  test_stuff::TestProviderAsync::flush__();
   CHECK(function_was_called);
-  CHECK(result == 2); //MyEntity
+  CHECK(result == 2); //entity::MyEntity
 }
 
 TEST_CASE("Context should not emit to a listener that has been destroyed.", "[context]")
@@ -210,8 +194,7 @@ TEST_CASE("Context should not emit to a listener that has been destroyed.", "[co
   test_stuff::OnlySupportedPath path(1, 5);
 
   {
-    //auto ctx = MyContext::create(TestClient{});
-    auto ctx = my_nbdl_async::createContext(test_stuff::TestClientAsync{});
+    auto ctx = my_context::create<test_stuff::TestProviderAsync>();
     /*
       in this test if the listener fails
       to unregister it would result in UB.
@@ -222,7 +205,7 @@ TEST_CASE("Context should not emit to a listener that has been destroyed.", "[co
         [](nbdl::Unresolved) {
           return 1;
         },
-        [](test_stuff::MyEntity) {
+        [](entity::MyEntity const&) {
           return 2;
         },
         [](nbdl::NotFound) {
@@ -233,7 +216,7 @@ TEST_CASE("Context should not emit to a listener that has been destroyed.", "[co
   } //listener is destroyed and should unregister from the context
 
   CHECK(result == 0); //does not emit for unresolved
-  test_stuff::TestClientAsync::flush__();
+  test_stuff::TestProviderAsync::flush__();
   CHECK_FALSE(function_was_called);
   CHECK(result == 0);
 }
