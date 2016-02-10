@@ -10,6 +10,7 @@
 #include<def/builder.hpp>
 #include<def/builder/EnumerateAccessPoints.hpp>
 #include<def/builder/ProviderMeta.hpp>
+#include<mpdef/TreeNode.hpp>
 
 namespace nbdl_def {
 namespace builder {
@@ -36,7 +37,7 @@ struct EnumerateProviders
   {
     constexpr auto children = hana::second(Def{});
     constexpr auto single_provider = hana::transform(hana::find(children, tag::Provider),
-        hana::partial(hana::make_pair, tag::Provider));
+        hana::partial(mpdef::make_tree_node, tag::Provider));
     constexpr auto providers = hana::find(children, tag::Providers);
     static_assert(hana::value(
       ((single_provider == hana::nothing) || (providers == hana::nothing))

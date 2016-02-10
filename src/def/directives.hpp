@@ -7,7 +7,7 @@
 #ifndef NBDL_DEF_DIRECTIVES_HPP
 #define NBDL_DEF_DIRECTIVES_HPP
 
-#include "meta.hpp"
+#include<mpdef/MPDEF_DIRECTIVE.hpp>
 
 namespace nbdl_def {
 

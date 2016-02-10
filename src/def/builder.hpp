@@ -8,14 +8,12 @@
 #define NBDL_DEF_COMMON_DEFINITION_HPP
 
 #include<boost/hana.hpp>
-#include "meta.hpp" //#include<mpdef/mpdef.hpp>
 #include "directives.hpp"
 
 namespace nbdl_def {
 namespace builder {
 
   namespace hana = boost::hana;
-  namespace meta = mpdef;
 
   namespace action {
     using Create  = tag::Create_t;

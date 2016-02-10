@@ -7,6 +7,8 @@
 #ifndef NBDL_MPDEF_COLLECT_SETTINGS_HPP
 #define NBDL_MPDEF_COLLECT_SETTINGS_HPP
 
+#include<mpdef/TreeNode.hpp>
+
 #include<boost/hana.hpp>
 
 namespace mpdef {
@@ -21,7 +23,7 @@ struct CollectSettings
     return
       hana::unpack(hana::keys(state),
         hana::make_map ^hana::on^
-        hana::demux(hana::make_pair)
+        hana::demux(mpdef::make_tree_node)
         (
           hana::id,
           hana::demux(hana::maybe)
@@ -56,7 +58,7 @@ constexpr CollectSettings collectSettings{};
 template<typename... Tag>
 constexpr auto withSettings(Tag&&... tag)
 {
-  return hana::make_map(hana::make_pair(std::forward<Tag>(tag), hana::nothing)...);
+  return hana::make_map(mpdef::make_tree_node(std::forward<Tag>(tag), hana::nothing)...);
 }
 
 }//mpdef

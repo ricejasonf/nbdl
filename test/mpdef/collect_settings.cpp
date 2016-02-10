@@ -4,8 +4,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<boost/hana.hpp>
 #include<mpdef/CollectSettings.hpp>
+#include<mpdef/TreeNode.hpp>
+
+#include<boost/hana.hpp>
 
 namespace hana = boost::hana;
 
@@ -21,20 +23,20 @@ int main()
     using mpdef::withSettings;
 
     constexpr auto xs = hana::make_tuple(
-      hana::make_pair(hana::type_c<void>,
+      mpdef::make_tree_node(hana::type_c<void>,
         hana::make_map(
-          hana::make_pair(tag1, hana::int_c<42>),
-          hana::make_pair(tag2, hana::int_c<256>)
+          mpdef::make_tree_node(tag1, hana::int_c<42>),
+          mpdef::make_tree_node(tag2, hana::int_c<256>)
         )),
-      hana::make_pair(hana::type_c<void>,
+      mpdef::make_tree_node(hana::type_c<void>,
         hana::make_map()),
-      hana::make_pair(hana::type_c<void>,
+      mpdef::make_tree_node(hana::type_c<void>,
         hana::make_map(
-          hana::make_pair(tag3, hana::int_c<1024>)
+          mpdef::make_tree_node(tag3, hana::int_c<1024>)
         )),
-      hana::make_pair(hana::type_c<void>,
+      mpdef::make_tree_node(hana::type_c<void>,
         hana::make_map(
-          hana::make_pair(tag2, hana::int_c<512>)
+          mpdef::make_tree_node(tag2, hana::int_c<512>)
         ))
     );
     
@@ -42,10 +44,10 @@ int main()
       hana::fold_left(xs, withSettings(tag1, tag2, tag3, tag4), collectSettings)
         ==
       hana::make_map(
-        hana::make_pair(tag1, hana::just(hana::int_c<42>)),
-        hana::make_pair(tag2, hana::just(hana::int_c<512>)),
-        hana::make_pair(tag3, hana::just(hana::int_c<1024>)),
-        hana::make_pair(tag4, hana::nothing)
+        mpdef::make_tree_node(tag1, hana::just(hana::int_c<42>)),
+        mpdef::make_tree_node(tag2, hana::just(hana::int_c<512>)),
+        mpdef::make_tree_node(tag3, hana::just(hana::int_c<1024>)),
+        mpdef::make_tree_node(tag4, hana::nothing)
       )
     );
   }

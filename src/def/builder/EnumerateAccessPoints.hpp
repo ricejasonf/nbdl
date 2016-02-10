@@ -14,6 +14,7 @@
 #include<mpdef/CollectSettings.hpp>
 #include<mpdef/ComposeCollectors.hpp>
 #include<mpdef/FindInTree.hpp>
+#include<mpdef/TreeNode.hpp>
 #include<Store.hpp>
 
 #include<utility>
@@ -26,7 +27,7 @@ namespace enum_access_points_detail {
 constexpr auto settings = mpdef::withSettings(tag::StoreContainer, tag::StoreEmitter);
 constexpr auto pred = hana::demux(hana::eval_if)
 (
-  hana::is_a<hana::pair_tag>,
+  mpdef::is_tree_node,
   hana::make_lazy(hana::compose(hana::equal.to(tag::AccessPoint), hana::first)),
   hana::always(hana::make_lazy(hana::false_c))
 );

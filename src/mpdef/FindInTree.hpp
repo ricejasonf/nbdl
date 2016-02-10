@@ -8,6 +8,7 @@
 #define NBDL_MPDEF_FIND_IN_TREE_HPP
 
 #include<mpdef/CollectSettings.hpp>
+#include<mpdef/TreeNode.hpp>
 
 #include<boost/hana.hpp>
 #include<utility>
@@ -25,12 +26,12 @@ constexpr auto isLeaf(T)
   return hana::true_c;
 }
 template<typename First, typename ...X>
-constexpr auto isLeaf(hana::pair<First, hana::tuple<X...>>)
+constexpr auto isLeaf(mpdef::TreeNode<First, hana::tuple<X...>>)
 {
   return hana::false_c;
 }
 template<typename First, typename ...X>
-constexpr auto isLeaf(hana::pair<First, hana::map<X...>>)
+constexpr auto isLeaf(mpdef::TreeNode<First, hana::map<X...>>)
 {
   return hana::false_c;
 }
@@ -56,7 +57,7 @@ struct InTreeFinder
     ) const
   {
     //matching node
-    return hana::make_tuple(hana::make_pair(tree, summarize(summary, tree)));
+    return hana::make_tuple(mpdef::make_tree_node(tree, summarize(summary, tree)));
   }
 
   template<typename Leaf, typename Summary>

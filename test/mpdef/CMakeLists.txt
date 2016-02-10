@@ -5,6 +5,9 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
+nbdl_add_test("test.mpdef.tree_node"
+  tree_node.cpp
+)
 nbdl_add_test("test.mpdef.find_in_tree"
   find_in_tree.cpp
 )
