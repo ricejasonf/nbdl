@@ -8,7 +8,6 @@
 #define NBDL_MPDEF_LIST_HPP
 
 #include<boost/hana.hpp>
-#include<boost/hana/experimental/types.hpp>
 #include<utility>
 
 namespace mpdef {
@@ -41,20 +40,6 @@ constexpr auto operator!=(mpdef::List<T...> t, mpdef::List<U...> u)
 {
   return boost::hana::not_equal(t, u);
 }
-
-namespace detail {
-  
-  namespace types_detail = boost::hana::types_detail;
-
-  template<std::size_t i, typename... T>
-  struct nth_type
-  {
-    using Indexer = types_detail::indexer<std::make_index_sequence<sizeof...(T)>, T...>;
-    using type = typename decltype(types_detail::get_elt<i>(Indexer{}))::type;
-  };
-
-}//detail
-
 
 }//mpdef
 
@@ -106,7 +91,7 @@ namespace boost { namespace hana {
   {
     template<typename... T, typename I>
     static constexpr auto apply(mpdef::List<T...>, I)
-      -> typename mpdef::detail::nth_type<I::value, T...>::type
+      -> decltype(hana::arg<I::value + 1>(T{}...))
     {
       return {};
     }
