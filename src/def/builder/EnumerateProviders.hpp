@@ -10,6 +10,7 @@
 #include<def/builder.hpp>
 #include<def/builder/EnumerateAccessPoints.hpp>
 #include<def/builder/ProviderMeta.hpp>
+#include<mpdef/List.hpp>
 #include<mpdef/TreeNode.hpp>
 
 namespace nbdl_def {
@@ -22,7 +23,7 @@ struct EnumerateProviders
   {
     return hana::unpack(defs,
       [](auto... provider_def) {
-        return hana::make_tuple(builder::makeProviderMeta(
+        return mpdef::make_list(builder::makeProviderMeta(
           hana::second(provider_def)[tag::Type],
           hana::find(hana::second(provider_def), tag::Name)
             .value_or(hana::second(provider_def)[tag::Type]),
@@ -45,7 +46,7 @@ struct EnumerateProviders
     ), "A definition of a Provider or Providers is required.");
     return decltype(
       helper(providers.value_or(
-          hana::maybe(hana::make_tuple(), hana::make_tuple, single_provider)
+          hana::maybe(mpdef::make_list(), mpdef::make_list, single_provider)
         )
       )
     ){};

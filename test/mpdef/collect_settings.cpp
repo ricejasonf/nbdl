@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include<mpdef/CollectSettings.hpp>
+#include<mpdef/List.hpp>
 #include<mpdef/TreeNode.hpp>
 
 #include<boost/hana.hpp>
@@ -22,7 +23,7 @@ int main()
     using mpdef::collectSettings;
     using mpdef::withSettings;
 
-    constexpr auto xs = hana::make_tuple(
+    constexpr auto xs = mpdef::make_list(
       mpdef::make_tree_node(hana::type_c<void>,
         hana::make_map(
           mpdef::make_tree_node(tag1, hana::int_c<42>),

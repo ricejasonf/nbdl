@@ -7,6 +7,7 @@
 #ifndef NBDL_DEF_BUILDER_CONTEXT_HPP
 #define NBDL_DEF_BUILDER_CONTEXT_HPP
 
+#include<mpdef/List.hpp>
 #include<def/builder.hpp>
 #include<def/directives.hpp>
 #include<def/builder/MapEntityMeta.hpp>
@@ -28,7 +29,7 @@ namespace details {
     {
       return hana::unpack(s,
         [](auto... x) {
-          return hana::flatten(hana::make_tuple(x.accessPoints()...));
+          return hana::flatten(mpdef::List<decltype(x.accessPoints())...>{});
         });
     }
   };

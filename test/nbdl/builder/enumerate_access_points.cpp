@@ -9,6 +9,7 @@
 #include<store_emitter/HashMap.hpp>
 #include<def/builder.hpp>
 #include<def/builder/EnumerateAccessPoints.hpp>
+#include<mpdef/List.hpp>
 
 #include<boost/hana.hpp>
 
@@ -101,7 +102,7 @@ int main()
 
     auto result = nbdl_def::builder::enumerateAccessPoints(def);
 
-    constexpr auto expected = hana::make_tuple(
+    constexpr auto expected = mpdef::make_list(
       // Root2
       builder::makeAccessPointMeta(
         names::Root2,
@@ -113,7 +114,7 @@ int main()
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        hana::make_tuple(names::Root2)
+        mpdef::make_list(names::Root2)
       ),
       // Root3
       builder::makeAccessPointMeta(
@@ -123,7 +124,7 @@ int main()
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        hana::make_tuple(names::Root3)
+        mpdef::make_list(names::Root3)
       ),
       // Root1/Nested1
       builder::makeAccessPointMeta(
@@ -136,7 +137,7 @@ int main()
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        hana::make_tuple(names::Root1, names::Nested1)
+        mpdef::make_list(names::Root1, names::Nested1)
       ),
       // Root1/Nested2/Nested3
       builder::makeAccessPointMeta(
@@ -146,7 +147,7 @@ int main()
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        hana::make_tuple(
+        mpdef::make_list(
           names::Root1,
           names::Nested2,
           names::Nested3
@@ -163,7 +164,7 @@ int main()
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        hana::make_tuple(
+        mpdef::make_list(
           names::Root2,
           names::Nested1
         )
@@ -176,7 +177,7 @@ int main()
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        hana::make_tuple(
+        mpdef::make_list(
           names::Root2,
           names::Nested2,
           names::Nested3
@@ -193,7 +194,7 @@ int main()
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        hana::make_tuple(
+        mpdef::make_list(
           names::Root3,
           names::Nested1
         )
@@ -206,7 +207,7 @@ int main()
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        hana::make_tuple(
+        mpdef::make_list(
           names::Root3,
           names::Nested2,
           names::Nested3
@@ -216,9 +217,9 @@ int main()
 
     BOOST_HANA_CONSTANT_ASSERT(result == expected);
 
-    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].name() == names::Root2);
+    BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).name() == names::Root2);
     /* map is not default constructible :(
-    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].actions() ==
+    BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).actions() ==
       hana::make_map(
         mpdef::make_tree_node(tag::Create,  hana::make_map()),
         mpdef::make_tree_node(tag::Read,    hana::make_map()),
@@ -227,14 +228,14 @@ int main()
       )
     );
     */
-    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].storeContainer() ==
+    BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).storeContainer() ==
       hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>
     );
-    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].storeEmitter() ==
+    BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).storeEmitter() ==
       hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>
     );
-    BOOST_HANA_CONSTANT_ASSERT(result[hana::int_c<0>].entityNames() ==
-      hana::make_tuple(names::Root2)
+    BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).entityNames() ==
+      mpdef::make_list(names::Root2)
     );
   }
 }

@@ -21,7 +21,7 @@ namespace details {
   template<typename EntityMap>
   struct BuildProviderPair
   {
-    EntityMap const& entity_map;
+    EntityMap entity_map;
 
     template<typename ProviderMeta>
     constexpr auto operator()(ProviderMeta)

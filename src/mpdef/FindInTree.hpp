@@ -8,6 +8,7 @@
 #define NBDL_MPDEF_FIND_IN_TREE_HPP
 
 #include<mpdef/CollectSettings.hpp>
+#include<mpdef/List.hpp>
 #include<mpdef/TreeNode.hpp>
 
 #include<boost/hana.hpp>
@@ -26,7 +27,7 @@ constexpr auto isLeaf(T)
   return hana::true_c;
 }
 template<typename First, typename ...X>
-constexpr auto isLeaf(mpdef::TreeNode<First, hana::tuple<X...>>)
+constexpr auto isLeaf(mpdef::TreeNode<First, mpdef::List<X...>>)
 {
   return hana::false_c;
 }
@@ -57,7 +58,7 @@ struct InTreeFinder
     ) const
   {
     //matching node
-    return hana::make_tuple(mpdef::make_tree_node(tree, summarize(summary, tree)));
+    return mpdef::List<decltype(mpdef::make_tree_node(tree, summarize(summary, tree)))>{};
   }
 
   template<typename Leaf, typename Summary>
@@ -68,7 +69,7 @@ struct InTreeFinder
     hana::true_   //is_leaf
     ) const
   {
-    return hana::make_tuple();
+    return mpdef::List<>{};
   }
 
   template<typename Tree, typename Summary>
@@ -81,7 +82,7 @@ struct InTreeFinder
   {
     auto new_summary = summarize(summary, tree);
     return hana::flatten(hana::unpack(hana::second(tree),
-      hana::on(hana::make_tuple, hana::reverse_partial(*this, std::move(new_summary)))));
+      hana::on(mpdef::make_list, hana::reverse_partial(*this, std::move(new_summary)))));
   }
 
   template<typename Tree, typename Summary>

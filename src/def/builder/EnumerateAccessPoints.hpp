@@ -14,6 +14,7 @@
 #include<mpdef/CollectSettings.hpp>
 #include<mpdef/ComposeCollectors.hpp>
 #include<mpdef/FindInTree.hpp>
+#include<mpdef/List.hpp>
 #include<mpdef/TreeNode.hpp>
 #include<Store.hpp>
 
@@ -50,7 +51,7 @@ constexpr auto collector = mpdef::composeCollectors(
   )
 );
 constexpr auto matcher = mpdef::createInTreeFinder(pred, collector);
-constexpr auto initial_summary = hana::make_tuple(settings, hana::make_tuple());
+constexpr auto initial_summary = mpdef::make_list(settings, mpdef::make_list());
 
 // called on result of FindInTree which is (node, summary)
 constexpr auto hasActions = hana::compose(hana::demux(hana::maybe)
@@ -66,7 +67,7 @@ struct HelperHelper
   constexpr auto operator()(Helper const& helper, HelperResult&& result)
   {
     return hana::unpack(hana::second(hana::first(result)),
-      hana::make_tuple ^hana::on^ hana::partial(helper, hana::second(result)));
+      mpdef::make_list ^hana::on^ hana::partial(helper, hana::second(result)));
   }
 };
 constexpr HelperHelper helperhelper{};
@@ -82,7 +83,7 @@ struct Helper
     return hana::concat(
       hana::filter(results, hasActions),
       hana::flatten(hana::flatten(hana::unpack(std::move(results),
-        hana::make_tuple ^on^ hana::partial(helperhelper, *this)
+        mpdef::make_list ^on^ hana::partial(helperhelper, *this)
       )))
     );
   }
@@ -96,8 +97,8 @@ struct ResultHelper
   {
     auto node_children = hana::second(hana::first(result));
     auto summary = hana::second(result);
-    auto settings = summary[hana::int_c<0>];
-    auto entity_names = summary[hana::int_c<1>];
+    auto settings = hana::at(summary, hana::int_c<0>);
+    auto entity_names = hana::at(summary, hana::int_c<1>);
     return builder::makeAccessPointMeta(
       node_children[tag::Name],
       node_children[tag::Actions],
@@ -117,7 +118,7 @@ constexpr ResultHelper resultHelper{};
 }//enum_access_points_detail
 
 /*
- * Gets AccessPoints that have actions. Returns tuple of AccessPointMeta
+ * Gets AccessPoints that have actions. Returns list of AccessPointMeta
  */
 struct EnumerateAccessPoints
 {
@@ -130,7 +131,7 @@ struct EnumerateAccessPoints
     using hana::on;
 
     return hana::unpack(helper(initial_summary, std::forward<Def>(def)),
-      hana::make_tuple ^on^ resultHelper);
+      mpdef::make_list ^on^ resultHelper);
   }
 };
 constexpr EnumerateAccessPoints enumerateAccessPoints{};

@@ -10,6 +10,7 @@
 #include<def/builder/EntityMeta.hpp>
 #include<def/builder/EntityKeyMeta.hpp>
 #include<def/directives.hpp>
+#include<mpdef/TreeNode.hpp>
 
 namespace nbdl_def {
 
@@ -30,7 +31,7 @@ struct MapEntityMeta
       constexpr auto props = hana::second(EntityDef{});
       constexpr auto type = props[tag::Type];
 
-      return hana::make_pair(
+      return mpdef::make_tree_node(
         hana::find(props, tag::Name).value_or(type),
         builder::makeEntityMeta(
           builder::makeEntityKeyMeta(
@@ -47,7 +48,7 @@ struct MapEntityMeta
     }
   };
 
-  // Def should be a pair<tag, tuple of Entity>
+  // Def should be a pair<tag, list of Entity>
   template<typename Def>
   constexpr auto operator()(Def) const
   {

@@ -7,6 +7,8 @@
 #ifndef NBDL_MPDEF_COMPOSE_COLLECTORS_HPP
 #define NBDL_MPDEF_COMPOSE_COLLECTORS_HPP
 
+#include<mpdef/List.hpp>
+
 #include<boost/hana.hpp>
 #include<utility>
 
@@ -19,7 +21,7 @@ struct ComposeCollectors
   template<std::size_t... i, typename... Collector>
   constexpr auto helper(std::index_sequence<i...>, Collector&&... collector) const
   {
-    return hana::demux(hana::make_tuple)
+    return hana::demux(mpdef::make_list)
     (
       hana::demux(std::forward<Collector>(collector))
       (

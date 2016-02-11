@@ -17,37 +17,51 @@ namespace hana = boost::hana;
 
 struct CollectSettings
 {
-  template<typename State, typename X>
-  constexpr auto helper(State const& state, X const& x, hana::true_) const
+  template<typename State>
+  struct HelperHelper
   {
-    return
-      hana::unpack(hana::keys(state),
-        hana::make_map ^hana::on^
-        hana::demux(mpdef::make_tree_node)
-        (
-          hana::id,
-          hana::demux(hana::maybe)
-          (
-            hana::partial(hana::at_key, state),
-            hana::always(hana::just),
-            hana::partial(hana::find, x)
-          )
-        )
-      );
+    template<typename Key>
+    static constexpr auto helper(Key key, hana::optional<>)
+    {
+      return State{}[key];
+    }
+
+    template<typename Key, typename T>
+    static constexpr auto helper(Key, hana::optional<T>)
+    {
+      return hana::just(T{});
+    }
+  };
+  
+  template<typename State, typename X>
+  struct Helper
+  {
+    template<typename... Key>
+    constexpr auto operator()(Key... key) const
+    {
+      return hana::make_map(mpdef::make_tree_node(key,
+        HelperHelper<State>::helper(key, hana::find(X{}, key)))...);
+    }
+  };
+
+  template<typename State, typename X>
+  constexpr auto helper(State state, X, hana::true_) const
+  {
+    return hana::unpack(hana::keys(state), Helper<State, X>{});
   }
 
   template<typename State, typename X>
-  constexpr auto helper(State&& state, X, hana::false_) const
+  constexpr auto helper(State state, X, hana::false_) const
   {
-    return std::forward<State>(state);
+    return state;
   }
 
   template<typename State, typename X>
-  constexpr auto operator()(State&& state, X&& x) const
+  constexpr auto operator()(State state, X x) const
   {
-    auto children = hana::second(std::forward<X>(x));
+    auto children = hana::second(x);
     return helper(
-      std::forward<State>(state),
+      state,
       children,
       hana::is_a<hana::map_tag>(children)
     );

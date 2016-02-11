@@ -8,6 +8,9 @@
 nbdl_add_test("test.mpdef.tree_node"
   tree_node.cpp
 )
+nbdl_add_test("test.mpdef.list"
+  list.cpp
+)
 nbdl_add_test("test.mpdef.find_in_tree"
   find_in_tree.cpp
 )
