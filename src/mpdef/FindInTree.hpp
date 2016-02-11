@@ -9,6 +9,7 @@
 
 #include<mpdef/CollectSettings.hpp>
 #include<mpdef/List.hpp>
+#include<mpdef/Map.hpp>
 #include<mpdef/TreeNode.hpp>
 
 #include<boost/hana.hpp>
@@ -32,7 +33,7 @@ constexpr auto isLeaf(mpdef::TreeNode<First, mpdef::List<X...>>)
   return hana::false_c;
 }
 template<typename First, typename ...X>
-constexpr auto isLeaf(mpdef::TreeNode<First, hana::map<X...>>)
+constexpr auto isLeaf(mpdef::TreeNode<First, mpdef::Map<X...>>)
 {
   return hana::false_c;
 }

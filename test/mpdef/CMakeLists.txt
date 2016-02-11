@@ -11,6 +11,9 @@ nbdl_add_test("test.mpdef.tree_node"
 nbdl_add_test("test.mpdef.list"
   list.cpp
 )
+nbdl_add_test("test.mpdef.map"
+  map.cpp
+)
 nbdl_add_test("test.mpdef.find_in_tree"
   find_in_tree.cpp
 )

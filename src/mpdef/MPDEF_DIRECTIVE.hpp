@@ -8,6 +8,7 @@
 #define NBDL_MPDEF_DIRECTIVE_HPP
 
 #include<mpdef/List.hpp>
+#include<mpdef/Map.hpp>
 #include<mpdef/TreeNode.hpp>
 
 #include<boost/hana.hpp>
@@ -18,7 +19,7 @@ namespace tag {                                         \
   constexpr auto NAME = boost::hana::type_c<NAME##_t>;  \
 }                                                       \
 template<typename... Tn> constexpr auto NAME(Tn...)  \
-{ return mpdef::make_tree_node(tag::NAME, boost::hana::make_map(Tn{}...)); }
+{ return mpdef::make_tree_node(tag::NAME, mpdef::make_map(Tn{}...)); }
 
 #define MPDEF_DIRECTIVE_LIST(NAME)                                              \
 namespace tag {                                                                 \

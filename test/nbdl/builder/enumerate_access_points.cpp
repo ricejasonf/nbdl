@@ -106,11 +106,11 @@ int main()
       // Root2
       builder::makeAccessPointMeta(
         names::Root2,
-        hana::make_map(
-          mpdef::make_tree_node(tag::Create,  hana::make_map()),
-          mpdef::make_tree_node(tag::Read,    hana::make_map()),
-          mpdef::make_tree_node(tag::Update,  hana::make_map()),
-          mpdef::make_tree_node(tag::Delete,  hana::make_map())
+        mpdef::make_map(
+          mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
+          mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
+          mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
+          mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
@@ -119,8 +119,8 @@ int main()
       // Root3
       builder::makeAccessPointMeta(
         names::Root3,
-        hana::make_map(
-          mpdef::make_tree_node(tag::Create,  hana::make_map())
+        mpdef::make_map(
+          mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
@@ -129,11 +129,11 @@ int main()
       // Root1/Nested1
       builder::makeAccessPointMeta(
         names::Nested1,
-        hana::make_map(
-          mpdef::make_tree_node(tag::Create,  hana::make_map()),
-          mpdef::make_tree_node(tag::Read,    hana::make_map()),
-          mpdef::make_tree_node(tag::Update,  hana::make_map()),
-          mpdef::make_tree_node(tag::Delete,  hana::make_map())
+        mpdef::make_map(
+          mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
+          mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
+          mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
+          mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
@@ -142,8 +142,8 @@ int main()
       // Root1/Nested2/Nested3
       builder::makeAccessPointMeta(
         names::Nested3,
-        hana::make_map(
-          mpdef::make_tree_node(tag::Create,  hana::make_map())
+        mpdef::make_map(
+          mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
@@ -156,11 +156,11 @@ int main()
       // Root2/Nested1
       builder::makeAccessPointMeta(
         names::Nested1,
-        hana::make_map(
-          mpdef::make_tree_node(tag::Create,  hana::make_map()),
-          mpdef::make_tree_node(tag::Read,    hana::make_map()),
-          mpdef::make_tree_node(tag::Update,  hana::make_map()),
-          mpdef::make_tree_node(tag::Delete,  hana::make_map())
+        mpdef::make_map(
+          mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
+          mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
+          mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
+          mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
@@ -172,8 +172,8 @@ int main()
       // Root2/Nested2/Nested3
       builder::makeAccessPointMeta(
         names::Nested3,
-        hana::make_map(
-          mpdef::make_tree_node(tag::Create,  hana::make_map())
+        mpdef::make_map(
+          mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
@@ -186,11 +186,11 @@ int main()
       // Root3/Nested1
       builder::makeAccessPointMeta(
         names::Nested1,
-        hana::make_map(
-          mpdef::make_tree_node(tag::Create,  hana::make_map()),
-          mpdef::make_tree_node(tag::Read,    hana::make_map()),
-          mpdef::make_tree_node(tag::Update,  hana::make_map()),
-          mpdef::make_tree_node(tag::Delete,  hana::make_map())
+        mpdef::make_map(
+          mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
+          mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
+          mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
+          mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
@@ -202,8 +202,8 @@ int main()
       // Root3/Nested2/Nested3
       builder::makeAccessPointMeta(
         names::Nested3,
-        hana::make_map(
-          mpdef::make_tree_node(tag::Create,  hana::make_map())
+        mpdef::make_map(
+          mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
         hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
         hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
@@ -220,11 +220,11 @@ int main()
     BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).name() == names::Root2);
     /* map is not default constructible :(
     BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).actions() ==
-      hana::make_map(
-        mpdef::make_tree_node(tag::Create,  hana::make_map()),
-        mpdef::make_tree_node(tag::Read,    hana::make_map()),
-        mpdef::make_tree_node(tag::Update,  hana::make_map()),
-        mpdef::make_tree_node(tag::Delete,  hana::make_map())
+      mpdef::make_map(
+        mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
+        mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
+        mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
+        mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
       )
     );
     */

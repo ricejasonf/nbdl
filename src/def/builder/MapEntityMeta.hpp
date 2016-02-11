@@ -10,6 +10,7 @@
 #include<def/builder/EntityMeta.hpp>
 #include<def/builder/EntityKeyMeta.hpp>
 #include<def/directives.hpp>
+#include<mpdef/Map.hpp>
 #include<mpdef/TreeNode.hpp>
 
 namespace nbdl_def {
@@ -53,7 +54,7 @@ struct MapEntityMeta
   constexpr auto operator()(Def) const
   {
     constexpr auto entities = Def{};
-    return hana::unpack(entities, hana::make_map ^hana::on^ Helper{});
+    return hana::unpack(entities, mpdef::make_map ^hana::on^ Helper{});
   }
 };
 constexpr MapEntityMeta mapEntityMeta{};

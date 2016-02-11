@@ -5,6 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include<mpdef/Map.hpp>
+#include<mpdef/TreeNode.hpp>
 #include<def/builder/AccessPointMeta.hpp>
 #include<def/builder/EntityMeta.hpp>
 #include<def/builder/EntityKeyMeta.hpp>
@@ -44,10 +46,10 @@ constexpr auto entity3_ = builder::makeEntityMeta(
   builder::makeEntityKeyMeta(hana::type_c<entity::E3>, hana::type_c<int>),
   hana::type_c<void>
 );
-constexpr auto entity_map = hana::make_map(
-  hana::make_pair(names::Entity1, entity1_),
-  hana::make_pair(names::Entity2, entity2_),
-  hana::make_pair(names::Entity3, entity3_)
+constexpr auto entity_map = mpdef::make_map(
+  mpdef::make_tree_node(names::Entity1, entity1_),
+  mpdef::make_tree_node(names::Entity2, entity2_),
+  mpdef::make_tree_node(names::Entity3, entity3_)
 );
 
 int main()
