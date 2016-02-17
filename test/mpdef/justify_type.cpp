@@ -26,7 +26,7 @@ int main()
     BOOST_HANA_CONSTANT_ASSERT(
       mpdef::justify_type(hana::decltype_(hana::optional<>{}))
         ==
-      hana::type_c<hana::optional<>>
+      hana::type_c<decltype(hana::nothing)>
     );
   }
   {
@@ -42,7 +42,7 @@ int main()
     BOOST_HANA_CONSTANT_ASSERT(
       mpdef::justify_type(hana::decltype_(hana::nothing))
         ==
-      hana::type_c<hana::optional<>>
+      hana::type_c<decltype(hana::nothing)>
     );
   }
 

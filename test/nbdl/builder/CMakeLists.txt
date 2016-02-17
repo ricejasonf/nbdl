@@ -44,3 +44,7 @@ nbdl_add_test("test.nbdl.builder.enumerate_providers"
 nbdl_add_test("test.nbdl.builder.map_entity_meta"
   map_entity_meta.cpp
 )
+
+nbdl_add_test("test.nbdl.builder.entity_messages"
+  entity_messages.cpp
+)

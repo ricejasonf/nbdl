@@ -20,7 +20,7 @@ struct JustifyType;
 template<>
 struct JustifyType<boost::hana::optional<>>
 {
-  using type = boost::hana::optional<>;
+  using type = const boost::hana::optional<>;
 };
 
 template<typename Type>
@@ -33,7 +33,7 @@ struct JustifyType<boost::hana::optional<Type>>
 template<>
 struct JustifyType<const boost::hana::optional<>>
 {
-  using type = boost::hana::optional<>;
+  using type = const boost::hana::optional<>;
 };
 
 template<typename Type>
