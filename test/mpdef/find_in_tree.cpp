@@ -27,7 +27,6 @@ MPDEF_DIRECTIVE_LEAF(Setting4);
 
 int main()
 {
-#if 0
   {
     constexpr auto tree =
       Root(
@@ -61,7 +60,6 @@ int main()
     );
     BOOST_HANA_CONSTANT_ASSERT(x == y);
   }
-#endif
 
   // use withSettings to collect settings
   {
