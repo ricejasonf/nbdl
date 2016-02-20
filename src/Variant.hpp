@@ -7,6 +7,8 @@
 #ifndef NBDL_VARIANT_HPP
 #define NBDL_VARIANT_HPP
 
+#include<details/CommonType.hpp>
+
 #include<type_traits>
 #include<boost/hana.hpp>
 
@@ -78,7 +80,7 @@ class Variant
 
   template<typename Index, typename Fn>
   auto matchByTypeHelper(Index i, const int type_id_x, Fn fn) const
-    ->  std::common_type_t<
+    ->  nbdl::detail::common_type_t<
           decltype(fn(hana::at(types(), i))),
           decltype(fn(hana::at(types(), hana::int_c<0>)))
         >
@@ -90,7 +92,7 @@ class Variant
   }
   template<typename Fn>
   auto matchByTypeHelper(LastTypeId i, const int type_id_x, Fn fn) const
-    ->  std::common_type_t<
+    ->  nbdl::detail::common_type_t<
           decltype(fn(hana::at(types(), i))),
           decltype(fn(hana::at(types(), hana::int_c<0>)))
         >
