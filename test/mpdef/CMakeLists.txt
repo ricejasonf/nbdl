@@ -26,3 +26,6 @@ nbdl_add_test("test.mpdef.compose_collectors"
 nbdl_add_test("test.mpdef.append_if"
   append_if.cpp
 )
+nbdl_add_test("test.mpdef.justify_type"
+  justify_type.cpp
+)
