@@ -7,13 +7,14 @@
 #ifndef NBDL_DEF_BUILDER_PATH_HPP
 #define NBDL_DEF_BUILDER_PATH_HPP
 
-#include<def/builder.hpp>
 #include<Path.hpp>
 
-#include<type_traits>
+#include<boost/hana.hpp>
 
 namespace nbdl_def {
 namespace builder {
+
+namespace hana = boost::hana;
 
 namespace details {
 

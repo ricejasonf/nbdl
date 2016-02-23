@@ -48,3 +48,7 @@ nbdl_add_test("test.nbdl.builder.map_entity_meta"
 nbdl_add_test("test.nbdl.builder.entity_messages"
   entity_messages.cpp
 )
+
+nbdl_add_test("test.nbdl.builder.message_variants"
+  message_variants.cpp
+)

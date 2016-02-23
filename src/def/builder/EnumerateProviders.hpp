@@ -7,7 +7,6 @@
 #ifndef NBDL_DEF_BUILDER_ENUMERATE_PROVIDERS_HPP
 #define NBDL_DEF_BUILDER_ENUMERATE_PROVIDERS_HPP
 
-#include<def/builder.hpp>
 #include<def/builder/EnumerateAccessPoints.hpp>
 #include<def/builder/ProviderMeta.hpp>
 #include<mpdef/List.hpp>

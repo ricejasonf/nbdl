@@ -11,6 +11,7 @@
 #include<def/builder/Path.hpp>
 #include<def/builder/ProviderMap.hpp>
 #include<def/builder/ProviderMeta.hpp>
+#include<def/directives.hpp>
 #include<Make.hpp>
 #include<ProviderMap.hpp>
 

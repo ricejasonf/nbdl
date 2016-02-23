@@ -46,8 +46,8 @@ constexpr auto entity_map = mpdef::make_map(
 
 int main()
 {
-  namespace channel = nbdl::channel;
-  namespace action = nbdl::action;
+  namespace channel = nbdl::message::channel;
+  namespace action = nbdl::message::action;
   {
     constexpr auto access_point = builder::makeAccessPointMeta(
       //name
@@ -68,18 +68,20 @@ int main()
         ==
       mpdef::make_list(
         hana::type_c<hana::tuple<
-          const hana::optional<>,
           channel::Upstream,
           action::Create,
           PathType,
+          const hana::optional<>,
+          hana::optional<nbdl::Uid>,
           hana::optional<entity::E1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          hana::optional<bool>,
           channel::Downstream,
           action::Create,
           PathType,
+          const hana::optional<>,
+          hana::optional<nbdl::Uid>,
           hana::optional<entity::E1>,
           const hana::optional<>
         >>
@@ -111,66 +113,74 @@ int main()
         ==
       mpdef::make_list(
         hana::type_c<hana::tuple<
-          const hana::optional<>,
           channel::Upstream,
           action::Create,
           PathType,
+          const hana::optional<>,
+          hana::optional<nbdl::Uid>,
           hana::optional<entity::E1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          hana::optional<bool>,
           channel::Downstream,
           action::Create,
           PathType,
+          const hana::optional<>,
+          hana::optional<nbdl::Uid>,
           hana::optional<entity::E1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          const hana::optional<>,
           channel::Upstream,
           action::Read,
           PathType,
+          const hana::optional<>,
+          hana::optional<nbdl::Uid>,
           const hana::optional<>, //has no payload
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          hana::optional<bool>,
           channel::Downstream,
           action::Read,
           PathType,
+          const hana::optional<>,
+          hana::optional<nbdl::Uid>,
           hana::optional<entity::E1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          const hana::optional<>,
           channel::Upstream,
           action::UpdateRaw,
           PathType,
+          const hana::optional<>,
+          hana::optional<nbdl::Uid>,
           hana::optional<entity::E1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          hana::optional<bool>,
           channel::Downstream,
           action::UpdateRaw,
           PathType,
+          const hana::optional<>,
+          hana::optional<nbdl::Uid>,
           hana::optional<entity::E1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          const hana::optional<>,
           channel::Upstream,
           action::Delete,
           PathType,
           const hana::optional<>,
+          hana::optional<nbdl::Uid>,
+          const hana::optional<>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          hana::optional<bool>,
           channel::Downstream,
           action::Delete,
           PathType,
+          const hana::optional<>,
+          hana::optional<nbdl::Uid>,
           const hana::optional<>,
           const hana::optional<>
         >>

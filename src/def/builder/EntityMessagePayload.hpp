@@ -19,27 +19,27 @@ namespace hana = boost::hana;
 
 namespace detail {
 
-  namespace action = nbdl::action;
-  namespace channel = nbdl::channel;
+  namespace action = nbdl::message::action;
+  namespace channel = nbdl::message::channel;
 
-  template<typename EntityType, typename Channel>
-  constexpr auto entityMessagePayload(EntityType entity_type, action::Create, Channel)
+  template<typename A, typename E, typename Channel>
+  constexpr auto entityMessagePayload(A, E entity_type, action::Create, Channel)
   { return mpdef::justify_type(hana::decltype_(hana::just(entity_type))); }
 
-  template<typename EntityType>
-  constexpr auto entityMessagePayload(EntityType, action::Read, channel::Upstream)
+  template<typename A, typename E>
+  constexpr auto entityMessagePayload(A, E, action::Read, channel::Upstream)
   { return hana::decltype_(hana::nothing); }
 
-  template<typename EntityType>
-  constexpr auto entityMessagePayload(EntityType entity_type, action::Read, channel::Downstream)
+  template<typename A, typename E>
+  constexpr auto entityMessagePayload(A, E entity_type, action::Read, channel::Downstream)
   { return mpdef::justify_type(hana::decltype_(hana::just(entity_type))); }
 
-  template<typename EntityType, typename Channel>
-  constexpr auto entityMessagePayload(EntityType entity_type, action::UpdateRaw, Channel)
+  template<typename A, typename E, typename Channel>
+  constexpr auto entityMessagePayload(A, E entity_type, action::UpdateRaw, Channel)
   { return mpdef::justify_type(hana::decltype_(hana::just(entity_type))); }
 
-  template<typename EntityType, typename Channel>
-  constexpr auto entityMessagePayload(EntityType, action::Delete, Channel)
+  template<typename A, typename E, typename Channel>
+  constexpr auto entityMessagePayload(A, E, action::Delete, Channel)
   { return hana::decltype_(hana::nothing); }
 
   /* TODO message payloads for other possible entity actions:
@@ -48,10 +48,11 @@ namespace detail {
 }//detail
 
 struct EntityMessagePayload {
-  template<typename T>
-  constexpr auto operator()(T entity_message_meta) const
+  template<typename A, typename E>
+  constexpr auto operator()(A access_point, E entity_message_meta) const
   {
     return detail::entityMessagePayload(
+      access_point,
       entity_message_meta.entityType(),
       entity_message_meta.action(),
       entity_message_meta.channel()

@@ -8,33 +8,17 @@
 #define NBDL_DEF_BUILDER_CONTEXT_HPP
 
 #include<mpdef/List.hpp>
-#include<def/builder.hpp>
 #include<def/directives.hpp>
 #include<def/builder/MapEntityMeta.hpp>
 #include<def/builder/Path.hpp>
 #include<def/builder/ProviderMap.hpp>
+#include<def/builder/ProviderMeta.hpp>
 #include<def/builder/EnumerateProviders.hpp>
 #include<def/builder/StoreMap.hpp>
 #include<Context.hpp>
 
 namespace nbdl_def {
 namespace builder {
-
-namespace details {
-
-  struct GetAccessPoints
-  {
-    template<typename S>
-    constexpr auto operator()(S s) const
-    {
-      return hana::unpack(s,
-        [](auto... x) {
-          return hana::flatten(mpdef::List<decltype(x.accessPoints())...>{});
-        });
-    }
-  };
-
-}//details
 
 struct Context
 {
@@ -49,7 +33,7 @@ struct Context
       hana::template_<nbdl::details::ContextTraits>(
         builder::providerMap(entityMetaMap, providersMeta),
         hana::type_c<void>, //Consumers
-        builder::storeMap(entityMetaMap, decltype(details::GetAccessPoints{}(providersMeta)){})
+        builder::storeMap(entityMetaMap, decltype(getAccessPointsFromProvidersMeta(providersMeta)){})
       )
     );
   }

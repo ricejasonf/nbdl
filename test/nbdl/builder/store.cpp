@@ -9,6 +9,7 @@
 #include<def/builder/EntityMeta.hpp>
 #include<def/builder/Path.hpp>
 #include<def/builder/Store.hpp>
+#include<def/directives.hpp>
 #include<EntityTraits.hpp>
 #include<Listener.hpp>
 #include<Path.hpp>

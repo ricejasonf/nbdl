@@ -18,8 +18,8 @@ namespace builder {
 namespace hana = boost::hana;
 
 namespace detail {
-  namespace action = nbdl::action;
-  namespace channel = nbdl::channel;
+  namespace action = nbdl::message::action;
+  namespace channel = nbdl::message::channel;
 
   // The PrivatePayload can only be sent Upstream
   // with a Create action
@@ -35,8 +35,8 @@ namespace detail {
 }// detail
 
 struct EntityMessagePrivatePayload {
-  template<typename T>
-  constexpr auto operator()(T entity_message_meta) const
+  template<typename A, typename M>
+  constexpr auto operator()(A, M entity_message_meta) const
   {
     return detail::entityMessagePrivatePayload(
       entity_message_meta.privatePayload(),

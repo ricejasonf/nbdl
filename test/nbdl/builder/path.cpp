@@ -11,6 +11,7 @@
 #include<def/builder/EntityMeta.hpp>
 #include<def/builder/EntityKeyMeta.hpp>
 #include<def/builder/Path.hpp>
+#include<def/directives.hpp>
 #include<Path.hpp>
 
 #include<boost/hana.hpp>

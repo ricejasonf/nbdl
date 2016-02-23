@@ -7,7 +7,12 @@
 #ifndef NBDL_MESSAGE_HPP
 #define NBDL_MESSAGE_HPP
 
+#include<boost/hana.hpp>
+
 namespace nbdl {
+namespace message {
+
+namespace hana = boost::hana;
 
 /*
  * A message is just a tuple right now.
@@ -23,6 +28,8 @@ namespace nbdl {
     struct Update { };
     struct UpdateRaw { };
     struct Delete { };
+
+    struct ValidationFail { };
   } // action
 
   namespace channel {
@@ -30,5 +37,16 @@ namespace nbdl {
     struct Downstream { };
   } // channel
 
+  // The offsets of these properties should match the
+  // formation of the message in `builder::EntityMessage`.
+  constexpr auto getChannel               = hana::reverse_partial(hana::at, hana::int_c< 0 >);
+  constexpr auto getAction                = hana::reverse_partial(hana::at, hana::int_c< 1 >);
+  constexpr auto getPath                  = hana::reverse_partial(hana::at, hana::int_c< 2 >);
+  constexpr auto getMaybeIsFromRoot       = hana::reverse_partial(hana::at, hana::int_c< 3 >);
+  constexpr auto getMaybeUid              = hana::reverse_partial(hana::at, hana::int_c< 4 >);
+  constexpr auto getMaybePayload          = hana::reverse_partial(hana::at, hana::int_c< 5 >);
+  constexpr auto getMaybePrivatePayload   = hana::reverse_partial(hana::at, hana::int_c< 6 >);
+
+} // message
 } // nbdl
 #endif

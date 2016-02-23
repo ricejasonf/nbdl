@@ -29,6 +29,8 @@ MPDEF_DIRECTIVE(Delete)
 MPDEF_DIRECTIVE_LEAF(StoreContainer)
 MPDEF_DIRECTIVE_LEAF(StoreEmitter)
 MPDEF_DIRECTIVE_LEAF(PrivatePayload)
+MPDEF_DIRECTIVE_LEAF(UseLocalVersion)
+MPDEF_DIRECTIVE_LEAF(FireAndForget)
 
 // used as key to entity map
 MPDEF_DIRECTIVE_LEAF(EntityName)

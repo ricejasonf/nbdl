@@ -19,23 +19,37 @@ namespace builder {
 namespace hana = boost::hana;
 
 namespace detail {
-  namespace channel = nbdl::channel;
+  namespace tag = nbdl_def::tag;
+  namespace channel = nbdl::message::channel;
 
-  template<typename EntityType, typename Action>
-  constexpr auto entityMessageIsFromRoot(EntityType, Action, channel::Downstream)
-  { return hana::decltype_(hana::just(bool{})); }
+  template<typename AccessPoint, typename Action>
+  constexpr auto entityMessageIsFromRoot(AccessPoint/* access_point */, Action, channel::Downstream)
+  {
+    return hana::decltype_(hana::nothing);
+#if 0
+    // we only care if it is from root if we
+    // have a local version of the object
+    return hana::type_c<decltype(
+      hana::if_(
+        hana::find(access_point, tag::UseLocalVersion).value_or(hana::false_c),
+        hana::just(bool{}),
+        hana::nothing
+      )
+    )>;
+#endif
+  }
 
-  template<typename EntityType, typename Action>
-  constexpr auto entityMessageIsFromRoot(EntityType, Action, channel::Upstream)
+  template<typename AccessPoint, typename Action>
+  constexpr auto entityMessageIsFromRoot(AccessPoint, Action, channel::Upstream)
   { return hana::decltype_(hana::nothing); }
 }//detail
 
 struct EntityMessageIsFromRoot {
-  template<typename T>
-  constexpr auto operator()(T entity_message_meta) const
+  template<typename A, typename M>
+  constexpr auto operator()(A access_point, M entity_message_meta) const
   {
     return detail::entityMessageIsFromRoot(
-      entity_message_meta.entityType(),
+      access_point,
       entity_message_meta.action(),
       entity_message_meta.channel()
     );
