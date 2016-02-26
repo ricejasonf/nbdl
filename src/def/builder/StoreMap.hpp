@@ -41,8 +41,8 @@ struct StoreMap
   template<typename EntityMap, typename AccessPoints>
   constexpr auto operator()(EntityMap entity_map, AccessPoints access_points) const
   {
-    return hana::decltype_(hana::unpack(access_points,
-      hana::make_map ^hana::on^ details::BuildStorePair<EntityMap>{entity_map}));
+    return decltype(hana::decltype_(hana::unpack(access_points,
+      hana::make_map ^hana::on^ details::BuildStorePair<EntityMap>{entity_map}))){};
   }
 };
 constexpr StoreMap storeMap{};

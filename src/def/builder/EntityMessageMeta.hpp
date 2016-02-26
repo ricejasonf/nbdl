@@ -8,7 +8,6 @@
 #define NBDL_DEF_MESSAGE_PAYLOAD_META_HPP
 
 #include<mpdef/MPDEF_METASTRUCT.hpp>
-#include<mpdef/MakeMetastruct.hpp>
 
 namespace nbdl_def {
 namespace builder {
@@ -21,7 +20,6 @@ MPDEF_METASTRUCT(
   , action
   , channel
 );
-constexpr auto makeEntityMessageMeta = mpdef::makeMetastruct<EntityMessageMeta>;
 
 }//builder
 }//nbdl_def

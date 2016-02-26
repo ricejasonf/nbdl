@@ -63,8 +63,8 @@ struct EntityMessageUid {
   {
     return detail::entityMessageUid(
       access_point,
-      entity_message_meta.action(),
-      entity_message_meta.channel()
+      EntityMessageMeta::action(entity_message_meta),
+      EntityMessageMeta::channel(entity_message_meta)
     );
   }
 };

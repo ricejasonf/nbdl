@@ -8,6 +8,7 @@
 #define NBDL_DEF_BUILDER_ENTITY_MESSAGE_PRIVATE_PAYLOAD_HPP
 
 #include<mpdef/JustifyType.hpp>
+#include<def/builder/EntityMessageMeta.hpp>
 #include<Message.hpp>
 
 #include<boost/hana.hpp>
@@ -39,9 +40,9 @@ struct EntityMessagePrivatePayload {
   constexpr auto operator()(A, M entity_message_meta) const
   {
     return detail::entityMessagePrivatePayload(
-      entity_message_meta.privatePayload(),
-      entity_message_meta.action(),
-      entity_message_meta.channel()
+      EntityMessageMeta::privatePayload(entity_message_meta),
+      EntityMessageMeta::action(entity_message_meta),
+      EntityMessageMeta::channel(entity_message_meta)
     );
   }
 };

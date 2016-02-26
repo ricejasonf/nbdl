@@ -5,6 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include<def/builder/EntityMeta.hpp>
+#include<def/builder/EntityKeyMeta.hpp>
 #include<def/builder/MapEntityMeta.hpp>
 #include<def/directives.hpp>
 
@@ -29,6 +31,8 @@ int main()
 {
   {
     using namespace nbdl_def;
+    using builder::EntityMeta;
+    using builder::EntityKeyMeta;
 
     constexpr auto entities =
       Entities(
@@ -41,13 +45,22 @@ int main()
           Type(hana::type_c<E2>)
         )
       );
-    
+
     constexpr auto result = builder::mapEntityMeta(hana::second(entities));
 
-    BOOST_HANA_CONSTANT_ASSERT(result[names::Entity1].keyMeta().entity() == hana::type_c<E1>);
-    BOOST_HANA_CONSTANT_ASSERT(result[names::Entity1].keyMeta().key() == hana::type_c<int>);
+    BOOST_HANA_CONSTANT_ASSERT(
+      EntityKeyMeta::entity(EntityMeta::keyMeta(result[names::Entity1]))
+        == hana::type_c<E1>);
+    BOOST_HANA_CONSTANT_ASSERT(
+      EntityKeyMeta::key(EntityMeta::keyMeta(result[names::Entity1]))
+        == hana::type_c<int>);
 
-    BOOST_HANA_CONSTANT_ASSERT(result[names::Entity2].keyMeta().entity() == hana::type_c<E2>);
-    BOOST_HANA_CONSTANT_ASSERT(result[names::Entity2].keyMeta().key() == hana::type_c<int>);
+    BOOST_HANA_CONSTANT_ASSERT(
+      EntityKeyMeta::entity(EntityMeta::keyMeta(result[names::Entity2]))
+        == hana::type_c<E2>);
+    BOOST_HANA_CONSTANT_ASSERT(
+      EntityKeyMeta::key(EntityMeta::keyMeta(result[names::Entity2]))
+        == hana::type_c<int>);
+
   }
 }

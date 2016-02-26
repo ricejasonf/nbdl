@@ -39,9 +39,13 @@ namespace nbdl {
   NBDL_ENTITY(entity::E1, x);
 } // nbdl
 
-constexpr auto entity1_ = builder::makeEntityMeta(
-  builder::makeEntityKeyMeta(hana::type_c<entity::E1>, hana::type_c<int>),
-  hana::type_c<void>
+constexpr auto entity1_ = builder::makeEntityMetaWithMap(
+  builder::EntityMeta::keyMeta =
+    builder::makeEntityKeyMetaWithMap(
+      builder::EntityKeyMeta::entity  = hana::type_c<entity::E1>,
+      builder::EntityKeyMeta::key     = hana::type_c<int>
+    ),
+  builder::EntityMeta::membersMeta = hana::type_c<void>
 );
 
 constexpr auto entity_map = mpdef::make_map(
@@ -52,27 +56,21 @@ int main()
 {
   namespace channel = nbdl::message::channel;
   namespace action = nbdl::message::action;
+  using builder::AccessPointMeta;
+  using builder::ProviderMeta;
   {
-    constexpr auto access_point = builder::makeAccessPointMeta(
-      //name
-      names::Foo,
-      //actions
-      nbdl_def::Actions(nbdl_def::Create()),
-      //store
-      hana::type_c<void>, //doesn't matter
-      //storeEmitter
-      hana::type_c<void>, //doesn't matter
-      //entityNames
-      mpdef::make_list(names::Entity1)
+    constexpr auto access_point = builder::makeAccessPointMetaWithMap(
+      AccessPointMeta::name           = names::Foo,
+      AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+      AccessPointMeta::storeContainer = hana::type_c<void>,
+      AccessPointMeta::storeEmitter   = hana::type_c<void>,
+      AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1)
     );
     using PathType = typename decltype(nbdl::path_type<int, entity::E1>)::type;
-    constexpr auto provider_1 = builder::makeProviderMeta(
-      // provider
-      hana::type_c<Provider1>,
-      // name
-      names::Provider1,
-      // accessPoints
-      mpdef::make_list(access_point)
+    constexpr auto provider_1 = builder::makeProviderMetaWithMap(
+      ProviderMeta::provider      = hana::type_c<Provider1>,
+      ProviderMeta::name          = names::Provider1,
+      ProviderMeta::accessPoints  = mpdef::make_list(access_point)
     );
 
     constexpr auto make = builder::makeMessageVariants(entity_map, mpdef::make_list(provider_1));

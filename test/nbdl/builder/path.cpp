@@ -35,17 +35,29 @@ namespace entity {
   struct E3 {};
 }
 
-constexpr auto entity1_ = builder::makeEntityMeta(
-  builder::makeEntityKeyMeta(hana::type_c<entity::E1>, hana::type_c<int>),
-  hana::type_c<void>
+constexpr auto entity1_ = builder::makeEntityMetaWithMap(
+  builder::EntityMeta::keyMeta =
+    builder::makeEntityKeyMetaWithMap(
+      builder::EntityKeyMeta::entity  = hana::type_c<entity::E1>,
+      builder::EntityKeyMeta::key     = hana::type_c<int>
+    ),
+  builder::EntityMeta::membersMeta = hana::type_c<void>
 );
-constexpr auto entity2_ = builder::makeEntityMeta(
-  builder::makeEntityKeyMeta(hana::type_c<entity::E2>, hana::type_c<int>),
-  hana::type_c<void>
+constexpr auto entity2_ = builder::makeEntityMetaWithMap(
+  builder::EntityMeta::keyMeta =
+    builder::makeEntityKeyMetaWithMap(
+      builder::EntityKeyMeta::entity  = hana::type_c<entity::E2>,
+      builder::EntityKeyMeta::key     = hana::type_c<int>
+    ),
+  builder::EntityMeta::membersMeta = hana::type_c<void>
 );
-constexpr auto entity3_ = builder::makeEntityMeta(
-  builder::makeEntityKeyMeta(hana::type_c<entity::E3>, hana::type_c<int>),
-  hana::type_c<void>
+constexpr auto entity3_ = builder::makeEntityMetaWithMap(
+  builder::EntityMeta::keyMeta =
+    builder::makeEntityKeyMetaWithMap(
+      builder::EntityKeyMeta::entity  = hana::type_c<entity::E3>,
+      builder::EntityKeyMeta::key     = hana::type_c<int>
+    ),
+  builder::EntityMeta::membersMeta = hana::type_c<void>
 );
 constexpr auto entity_map = mpdef::make_map(
   mpdef::make_tree_node(names::Entity1, entity1_),
@@ -55,18 +67,14 @@ constexpr auto entity_map = mpdef::make_map(
 
 int main()
 {
+  using builder::AccessPointMeta;
   {
-    constexpr auto access_point = builder::makeAccessPointMeta(
-      //name
-      names::Foo,
-      //actions
-      hana::make_tuple(nbdl_def::tag::Create),
-      //store
-      hana::type_c<void>, //doesn't matter
-      //storeEmitter
-      hana::type_c<void>, //doesn't matter
-      //entityNames
-      hana::make_tuple(names::Entity1)
+    constexpr auto access_point = builder::makeAccessPointMetaWithMap(
+      AccessPointMeta::name           = names::Foo,
+      AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+      AccessPointMeta::storeContainer = hana::type_c<void>,
+      AccessPointMeta::storeEmitter   = hana::type_c<void>,
+      AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1)
     );
 
     BOOST_HANA_CONSTANT_ASSERT(
@@ -76,17 +84,12 @@ int main()
     );
   }
   {
-    constexpr auto access_point = builder::makeAccessPointMeta(
-      //name
-      names::Foo,
-      //actions
-      hana::make_tuple(nbdl_def::tag::Create),
-      //store
-      hana::type_c<void>, //doesn't matter
-      //storeEmitter
-      hana::type_c<void>, //doesn't matter
-      //entityNames
-      hana::make_tuple(names::Entity1, names::Entity2, names::Entity3)
+    constexpr auto access_point = builder::makeAccessPointMetaWithMap(
+      AccessPointMeta::name           = names::Foo,
+      AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+      AccessPointMeta::storeContainer = hana::type_c<void>,
+      AccessPointMeta::storeEmitter   = hana::type_c<void>,
+      AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1, names::Entity2, names::Entity3)
     );
 
     BOOST_HANA_CONSTANT_ASSERT(

@@ -81,7 +81,7 @@ struct MakeMessageVariants
     return hana::unpack(
       hana::partition(
         hana::unpack(
-          builder::getAccessPointsFromProvidersMeta(providers),
+          hana::flatten(hana::unpack(providers, mpdef::make_list ^hana::on^ ProviderMeta::accessPoints)),
           hana::partial(builder::entityMessages, entity_map)
         ),
         IsUpstreamHelper{}

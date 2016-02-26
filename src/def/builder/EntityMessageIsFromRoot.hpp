@@ -8,6 +8,7 @@
 #define NBDL_DEF_BUILDER_ENTITY_MESSAGE_IS_FROM_ROOT_HPP
 
 #include<def/directives.hpp>
+#include<def/builder/EntityMessageMeta.hpp>
 #include<Message.hpp>
 
 #include<boost/hana.hpp>
@@ -50,8 +51,8 @@ struct EntityMessageIsFromRoot {
   {
     return detail::entityMessageIsFromRoot(
       access_point,
-      entity_message_meta.action(),
-      entity_message_meta.channel()
+      EntityMessageMeta::action(entity_message_meta),
+      EntityMessageMeta::channel(entity_message_meta)
     );
   }
 };

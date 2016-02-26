@@ -7,6 +7,9 @@
 #ifndef NBDL_DEF_BUILDER_PATH_HPP
 #define NBDL_DEF_BUILDER_PATH_HPP
 
+#include<def/builder/AccessPointMeta.hpp>
+#include<def/builder/EntityMeta.hpp>
+#include<def/builder/EntityKeyMeta.hpp>
 #include<Path.hpp>
 
 #include<boost/hana.hpp>
@@ -23,7 +26,10 @@ struct MakePathPairFromEntityMeta
   template<typename T>
   constexpr auto operator()(T entity) const
   {
-    return hana::make_pair(entity.keyMeta().entity(), entity.keyMeta().key());
+    return hana::make_pair(
+      EntityKeyMeta::entity(EntityMeta::keyMeta(entity)),
+      EntityKeyMeta::key(EntityMeta::keyMeta(entity))
+    );
   }
 };
 
@@ -35,7 +41,7 @@ struct Path
   constexpr auto operator()(EntityMap entities, AccessPoint access_point) const
   {
     return hana::unpack(
-      hana::transform(access_point.entityNames(), hana::partial(hana::at_key, entities)),
+      hana::transform(AccessPointMeta::entityNames(access_point), hana::partial(hana::at_key, entities)),
       nbdl::makePathTypeFromPairs ^hana::on^ details::MakePathPairFromEntityMeta{}
     );
   }

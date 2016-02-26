@@ -35,9 +35,13 @@ namespace nbdl {
   NBDL_ENTITY(entity::E1, x);
 } // nbdl
 
-constexpr auto entity1_ = builder::makeEntityMeta(
-  builder::makeEntityKeyMeta(hana::type_c<entity::E1>, hana::type_c<int>),
-  hana::type_c<void>
+constexpr auto entity1_ = builder::makeEntityMetaWithMap(
+  builder::EntityMeta::keyMeta =
+    builder::makeEntityKeyMetaWithMap(
+      builder::EntityKeyMeta::entity  = hana::type_c<entity::E1>,
+      builder::EntityKeyMeta::key     = hana::type_c<int>
+    ),
+  builder::EntityMeta::membersMeta = hana::type_c<void>
 );
 
 constexpr auto entity_map = mpdef::make_map(
@@ -46,20 +50,16 @@ constexpr auto entity_map = mpdef::make_map(
 
 int main()
 {
+  using builder::AccessPointMeta;
   namespace channel = nbdl::message::channel;
   namespace action = nbdl::message::action;
   {
-    constexpr auto access_point = builder::makeAccessPointMeta(
-      //name
-      names::Foo,
-      //actions
-      nbdl_def::Actions(nbdl_def::Create()),
-      //store
-      hana::type_c<void>, //doesn't matter
-      //storeEmitter
-      hana::type_c<void>, //doesn't matter
-      //entityNames
-      mpdef::make_list(names::Entity1)
+    constexpr auto access_point = builder::makeAccessPointMetaWithMap(
+      AccessPointMeta::name           = names::Foo,
+      AccessPointMeta::actions        = mpdef::make_list(nbdl_def::tag::Create),
+      AccessPointMeta::storeContainer = hana::type_c<void>,
+      AccessPointMeta::storeEmitter   = hana::type_c<void>,
+      AccessPointMeta::entityNames    = mpdef::make_list(names::Entity1)
     );
     using PathType = typename decltype(nbdl::path_type<int, entity::E1>)::type;
 
@@ -89,22 +89,18 @@ int main()
     );
   }
   {
-    constexpr auto access_point = builder::makeAccessPointMeta(
-      //name
-      names::Foo,
-      //actions
-      nbdl_def::Actions(
-        nbdl_def::Create(),
-        nbdl_def::Read(),
-        nbdl_def::UpdateRaw(),
-        nbdl_def::Delete()
-      ),
-      //store
-      hana::type_c<void>, //doesn't matter
-      //storeEmitter
-      hana::type_c<void>, //doesn't matter
-      //entityNames
-      mpdef::make_list(names::Entity1)
+    constexpr auto access_point = builder::makeAccessPointMetaWithMap(
+      AccessPointMeta::name = names::Foo,
+      AccessPointMeta::actions =
+        mpdef::make_list(
+          nbdl_def::tag::Create,
+          nbdl_def::tag::Read,
+          nbdl_def::tag::UpdateRaw,
+          nbdl_def::tag::Delete
+        ),
+      AccessPointMeta::storeContainer = hana::type_c<void>,
+      AccessPointMeta::storeEmitter   = hana::type_c<void>,
+      AccessPointMeta::entityNames    = mpdef::make_list(names::Entity1)
     );
     using PathType = typename decltype(nbdl::path_type<int, entity::E1>)::type;
 

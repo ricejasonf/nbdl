@@ -20,8 +20,9 @@ DEFINE_TYPE(AccessPoints);
 
 int main()
 {
+  using namespace nbdl_def::builder;
   constexpr auto x = nbdl_def::builder::makeProviderMeta(Provider1, Provider1Name, AccessPoints);
-  BOOST_HANA_CONSTANT_ASSERT(x.provider() == Provider1);
-  BOOST_HANA_CONSTANT_ASSERT(x.name() == Provider1Name);
-  BOOST_HANA_CONSTANT_ASSERT(x.accessPoints() == AccessPoints);
+  BOOST_HANA_CONSTANT_ASSERT(ProviderMeta::provider(x) == Provider1);
+  BOOST_HANA_CONSTANT_ASSERT(ProviderMeta::name(x) == Provider1Name);
+  BOOST_HANA_CONSTANT_ASSERT(ProviderMeta::accessPoints(x) == AccessPoints);
 }

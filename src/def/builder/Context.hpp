@@ -33,7 +33,9 @@ struct Context
       hana::template_<nbdl::details::ContextTraits>(
         builder::providerMap(entityMetaMap, providersMeta),
         hana::type_c<void>, //Consumers
-        builder::storeMap(entityMetaMap, decltype(getAccessPointsFromProvidersMeta(providersMeta)){})
+        builder::storeMap(entityMetaMap,
+          hana::flatten(hana::unpack(providersMeta,
+            mpdef::make_list ^hana::on^ ProviderMeta::accessPoints)))
       )
     );
   }

@@ -39,17 +39,29 @@ namespace entity {
   struct E_2_1 {};
 }//entity
 
-constexpr auto entity_1_1 = builder::makeEntityMeta(
-  builder::makeEntityKeyMeta(hana::type_c<entity::E_1_1>, hana::type_c<int>),
-  hana::type_c<void>
+constexpr auto entity_1_1 = builder::makeEntityMetaWithMap(
+  builder::EntityMeta::keyMeta =
+    builder::makeEntityKeyMetaWithMap(
+      builder::EntityKeyMeta::entity  = hana::type_c<entity::E_1_1>,
+      builder::EntityKeyMeta::key     = hana::type_c<int>
+    ),
+  builder::EntityMeta::membersMeta = hana::type_c<void>
 );
-constexpr auto entity_1_2 = builder::makeEntityMeta(
-  builder::makeEntityKeyMeta(hana::type_c<entity::E_1_2>, hana::type_c<int>),
-  hana::type_c<void>
+constexpr auto entity_1_2 = builder::makeEntityMetaWithMap(
+  builder::EntityMeta::keyMeta =
+    builder::makeEntityKeyMetaWithMap(
+      builder::EntityKeyMeta::entity  = hana::type_c<entity::E_1_2>,
+      builder::EntityKeyMeta::key     = hana::type_c<int>
+    ),
+  builder::EntityMeta::membersMeta = hana::type_c<void>
 );
-constexpr auto entity_2_1 = builder::makeEntityMeta(
-  builder::makeEntityKeyMeta(hana::type_c<entity::E_2_1>, hana::type_c<int>),
-  hana::type_c<void>
+constexpr auto entity_2_1 = builder::makeEntityMetaWithMap(
+  builder::EntityMeta::keyMeta =
+    builder::makeEntityKeyMetaWithMap(
+      builder::EntityKeyMeta::entity  = hana::type_c<entity::E_2_1>,
+      builder::EntityKeyMeta::key     = hana::type_c<int>
+    ),
+  builder::EntityMeta::membersMeta = hana::type_c<void>
 );
 constexpr auto entity_map = hana::make_map(
   hana::make_pair(names::Entity_1_1, entity_1_1),
@@ -58,29 +70,29 @@ constexpr auto entity_map = hana::make_map(
 );
 
 constexpr auto access_points_1 = hana::make_tuple(
-  builder::makeAccessPointMeta(
-    names::Foo,
-    hana::make_tuple(nbdl_def::tag::Create),
-    hana::type_c<void>, //doesn't matter
-    hana::type_c<void>, //doesn't matter
-    hana::make_tuple(names::Entity_1_1)
+  builder::makeAccessPointMetaWithMap(
+    builder::AccessPointMeta::name           = names::Foo,
+    builder::AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+    builder::AccessPointMeta::storeContainer = hana::type_c<void>,
+    builder::AccessPointMeta::storeEmitter   = hana::type_c<void>,
+    builder::AccessPointMeta::entityNames    = hana::make_tuple(names::Entity_1_1)
   ),
-  builder::makeAccessPointMeta(
-    names::Foo,
-    hana::make_tuple(nbdl_def::tag::Create),
-    hana::type_c<void>, //doesn't matter
-    hana::type_c<void>, //doesn't matter
-    hana::make_tuple(names::Entity_1_2)
+  builder::makeAccessPointMetaWithMap(
+    builder::AccessPointMeta::name           = names::Foo,
+    builder::AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+    builder::AccessPointMeta::storeContainer = hana::type_c<void>,
+    builder::AccessPointMeta::storeEmitter   = hana::type_c<void>,
+    builder::AccessPointMeta::entityNames    = hana::make_tuple(names::Entity_1_2)
   )
 );
 
 constexpr auto access_points_2 = hana::make_tuple(
-  builder::makeAccessPointMeta(
-    names::Foo,
-    hana::make_tuple(nbdl_def::tag::Create),
-    hana::type_c<void>, //doesn't matter
-    hana::type_c<void>, //doesn't matter
-    hana::make_tuple(names::Entity_2_1)
+  builder::makeAccessPointMetaWithMap(
+    builder::AccessPointMeta::name           = names::Foo,
+    builder::AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+    builder::AccessPointMeta::storeContainer = hana::type_c<void>,
+    builder::AccessPointMeta::storeEmitter   = hana::type_c<void>,
+    builder::AccessPointMeta::entityNames    = hana::make_tuple(names::Entity_2_1)
   )
 );
 
@@ -91,15 +103,15 @@ int main()
 {
   {
     constexpr auto providers_meta = hana::make_tuple(
-      builder::makeProviderMeta(
-        names::Provider1,
-        names::Provider1Name,
-        access_points_1
+      builder::makeProviderMetaWithMap(
+        builder::ProviderMeta::provider     = names::Provider1,
+        builder::ProviderMeta::name         = names::Provider1Name,
+        builder::ProviderMeta::accessPoints = access_points_1
       ),
-      builder::makeProviderMeta(
-        names::Provider2,
-        names::Provider2Name,
-        access_points_2
+      builder::makeProviderMetaWithMap(
+        builder::ProviderMeta::provider     = names::Provider2,
+        builder::ProviderMeta::name         = names::Provider2Name,
+        builder::ProviderMeta::accessPoints = access_points_2
       )
     );
 

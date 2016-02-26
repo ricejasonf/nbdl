@@ -8,6 +8,7 @@
 #define NBDL_DEF_BUILDER_ENTITY_MESSAGES_HPP
 
 #include<def/directives.hpp>
+#include<def/builder/AccessPointMeta.hpp>
 #include<def/builder/EntityMessageIsFromRoot.hpp>
 #include<def/builder/EntityMessageMeta.hpp>
 #include<def/builder/EntityMessagePayload.hpp>
@@ -38,16 +39,18 @@ namespace entity_messages_detail {
 }
 
 // TODO possibly make this a metafunction
+template <typename AccessPoint>
 struct EntityMessage
 {
-  template<typename AccessPoint, typename EntityMessageMeta>
-  constexpr auto operator()(AccessPoint a, EntityMessageMeta e) const
+  template<typename EntityMessageMeta_>
+  constexpr auto operator()(EntityMessageMeta_ e) const
   {
+    constexpr AccessPoint a{};
     return hana::type_c<
       hana::tuple<
-        decltype(e.channel()),
-        decltype(e.action()),
-        typename decltype(e.path())::type,
+        decltype(EntityMessageMeta::channel(e)),
+        decltype(EntityMessageMeta::action(e)),
+        typename decltype(EntityMessageMeta::path(e))::type,
         typename decltype(builder::entityMessageIsFromRoot(a, e))::type,
         typename decltype(builder::entityMessageUid(a, e))::type,
         typename decltype(builder::entityMessagePayload(a, e))::type,
@@ -65,17 +68,25 @@ struct EntityMessages
   {
     const auto path = builder::path(entity_map, access_point);
     const auto entity_type = hana::type_c<typename decltype(path)::type::Entity>;
+  #if 0
+    // TODO move definition of PrivatePayload into AccessPoint
+    // and add that to AccessPointMeta
+    // actions can be leaf nodes
     const auto private_payload = hana::transform(
-      hana::find(access_point.actions(), tag::Create)
+      hana::find(AccessPointMeta::actions(access_point), tag::Create)
         | hana::reverse_partial(hana::find, tag::PrivatePayload)
         ,
       hana::second
     );
-
-    const auto actions = hana::unpack(hana::second(access_point.actions()),
+    const auto actions = hana::unpack(hana::second(AccessPointMeta::actions(access_point)),
       mpdef::make_list ^hana::on^
         hana::compose(entity_messages_detail::getAction, hana::first)
     );
+  #endif
+    const auto actions = hana::unpack(AccessPointMeta::actions(access_point),
+      mpdef::make_list ^hana::on^ entity_messages_detail::getAction);
+
+    const auto private_payload = hana::nothing;
 
     const auto messages_meta = hana::unpack(
       hana::cartesian_product(mpdef::make_list(
@@ -91,7 +102,7 @@ struct EntityMessages
     // TODO: add ValidationFail response messages??
 
     return hana::unpack(messages_meta,
-      mpdef::make_list ^hana::on^ hana::partial(EntityMessage{}, access_point)
+      mpdef::make_list ^hana::on^ EntityMessage<AccessPoint>{}
     );
   }
 };

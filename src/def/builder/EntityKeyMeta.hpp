@@ -8,17 +8,15 @@
 #define NBDL_DEF_ENTITY_KEY_META_HPP
 
 #include<mpdef/MPDEF_METASTRUCT.hpp>
-#include<mpdef/MakeMetastruct.hpp>
 
 namespace nbdl_def {
 namespace builder {
 
 MPDEF_METASTRUCT(
   EntityKeyMeta
-  , entity 
+  , entity
   , key
 );
-constexpr auto makeEntityKeyMeta = mpdef::makeMetastruct<EntityKeyMeta>;
 
 }//builder
 }//nbdl_def

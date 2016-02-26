@@ -32,8 +32,9 @@ DEFINE_NAME(Root2);
 
 int main()
 {
+  using namespace nbdl_def;
+  using builder::ProviderMeta;
   {
-    using namespace nbdl_def;
 
     constexpr auto access_points_def_1 = AccessPoints(
       AccessPoint(
@@ -72,23 +73,21 @@ int main()
 
     BOOST_HANA_CONSTANT_ASSERT(result ==
       hana::make_tuple(
-        builder::makeProviderMeta(
-          names::Provider1,
-          names::Provider1Name,
-          builder::enumerateAccessPoints(access_points_def_1)
+        builder::makeProviderMetaWithMap(
+          ProviderMeta::provider    = names::Provider1,
+          ProviderMeta::name        = names::Provider1Name,
+          ProviderMeta::accessPoints = builder::enumerateAccessPoints(access_points_def_1)
         ),
-        builder::makeProviderMeta(
-          names::Provider2,
-          names::Provider2Name,
-          builder::enumerateAccessPoints(access_points_def_2)
+        builder::makeProviderMetaWithMap(
+          ProviderMeta::provider    = names::Provider2,
+          ProviderMeta::name        = names::Provider2Name,
+          ProviderMeta::accessPoints = builder::enumerateAccessPoints(access_points_def_2)
         )
       )
     );
   }
   // define a single provider
   {
-    using namespace nbdl_def;
-
     constexpr auto access_points_def_1 = AccessPoints(
       AccessPoint(
         Name(names::Root1),
@@ -111,10 +110,10 @@ int main()
 
     BOOST_HANA_CONSTANT_ASSERT(result ==
       hana::make_tuple(
-        builder::makeProviderMeta(
-          names::Provider1,
-          names::Provider1Name,
-          builder::enumerateAccessPoints(access_points_def_1)
+        builder::makeProviderMetaWithMap(
+          ProviderMeta::provider    = names::Provider1,
+          ProviderMeta::name        = names::Provider1Name,
+          ProviderMeta::accessPoints = builder::enumerateAccessPoints(access_points_def_1)
         )
       )
     );

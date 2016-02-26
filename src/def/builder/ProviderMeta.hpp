@@ -9,7 +9,6 @@
 
 #include<mpdef/List.hpp>
 #include<mpdef/MPDEF_METASTRUCT.hpp>
-#include<mpdef/MakeMetastruct.hpp>
 
 #include<boost/hana.hpp>
 
@@ -20,31 +19,10 @@ namespace hana = boost::hana;
 
 MPDEF_METASTRUCT(
   ProviderMeta
-  , provider 
-  , name 
+  , provider
+  , name
   , accessPoints
 );
-constexpr auto makeProviderMeta = mpdef::makeMetastruct<ProviderMeta>;
-
-// this is lame i know
-struct GetAccessPointsFromProvidersMeta
-{
-  struct Helper
-  {
-    template<typename T>
-    constexpr auto operator()(T t) const
-    {
-      return t.accessPoints();
-    };
-  };
-
-  template<typename S>
-  constexpr auto operator()(S s) const
-  {
-    return hana::flatten(hana::unpack(s, mpdef::make_list ^hana::on^ Helper{}));
-  }
-};
-constexpr GetAccessPointsFromProvidersMeta getAccessPointsFromProvidersMeta{};
 
 }//builder
 }//nbdl_def

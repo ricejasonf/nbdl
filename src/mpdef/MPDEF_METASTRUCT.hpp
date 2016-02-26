@@ -7,13 +7,17 @@
 #ifndef MPDEF_METASTRUCT
 
 #include<mpdef/Metastruct.hpp>
-#include<mpdef/details/_MPDEF_METASTRUCT_TEMPLATE_PARAMS.hpp>
-#include<mpdef/details/_MPDEF_METASTRUCT_ACCESSORS.hpp>
+#include<mpdef/details/_MPDEF_METASTRUCT_KEYS.hpp>
+#include<mpdef/details/_MPDEF_METASTRUCT_SPEC_NAMES.hpp>
 
 #define MPDEF_METASTRUCT(NAME, ...) \
-template<_MPDEF_METASTRUCT_TEMPLATE_PARAMS(__VA_ARGS__)> \
-struct NAME { \
-  using hana_tag = mpdef::MetastructTag; \
-  _MPDEF_METASTRUCT_ACCESSORS(__VA_ARGS__) \
-}; 
+struct NAME : ::mpdef::Metastruct<NAME> {\
+  _MPDEF_METASTRUCT_KEYS(__VA_ARGS__) \
+  static constexpr auto spec = mpdef::make_list( \
+  _MPDEF_METASTRUCT_SPEC_NAMES(__VA_ARGS__) \
+  ); \
+}; \
+constexpr auto make##NAME = mpdef::makeMetastruct<NAME>; \
+constexpr auto make##NAME##WithMap = mpdef::makeMetastructWithMap<NAME>;
+
 #endif

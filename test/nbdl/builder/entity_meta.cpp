@@ -21,20 +21,23 @@ DEFINE_TYPE(Key1);
 int main()
 {
   using namespace nbdl_def;
+  using builder::EntityMeta;
+  using builder::EntityKeyMeta;
+
   // EntityMeta
   {
     constexpr auto key_meta = builder::makeEntityKeyMeta(Entity1, Key1);
     constexpr auto member_meta = hana::int_c<42>;
     constexpr auto x = builder::makeEntityMeta(key_meta, member_meta);
-    BOOST_HANA_CONSTANT_ASSERT(hana::equal(x.keyMeta(), key_meta));
-    BOOST_HANA_CONSTANT_ASSERT(hana::equal(x.membersMeta(), member_meta));
+    BOOST_HANA_CONSTANT_ASSERT(hana::equal(EntityMeta::keyMeta(x), key_meta));
+    BOOST_HANA_CONSTANT_ASSERT(hana::equal(EntityMeta::membersMeta(x), member_meta));
   }
 
   // EntityKeyMeta
   {
     constexpr auto x = builder::makeEntityKeyMeta(Entity1, Key1);
-    BOOST_HANA_CONSTANT_ASSERT(x.entity() == Entity1);
-    BOOST_HANA_CONSTANT_ASSERT(x.key() == Key1);
+    BOOST_HANA_CONSTANT_ASSERT(EntityKeyMeta::entity(x) == Entity1);
+    BOOST_HANA_CONSTANT_ASSERT(EntityKeyMeta::key(x) == Key1);
   }
 
   // EntityMemberMeta

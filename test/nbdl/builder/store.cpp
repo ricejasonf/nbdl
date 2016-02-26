@@ -41,6 +41,7 @@ namespace nbdl {
 int main()
 {
   {
+    using builder::AccessPointMeta;
     constexpr auto listener_handler = hana::type_c<nbdl::ListenerHandlerDummy<>>;
     constexpr auto store_impl = hana::template_<nbdl::store::HashMap>;
     constexpr auto emitter_impl = hana::partial(
@@ -48,14 +49,12 @@ int main()
       listener_handler
     );
     constexpr auto path_type = nbdl::path_type<int, entity::E1>;
-    constexpr auto access_point = builder::makeAccessPointMeta(
-      names::Foo,
-      //actions
-      hana::make_tuple(nbdl_def::tag::Create),
-      store_impl,
-      emitter_impl,
-      //entityNames
-      hana::make_tuple(names::E1)
+    constexpr auto access_point = builder::makeAccessPointMetaWithMap(
+      AccessPointMeta::name           = names::Foo,
+      AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+      AccessPointMeta::storeContainer = store_impl,
+      AccessPointMeta::storeEmitter   = emitter_impl,
+      AccessPointMeta::entityNames    = hana::make_tuple(names::E1)
     );
 
     BOOST_HANA_CONSTANT_ASSERT(

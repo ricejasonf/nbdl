@@ -8,6 +8,7 @@
 #define NBDL_DEF_BUILDER_PROVIDER_MAP_HPP
 
 #include<def/builder/Path.hpp>
+#include<def/builder/ProviderMeta.hpp>
 #include<ProviderMap.hpp>
 
 #include<boost/hana.hpp>
@@ -23,15 +24,15 @@ namespace details {
   {
     EntityMap entity_map;
 
-    template<typename ProviderMeta>
-    constexpr auto operator()(ProviderMeta)
+    template<typename ProviderMeta_>
+    constexpr auto operator()(ProviderMeta_)
     {
-      constexpr ProviderMeta provider_meta{};
-      auto path_types = hana::transform(provider_meta.accessPoints(),
+      constexpr ProviderMeta_ provider_meta{};
+      auto path_types = hana::transform(ProviderMeta::accessPoints(provider_meta),
         hana::partial(builder::path, entity_map));
       return decltype(hana::decltype_(
-        hana::make_pair(hana::make_type(hana::append(path_types, provider_meta.name())), 
-        std::declval<typename decltype(provider_meta.provider())::type>())
+        hana::make_pair(hana::make_type(hana::append(path_types, ProviderMeta::name(provider_meta))),
+          std::declval<typename decltype(ProviderMeta::provider(provider_meta))::type>())
       )){};
     }
   };

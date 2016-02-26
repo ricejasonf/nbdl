@@ -43,17 +43,32 @@ namespace nbdl {
   NBDL_ENTITY(entity::E3, x);
 }
 
-constexpr auto entity1_ = builder::makeEntityMeta(
-  builder::makeEntityKeyMeta(hana::type_c<entity::E1>, hana::type_c<int>),
-  hana::type_c<void>
+constexpr auto entity1_ = builder::makeEntityMetaWithMap(
+  builder::EntityMeta::keyMeta =
+    builder::makeEntityKeyMetaWithMap(
+      builder::EntityKeyMeta::entity  = hana::type_c<entity::E1>,
+      builder::EntityKeyMeta::key     = hana::type_c<int>
+    ),
+  builder::EntityMeta::membersMeta =
+    hana::type_c<void>
 );
-constexpr auto entity2_ = builder::makeEntityMeta(
-  builder::makeEntityKeyMeta(hana::type_c<entity::E2>, hana::type_c<int>),
-  hana::type_c<void>
+constexpr auto entity2_ = builder::makeEntityMetaWithMap(
+  builder::EntityMeta::keyMeta =
+    builder::makeEntityKeyMetaWithMap(
+      builder::EntityKeyMeta::entity  = hana::type_c<entity::E2>,
+      builder::EntityKeyMeta::key     = hana::type_c<int>
+    ),
+  builder::EntityMeta::membersMeta =
+    hana::type_c<void>
 );
-constexpr auto entity3_ = builder::makeEntityMeta(
-  builder::makeEntityKeyMeta(hana::type_c<entity::E3>, hana::type_c<int>),
-  hana::type_c<void>
+constexpr auto entity3_ = builder::makeEntityMetaWithMap(
+  builder::EntityMeta::keyMeta =
+    builder::makeEntityKeyMetaWithMap(
+      builder::EntityKeyMeta::entity  = hana::type_c<entity::E3>,
+      builder::EntityKeyMeta::key     = hana::type_c<int>
+    ),
+  builder::EntityMeta::membersMeta =
+    hana::type_c<void>
 );
 constexpr auto entity_map = hana::make_map(
   hana::make_pair(names::Entity1, entity1_),
@@ -64,6 +79,9 @@ constexpr auto entity_map = hana::make_map(
 int main()
 {
   {
+    using builder::AccessPointMeta;
+    using builder::EntityKeyMeta;
+    using builder::EntityMeta;
     constexpr auto path_type_1 = nbdl::path_type<int, entity::E1>;
     constexpr auto path_type_2 = nbdl::path_type<int, entity::E1, entity::E2>;
     constexpr auto path_type_3 = nbdl::path_type<int, entity::E3>;
@@ -75,32 +93,26 @@ int main()
       listener_handler
     );
     constexpr auto access_points = hana::make_tuple(
-      builder::makeAccessPointMeta(
-        names::Foo1,
-        //actions
-        hana::make_tuple(nbdl_def::tag::Create),
-        store_impl,
-        emitter_impl,
-        //entityNames
-        hana::make_tuple(names::Entity1)
+      builder::makeAccessPointMetaWithMap(
+        AccessPointMeta::name           = names::Foo1,
+        AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+        AccessPointMeta::storeContainer = store_impl,
+        AccessPointMeta::storeEmitter   = emitter_impl,
+        AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1)
       ),
-      builder::makeAccessPointMeta(
-        names::Foo2,
-        //actions
-        hana::make_tuple(nbdl_def::tag::Create),
-        store_impl,
-        emitter_impl,
-        //entityNames
-        hana::make_tuple(names::Entity1, names::Entity2)
+      builder::makeAccessPointMetaWithMap(
+        AccessPointMeta::name           = names::Foo2,
+        AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+        AccessPointMeta::storeContainer = store_impl,
+        AccessPointMeta::storeEmitter   = emitter_impl,
+        AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1, names::Entity2)
       ),
-      builder::makeAccessPointMeta(
-        names::Foo3,
-        //actions
-        hana::make_tuple(nbdl_def::tag::Create),
-        store_impl,
-        emitter_impl,
-        //entityNames
-        hana::make_tuple(names::Entity3)
+      builder::makeAccessPointMetaWithMap(
+        AccessPointMeta::name           = names::Foo3,
+        AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+        AccessPointMeta::storeContainer = store_impl,
+        AccessPointMeta::storeEmitter   = emitter_impl,
+        AccessPointMeta::entityNames    = hana::make_tuple(names::Entity3)
       )
     );
 

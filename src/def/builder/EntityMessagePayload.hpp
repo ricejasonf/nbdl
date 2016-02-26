@@ -53,9 +53,9 @@ struct EntityMessagePayload {
   {
     return detail::entityMessagePayload(
       access_point,
-      entity_message_meta.entityType(),
-      entity_message_meta.action(),
-      entity_message_meta.channel()
+      EntityMessageMeta::entityType(entity_message_meta),
+      EntityMessageMeta::action(entity_message_meta),
+      EntityMessageMeta::channel(entity_message_meta)
     );
   }
 };

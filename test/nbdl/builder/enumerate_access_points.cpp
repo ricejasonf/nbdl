@@ -7,6 +7,7 @@
 
 #include<store/HashMap.hpp>
 #include<store_emitter/HashMap.hpp>
+#include<def/builder/AccessPointMeta.hpp>
 #include<def/builder/EnumerateAccessPoints.hpp>
 #include<def/directives.hpp>
 #include<mpdef/List.hpp>
@@ -37,6 +38,7 @@ int main()
 {
   {
     using namespace nbdl_def;
+    using builder::AccessPointMeta;
     constexpr auto nested_accesspoints =
       AccessPoints(
         AccessPoint(
@@ -104,110 +106,126 @@ int main()
 
     constexpr auto expected = mpdef::make_list(
       // Root2
-      builder::makeAccessPointMeta(
-        names::Root2,
-        mpdef::make_map(
+      builder::makeAccessPointMetaWithMap(
+        AccessPointMeta::name = names::Root2,
+        AccessPointMeta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
           mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
-        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        mpdef::make_list(names::Root2)
+        AccessPointMeta::storeContainer =
+          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        AccessPointMeta::storeEmitter =
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        AccessPointMeta::entityNames = mpdef::make_list(names::Root2)
       ),
       // Root3
-      builder::makeAccessPointMeta(
-        names::Root3,
-        mpdef::make_map(
+      builder::makeAccessPointMetaWithMap(
+        AccessPointMeta::name = names::Root3,
+        AccessPointMeta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
-        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        mpdef::make_list(names::Root3)
+        AccessPointMeta::storeContainer =
+          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        AccessPointMeta::storeEmitter =
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        AccessPointMeta::entityNames = mpdef::make_list(names::Root3)
       ),
       // Root1/Nested1
-      builder::makeAccessPointMeta(
-        names::Nested1,
-        mpdef::make_map(
+      builder::makeAccessPointMetaWithMap(
+        AccessPointMeta::name = names::Nested1,
+        AccessPointMeta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
           mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
-        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        mpdef::make_list(names::Root1, names::Nested1)
+        AccessPointMeta::storeContainer =
+          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        AccessPointMeta::storeEmitter =
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        AccessPointMeta::entityNames = mpdef::make_list(names::Root1, names::Nested1)
       ),
       // Root1/Nested2/Nested3
-      builder::makeAccessPointMeta(
-        names::Nested3,
-        mpdef::make_map(
+      builder::makeAccessPointMetaWithMap(
+        AccessPointMeta::name = names::Nested3,
+        AccessPointMeta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
-        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        mpdef::make_list(
+        AccessPointMeta::storeContainer =
+          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        AccessPointMeta::storeEmitter =
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        AccessPointMeta::entityNames = mpdef::make_list(
           names::Root1,
           names::Nested2,
           names::Nested3
         )
       ),
       // Root2/Nested1
-      builder::makeAccessPointMeta(
-        names::Nested1,
-        mpdef::make_map(
+      builder::makeAccessPointMetaWithMap(
+        AccessPointMeta::name = names::Nested1,
+        AccessPointMeta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
           mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
-        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        mpdef::make_list(
+        AccessPointMeta::storeContainer =
+          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        AccessPointMeta::storeEmitter =
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        AccessPointMeta::entityNames = mpdef::make_list(
           names::Root2,
           names::Nested1
         )
       ),
       // Root2/Nested2/Nested3
-      builder::makeAccessPointMeta(
-        names::Nested3,
-        mpdef::make_map(
+      builder::makeAccessPointMetaWithMap(
+        AccessPointMeta::name = names::Nested3,
+        AccessPointMeta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
-        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        mpdef::make_list(
+        AccessPointMeta::storeContainer =
+          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        AccessPointMeta::storeEmitter =
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        AccessPointMeta::entityNames = mpdef::make_list(
           names::Root2,
           names::Nested2,
           names::Nested3
         )
       ),
       // Root3/Nested1
-      builder::makeAccessPointMeta(
-        names::Nested1,
-        mpdef::make_map(
+      builder::makeAccessPointMetaWithMap(
+        AccessPointMeta::name = names::Nested1,
+        AccessPointMeta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
           mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
-        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        mpdef::make_list(
+        AccessPointMeta::storeContainer =
+          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        AccessPointMeta::storeEmitter =
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        AccessPointMeta::entityNames = mpdef::make_list(
           names::Root3,
           names::Nested1
         )
       ),
       // Root3/Nested2/Nested3
-      builder::makeAccessPointMeta(
-        names::Nested3,
-        mpdef::make_map(
+      builder::makeAccessPointMetaWithMap(
+        AccessPointMeta::name = names::Nested3,
+        AccessPointMeta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
-        hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
-        mpdef::make_list(
+        AccessPointMeta::storeContainer =
+          hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
+        AccessPointMeta::storeEmitter =
+          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
+        AccessPointMeta::entityNames = mpdef::make_list(
           names::Root3,
           names::Nested2,
           names::Nested3
@@ -217,9 +235,8 @@ int main()
 
     BOOST_HANA_CONSTANT_ASSERT(result == expected);
 
-    BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).name() == names::Root2);
-    /* map is not default constructible :(
-    BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).actions() ==
+    BOOST_HANA_CONSTANT_ASSERT(AccessPointMeta::name(hana::at(result, hana::int_c<0>)) == names::Root2);
+    BOOST_HANA_CONSTANT_ASSERT(AccessPointMeta::actions(hana::at(result, hana::int_c<0>)) ==
       mpdef::make_map(
         mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
         mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
@@ -227,14 +244,19 @@ int main()
         mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
       )
     );
-    */
-    BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).storeContainer() ==
+    BOOST_HANA_CONSTANT_ASSERT(
+      AccessPointMeta::storeContainer(hana::at(result, hana::int_c<0>))
+        ==
       hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>
     );
-    BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).storeEmitter() ==
+    BOOST_HANA_CONSTANT_ASSERT(
+      AccessPointMeta::storeEmitter(hana::at(result, hana::int_c<0>))
+        ==
       hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>
     );
-    BOOST_HANA_CONSTANT_ASSERT(hana::at(result, hana::int_c<0>).entityNames() ==
+    BOOST_HANA_CONSTANT_ASSERT(
+      AccessPointMeta::entityNames(hana::at(result, hana::int_c<0>))
+        ==
       mpdef::make_list(names::Root2)
     );
   }

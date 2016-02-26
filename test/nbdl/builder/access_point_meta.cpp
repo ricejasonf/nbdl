@@ -10,26 +10,46 @@
 #include<boost/hana.hpp>
 
 namespace hana = boost::hana;
-
+namespace builder = nbdl_def::builder;
 
 int main()
 {
-  constexpr auto name         = hana::int_c<0>;
-  constexpr auto actions      = hana::int_c<1>;
-  constexpr auto store        = hana::int_c<2>;
-  constexpr auto storeEmitter = hana::int_c<3>;
-  constexpr auto entityNames  = hana::int_c<4>;
+  using builder::AccessPointMeta;
+  constexpr auto name           = hana::int_c<0>;
+  constexpr auto actions        = hana::int_c<1>;
+  constexpr auto storeContainer = hana::int_c<2>;
+  constexpr auto storeEmitter   = hana::int_c<3>;
+  constexpr auto entityNames    = hana::int_c<4>;
 
-  constexpr auto x = nbdl_def::builder::makeAccessPointMeta(
+  constexpr auto x = builder::makeAccessPointMeta(
     name
     , actions
-    , store
+    , storeContainer
     , storeEmitter
     , entityNames
   );
-  BOOST_HANA_CONSTANT_ASSERT(x.name() == name);
-  BOOST_HANA_CONSTANT_ASSERT(x.actions() == actions);
-  BOOST_HANA_CONSTANT_ASSERT(x.storeContainer() == store);
-  BOOST_HANA_CONSTANT_ASSERT(x.storeEmitter() == storeEmitter);
-  BOOST_HANA_CONSTANT_ASSERT(x.entityNames() == entityNames);
+  BOOST_HANA_CONSTANT_ASSERT(AccessPointMeta::name(x) == name);
+  BOOST_HANA_CONSTANT_ASSERT(AccessPointMeta::actions(x) == actions);
+  BOOST_HANA_CONSTANT_ASSERT(AccessPointMeta::storeContainer(x) == storeContainer);
+  BOOST_HANA_CONSTANT_ASSERT(AccessPointMeta::storeEmitter(x) == storeEmitter);
+  BOOST_HANA_CONSTANT_ASSERT(AccessPointMeta::entityNames(x) == entityNames);
+
+  BOOST_HANA_CONSTANT_ASSERT(hana::equal(x,
+    builder::makeAccessPointMetaWithMap(
+      AccessPointMeta::name = name,
+      AccessPointMeta::actions = actions,
+      AccessPointMeta::storeContainer = storeContainer,
+      AccessPointMeta::storeEmitter = storeEmitter,
+      AccessPointMeta::entityNames = entityNames
+    )
+  ));
+  BOOST_HANA_CONSTANT_ASSERT(hana::equal(x,
+    builder::makeAccessPointMetaWithMap(
+      AccessPointMeta::actions = actions,
+      AccessPointMeta::name = name,
+      AccessPointMeta::storeContainer = storeContainer,
+      AccessPointMeta::entityNames = entityNames,
+      AccessPointMeta::storeEmitter = storeEmitter
+    )
+  ));
 }
