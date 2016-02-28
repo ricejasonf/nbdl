@@ -30,13 +30,11 @@ struct Context
     constexpr auto entityMetaMap = builder::mapEntityMeta(defs[tag::Entities]);
     constexpr auto providersMeta = builder::enumerateProviders(Def{});
     return hana::template_<nbdl::Context>(
-      hana::template_<nbdl::details::ContextTraits>(
-        builder::providerMap(entityMetaMap, providersMeta),
-        hana::type_c<void>, //Consumers
-        builder::storeMap(entityMetaMap,
-          hana::flatten(hana::unpack(providersMeta,
-            mpdef::make_list ^hana::on^ ProviderMeta::accessPoints)))
-      )
+      builder::providerMap(entityMetaMap, providersMeta),
+      hana::type_c<int>, //TODO Consumers
+      builder::storeMap(entityMetaMap,
+        hana::flatten(hana::unpack(providersMeta,
+          mpdef::make_list ^hana::on^ ProviderMeta::accessPoints)))
     );
   }
 };
@@ -48,7 +46,7 @@ struct ContextFactory
   template<typename... Args>
   auto operator()(Args... args) const
   {
-    return Context_::create(args...);
+    return Context_(args...);
   }
 };
 

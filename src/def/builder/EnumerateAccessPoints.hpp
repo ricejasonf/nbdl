@@ -8,7 +8,6 @@
 #define NBDL_DEF_BUILDER_ENUMERATE_ACCESS_POINTS_HPP
 
 #include<def/builder/AccessPointMeta.hpp>
-#include<Listener.hpp>
 #include<mpdef/AppendIf.hpp>
 #include<mpdef/CollectSettings.hpp>
 #include<mpdef/ComposeCollectors.hpp>
@@ -28,7 +27,7 @@ namespace hana = boost::hana;
 
 namespace enum_access_points_detail {
 
-  constexpr auto settings = mpdef::withSettings(tag::StoreContainer, tag::StoreEmitter);
+  constexpr auto settings = mpdef::withSettings(tag::StoreContainer);
   constexpr auto pred = hana::demux(hana::eval_if)
   (
     mpdef::is_tree_node,
@@ -107,10 +106,6 @@ namespace enum_access_points_detail {
         node_children[tag::Actions],
         settings[tag::StoreContainer].value_or(
           hana::template_<nbdl::store::HashMap>
-        ),
-        settings[tag::StoreEmitter].value_or(
-          hana::partial(hana::template_<nbdl::store_emitter::HashMap>,
-            hana::type_c<nbdl::ListenerHandlerDummy<>>)
         ),
         entity_names
       );

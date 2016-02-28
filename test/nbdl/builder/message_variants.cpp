@@ -63,7 +63,6 @@ int main()
       AccessPointMeta::name           = names::Foo,
       AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
       AccessPointMeta::storeContainer = hana::type_c<void>,
-      AccessPointMeta::storeEmitter   = hana::type_c<void>,
       AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1)
     );
     using PathType = typename decltype(nbdl::path_type<int, entity::E1>)::type;

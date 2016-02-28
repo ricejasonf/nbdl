@@ -4,7 +4,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<Listener.hpp>
 #include<macros/NBDL_ENTITY.hpp>
 #include<Store.hpp>
 #include<Path.hpp>
@@ -15,8 +14,6 @@
 template<typename Path_>
 using Store = nbdl::Store<
   nbdl::store::HashMap<Path_>,
-  nbdl::store_emitter::HashMap<nbdl::ListenerHandlerDummy<>, Path_>,
-  nbdl::ListenerHandlerDummy<>,
   Path_ >;
 
 struct Client
@@ -28,7 +25,6 @@ struct MyEntity
 	int id;
 	int client_id;
 };
-//using ClientPath = typename decltype(nbdl::path_type<int, Client>)::type;
 using MyEntityPath = typename decltype(nbdl::path_type<int, Client, MyEntity>)::type;
 namespace nbdl {
 	NBDL_ENTITY(
@@ -44,9 +40,9 @@ TEST_CASE("Access an uninitialized value from a store.", "[store]")
 {
 	Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(1, 5);
-	bool did_make_request = false;
 
-	bool result = store.get([&](MyEntityPath ) { did_make_request = true; }, path,
+	bool result = store.get(
+    path,
 		[](nbdl::Unresolved) {
 			return true;
 		},
@@ -55,20 +51,15 @@ TEST_CASE("Access an uninitialized value from a store.", "[store]")
 		});
 
 	CHECK(result == true);
-	CHECK(did_make_request == true);
 }
 TEST_CASE("Force assign and access a value from a store.", "[store]") 
 {
 	Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(1, 5);
 	MyEntity my_entity = { 5, 1 };
-	bool did_make_request = false;
 	store.forceAssign(path, my_entity);
 
 	bool result = store.get(
-		[&](MyEntityPath ) { 
-			did_make_request = true; 
-		}, 
 		path,
 		[](MyEntity entity) {
 			CHECK(entity.id == 5);
@@ -79,7 +70,6 @@ TEST_CASE("Force assign and access a value from a store.", "[store]")
 		});
 
 	CHECK(result == true);
-	CHECK(did_make_request == false);
 }
 
 TEST_CASE("Suggest a value to a store.", "[store]") 
@@ -87,13 +77,9 @@ TEST_CASE("Suggest a value to a store.", "[store]")
 	Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(1, 5);
 	MyEntity my_entity = { 5, 1 };
-	bool did_make_request = false;
 	store.suggestAssign(path, my_entity);
 
 	bool result = store.get(
-		[&](MyEntityPath ) { 
-			did_make_request = true; 
-		}, 
 		path,
 		[](MyEntity entity) {
 			CHECK(entity.id == 5);
@@ -104,7 +90,6 @@ TEST_CASE("Suggest a value to a store.", "[store]")
 		});
 
 	CHECK(result);
-	CHECK_FALSE(did_make_request);
 	
 }
 
@@ -114,16 +99,12 @@ TEST_CASE("Suggest a value to a store where the value already exists.", "[store]
 	MyEntityPath path = MyEntityPath(1, 5);
 	MyEntity my_entity_original = { 6, 1 };
 	MyEntity my_entity = { 5, 1 };
-	bool did_make_request = false;
 
 	store.forceAssign(path, my_entity_original);
 
 	store.suggestAssign(path, my_entity);
 
 	bool result = store.get(
-		[&](MyEntityPath) { 
-			did_make_request = true; 
-		}, 
 		path,
 		[](MyEntity entity) {
 			CHECK(entity.id == 6);
@@ -134,5 +115,4 @@ TEST_CASE("Suggest a value to a store where the value already exists.", "[store]
 		});
 
 	CHECK(result);
-	CHECK_FALSE(did_make_request);
 }

@@ -40,9 +40,9 @@ class Variant
   Storage value_;
 
   template<typename T>
-  constexpr int typeIdFromType(T type) const
+  constexpr int typeIdFromType() const
   {
-    return *hana::find(typeIds(), type);
+    return *hana::find(typeIds(), hana::type_c<T>);
   }
 
   template<typename Fn>
@@ -129,7 +129,7 @@ class Variant
     type_id = 0; //in case shit goes horribly wrong
     destroy(type_id, &value_);
     new (&value_) Type(val);
-    type_id = typeIdFromType(hana::type_c<Type>);
+    type_id = typeIdFromType<Type>();
   }
 
   public:
@@ -173,6 +173,7 @@ class Variant
 
   bool isValidTypeId(int type_id_x) const
   {
+    // perhaps this should just assume that type_ids are sequential indices
     if (type_id_x == 0)
     {
       return true;
@@ -181,7 +182,7 @@ class Variant
     {
       return matchByType(type_id_x,
         [&](auto type) {
-          return (type_id_x == typeIdFromType(type));
+          return (type_id_x == typeIdFromType<typename decltype(type)::type>());
         });
     }
   }
@@ -199,6 +200,12 @@ class Variant
         type_id_x,
         overload_
       );
+  }
+
+  template<typename T>
+  bool is()
+  {
+    return (type_id == typeIdFromType<T>());
   }
 
   template<typename... Fns>

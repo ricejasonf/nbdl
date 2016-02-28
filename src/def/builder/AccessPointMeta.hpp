@@ -18,13 +18,14 @@ MPDEF_METASTRUCT(
   , name
   , actions
   , storeContainer
-  , storeEmitter
   , entityNames
 );
 
 #if 0
 
-  // I'm going to leave this here to show what the MPDEF_METASTRUCT macro does.
+  // I'm going to leave this here to show what the MPDEF_METASTRUCT macro does,
+  // and make it easier to try out different representations.
+
 struct AccessPointMeta
   : ::mpdef::Metastruct<AccessPointMeta>
 {
@@ -32,10 +33,9 @@ struct AccessPointMeta
   static constexpr auto name            = at_c< 0 >;
   static constexpr auto actions         = at_c< 1 >;
   static constexpr auto storeContainer  = at_c< 2 >;
-  static constexpr auto storeEmitter    = at_c< 3 >;
-  static constexpr auto entityNames     = at_c< 4 >;
+  static constexpr auto entityNames     = at_c< 3 >;
 
-  static constexpr auto spec = mpdef::make_list(name, actions, storeContainer, storeEmitter, entityNames);
+  static constexpr auto spec = mpdef::make_list(name, actions, storeContainer, entityNames);
 };
 constexpr auto makeAccessPointMeta = mpdef::makeMetastruct<AccessPointMeta>;
 constexpr auto makeAccessPointMetaWithMap = mpdef::makeMetastructWithMap<AccessPointMeta>;

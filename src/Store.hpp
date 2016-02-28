@@ -8,77 +8,42 @@
 #define NBDL_STORE_HPP
 
 #include "store/HashMap.hpp"
-#include "store_emitter/HashMap.hpp"
 
 namespace nbdl {
 
 template<
-  typename Impl,
-  typename EmitterImpl,
-  typename ListenerHandler,
+  typename Container,
   typename PathType >
 class Store
 {
 	using Entity = typename PathType::Entity;
 
-	Impl impl;
-	EmitterImpl emitter;
-
-	template<typename T>
-	void emitChange(const PathType& path, const T& value)
-	{
-		emitter.emit(path, [&](ListenerHandler& listener) {
-			listener.notify_(value);
-		});
-	}
+	Container container;
 
 	public:
 
-	using Variant_ = typename Impl::Variant_;
+	using Variant_ = typename Container::Variant_;
 
 	template<typename T>
 	void forceAssign(const PathType& path, T&& value)
 	{
-		emitChange(path, impl.assign(path, std::forward<T>(value)));
+		container.assign(path, std::forward<T>(value));
 	}
 
 	template<typename T>
 	void suggestAssign(const PathType& path, T&& val)
 	{
-		Variant_& value = impl.get(path);
-		bool unresolved = value.match(
-			[](Unresolved) {
-				return true;
-			},
-			[](auto) {
-				return false;
-			});
-		if (unresolved)
+		Variant_& value = container.get(path);
+    if (value.template is<Unresolved>())
 		{
 			value = std::forward<T>(val);
-			emitChange(path, value);
 		}
 	}
 
-	template<typename RequestFn, typename... Fns>
-	auto get(RequestFn request, const PathType& path, Fns... fns)
+	template<typename... MatchFns>
+	auto get(const PathType& path, MatchFns... fns)
 	{
-		if (!impl.hasEntry(path))
-		{
-			impl.assign(path, Unresolved{});
-			request(path);
-		}
-		return impl.get(path).match(fns...);
-	}
-
-	//emitter interface
-	void addListener(const PathType& path, const ListenerHandler& listener)
-	{
-		emitter.addListener(path, listener);
-	}
-	void removeListener(const PathType& path, const ListenerHandler& listener)
-	{
-		emitter.removeListener(path, listener);
+		return container.get(path).match(fns...);
 	}
 };
 

@@ -58,7 +58,6 @@ int main()
       AccessPointMeta::name           = names::Foo,
       AccessPointMeta::actions        = mpdef::make_list(nbdl_def::tag::Create),
       AccessPointMeta::storeContainer = hana::type_c<void>,
-      AccessPointMeta::storeEmitter   = hana::type_c<void>,
       AccessPointMeta::entityNames    = mpdef::make_list(names::Entity1)
     );
     using PathType = typename decltype(nbdl::path_type<int, entity::E1>)::type;
@@ -99,7 +98,6 @@ int main()
           nbdl_def::tag::Delete
         ),
       AccessPointMeta::storeContainer = hana::type_c<void>,
-      AccessPointMeta::storeEmitter   = hana::type_c<void>,
       AccessPointMeta::entityNames    = mpdef::make_list(names::Entity1)
     );
     using PathType = typename decltype(nbdl::path_type<int, entity::E1>)::type;

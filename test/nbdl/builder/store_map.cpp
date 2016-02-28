@@ -11,7 +11,6 @@
 #include<def/builder/StoreMap.hpp>
 #include<def/directives.hpp>
 #include<EntityTraits.hpp>
-#include<Listener.hpp>
 #include<Path.hpp>
 
 #include<boost/hana.hpp>
@@ -86,32 +85,24 @@ int main()
     constexpr auto path_type_2 = nbdl::path_type<int, entity::E1, entity::E2>;
     constexpr auto path_type_3 = nbdl::path_type<int, entity::E3>;
 
-    constexpr auto listener_handler = hana::type_c<nbdl::ListenerHandlerDummy<>>;
     constexpr auto store_impl = hana::template_<nbdl::store::HashMap>;
-    constexpr auto emitter_impl = hana::partial(
-      hana::template_<nbdl::store_emitter::HashMap>,
-      listener_handler
-    );
     constexpr auto access_points = hana::make_tuple(
       builder::makeAccessPointMetaWithMap(
         AccessPointMeta::name           = names::Foo1,
         AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
         AccessPointMeta::storeContainer = store_impl,
-        AccessPointMeta::storeEmitter   = emitter_impl,
         AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1)
       ),
       builder::makeAccessPointMetaWithMap(
         AccessPointMeta::name           = names::Foo2,
         AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
         AccessPointMeta::storeContainer = store_impl,
-        AccessPointMeta::storeEmitter   = emitter_impl,
         AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1, names::Entity2)
       ),
       builder::makeAccessPointMetaWithMap(
         AccessPointMeta::name           = names::Foo3,
         AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
         AccessPointMeta::storeContainer = store_impl,
-        AccessPointMeta::storeEmitter   = emitter_impl,
         AccessPointMeta::entityNames    = hana::make_tuple(names::Entity3)
       )
     );
@@ -124,24 +115,18 @@ int main()
           hana::make_pair(path_type_1,
             typename decltype(hana::template_<nbdl::Store>(
               store_impl(path_type_1),
-              emitter_impl(path_type_1),
-              listener_handler,
               path_type_1
             ))::type{}
           ),
           hana::make_pair(path_type_2,
             typename decltype(hana::template_<nbdl::Store>(
               store_impl(path_type_2),
-              emitter_impl(path_type_2),
-              listener_handler,
               path_type_2
             ))::type{}
           ),
           hana::make_pair(path_type_3,
             typename decltype(hana::template_<nbdl::Store>(
               store_impl(path_type_3),
-              emitter_impl(path_type_3),
-              listener_handler,
               path_type_3
             ))::type{}
           )

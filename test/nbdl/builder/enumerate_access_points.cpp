@@ -6,7 +6,6 @@
 //
 
 #include<store/HashMap.hpp>
-#include<store_emitter/HashMap.hpp>
 #include<def/builder/AccessPointMeta.hpp>
 #include<def/builder/EnumerateAccessPoints.hpp>
 #include<def/directives.hpp>
@@ -63,7 +62,6 @@ int main()
       Context(
         PrimaryKey(Type(hana::type_c<unsigned>)),
         StoreContainer(hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>),
-        StoreEmitter(hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>),
         Providers(
           Provider(
             Name(names::Provider1),
@@ -116,8 +114,6 @@ int main()
         ),
         AccessPointMeta::storeContainer =
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        AccessPointMeta::storeEmitter =
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
         AccessPointMeta::entityNames = mpdef::make_list(names::Root2)
       ),
       // Root3
@@ -128,8 +124,6 @@ int main()
         ),
         AccessPointMeta::storeContainer =
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        AccessPointMeta::storeEmitter =
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
         AccessPointMeta::entityNames = mpdef::make_list(names::Root3)
       ),
       // Root1/Nested1
@@ -143,8 +137,6 @@ int main()
         ),
         AccessPointMeta::storeContainer =
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        AccessPointMeta::storeEmitter =
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
         AccessPointMeta::entityNames = mpdef::make_list(names::Root1, names::Nested1)
       ),
       // Root1/Nested2/Nested3
@@ -155,8 +147,6 @@ int main()
         ),
         AccessPointMeta::storeContainer =
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        AccessPointMeta::storeEmitter =
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
         AccessPointMeta::entityNames = mpdef::make_list(
           names::Root1,
           names::Nested2,
@@ -174,8 +164,6 @@ int main()
         ),
         AccessPointMeta::storeContainer =
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        AccessPointMeta::storeEmitter =
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
         AccessPointMeta::entityNames = mpdef::make_list(
           names::Root2,
           names::Nested1
@@ -189,8 +177,6 @@ int main()
         ),
         AccessPointMeta::storeContainer =
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        AccessPointMeta::storeEmitter =
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
         AccessPointMeta::entityNames = mpdef::make_list(
           names::Root2,
           names::Nested2,
@@ -208,8 +194,6 @@ int main()
         ),
         AccessPointMeta::storeContainer =
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        AccessPointMeta::storeEmitter =
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
         AccessPointMeta::entityNames = mpdef::make_list(
           names::Root3,
           names::Nested1
@@ -223,8 +207,6 @@ int main()
         ),
         AccessPointMeta::storeContainer =
           hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>,
-        AccessPointMeta::storeEmitter =
-          hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>,
         AccessPointMeta::entityNames = mpdef::make_list(
           names::Root3,
           names::Nested2,
@@ -248,11 +230,6 @@ int main()
       AccessPointMeta::storeContainer(hana::at(result, hana::int_c<0>))
         ==
       hana::type_c<decltype(hana::template_<nbdl::store::HashMap>)>
-    );
-    BOOST_HANA_CONSTANT_ASSERT(
-      AccessPointMeta::storeEmitter(hana::at(result, hana::int_c<0>))
-        ==
-      hana::type_c<decltype(hana::template_<nbdl::store_emitter::HashMap>)>
     );
     BOOST_HANA_CONSTANT_ASSERT(
       AccessPointMeta::entityNames(hana::at(result, hana::int_c<0>))

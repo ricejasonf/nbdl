@@ -73,7 +73,6 @@ int main()
       AccessPointMeta::name           = names::Foo,
       AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
       AccessPointMeta::storeContainer = hana::type_c<void>,
-      AccessPointMeta::storeEmitter   = hana::type_c<void>,
       AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1)
     );
 
@@ -88,7 +87,6 @@ int main()
       AccessPointMeta::name           = names::Foo,
       AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
       AccessPointMeta::storeContainer = hana::type_c<void>,
-      AccessPointMeta::storeEmitter   = hana::type_c<void>,
       AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1, names::Entity2, names::Entity3)
     );
 
