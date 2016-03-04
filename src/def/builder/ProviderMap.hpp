@@ -9,6 +9,7 @@
 
 #include<def/builder/Path.hpp>
 #include<def/builder/ProviderMeta.hpp>
+#include<mpdef/Pair.hpp>
 #include<ProviderMap.hpp>
 
 #include<boost/hana.hpp>
@@ -22,18 +23,16 @@ namespace details {
   template<typename EntityMap>
   struct BuildProviderPair
   {
-    EntityMap entity_map;
-
     template<typename ProviderMeta_>
     constexpr auto operator()(ProviderMeta_)
     {
       constexpr ProviderMeta_ provider_meta{};
       auto path_types = hana::transform(ProviderMeta::accessPoints(provider_meta),
-        hana::partial(builder::path, entity_map));
-      return decltype(hana::decltype_(
-        hana::make_pair(hana::make_type(hana::append(path_types, ProviderMeta::name(provider_meta))),
-          std::declval<typename decltype(ProviderMeta::provider(provider_meta))::type>())
-      )){};
+        hana::partial(builder::path, EntityMap{}));
+      return mpdef::make_pair(
+        hana::append(path_types, ProviderMeta::name(provider_meta)),
+        ProviderMeta::provider(provider_meta)
+      );
     }
   };
 
@@ -42,11 +41,14 @@ namespace details {
 struct ProviderMap
 {
   template<typename EntityMap, typename Providers>
-  constexpr auto operator()(EntityMap entity_map, Providers providers) const
+  constexpr auto operator()(EntityMap, Providers providers) const
   {
-    return decltype(hana::decltype_(hana::unpack(providers,
-      hana::template_<nbdl::ProviderMap> ^hana::on^ details::BuildProviderPair<EntityMap>{entity_map}))
-    ){};
+    return hana::unpack(providers,
+      hana::on(
+        mpdef::make_map,
+        details::BuildProviderPair<EntityMap>{}
+      )
+    );
   }
 };
 constexpr ProviderMap providerMap{};

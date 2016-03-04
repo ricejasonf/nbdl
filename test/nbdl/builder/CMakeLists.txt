@@ -41,6 +41,10 @@ nbdl_add_test("test.nbdl.builder.enumerate_providers"
   enumerate_providers.cpp
 )
 
+nbdl_add_test("test.nbdl.builder.enumerate_consumers"
+  enumerate_consumers.cpp
+)
+
 nbdl_add_test("test.nbdl.builder.map_entity_meta"
   map_entity_meta.cpp
 )

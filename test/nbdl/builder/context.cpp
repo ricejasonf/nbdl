@@ -5,80 +5,38 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include<assets/TestContext.hpp>
 #include<def/builder/Context.hpp>
-#include<def/directives.hpp>
-#include<macros/NBDL_ENTITY.hpp>
-#include<Path.hpp>
 
 #include<boost/hana.hpp>
 
 namespace hana = boost::hana;
 
-struct DummyProvider { };
-
-namespace entity {
-  struct Client
-  {
-    int id;
-  };
-  struct MyEntity
-  {
-    int id;
-    int client_id;
-  };
-}//entity
-
-namespace nbdl {
-  NBDL_ENTITY(
-    entity::Client,
-      id);
-  NBDL_ENTITY(
-    entity::MyEntity,
-      id,
-      client_id );
-}//nbdl
-using OnlySupportedPath =
-  typename decltype(
-    nbdl::path_type<int, entity::Client, entity::MyEntity>
-  )::type;
-
-
-namespace my_context {
-  using namespace nbdl_def;
-
-  auto create = buildContextFactory(
-    Context(
-      Entities(
-        Entity(
-          Type(hana::type_c<entity::Client>)
-        ),
-        Entity(
-          Type(hana::type_c<entity::MyEntity>)
-        )
-      ),
-      // TODO: Define a Consumer here.
-      Provider(
-        Type(hana::type_c<DummyProvider>),
-        AccessPoint(
-          Name(hana::type_c<void>),
-          EntityName(hana::type_c<entity::Client>),
-          Actions(Read()),
-          AccessPoint(
-            Name(hana::type_c<void>),
-            EntityName(hana::type_c<entity::MyEntity>),
-            Actions(Read())
-          )
-        )
-      )
-    )
-  );
-} // my_context
-
 int main()
 {
-  // Okay, We're not actually testing anything here, but
-  // at least we'll know this compiles, and a better test
-  // can be added once the representation of Context is
-  // closer to being sorted out.
-  auto ctx = my_context::create();
+  // these are just constructor smoke tests
+  {
+    // test default construction
+    auto def = test_context_def::make(
+      hana::template_<test_context::Provider>,
+      hana::template_<test_context::Provider>,
+      hana::template_<test_context::Consumer>,
+      hana::template_<test_context::Consumer>
+    );
+    using Context = test_context_def::make_context_t<decltype(def)>;
+    Context();
+  }
+  {
+    using test_context::IntTag;
+    // test single parameter construction
+    auto def = test_context_def::make(
+      hana::reverse_partial(hana::template_<test_context::Provider>, hana::type_c<IntTag<1>>),
+      hana::reverse_partial(hana::template_<test_context::Provider>, hana::type_c<IntTag<2>>),
+      hana::reverse_partial(hana::template_<test_context::Consumer>, hana::type_c<IntTag<3>>),
+      hana::reverse_partial(hana::template_<test_context::Consumer>, hana::type_c<IntTag<4>>)
+    );
+    using Context = test_context_def::make_context_t<decltype(def)>;
+    Context(IntTag<1>{}, IntTag<2>{}, IntTag<3>{}, IntTag<4>{});
+  }
+  // TODO: construct a context with a hana::map
 }

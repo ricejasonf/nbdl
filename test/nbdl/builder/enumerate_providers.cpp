@@ -8,7 +8,7 @@
 #include<def/builder/EnumerateProviders.hpp>
 #include<def/builder/EnumerateAccessPoints.hpp>
 #include<def/builder/ProviderMeta.hpp>
-#include<Make.hpp>
+#include<mpdef/List.hpp>
 
 #include<boost/hana.hpp>
 
@@ -72,7 +72,7 @@ int main()
     constexpr auto result = nbdl_def::builder::enumerateProviders(def);
 
     BOOST_HANA_CONSTANT_ASSERT(result ==
-      hana::make_tuple(
+      mpdef::make_list(
         builder::makeProviderMetaWithMap(
           ProviderMeta::provider    = names::Provider1,
           ProviderMeta::name        = names::Provider1Name,
@@ -109,7 +109,7 @@ int main()
     constexpr auto result = nbdl_def::builder::enumerateProviders(def);
 
     BOOST_HANA_CONSTANT_ASSERT(result ==
-      hana::make_tuple(
+      mpdef::make_list(
         builder::makeProviderMetaWithMap(
           ProviderMeta::provider    = names::Provider1,
           ProviderMeta::name        = names::Provider1Name,

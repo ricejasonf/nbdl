@@ -9,6 +9,7 @@
 
 #include<def/builder/EnumerateAccessPoints.hpp>
 #include<def/builder/ProviderMeta.hpp>
+#include<def/directives.hpp>
 #include<mpdef/List.hpp>
 #include<mpdef/TreeNode.hpp>
 

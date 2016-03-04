@@ -112,23 +112,25 @@ int main()
       )
     );
 
-    constexpr auto result = typename decltype(
-        nbdl_def::builder::providerMap(entity_map, providers_meta))::type{};
+    constexpr auto result = nbdl_def::builder::providerMap(entity_map, providers_meta);
 
     BOOST_HANA_CONSTANT_ASSERT(
-      hana::decltype_(result[builder::path(entity_map, access_points_1[hana::int_c<0>])])
+      result[
+        hana::make_tuple(
+          builder::path(entity_map, access_points_1[hana::int_c<0>]),
+          builder::path(entity_map, access_points_1[hana::int_c<1>]),
+          names::Provider1Name
+        )
+      ]
       == names::Provider1);
+
     BOOST_HANA_CONSTANT_ASSERT(
-      hana::decltype_(result[builder::path(entity_map, access_points_1[hana::int_c<1>])])
-      == names::Provider1);
-    BOOST_HANA_CONSTANT_ASSERT(
-        hana::decltype_(result[names::Provider1Name])
-        == names::Provider1);
-    BOOST_HANA_CONSTANT_ASSERT(
-      hana::decltype_(result[builder::path(entity_map, access_points_2[hana::int_c<0>])])
-      == names::Provider2);
-    BOOST_HANA_CONSTANT_ASSERT(
-      hana::decltype_(result[names::Provider2Name])
+      result[
+        hana::make_tuple(
+          builder::path(entity_map, access_points_2[hana::int_c<0>]),
+          names::Provider2Name
+        )
+      ]
       == names::Provider2);
   }
 }

@@ -7,23 +7,85 @@
 #ifndef NBDL_CONTEXT_HPP
 #define NBDL_CONTEXT_HPP
 
+#include<boost/hana.hpp>
+#include<boost/hana/ext/std/integer_sequence.hpp>
+#include<type_traits>
+#include<utility>
+
 namespace nbdl {
 
+namespace hana = boost::hana;
+
 template<
-	typename ProviderMap,
-  typename Consumers,
+	typename ProviderLookup,
+  typename ConsumerLookup,
+  typename MakeContextCells,
 	typename StoreMap>
 class Context
 {
-  ProviderMap providers;
-  Consumers consumers;
+  // calling the push functions after
+  // the context is destroyed will result
+  // in undefined behaviour
+  struct PushUpstreamFn
+  {
+    Context& ctx;
+
+    PushUpstreamFn(Context& c) : ctx(c) { }
+
+    template<typename Message>
+    auto operator()(Message&& m)
+    {
+       ctx.pushUpstream(std::forward<Message>(m));
+    }
+  };
+
+  struct PushDownstreamFn
+  {
+    Context& ctx;
+
+    PushDownstreamFn(Context& c) : ctx(c) { }
+
+    template<typename Message>
+    auto operator()(Message&& m)
+    {
+       ctx.pushDownstream(std::forward<Message>(m));
+    }
+  };
+
+  using Cells = typename decltype(MakeContextCells{}(
+    hana::type_c<PushUpstreamFn>,
+    hana::type_c<PushDownstreamFn>
+  ))::type;
+
+  Cells cells;
 	StoreMap stores;
 
-  // should be callable only by providers
-  template<typename Message>
-  auto pushDownstream(Message&&)
+  static constexpr std::size_t cell_count = decltype(hana::size(std::declval<Cells>()))::value;
+  static constexpr std::size_t provider_count = decltype(hana::at(
+    hana::take_back(
+      hana::unpack(ProviderLookup{},
+        mpdef::make_list ^hana::on^ hana::second
+      ),
+      hana::size_c<1>
+    ),
+    hana::size_c<0>
+  ) + hana::size_c<1>)::value;
+
+  template<typename Cell, typename PushFn, bool>
+  struct MakeCellHelper;
+
+  template<std::size_t i, typename... Args>
+  auto makeCell(Args&& ...args)
   {
-    // access providers, consumers and stores
+    using Cell = std::decay_t<decltype(hana::at_c<i>(std::declval<Cells>()))>;
+    using PushFn = typename decltype(
+      hana::if_(hana::bool_c<(i < provider_count)>, // is provider?
+        hana::type_c<PushDownstreamFn>,
+        hana::type_c<PushUpstreamFn>
+      )
+    )::type;
+
+    return Cell(PushFn(*this), std::forward<Args>(args)...);
   }
 
   // should be callable only by consumers
@@ -33,8 +95,56 @@ class Context
     // access providers, consumers and stores
   }
 
+  // should be callable only by providers
+  template<typename Message>
+  auto pushDownstream(Message&&)
+  {
+    // access providers, consumers and stores
+  }
+
+  // constructor helper
+  template<std::size_t ...i, typename ...Args,
+    typename = std::enable_if_t<(sizeof...(Args) > 0)>
+  >
+  Context(std::index_sequence<i...>, Args&& ...args)
+    : cells(makeCell<i>(args)...)
+    , stores()
+  { }
+
+  // default constructor helper
+  template<std::size_t ...i>
+  explicit Context(std::index_sequence<i...>)
+    : cells(makeCell<i>()...)
+    , stores()
+  { }
+
 	public:
 
+  template<typename Arg1, typename ...Args,
+    typename = std::enable_if_t<(
+      (sizeof...(Args) + 1 == cell_count)
+      && !std::is_same<std::decay_t<Arg1>, Context>::value
+      && !hana::is_a<hana::ext::std::integer_sequence_tag, Arg1>
+    )>
+  >
+  explicit Context(Arg1&& arg1, Args&& ...args)
+    : Context(
+        std::make_index_sequence<sizeof...(Args) + 1>{},
+        std::forward<Arg1>(arg1),
+        std::forward<Args>(args)...
+      )
+  { }
+
+  // default constructor
+  Context()
+    : Context(std::make_index_sequence<cell_count>{})
+  { }
+
+  // Push functions contain references to self
+  // another option is to use shared_from_this,
+  // but that responsibility should be on the
+  // Providers.
+  Context(Context const&) = delete;
 };
 
 }//nbdl
