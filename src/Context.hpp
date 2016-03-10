@@ -7,6 +7,11 @@
 #ifndef NBDL_CONTEXT_HPP
 #define NBDL_CONTEXT_HPP
 
+#include<nbdl/concepts/UpstreamMessage.hpp>
+#include<nbdl/concepts/DownstreamMessage.hpp>
+#include<nbdl/dispatch.hpp>
+#include<nbdl/receive_message.hpp>
+
 #include<boost/hana.hpp>
 #include<boost/hana/ext/std/integer_sequence.hpp>
 #include<type_traits>
@@ -33,8 +38,10 @@ class Context
     PushUpstreamFn(Context& c) : ctx(c) { }
 
     template<typename Message>
-    auto operator()(Message&& m)
+    void operator()(Message&& m)
     {
+      static_assert(UpstreamMessage<Message>::value,
+        "nbdl::context::push_upstream requires an UpstreamMessage");
        ctx.pushUpstream(std::forward<Message>(m));
     }
   };
@@ -46,8 +53,10 @@ class Context
     PushDownstreamFn(Context& c) : ctx(c) { }
 
     template<typename Message>
-    auto operator()(Message&& m)
+    void operator()(Message&& m)
     {
+      static_assert(DownstreamMessage<Message>::value,
+        "nbdl::context::push_downstream requires a DownMessage");
        ctx.pushDownstream(std::forward<Message>(m));
     }
   };
@@ -88,18 +97,35 @@ class Context
     return Cell(PushFn(*this), std::forward<Args>(args)...);
   }
 
-  // should be callable only by consumers
   template<typename Message>
-  auto pushUpstream(Message&&)
+  void propagate_message(Message&& m, message::channel::Upstream)
   {
-    // access providers, consumers and stores
+    using Index = decltype(hana::at_key(ProviderLookup{}, hana::decltype_(message::getPath(m))));
+    constexpr Index index{};
+    nbdl::receive_message(cells[index], std::forward<Message>(m));
   }
 
-  // should be callable only by providers
   template<typename Message>
-  auto pushDownstream(Message&&)
+  void propagate_message(Message&& m, message::channel::Downstream)
   {
-    // access providers, consumers and stores
+    using Index = decltype(hana::at_key(ConsumerLookup{}, hana::decltype_(message::getPath(m))));
+    constexpr Index index{};
+    nbdl::receive_message(cells[index], std::forward<Message>(m));
+  }
+
+  // called inside PushUpstreamMessageFn and PushDownstreamMessageFn
+  template<typename Message>
+  void push_message(Message&& m)
+  {
+    constexpr auto path_type = hana::decltype_(message::getPath(m));
+    constexpr auto channel = decltype(message::getChannel(m)){};
+    propagate_message(
+      nbdl::dispatch(
+        stores[path_type],
+        std::forward<Message>(m)
+      ),
+      channel
+    );
   }
 
   // constructor helper
