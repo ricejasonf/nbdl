@@ -29,19 +29,19 @@ namespace names {
 }//names
 
 namespace entity {
-  struct E1 { int x; };
+  struct e1 { int x; };
 }
 namespace nbdl {
-  NBDL_ENTITY(entity::E1, x);
+  NBDL_ENTITY(entity::e1, x);
 } // nbdl
 
-constexpr auto entity1_ = builder::makeEntityMetaWithMap(
-  builder::EntityMeta::keyMeta =
-    builder::makeEntityKeyMetaWithMap(
-      builder::EntityKeyMeta::entity  = hana::type_c<entity::E1>,
-      builder::EntityKeyMeta::key     = hana::type_c<int>
+constexpr auto entity1_ = builder::make_entity_meta_with_map(
+  builder::entity_meta::key_meta =
+    builder::make_entity_key_meta_with_map(
+      builder::entity_key_meta::entity  = hana::type_c<entity::e1>,
+      builder::entity_key_meta::key     = hana::type_c<int>
     ),
-  builder::EntityMeta::membersMeta = hana::type_c<void>
+  builder::entity_meta::members_meta = hana::type_c<void>
 );
 
 constexpr auto entity_map = mpdef::make_map(
@@ -50,131 +50,131 @@ constexpr auto entity_map = mpdef::make_map(
 
 int main()
 {
-  using builder::AccessPointMeta;
+  using builder::access_point_meta;
   namespace channel = nbdl::message::channel;
   namespace action = nbdl::message::action;
   {
-    constexpr auto access_point = builder::makeAccessPointMetaWithMap(
-      AccessPointMeta::name           = names::Foo,
-      AccessPointMeta::actions        = mpdef::make_list(nbdl_def::tag::Create),
-      AccessPointMeta::storeContainer = hana::type_c<void>,
-      AccessPointMeta::entityNames    = mpdef::make_list(names::Entity1)
+    constexpr auto access_point = builder::make_access_point_meta_with_map(
+      access_point_meta::name           = names::Foo,
+      access_point_meta::actions        = mpdef::make_list(nbdl_def::tag::Create),
+      access_point_meta::store_container = hana::type_c<void>,
+      access_point_meta::entity_names    = mpdef::make_list(names::Entity1)
     );
-    using PathType = typename decltype(nbdl::path_type<int, entity::E1>)::type;
+    using PathType = typename decltype(nbdl::path_type<int, entity::e1>)::type;
 
     BOOST_HANA_CONSTANT_ASSERT(
-      builder::entityMessages(entity_map, access_point)
+      builder::entity_messages(entity_map, access_point)
         ==
       mpdef::make_list(
         hana::type_c<hana::tuple<
-          channel::Upstream,
-          action::Create,
+          channel::upstream,
+          action::create,
           PathType,
           const hana::optional<>,
-          hana::optional<nbdl::Uid>,
-          hana::optional<entity::E1>,
+          hana::optional<nbdl::uid>,
+          hana::optional<entity::e1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          channel::Downstream,
-          action::Create,
+          channel::downstream,
+          action::create,
           PathType,
           const hana::optional<>,
-          hana::optional<nbdl::Uid>,
-          hana::optional<entity::E1>,
+          hana::optional<nbdl::uid>,
+          hana::optional<entity::e1>,
           const hana::optional<>
         >>
       )
     );
   }
   {
-    constexpr auto access_point = builder::makeAccessPointMetaWithMap(
-      AccessPointMeta::name = names::Foo,
-      AccessPointMeta::actions =
+    constexpr auto access_point = builder::make_access_point_meta_with_map(
+      access_point_meta::name = names::Foo,
+      access_point_meta::actions =
         mpdef::make_list(
           nbdl_def::tag::Create,
           nbdl_def::tag::Read,
           nbdl_def::tag::UpdateRaw,
           nbdl_def::tag::Delete
         ),
-      AccessPointMeta::storeContainer = hana::type_c<void>,
-      AccessPointMeta::entityNames    = mpdef::make_list(names::Entity1)
+      access_point_meta::store_container = hana::type_c<void>,
+      access_point_meta::entity_names    = mpdef::make_list(names::Entity1)
     );
-    using PathType = typename decltype(nbdl::path_type<int, entity::E1>)::type;
+    using PathType = typename decltype(nbdl::path_type<int, entity::e1>)::type;
 
     BOOST_HANA_CONSTANT_ASSERT(
-      builder::entityMessages(entity_map, access_point)
+      builder::entity_messages(entity_map, access_point)
         ==
       mpdef::make_list(
         hana::type_c<hana::tuple<
-          channel::Upstream,
-          action::Create,
+          channel::upstream,
+          action::create,
           PathType,
           const hana::optional<>,
-          hana::optional<nbdl::Uid>,
-          hana::optional<entity::E1>,
+          hana::optional<nbdl::uid>,
+          hana::optional<entity::e1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          channel::Downstream,
-          action::Create,
+          channel::downstream,
+          action::create,
           PathType,
           const hana::optional<>,
-          hana::optional<nbdl::Uid>,
-          hana::optional<entity::E1>,
+          hana::optional<nbdl::uid>,
+          hana::optional<entity::e1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          channel::Upstream,
-          action::Read,
+          channel::upstream,
+          action::read,
           PathType,
           const hana::optional<>,
-          hana::optional<nbdl::Uid>,
+          hana::optional<nbdl::uid>,
           const hana::optional<>, //has no payload
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          channel::Downstream,
-          action::Read,
+          channel::downstream,
+          action::read,
           PathType,
           const hana::optional<>,
-          hana::optional<nbdl::Uid>,
-          hana::optional<entity::E1>,
+          hana::optional<nbdl::uid>,
+          hana::optional<entity::e1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          channel::Upstream,
-          action::UpdateRaw,
+          channel::upstream,
+          action::update_raw,
           PathType,
           const hana::optional<>,
-          hana::optional<nbdl::Uid>,
-          hana::optional<entity::E1>,
+          hana::optional<nbdl::uid>,
+          hana::optional<entity::e1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          channel::Downstream,
-          action::UpdateRaw,
+          channel::downstream,
+          action::update_raw,
           PathType,
           const hana::optional<>,
-          hana::optional<nbdl::Uid>,
-          hana::optional<entity::E1>,
+          hana::optional<nbdl::uid>,
+          hana::optional<entity::e1>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          channel::Upstream,
-          action::Delete,
+          channel::upstream,
+          action::delete_,
           PathType,
           const hana::optional<>,
-          hana::optional<nbdl::Uid>,
+          hana::optional<nbdl::uid>,
           const hana::optional<>,
           const hana::optional<>
         >>,
         hana::type_c<hana::tuple<
-          channel::Downstream,
-          action::Delete,
+          channel::downstream,
+          action::delete_,
           PathType,
           const hana::optional<>,
-          hana::optional<nbdl::Uid>,
+          hana::optional<nbdl::uid>,
           const hana::optional<>,
           const hana::optional<>
         >>

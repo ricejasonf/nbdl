@@ -16,7 +16,7 @@ int main()
   {
     constexpr auto xs = hana::to_tuple(hana::range_c<int, 1, 10>);
     constexpr auto pred = hana::demux(hana::not_)(hana::reverse_partial(hana::mod, hana::int_c<2>));
-    constexpr auto result = hana::fold(xs, hana::make_tuple(), mpdef::appendIf(pred));
+    constexpr auto result = hana::fold(xs, hana::make_tuple(), mpdef::append_if(pred));
     constexpr auto expected = hana::tuple_c<int, 2, 4, 6, 8>;
     BOOST_HANA_CONSTANT_ASSERT(result == expected);
   }

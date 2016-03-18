@@ -12,93 +12,76 @@
 #include<catch.hpp>
 #include<unordered_set> //for unique check
 
-struct Client
+struct client
 {
 	int id;
 };
-struct MyEntity
+struct my_entity
 {
 	int id;
 	int client_id;
 };
-struct MyEntityAttribute
+struct my_entity_attribute
 {
 	int id;
 	int my_entity_id;
 };
-struct AttributeStatus
+struct attribute_status
 {
 	int id;
 	int attribute_id;
 };
 namespace nbdl {
 	NBDL_ENTITY(
-		Client,
+		client,
 			id);
 	NBDL_ENTITY(
-		MyEntity,
+		my_entity,
 			id,
 			client_id );
 	NBDL_ENTITY(
-		MyEntityAttribute,
+		my_entity_attribute,
 			id,
 			my_entity_id );
 	NBDL_ENTITY(
-		AttributeStatus,
+		attribute_status,
 			id,
 			attribute_id );
 }//nbdl
 
 TEST_CASE("Create a root level access point.", "[api]") 
 {
-	using A = typename decltype(nbdl::path_type<int, Client>)::type;
+	using A = typename decltype(nbdl::path_type<int, client>)::type;
 	A a(5);
-	CHECK(a.getKey() == 5);
+	CHECK(a.get_key() == 5);
 }
 TEST_CASE("Create a nested access point.", "[api]") 
 {
 	//using A = decltype(nbdl::path_type<int, Client>)::type;
-	using B = decltype(nbdl::path_type<int, Client, MyEntity>)::type;
+	using B = decltype(nbdl::path_type<int, client, my_entity>)::type;
 	B b = B(1, 25);
-	static_assert(std::is_same<typename B::Entity, MyEntity>::value, "Path's entity is not correct.");
-	CHECK(b.getKey<MyEntity>() == 25);
-	CHECK(b.getKey() == 25);
-	CHECK(b.parent().getKey() == 1);
+	static_assert(std::is_same<typename B::Entity, my_entity>::value, "Path's entity is not correct.");
+	CHECK(b.get_key<my_entity>() == 25);
+	CHECK(b.get_key() == 25);
+	CHECK(b.parent().get_key() == 1);
 }
 TEST_CASE("Create a deeply nested access point.", "[api]") 
 {
 	using A = typename decltype(nbdl::path_type<int,
-    Client,
-		MyEntity,
-		MyEntityAttribute,
-		AttributeStatus>)::type;
+    client,
+		my_entity,
+		my_entity_attribute,
+		attribute_status>)::type;
 	//lexicographic orderings
 	A a(1, 2, 3, 4);
 
-	CHECK(a.getKey<Client>() == 1);
-	CHECK(a.getKey<MyEntity>() == 2);
-	CHECK(a.getKey<MyEntityAttribute>() == 3);
-	CHECK(a.getKey<AttributeStatus>() == 4);
+	CHECK(a.get_key<client>() == 1);
+	CHECK(a.get_key<my_entity>() == 2);
+	CHECK(a.get_key<my_entity_attribute>() == 3);
+	CHECK(a.get_key<attribute_status>() == 4);
 
-	CHECK(a.getKey() == 4);
-	CHECK(a.parent().getKey() == 3);
-	CHECK(a.parent().parent().getKey() == 2);
-	CHECK(a.parent().parent().parent().getKey() == 1);
+	CHECK(a.get_key() == 4);
+	CHECK(a.parent().get_key() == 3);
+	CHECK(a.parent().parent().get_key() == 2);
+	CHECK(a.parent().parent().parent().get_key() == 1);
 }
-
-/*
-TEST_CASE("Hashed Paths should be unique.")
-{
-	using A = nbdl::path_type<int, Client>;
-	using B = nbdl::path_type<int, Client, MyEntity>;
-
-	using Set = std::unordered_set<B, typename B::HashFn, typename B::PredFn>;
-
-	Set set;
-
-	for (int i = 0; i < 1000; i++)
-		for (int j = 0; j < 1000; j++)
-			set.emplace(B(i, A(j)));
-	CHECK(set.size() == 1000 * 1000);
-}
-*/

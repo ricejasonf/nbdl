@@ -29,14 +29,14 @@ std::string request1 =
 
 TEST_CASE("Request parser should populate pertinent headers.", "[websocket]") 
 {
-	using HttpRequestParser = nbdl::servers::ws::HttpRequestParser;
-	using HttpRequest = nbdl::servers::ws::HttpRequest;
+	using HttpRequestParser = nbdl::servers::ws::http_request_parser;
+	using HttpRequest = nbdl::servers::ws::http_request;
 	HttpRequestParser parser;	
 
 	auto result = parser.parse(request1.begin(), request1.end());
 	REQUIRE(result == HttpRequestParser::GOOD);
 
-	HttpRequest request = parser.getRequest();
+	HttpRequest request = parser.get_request();
 	CHECK(request.uri == "/chat");
 	CHECK(request.upgrade_header == "websocket");
 	CHECK(request.origin_header == "http://myorigin.com");

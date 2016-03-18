@@ -29,39 +29,39 @@ namespace tag = nbdl_def::tag;
 namespace entity_messages_detail {
   namespace action = nbdl::message::action;
   constexpr auto action_map = mpdef::make_map(
-    mpdef::make_tree_node(tag::Create,      action::Create{}),
-    mpdef::make_tree_node(tag::Read,        action::Read{}),
-    mpdef::make_tree_node(tag::Update,      action::Update{}),
-    mpdef::make_tree_node(tag::UpdateRaw,   action::UpdateRaw{}),
-    mpdef::make_tree_node(tag::Delete,      action::Delete{})
+    mpdef::make_tree_node(tag::Create,      action::create{}),
+    mpdef::make_tree_node(tag::Read,        action::read{}),
+    mpdef::make_tree_node(tag::Update,      action::update{}),
+    mpdef::make_tree_node(tag::UpdateRaw,   action::update_raw{}),
+    mpdef::make_tree_node(tag::Delete,      action::delete_{})
   );
-  constexpr auto getAction = hana::partial(hana::at_key, action_map);
+  constexpr auto get_action = hana::partial(hana::at_key, action_map);
 }
 
 // TODO possibly make this a metafunction
 template <typename AccessPoint>
-struct EntityMessage
+struct entity_message_fn
 {
-  template<typename EntityMessageMeta_>
-  constexpr auto operator()(EntityMessageMeta_ e) const
+  template<typename EntityMessageMeta>
+  constexpr auto operator()(EntityMessageMeta e) const
   {
     constexpr AccessPoint a{};
     return hana::type_c<
       hana::tuple<
-        decltype(EntityMessageMeta::channel(e)),
-        decltype(EntityMessageMeta::action(e)),
-        typename decltype(EntityMessageMeta::path(e))::type,
-        typename decltype(builder::entityMessageIsFromRoot(a, e))::type,
-        typename decltype(builder::entityMessageUid(a, e))::type,
-        typename decltype(builder::entityMessagePayload(a, e))::type,
-        typename decltype(builder::entityMessagePrivatePayload(a, e))::type
+        decltype(entity_message_meta::channel(e)),
+        decltype(entity_message_meta::action(e)),
+        typename decltype(entity_message_meta::path(e))::type,
+        typename decltype(builder::entity_message_is_from_root(a, e))::type,
+        typename decltype(builder::entity_message_uid(a, e))::type,
+        typename decltype(builder::entity_message_payload(a, e))::type,
+        typename decltype(builder::entity_message_private_payload(a, e))::type
       >
     >;
   }
 };
 
 // generate all messages for a given AccessPoint
-struct EntityMessages
+struct entity_messages_fn
 {
   template<typename EntityMap, typename AccessPoint>
   constexpr auto operator()(EntityMap entity_map, AccessPoint access_point) const
@@ -83,8 +83,8 @@ struct EntityMessages
         hana::compose(entity_messages_detail::getAction, hana::first)
     );
   #endif
-    const auto actions = hana::unpack(AccessPointMeta::actions(access_point),
-      mpdef::make_list ^hana::on^ entity_messages_detail::getAction);
+    const auto actions = hana::unpack(access_point_meta::actions(access_point),
+      mpdef::make_list ^hana::on^ entity_messages_detail::get_action);
 
     const auto private_payload = hana::nothing;
 
@@ -94,19 +94,19 @@ struct EntityMessages
         mpdef::make_list(entity_type),
         mpdef::make_list(private_payload),
         actions,
-        mpdef::make_list(nbdl::message::channel::Upstream{}, nbdl::message::channel::Downstream{})
+        mpdef::make_list(nbdl::message::channel::upstream{}, nbdl::message::channel::downstream{})
       )),
-      mpdef::make_list ^hana::on^ hana::fuse(builder::makeEntityMessageMeta)
+      mpdef::make_list ^hana::on^ hana::fuse(builder::make_entity_message_meta)
     );
 
     // TODO: add ValidationFail response messages??
 
     return hana::unpack(messages_meta,
-      mpdef::make_list ^hana::on^ EntityMessage<AccessPoint>{}
+      mpdef::make_list ^hana::on^ entity_message_fn<AccessPoint>{}
     );
   }
 };
-constexpr EntityMessages entityMessages{};
+constexpr entity_messages_fn entity_messages{};
 
 }//builder
 }//nbdl_def

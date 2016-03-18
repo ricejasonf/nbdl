@@ -9,7 +9,7 @@
 
 namespace nbdl {
   // TODO make a factory for this from the old MsgUid stuff
-  struct Uid {
+  struct uid {
     char value[16];
   };
 } // nbdl

@@ -18,34 +18,33 @@ namespace builder {
 namespace details {
 
   template<typename EntityMap>
-  struct BuildStorePair
+  struct build_store_pair_fn
   {
-    EntityMap const& entity_map;
 
     template<typename AccessPoint>
     constexpr auto operator()(AccessPoint access_point)
     {
-      auto path = builder::path(entity_map, access_point);
+      auto path = builder::path(EntityMap{}, access_point);
       return hana::make_pair(path, 
         typename decltype(builder::store(path, access_point))::type{});
     }
   };
   //could get rid of this because EntityMap **should** be default constructible
   template<typename EntityMap>
-  constexpr BuildStorePair<EntityMap> buildStorePair{};
+  constexpr build_store_pair_fn<EntityMap> build_store_pair{};
 
 }//details
 
-struct StoreMap
+struct store_map_fn
 {
   template<typename EntityMap, typename AccessPoints>
-  constexpr auto operator()(EntityMap entity_map, AccessPoints access_points) const
+  constexpr auto operator()(EntityMap, AccessPoints access_points) const
   {
     return decltype(hana::decltype_(hana::unpack(access_points,
-      hana::make_map ^hana::on^ details::BuildStorePair<EntityMap>{entity_map}))){};
+      hana::make_map ^hana::on^ details::build_store_pair<EntityMap>))){};
   }
 };
-constexpr StoreMap storeMap{};
+constexpr store_map_fn store_map{};
 
 }//builder
 }//nbdl_def

@@ -13,7 +13,7 @@ namespace nbdl {
 namespace servers {
 namespace ws {
 
-struct HttpRequest
+struct http_request
 {
 	std::string uri;
 	std::string upgrade_header;
@@ -25,11 +25,11 @@ struct HttpRequest
 };
 
 
-class HttpRequestParser
+class http_request_parser
 {
 	public:
 
-	enum Result {
+	enum result {
 		INDETERMINATE,
 		GOOD,
 		BAD_REQUEST
@@ -37,7 +37,7 @@ class HttpRequestParser
 
 	private:
 
-	enum State {
+	enum state {
 		METHOD_GET_1,
 		METHOD_GET_2,
 		METHOD_GET_3,
@@ -62,26 +62,26 @@ class HttpRequestParser
 		AFTER_FINAL_LF //??
 	} state_;
 
-	Result consume(char c);
-	Result requireChar(char l, char r, State next);
-	bool isLws(char);
-	bool isCtl(char);
-	bool isAsciiNonCtl(char);
-	bool isSpecialChar(char);
-	bool isValidHeaderNameChar(char);
-	bool isValidHeaderValueChar(char);
-	Result processHeaderValueChar(char);
-	Result processHeaderNameChar(char c);
-	void headerValueComplete();
+	result consume(char c);
+	result require_char(char l, char r, state next);
+	bool is_lws(char);
+	bool is_ctl(char);
+	bool is_ascii_non_ctl(char);
+	bool is_special_char(char);
+	bool is_valid_header_name_char(char);
+	bool is_valid_header_value_char(char);
+	result process_header_value_char(char);
+	result process_header_name_char(char c);
+	void header_value_complete();
 
 	//headers
 	std::string current_header_name;
 	std::string current_header_value;
-	HttpRequest request;
+	http_request request;
 
 	public:
 
-	HttpRequestParser() :
+	http_request_parser() :
 		state_(METHOD_GET_1)
 	{
 		current_header_name.reserve(50);
@@ -90,11 +90,11 @@ class HttpRequestParser
 
 
 	template<typename InputIterator>
-	Result parse(InputIterator begin, InputIterator end)
+	result parse(InputIterator begin, InputIterator end)
 	{
 		while (begin != end)
 		{
-			Result r = consume(*begin++);
+			result r = consume(*begin++);
 			if (r == GOOD || r == BAD_REQUEST)
 				return r;	
 		}
@@ -102,7 +102,7 @@ class HttpRequestParser
 		return INDETERMINATE;
 	}
 
-	HttpRequest getRequest()
+	http_request get_request()
 	{
 		return request;
 	}

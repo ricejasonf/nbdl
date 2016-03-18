@@ -18,46 +18,46 @@ namespace nbdl {
 namespace hana = boost::hana;
 
 template<typename T1, typename T2, typename = void>
-struct BindImpl
+struct bind_impl
 {
   template<typename Binder, typename X>
   static void apply(Binder&& binder, X&& x)
   {
     //use this?
-    // std::forward<Binder>(binder).bindMember(std::forward<decltype(X)>(x));
-    binder.bindMember(std::forward<X>(x));
+    // std::forward<Binder>(binder).bind_member(std::forward<X>(x));
+    binder.bind_member(std::forward<X>(x));
   }
 };
 
 template<typename T1, typename T2>
-struct BindImpl<T1, T2, EnableIfVariant<T2>>
+struct bind_impl<T1, T2, enable_if_variant<T2>>
 {
   template<typename Binder, typename V>
   static void apply(Binder&& binder, V&& variant)
   {
-    binder.bindVariant(std::forward<V>(variant));
+    binder.bind_variant(std::forward<V>(variant));
   }
 };
 
 template<typename T1, typename T2>
-struct BindImpl<T1, T2, EnableIfEntity<T2>>
+struct bind_impl<T1, T2, enable_if_entity<T2>>
 {
   template<typename Binder, typename E>
   static void apply(Binder&& binder, E&& entity)
   {
     hana::unpack(
-      hana::transform(entityMembers<E>(),
+      hana::transform(entity_members<E>(),
         [&](auto member_type) {
-          return entityMember(entity, member_type);
+          return entity_member(entity, member_type);
         }),
       [&](auto&&... members) {
-        binder.bindSequence(std::forward<decltype(members)>(members)...);
+        binder.bind_sequence(std::forward<decltype(members)>(members)...);
       });
   }
 };
 
 template<typename T1, typename T2>
-struct BindImpl<T1, T2,
+struct bind_impl<T1, T2,
   std::enable_if_t<hana::Foldable<T2>::value>>
 {
   template<typename Binder, typename Xs>
@@ -65,7 +65,7 @@ struct BindImpl<T1, T2,
   {
     hana::unpack(std::forward<Xs>(xs),
       [&](auto&&... members) {
-        binder.bindSequence(std::forward<decltype(members)>(members)...);
+        binder.bind_sequence(std::forward<decltype(members)>(members)...);
       });
   }
 };
@@ -73,7 +73,7 @@ struct BindImpl<T1, T2,
 template<typename Binder, typename Xs>
 void bind(Binder&& binder, Xs&& xs)
 {
-  BindImpl<typename std::decay<Binder>::type, typename std::decay<Xs>::type>::apply(
+  bind_impl<typename std::decay<Binder>::type, typename std::decay<Xs>::type>::apply(
     std::forward<Binder>(binder),
     std::forward<Xs>(xs));
 }

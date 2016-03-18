@@ -19,7 +19,7 @@ bool nbdl::Regex::match(const std::string reg, const std::string field)
 }
 #else
 #include <regex>
-bool nbdl::Regex::match(const std::string reg, const std::string field)
+bool nbdl::regex::match(const std::string reg, const std::string field)
 { 
 	 return std::regex_match(field, std::regex(reg, std::regex::ECMAScript));
 }

@@ -23,29 +23,29 @@ namespace hana = boost::hana;
  */
 
   namespace action {
-    struct Create { };
-    struct Read { };
-    struct Update { };
-    struct UpdateRaw { };
-    struct Delete { };
+    struct create { };
+    struct read { };
+    struct update { };
+    struct update_raw { };
+    struct delete_ { };
 
-    struct ValidationFail { };
+    struct validation_fail { };
   } // action
 
   namespace channel {
-    struct Upstream { };
-    struct Downstream { };
+    struct upstream { };
+    struct downstream { };
   } // channel
 
   // The offsets of these properties should match the
   // formation of the message in `builder::EntityMessage`.
-  constexpr auto getChannel               = hana::reverse_partial(hana::at, hana::int_c< 0 >);
-  constexpr auto getAction                = hana::reverse_partial(hana::at, hana::int_c< 1 >);
-  constexpr auto getPath                  = hana::reverse_partial(hana::at, hana::int_c< 2 >);
-  constexpr auto getMaybeIsFromRoot       = hana::reverse_partial(hana::at, hana::int_c< 3 >);
-  constexpr auto getMaybeUid              = hana::reverse_partial(hana::at, hana::int_c< 4 >);
-  constexpr auto getMaybePayload          = hana::reverse_partial(hana::at, hana::int_c< 5 >);
-  constexpr auto getMaybePrivatePayload   = hana::reverse_partial(hana::at, hana::int_c< 6 >);
+  constexpr auto get_channel               = hana::reverse_partial(hana::at, hana::int_c< 0 >);
+  constexpr auto get_action                = hana::reverse_partial(hana::at, hana::int_c< 1 >);
+  constexpr auto get_path                  = hana::reverse_partial(hana::at, hana::int_c< 2 >);
+  constexpr auto get_maybe_is_from_root       = hana::reverse_partial(hana::at, hana::int_c< 3 >);
+  constexpr auto get_maybe_uid              = hana::reverse_partial(hana::at, hana::int_c< 4 >);
+  constexpr auto get_maybe_payload          = hana::reverse_partial(hana::at, hana::int_c< 5 >);
+  constexpr auto get_maybe_private_payload   = hana::reverse_partial(hana::at, hana::int_c< 6 >);
 
 } // message
 } // nbdl

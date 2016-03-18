@@ -30,34 +30,34 @@ namespace names {
 }//names
 
 namespace entity {
-  struct E1 {};
-  struct E2 {};
-  struct E3 {};
+  struct e1 {};
+  struct e2 {};
+  struct e3 {};
 }
 
-constexpr auto entity1_ = builder::makeEntityMetaWithMap(
-  builder::EntityMeta::keyMeta =
-    builder::makeEntityKeyMetaWithMap(
-      builder::EntityKeyMeta::entity  = hana::type_c<entity::E1>,
-      builder::EntityKeyMeta::key     = hana::type_c<int>
+constexpr auto entity1_ = builder::make_entity_meta_with_map(
+  builder::entity_meta::key_meta =
+    builder::make_entity_key_meta_with_map(
+      builder::entity_key_meta::entity  = hana::type_c<entity::e1>,
+      builder::entity_key_meta::key     = hana::type_c<int>
     ),
-  builder::EntityMeta::membersMeta = hana::type_c<void>
+  builder::entity_meta::members_meta = hana::type_c<void>
 );
-constexpr auto entity2_ = builder::makeEntityMetaWithMap(
-  builder::EntityMeta::keyMeta =
-    builder::makeEntityKeyMetaWithMap(
-      builder::EntityKeyMeta::entity  = hana::type_c<entity::E2>,
-      builder::EntityKeyMeta::key     = hana::type_c<int>
+constexpr auto entity2_ = builder::make_entity_meta_with_map(
+  builder::entity_meta::key_meta =
+    builder::make_entity_key_meta_with_map(
+      builder::entity_key_meta::entity  = hana::type_c<entity::e2>,
+      builder::entity_key_meta::key     = hana::type_c<int>
     ),
-  builder::EntityMeta::membersMeta = hana::type_c<void>
+  builder::entity_meta::members_meta = hana::type_c<void>
 );
-constexpr auto entity3_ = builder::makeEntityMetaWithMap(
-  builder::EntityMeta::keyMeta =
-    builder::makeEntityKeyMetaWithMap(
-      builder::EntityKeyMeta::entity  = hana::type_c<entity::E3>,
-      builder::EntityKeyMeta::key     = hana::type_c<int>
+constexpr auto entity3_ = builder::make_entity_meta_with_map(
+  builder::entity_meta::key_meta =
+    builder::make_entity_key_meta_with_map(
+      builder::entity_key_meta::entity  = hana::type_c<entity::e3>,
+      builder::entity_key_meta::key     = hana::type_c<int>
     ),
-  builder::EntityMeta::membersMeta = hana::type_c<void>
+  builder::entity_meta::members_meta = hana::type_c<void>
 );
 constexpr auto entity_map = mpdef::make_map(
   mpdef::make_tree_node(names::Entity1, entity1_),
@@ -67,33 +67,33 @@ constexpr auto entity_map = mpdef::make_map(
 
 int main()
 {
-  using builder::AccessPointMeta;
+  using builder::access_point_meta;
   {
-    constexpr auto access_point = builder::makeAccessPointMetaWithMap(
-      AccessPointMeta::name           = names::Foo,
-      AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-      AccessPointMeta::storeContainer = hana::type_c<void>,
-      AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1)
+    constexpr auto access_point = builder::make_access_point_meta_with_map(
+      access_point_meta::name           = names::Foo,
+      access_point_meta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+      access_point_meta::store_container = hana::type_c<void>,
+      access_point_meta::entity_names    = hana::make_tuple(names::Entity1)
     );
 
     BOOST_HANA_CONSTANT_ASSERT(
       builder::path(entity_map, access_point)
         ==
-      nbdl::path_type<int, entity::E1>
+      nbdl::path_type<int, entity::e1>
     );
   }
   {
-    constexpr auto access_point = builder::makeAccessPointMetaWithMap(
-      AccessPointMeta::name           = names::Foo,
-      AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-      AccessPointMeta::storeContainer = hana::type_c<void>,
-      AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1, names::Entity2, names::Entity3)
+    constexpr auto access_point = builder::make_access_point_meta_with_map(
+      access_point_meta::name           = names::Foo,
+      access_point_meta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+      access_point_meta::store_container = hana::type_c<void>,
+      access_point_meta::entity_names    = hana::make_tuple(names::Entity1, names::Entity2, names::Entity3)
     );
 
     BOOST_HANA_CONSTANT_ASSERT(
       builder::path(entity_map, access_point)
         ==
-      nbdl::path_type<int, entity::E1, entity::E2, entity::E3>
+      nbdl::path_type<int, entity::e1, entity::e2, entity::e3>
     );
   }
 }

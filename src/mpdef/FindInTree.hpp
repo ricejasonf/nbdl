@@ -23,29 +23,29 @@ namespace details {
 
 // isLeaf
 template<typename T>
-constexpr auto isLeaf(T)
+constexpr auto is_leaf(T)
 {
   return hana::true_c;
 }
 template<typename First, typename ...X>
-constexpr auto isLeaf(mpdef::TreeNode<First, mpdef::List<X...>>)
+constexpr auto is_leaf(mpdef::tree_node<First, mpdef::list<X...>>)
 {
   return hana::false_c;
 }
 template<typename First, typename ...X>
-constexpr auto isLeaf(mpdef::TreeNode<First, mpdef::Map<X...>>)
+constexpr auto is_leaf(mpdef::tree_node<First, mpdef::map<X...>>)
 {
   return hana::false_c;
 }
 
 // InTreeFinder
 template<typename Pred, typename Summarize>
-struct InTreeFinder
+struct in_tree_finder_fn
 {
   Pred const& pred;
   Summarize const& summarize;
 
-  constexpr InTreeFinder(Pred const& p, Summarize const& s) :
+  constexpr in_tree_finder_fn(Pred const& p, Summarize const& s) :
     pred(p),
     summarize(s)
   {}
@@ -59,7 +59,7 @@ struct InTreeFinder
     ) const
   {
     //matching node
-    return mpdef::List<decltype(mpdef::make_tree_node(tree, summarize(summary, tree)))>{};
+    return mpdef::list<decltype(mpdef::make_tree_node(tree, summarize(summary, tree)))>{};
   }
 
   template<typename Leaf, typename Summary>
@@ -70,7 +70,7 @@ struct InTreeFinder
     hana::true_   //is_leaf
     ) const
   {
-    return mpdef::List<>{};
+    return mpdef::list<>{};
   }
 
   template<typename Tree, typename Summary>
@@ -89,14 +89,14 @@ struct InTreeFinder
   template<typename Tree, typename Summary>
   constexpr auto operator()(Tree const& tree, Summary const& summary) const
   {
-    return helper(tree, summary, pred(tree), details::isLeaf(tree));
+    return helper(tree, summary, pred(tree), details::is_leaf(tree));
   }
 };
 
 }//details
 
 // returns ((node, summary)...)
-struct FindInTree
+struct find_in_tree_fn
 {
   template<typename Tree, typename InitialSummary, typename Summarize, typename Pred>
   constexpr auto operator()(
@@ -105,7 +105,7 @@ struct FindInTree
       Summarize const& summarize,
       Pred const& pred) const
   {
-    return details::InTreeFinder<Pred, Summarize>(pred, summarize)(
+    return details::in_tree_finder_fn<Pred, Summarize>(pred, summarize)(
       tree,
       initial_summary
     );
@@ -113,17 +113,17 @@ struct FindInTree
 
   //inherits settings from parents
   template<typename... Tag>
-  constexpr auto withSettings(Tag&&... tag) const
+  constexpr auto with_settings(Tag&&... tag) const
   {
-    auto initial_state = mpdef::withSettings(std::forward<Tag>(tag)...);
+    auto initial_state = mpdef::with_settings(std::forward<Tag>(tag)...);
     return hana::curry<2>( 
       hana::demux(hana::partial(hana::flip(*this), std::move(initial_state)))
-      (hana::arg<2>, hana::always(mpdef::collectSettings), hana::arg<1>)
+      (hana::arg<2>, hana::always(mpdef::collect_settings), hana::arg<1>)
     );
   }
 };
-constexpr FindInTree findInTree{};
-constexpr auto createInTreeFinder = hana::curry<4>(hana::demux(findInTree)
+constexpr find_in_tree_fn find_in_tree{};
+constexpr auto create_in_tree_finder = hana::curry<4>(hana::demux(find_in_tree)
   (hana::arg<4>, hana::arg<3>, hana::arg<2>, hana::arg<1>));
 
 

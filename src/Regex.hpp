@@ -11,7 +11,7 @@
 
 namespace nbdl {
 
-struct Regex
+struct regex
 {
 	static bool match(const std::string reg, const std::string field);
 };

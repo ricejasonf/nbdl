@@ -17,7 +17,7 @@ namespace builder {
 
 namespace hana = boost::hana;
 
-struct ConsumerMap
+struct consumer_map_fn
 {
   template<typename ConsumersMeta>
   constexpr auto operator()(ConsumersMeta xs) const
@@ -27,14 +27,14 @@ struct ConsumerMap
         mpdef::make_map,
         hana::demux(mpdef::make_pair)
         (
-          ConsumerMeta::name,
-          ConsumerMeta::consumer
+          consumer_meta::name,
+          consumer_meta::consumer
         )
       )
     );
   }
 };
-constexpr ConsumerMap consumerMap{};
+constexpr consumer_map_fn consumer_map{};
 
 }//builder
 }//nbdl_def

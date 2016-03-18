@@ -46,9 +46,9 @@ int main()
         )
       );
 
-    constexpr auto countDepth = hana::demux(hana::partial(hana::plus, hana::int_c<1>))(hana::arg<1>);
+    constexpr auto count_depth = hana::demux(hana::partial(hana::plus, hana::int_c<1>))(hana::arg<1>);
     constexpr auto pred = hana::compose(hana::equal.to(tag::FindMe), hana::first);
-    constexpr auto x = mpdef::createInTreeFinder(pred, countDepth, hana::int_c<0>)(tree);
+    constexpr auto x = mpdef::create_in_tree_finder(pred, count_depth, hana::int_c<0>)(tree);
     constexpr auto y = mpdef::make_list(
       mpdef::make_tree_node(FindMe(A()) , hana::int_c<2>),
       mpdef::make_tree_node(FindMe()    , hana::int_c<3>),
@@ -61,7 +61,7 @@ int main()
     BOOST_HANA_CONSTANT_ASSERT(x == y);
   }
 
-  // use withSettings to collect settings
+  // use with_settings to collect settings
   {
     constexpr auto tree =
       Root(
@@ -91,8 +91,8 @@ int main()
       );
 
     constexpr auto pred = hana::compose(hana::equal.to(tag::FindMe), hana::first);
-    constexpr auto x = mpdef::findInTree
-      .withSettings(tag::Setting1, tag::Setting2, tag::Setting3, tag::Setting4)
+    constexpr auto x = mpdef::find_in_tree
+      .with_settings(tag::Setting1, tag::Setting2, tag::Setting3, tag::Setting4)
       (pred)(tree);
     constexpr auto y = mpdef::make_list(
 
@@ -165,9 +165,9 @@ int main()
         )
       );
 
-    constexpr auto countDepth = hana::demux(hana::partial(hana::plus, hana::int_c<1>))(hana::arg<1>);
+    constexpr auto count_depth = hana::demux(hana::partial(hana::plus, hana::int_c<1>))(hana::arg<1>);
     constexpr auto pred = hana::compose(hana::equal.to(tag::Setting1), hana::first);
-    constexpr auto x = mpdef::createInTreeFinder(pred, countDepth, hana::int_c<0>)(tree);
+    constexpr auto x = mpdef::create_in_tree_finder(pred, count_depth, hana::int_c<0>)(tree);
     constexpr auto y = mpdef::make_list(
       mpdef::make_tree_node(Setting1(foo), hana::int_c<2>),
       mpdef::make_tree_node(Setting1(foo), hana::int_c<3>),

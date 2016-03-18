@@ -21,32 +21,35 @@ namespace hana = boost::hana;
 
 namespace details {
 
-struct MakePathPairFromEntityMeta
+struct make_path_pair_from_entity_meta_fn
 {
   template<typename T>
   constexpr auto operator()(T entity) const
   {
     return hana::make_pair(
-      EntityKeyMeta::entity(EntityMeta::keyMeta(entity)),
-      EntityKeyMeta::key(EntityMeta::keyMeta(entity))
+      entity_key_meta::entity(entity_meta::key_meta(entity)),
+      entity_key_meta::key(entity_meta::key_meta(entity))
     );
   }
 };
 
 }//details
 
-struct Path
+struct path_fn
 {
   template<typename EntityMap, typename AccessPoint>
   constexpr auto operator()(EntityMap entities, AccessPoint access_point) const
   {
     return hana::unpack(
-      hana::transform(AccessPointMeta::entityNames(access_point), hana::partial(hana::at_key, entities)),
-      nbdl::makePathTypeFromPairs ^hana::on^ details::MakePathPairFromEntityMeta{}
+      hana::transform(
+        access_point_meta::entity_names(access_point),
+        hana::partial(hana::at_key, entities)
+      ),
+      nbdl::make_path_type_from_pairs ^hana::on^ details::make_path_pair_from_entity_meta_fn{}
     );
   }
 };
-constexpr Path path{};
+constexpr path_fn path{};
 
 }//builder
 }//nbdl_def

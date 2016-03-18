@@ -17,36 +17,36 @@ namespace nbdl {
 namespace binders {
 namespace jsoncpp {
 
-class Write
+class write
 {
   Json::Value& json_val;
 
   public:
 
-  Write(Json::Value& value) :
+  write(Json::Value& value) :
     json_val(value)
   {}
 
   template<class X>
-  void bindMember(X&& x)
+  void bind_member(X&& x)
   {
     json_val = std::forward<X>(x);
   }
 
   template<typename T>
-  void bindEntityMember(const char* name, const T& field)
+  void bind_entity_member(const char* name, const T& field)
   { 
-    nbdl::bind(Write(json_val[name]), field);
+    nbdl::bind(write(json_val[name]), field);
   }
 
   template<typename X>
-  void bindSequence(X&& x)
+  void bind_sequence(X&& x)
   {
     nbdl::bind(*this, std::forward<X>(x));
   }
 
   template<typename X1, typename X2, typename... Xs>
-  void bindSequence(X1&& x1, X2&& x2, Xs&&... xs)
+  void bind_sequence(X1&& x1, X2&& x2, Xs&&... xs)
   {
     hana::for_each(
       hana::make_tuple(
@@ -55,25 +55,25 @@ class Write
         std::forward<Xs>(xs)...),
       [&](auto&& x) {
         Json::Value el;
-        nbdl::bind(Write(el), std::forward<decltype(x)>(x));
+        nbdl::bind(write(el), std::forward<decltype(x)>(x));
         json_val.append(el);
       });
   }
 
 
   template<typename V>
-  void bindVariant(const V& variant)
+  void bind_variant(const V& variant)
   {
-    const int type_id = variant.getTypeId();
+    const int type_id = variant.get_type_id();
 
     variant.match(
-      [&](auto val) -> EnableIfEmpty<decltype(val)>
+      [&](auto val) -> enable_if_empty<decltype(val)>
       {
-        bindSequence(type_id);
+        bind_sequence(type_id);
       },
       [&](auto val)
       {
-        bindSequence(type_id, val);
+        bind_sequence(type_id, val);
       });
   }
 
@@ -83,15 +83,15 @@ class Write
 }//binders
 
 template<typename T>
-struct BindImpl<binders::jsoncpp::Write, T, EnableIfEntity<T>>
+struct bind_impl<binders::jsoncpp::write, T, enable_if_entity<T>>
 {
   template<typename Binder, typename E>
   static void apply(Binder&& binder, E&& entity)
   {
     //todo need to actually bind to json object
-    hana::for_each(entityMembers<E>(),
+    hana::for_each(entity_members<E>(),
       [&](auto&& member_type) {
-        binder.bindEntityMember(memberName(member_type), entityMember(entity, member_type));
+        binder.bind_entity_member(member_name_(member_type), entity_member(entity, member_type));
       });
   }
 };

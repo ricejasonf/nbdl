@@ -27,15 +27,15 @@ namespace hana = boost::hana;
 
 namespace enum_access_points_detail {
 
-  constexpr auto settings = mpdef::withSettings(tag::StoreContainer);
+  constexpr auto settings = mpdef::with_settings(tag::StoreContainer);
   constexpr auto pred = hana::demux(hana::eval_if)
   (
     mpdef::is_tree_node,
     hana::make_lazy(hana::compose(hana::equal.to(tag::AccessPoint), hana::first)),
     hana::always(hana::make_lazy(hana::false_c))
   );
-  constexpr auto collector = mpdef::composeCollectors(
-    mpdef::collectSettings,
+  constexpr auto collector = mpdef::compose_collectors(
+    mpdef::collect_settings,
     hana::demux(hana::eval_if)
     (
       hana::demux(pred)(hana::arg<2>),
@@ -52,18 +52,18 @@ namespace enum_access_points_detail {
       hana::make_lazy(hana::arg<1>)
     )
   );
-  constexpr auto matcher = mpdef::createInTreeFinder(pred, collector);
+  constexpr auto matcher = mpdef::create_in_tree_finder(pred, collector);
   constexpr auto initial_summary = mpdef::make_list(settings, mpdef::make_list());
 
   // called on result of FindInTree which is (node, summary)
-  constexpr auto hasActions = hana::compose(hana::demux(hana::maybe)
+  constexpr auto has_actions = hana::compose(hana::demux(hana::maybe)
   (
     hana::always(hana::false_c),
     hana::always(hana::compose(hana::reverse_partial(hana::greater, hana::size_c<0>), hana::length)),
     hana::compose(hana::reverse_partial(hana::find, tag::Actions), hana::second)
   ), hana::first);
 
-  struct HelperHelper
+  struct helper_helper_fn
   {
     template<typename Helper, typename HelperResult>
     constexpr auto operator()(Helper const& helper, HelperResult&& result)
@@ -72,9 +72,9 @@ namespace enum_access_points_detail {
         mpdef::make_list ^hana::on^ hana::partial(helper, hana::second(result)));
     }
   };
-  constexpr HelperHelper helperhelper{};
+  constexpr helper_helper_fn helperhelper{};
 
-  struct Helper
+  struct helper_fn
   {
     template<typename Summary, typename Def>
     constexpr auto operator()(Summary&& summary, Def&& def) const
@@ -83,16 +83,16 @@ namespace enum_access_points_detail {
 
       auto results = matcher(std::forward<Summary>(summary), std::forward<Def>(def));
       return hana::concat(
-        hana::filter(results, hasActions),
+        hana::filter(results, has_actions),
         hana::flatten(hana::flatten(hana::unpack(std::move(results),
           mpdef::make_list ^on^ hana::partial(helperhelper, *this)
         )))
       );
     }
   };
-  constexpr Helper helper{};
+  constexpr helper_fn helper{};
 
-  struct ResultHelper
+  struct result_helper_fn
   {
     template<typename Result>
     constexpr auto operator()(Result&& result)
@@ -101,38 +101,38 @@ namespace enum_access_points_detail {
       auto summary = hana::second(result);
       auto settings = hana::at(summary, hana::int_c<0>);
       auto entity_names = hana::at(summary, hana::int_c<1>);
-      return builder::makeAccessPointMeta(
+      return builder::make_access_point_meta(
         node_children[tag::Name],
         node_children[tag::Actions],
         settings[tag::StoreContainer].value_or(
-          hana::template_<nbdl::store::HashMap>
+          hana::template_<nbdl::store_container::hash_map>
         ),
         entity_names
       );
     }
   };
-  constexpr ResultHelper resultHelper{};
+  constexpr result_helper_fn result_helper{};
 
 }//enum_access_points_detail
 
 /*
  * Gets AccessPoints that have actions. Returns list of AccessPointMeta
  */
-struct EnumerateAccessPoints
+struct enumerate_access_points_fn
 {
   template<typename Def>
   constexpr auto operator()(Def&& def) const
   {
     using enum_access_points_detail::helper;
-    using enum_access_points_detail::resultHelper;
+    using enum_access_points_detail::result_helper;
     using enum_access_points_detail::initial_summary;
     using hana::on;
 
     return hana::unpack(helper(initial_summary, std::forward<Def>(def)),
-      mpdef::make_list ^on^ resultHelper);
+      mpdef::make_list ^on^ result_helper);
   }
 };
-constexpr EnumerateAccessPoints enumerateAccessPoints{};
+constexpr enumerate_access_points_fn enumerate_access_points{};
 
 }//builder
 }//nbdl_def

@@ -26,8 +26,8 @@ namespace nbdl
   struct UpstreamMessage<T, hana::when<hana::Sequence<T>::value>>
   {
     static constexpr bool value = std::is_same<
-      decltype(message::getChannel(std::declval<T>())),
-      message::channel::Upstream
+      decltype(message::get_channel(std::declval<T>())),
+      message::channel::upstream
     >::value;
   };
 } // nbdl

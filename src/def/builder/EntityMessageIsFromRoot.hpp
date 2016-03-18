@@ -24,7 +24,7 @@ namespace detail {
   namespace channel = nbdl::message::channel;
 
   template<typename AccessPoint, typename Action>
-  constexpr auto entityMessageIsFromRoot(AccessPoint/* access_point */, Action, channel::Downstream)
+  constexpr auto entity_message_is_from_root(AccessPoint/* access_point */, Action, channel::downstream)
   {
     return hana::decltype_(hana::nothing);
 #if 0
@@ -41,22 +41,22 @@ namespace detail {
   }
 
   template<typename AccessPoint, typename Action>
-  constexpr auto entityMessageIsFromRoot(AccessPoint, Action, channel::Upstream)
+  constexpr auto entity_message_is_from_root(AccessPoint, Action, channel::upstream)
   { return hana::decltype_(hana::nothing); }
 }//detail
 
-struct EntityMessageIsFromRoot {
+struct entity_message_is_from_root_fn {
   template<typename A, typename M>
   constexpr auto operator()(A access_point, M entity_message_meta) const
   {
-    return detail::entityMessageIsFromRoot(
+    return detail::entity_message_is_from_root(
       access_point,
-      EntityMessageMeta::action(entity_message_meta),
-      EntityMessageMeta::channel(entity_message_meta)
+      entity_message_meta::action(entity_message_meta),
+      entity_message_meta::channel(entity_message_meta)
     );
   }
 };
-constexpr EntityMessageIsFromRoot entityMessageIsFromRoot{};
+constexpr entity_message_is_from_root_fn entity_message_is_from_root{};
 
 }//builder
 }//nbdl_def

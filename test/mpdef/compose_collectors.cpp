@@ -30,7 +30,7 @@ int main()
       hana::make_tuple(),
       hana::make_tuple()
     );
-    constexpr auto collector = mpdef::composeCollectors(
+    constexpr auto collector = mpdef::compose_collectors(
       mult<1>,
       mult<2>,
       mult<3>
@@ -55,7 +55,7 @@ int main()
         hana::int_c<0>,
         hana::make_tuple()
       ),
-      mpdef::composeCollectors(
+      mpdef::compose_collectors(
         counter<1>,
         counter<2>,
         counter<3>,

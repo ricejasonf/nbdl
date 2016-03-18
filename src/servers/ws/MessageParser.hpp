@@ -15,11 +15,11 @@ namespace nbdl {
 namespace servers {
 namespace ws {
 
-class MessageParser
+class message_parser
 {
   public:
 
-  enum struct Result {
+  enum struct result {
     INDETERMINATE,
     MESSAGE,
     PING,
@@ -43,7 +43,7 @@ class MessageParser
   Buffer body;
   //todo uint64_t max_message_size
 
-  enum State {
+  enum state {
     FRAME_HEADER,
     PAYLOAD_LENGTH, //also contains mask bit (must be set)
     EXTENDED_PAYLOAD_LENGTH_16BIT_1,
@@ -64,19 +64,19 @@ class MessageParser
     FINISHED_MESSAGE
   } state;
 
-  Result consume(unsigned char);
-  Result consumeFrameHeader(unsigned char);
-  Result consumePayloadLength(unsigned char);
-  Result consumeReadingPayload(unsigned char);
-  Result applyToLength(unsigned char, int);
-  Result applyToMaskKey(unsigned char, int);
-  void finishReadingLength();
-  Result finishFrame();
-  Result finishControlFrame();
+  result consume(unsigned char);
+  result consume_frame_header(unsigned char);
+  result consume_payload_length(unsigned char);
+  result consume_reading_payload(unsigned char);
+  result apply_to_length(unsigned char, int);
+  result apply_to_mask_key(unsigned char, int);
+  void finish_reading_length();
+  result finish_frame();
+  result finish_control_frame();
 
   public:
 
-  MessageParser(bool req_mask = false, bool use_binary = false) :
+  message_parser(bool req_mask = false, bool use_binary = false) :
     require_mask(req_mask),
     expecting_binary(use_binary),
     is_last_frame(false),
@@ -85,21 +85,21 @@ class MessageParser
     mask_key(),
     control_opcode(0),
     state(FRAME_HEADER)
-  {}
+  { (void)expecting_binary; }
 
-  const Buffer& getBuffer() const { return body; }
+  const Buffer& get_buffer() const { return body; }
 
 	template<typename InputIterator>
-	Result parse(InputIterator begin, InputIterator end)
+	result parse(InputIterator begin, InputIterator end)
 	{
     //todo handle control frames
 		while (begin != end)
 		{
-			Result r = consume(*begin++);
-			if (r != Result::INDETERMINATE)
+			result r = consume(*begin++);
+			if (r != result::INDETERMINATE)
 				return r;	
 		}
-		return Result::INDETERMINATE;
+		return result::INDETERMINATE;
 	}
 
 };

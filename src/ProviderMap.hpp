@@ -18,7 +18,7 @@ namespace hana = boost::hana;
 
 namespace detail {
     // extractKeys - returns pairs of each element and itself
-    struct ExtractKeys
+    struct extract_keys_fn
     {
         template<typename TypesType>
         constexpr auto operator()(TypesType s) const {
@@ -29,11 +29,11 @@ namespace detail {
             )){};
         }
     };
-    constexpr ExtractKeys extractKeys{};
+    constexpr extract_keys_fn extract_keys{};
 }//detail
 
 template<typename ...Pair>
-struct ProviderMap
+struct provider_map
 {
     // the keys must be `type<set<path...>>`
     using Storage = decltype(hana::make_map(std::declval<Pair>()...));
@@ -42,23 +42,23 @@ struct ProviderMap
     // want to use to lookup a provider
     using Lookup = decltype(hana::unpack(
         hana::flatten(hana::unpack(hana::keys(std::declval<Storage>()),
-            hana::make_tuple ^hana::on^ detail::extractKeys)),
+            hana::make_tuple ^hana::on^ detail::extract_keys)),
         hana::make_map
     ));
 
-    constexpr ProviderMap()
+    constexpr provider_map()
         : storage()
     { }
 
-    constexpr ProviderMap(Pair&&... p)
+    constexpr provider_map(Pair&&... p)
         : storage(hana::make_map(std::forward<Pair>(p)...))
     { }
 
-    constexpr ProviderMap(Pair const&... p)
+    constexpr provider_map(Pair const&... p)
         : storage(hana::make_map(p...))
     { }
 
-    constexpr ProviderMap(Pair&... p)
+    constexpr provider_map(Pair&... p)
         : storage(hana::make_map(p...))
     { }
 

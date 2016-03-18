@@ -18,25 +18,25 @@ int main()
   {
     // test default construction
     auto def = test_context_def::make(
-      hana::template_<test_context::Provider>,
-      hana::template_<test_context::Provider>,
-      hana::template_<test_context::Consumer>,
-      hana::template_<test_context::Consumer>
+      hana::template_<test_context::provider>,
+      hana::template_<test_context::provider>,
+      hana::template_<test_context::consumer>,
+      hana::template_<test_context::consumer>
     );
     using Context = test_context_def::make_context_t<decltype(def)>;
     Context();
   }
   {
-    using test_context::IntTag;
+    using test_context::int_tag;
     // test single parameter construction
     auto def = test_context_def::make(
-      hana::reverse_partial(hana::template_<test_context::Provider>, hana::type_c<IntTag<1>>),
-      hana::reverse_partial(hana::template_<test_context::Provider>, hana::type_c<IntTag<2>>),
-      hana::reverse_partial(hana::template_<test_context::Consumer>, hana::type_c<IntTag<3>>),
-      hana::reverse_partial(hana::template_<test_context::Consumer>, hana::type_c<IntTag<4>>)
+      hana::reverse_partial(hana::template_<test_context::provider>, hana::type_c<int_tag<1>>),
+      hana::reverse_partial(hana::template_<test_context::provider>, hana::type_c<int_tag<2>>),
+      hana::reverse_partial(hana::template_<test_context::consumer>, hana::type_c<int_tag<3>>),
+      hana::reverse_partial(hana::template_<test_context::consumer>, hana::type_c<int_tag<4>>)
     );
     using Context = test_context_def::make_context_t<decltype(def)>;
-    Context(IntTag<1>{}, IntTag<2>{}, IntTag<3>{}, IntTag<4>{});
+    Context(int_tag<1>{}, int_tag<2>{}, int_tag<3>{}, int_tag<4>{});
   }
   // TODO: construct a context with a hana::map
 }

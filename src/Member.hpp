@@ -10,71 +10,71 @@
 namespace nbdl {
 
 template<class Owner, typename T, T Owner::*p>
-struct Member
+struct member
 {
 	using OwnerType = Owner;
 	using MemberType = T;
 	static constexpr T Owner::*ptr = p;
 };
 template<class M>
-struct MemberId;
+struct member_id;
 
 template<typename T>
-struct MemberTraits;
+struct member_traits;
 template<class Owner, typename T>
-struct MemberTraits<T Owner::*>
+struct member_traits<T Owner::*>
 {
 	using OwnerType = Owner;
 	using MemberType = T;
 };
 
 template<class M>
-struct MemberName;
+struct member_name;
 
 template<class M>
-struct MemberDefault;
+struct member_default;
 
 template<class M>
-struct MemberHasDefault
+struct member_has_default
 {
 	static const bool value = false;
 };
 
 template<class M>
-struct MemberStringMaxLength
+struct member_string_max_length
 {
 	//default max length of 50 for all strings
 	static const int value = 50;
 };
 
 template<class M>
-struct MemberStringMinLength
+struct member_string_min_length
 {
 	static const int value = 0;
 };
 
 template<class M>
-struct MemberMatch
+struct member_match
 {
 	static constexpr const char *value = nullptr;
 };
 
 //allow a string to have zero length
 template<class M>
-struct MemberAllowBlank
+struct member_allow_blank
 {
 	static const bool value = false;
 };
 
 //string treated as buffer and does no trim filtering
 template<class M>
-struct MemberRawBuffer
+struct member_raw_buffer
 {
 	static const bool value = false;
 };
 
 template<class M>
-struct MemberCustomValidator
+struct member_custom_validator
 {
 	template<typename T, typename AddError>
 	static void validate(T&, AddError) {}
@@ -85,31 +85,31 @@ struct MemberCustomValidator
 /*
  * MACROS
  */
-#define NBDL_MEMBER(mptr) ::nbdl::Member<typename ::nbdl::MemberTraits<decltype(mptr)>::OwnerType, typename ::nbdl::MemberTraits<decltype(mptr)>::MemberType, mptr>
+#define NBDL_MEMBER(mptr) ::nbdl::member<typename ::nbdl::member_traits<decltype(mptr)>::OwnerType, typename ::nbdl::member_traits<decltype(mptr)>::MemberType, mptr>
 
-#define NBDL_MEMBER_ID(mptr, v) template<> struct MemberId<NBDL_MEMBER(mptr)> \
+#define NBDL_MEMBER_ID(mptr, v) template<> struct member_id<NBDL_MEMBER(mptr)> \
 { static const uint8_t value = v; };
 
-#define NBDL_MEMBER_NAME(Owner, member_name) \
+#define NBDL_MEMBER_NAME(Owner, MemberName) \
 template<> \
-struct MemberName<NBDL_MEMBER(&Owner::member_name)> \
-{ static constexpr const char *value = #member_name; };
+struct member_name<NBDL_MEMBER(&Owner::MemberName)> \
+{ static constexpr const char *value = #MemberName; };
 
-#define NBDL_MEMBER_DEFAULT(mptr, val) template<> struct MemberDefault<NBDL_MEMBER(mptr)> \
+#define NBDL_MEMBER_DEFAULT(mptr, val) template<> struct member_default<NBDL_MEMBER(mptr)> \
 { static constexpr decltype(val) value = val; }; \
-template<> struct MemberHasDefault<NBDL_MEMBER(mptr)> \
+template<> struct member_has_default<NBDL_MEMBER(mptr)> \
 { static const bool value = true; }; 
 
-#define NBDL_MEMBER_MAXLENGTH(mptr, v) template<> struct MemberStringMaxLength<NBDL_MEMBER(mptr)> \
+#define NBDL_MEMBER_MAXLENGTH(mptr, v) template<> struct member_string_max_length<NBDL_MEMBER(mptr)> \
 { static const unsigned value = v; };
 
-#define NBDL_MEMBER_MINLENGTH(mptr, v) template<> struct MemberStringMinLength<NBDL_MEMBER(mptr)> \
+#define NBDL_MEMBER_MINLENGTH(mptr, v) template<> struct member_string_min_length<NBDL_MEMBER(mptr)> \
 { static const unsigned value = v; };
 
-#define NBDL_MEMBER_MATCH(mptr, reg) template<> struct MemberMatch<NBDL_MEMBER(mptr)> \
+#define NBDL_MEMBER_MATCH(mptr, reg) template<> struct member_match<NBDL_MEMBER(mptr)> \
 { static constexpr const char *value = reg; };
 
-#define NBDL_MEMBER_ALLOWBLANK(mptr) template<> struct MemberAllowBlank<NBDL_MEMBER(mptr)> \
+#define NBDL_MEMBER_ALLOWBLANK(mptr) template<> struct member_allow_blank<NBDL_MEMBER(mptr)> \
 { static const bool value = true; };
 
 

@@ -13,30 +13,30 @@
 namespace mpdef {
 
 template<typename ...T>
-struct List { };
+struct list { };
 
-struct ListTag;
+struct list_tag;
 
-struct MakeList
+struct make_list_fn
 {
   template<typename ...T>
   constexpr auto operator()(T...) const
   {
-    return mpdef::List<T...>{};
+    return mpdef::list<T...>{};
   }
 };
-constexpr MakeList make_list{};
+constexpr make_list_fn make_list{};
 
 // Comparable Operators
 
 template<typename... T, typename... U>
-constexpr auto operator==(mpdef::List<T...> t, mpdef::List<U...> u)
+constexpr auto operator==(mpdef::list<T...> t, mpdef::list<U...> u)
 {
   return boost::hana::equal(t, u);
 }
 
 template<typename... T, typename... U>
-constexpr auto operator!=(mpdef::List<T...> t, mpdef::List<U...> u)
+constexpr auto operator!=(mpdef::list<T...> t, mpdef::list<U...> u)
 {
   return boost::hana::not_equal(t, u);
 }
@@ -46,14 +46,14 @@ constexpr auto operator!=(mpdef::List<T...> t, mpdef::List<U...> u)
 namespace boost { namespace hana {
 
   template<typename ...T>
-  struct tag_of<mpdef::List<T...>> { using type = mpdef::ListTag; };
+  struct tag_of<mpdef::list<T...>> { using type = mpdef::list_tag; };
 
   template<>
-  struct make_impl<mpdef::ListTag>
+  struct make_impl<mpdef::list_tag>
   {
     template<typename... T>
     static constexpr auto apply(T...) 
-      -> mpdef::List<T...>
+      -> mpdef::list<T...>
     {
       return {};
     }
@@ -62,10 +62,10 @@ namespace boost { namespace hana {
   // Foldable
 
   template<>
-  struct unpack_impl<mpdef::ListTag>
+  struct unpack_impl<mpdef::list_tag>
   {
     template<typename... T, typename F>
-    static constexpr auto apply(mpdef::List<T...>, F&& f)
+    static constexpr auto apply(mpdef::list<T...>, F&& f)
     {
       return std::forward<F>(f)(T{}...);
     }
@@ -74,11 +74,11 @@ namespace boost { namespace hana {
   // Functor
 
   template<>
-  struct transform_impl<mpdef::ListTag>
+  struct transform_impl<mpdef::list_tag>
   {
     template<typename... T, typename F>
-    static constexpr auto apply(mpdef::List<T...>, F&& f)
-      -> mpdef::List<decltype(f(T{}))...>
+    static constexpr auto apply(mpdef::list<T...>, F&& f)
+      -> mpdef::list<decltype(f(T{}))...>
     {
       return {};
     }
@@ -87,10 +87,10 @@ namespace boost { namespace hana {
   // Iterable
 
   template<>
-  struct at_impl<mpdef::ListTag>
+  struct at_impl<mpdef::list_tag>
   {
     template<typename... T, typename I>
-    static constexpr auto apply(mpdef::List<T...>, I)
+    static constexpr auto apply(mpdef::list<T...>, I)
       -> decltype(hana::arg<I::value + 1>(T{}...))
     {
       return {};
@@ -98,10 +98,10 @@ namespace boost { namespace hana {
   };
 
   template<>
-  struct is_empty_impl<mpdef::ListTag>
+  struct is_empty_impl<mpdef::list_tag>
   {
     template<typename... T>
-    static constexpr auto apply(mpdef::List<T...>)
+    static constexpr auto apply(mpdef::list<T...>)
       -> hana::bool_<sizeof...(T) == 0>
     {
       return {};
@@ -109,10 +109,10 @@ namespace boost { namespace hana {
   };
 
   template<>
-  struct drop_front_impl<mpdef::ListTag>
+  struct drop_front_impl<mpdef::list_tag>
   {
     template<typename... T>
-    static constexpr auto apply(mpdef::List<T...>)
+    static constexpr auto apply(mpdef::list<T...>)
       -> hana::bool_<sizeof...(T) == 0>
     {
       return {};
@@ -122,7 +122,7 @@ namespace boost { namespace hana {
   // Sequence
 
   template<>
-  struct Sequence<mpdef::ListTag>
+  struct Sequence<mpdef::list_tag>
   {
     static constexpr bool value = true;
   };

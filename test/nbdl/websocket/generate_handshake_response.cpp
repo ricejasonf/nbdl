@@ -7,8 +7,8 @@
 #include<servers/ws/HttpResponse.hpp>
 #include<catch.hpp>
 
-using HttpRequest = nbdl::servers::ws::HttpRequest;
-using HttpResponse = nbdl::servers::ws::HttpResponse;
+using HttpRequest = nbdl::servers::ws::http_request;
+using HttpResponse = nbdl::servers::ws::http_response;
 
 TEST_CASE("Generated Response should contain the proper Sec-WebSocket-Accept string.", "[websocket]") 
 {

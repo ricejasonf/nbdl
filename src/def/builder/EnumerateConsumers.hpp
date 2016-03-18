@@ -19,14 +19,14 @@ namespace builder {
 
 namespace hana = boost::hana;
 
-struct EnumerateConsumers
+struct enumerate_consumers_fn
 {
   template<typename ConsumerDefs>
   auto helper(ConsumerDefs defs) const
   {
     return hana::unpack(defs,
       [](auto... consumer_def) {
-        return mpdef::make_list(builder::makeConsumerMeta(
+        return mpdef::make_list(builder::make_consumer_meta(
           hana::second(consumer_def)[tag::Type],
           hana::find(hana::second(consumer_def), tag::Name)
             .value_or(hana::second(consumer_def)[tag::Type])
@@ -54,7 +54,7 @@ struct EnumerateConsumers
     ){};
   }
 };
-constexpr EnumerateConsumers enumerateConsumers{};
+constexpr enumerate_consumers_fn enumerate_consumers{};
 
 }//builder
 }//nbdl_def

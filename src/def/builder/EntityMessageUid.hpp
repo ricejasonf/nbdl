@@ -36,15 +36,15 @@ namespace detail {
 
   // upstream/create has uid in path
   template<typename AccessPoint>
-  constexpr auto entityMessageUid(AccessPoint, action::Create, channel::Upstream)
+  constexpr auto entity_message_uid(AccessPoint, action::create, channel::upstream)
   {
     // TODO - should be nothing if UseLocalVersion is true
-    return hana::type_c<decltype(hana::just(std::declval<nbdl::Uid>()))>;
+    return hana::type_c<decltype(hana::just(std::declval<nbdl::uid>()))>;
   }
   template<typename AccessPoint>
-  constexpr auto entityMessageUid(AccessPoint /* access_point */, ...)
+  constexpr auto entity_message_uid(AccessPoint /* access_point */, ...)
   {
-    return hana::type_c<decltype(hana::just(std::declval<nbdl::Uid>()))>;
+    return hana::type_c<decltype(hana::just(std::declval<nbdl::uid>()))>;
 #if 0
     return hana::type_c<decltype(
       hana::if_(
@@ -57,18 +57,18 @@ namespace detail {
   }
 }//detail
 
-struct EntityMessageUid {
+struct entity_message_uid_fn {
   template<typename A, typename M>
   constexpr auto operator()(A access_point, M entity_message_meta) const
   {
-    return detail::entityMessageUid(
+    return detail::entity_message_uid(
       access_point,
-      EntityMessageMeta::action(entity_message_meta),
-      EntityMessageMeta::channel(entity_message_meta)
+      entity_message_meta::action(entity_message_meta),
+      entity_message_meta::channel(entity_message_meta)
     );
   }
 };
-constexpr EntityMessageUid entityMessageUid{};
+constexpr entity_message_uid_fn entity_message_uid{};
 
 }//builder
 }//nbdl_def

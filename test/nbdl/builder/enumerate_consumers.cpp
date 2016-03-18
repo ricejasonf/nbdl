@@ -29,7 +29,7 @@ DEFINE_NAME(Consumer2Name);
 int main()
 {
   using namespace nbdl_def;
-  using builder::ConsumerMeta;
+  using builder::consumer_meta;
   {
 
     constexpr auto def =
@@ -47,17 +47,17 @@ int main()
         )
       );
 
-    constexpr auto result = nbdl_def::builder::enumerateConsumers(def);
+    constexpr auto result = nbdl_def::builder::enumerate_consumers(def);
 
     BOOST_HANA_CONSTANT_ASSERT(result ==
       mpdef::make_list(
-        builder::makeConsumerMetaWithMap(
-          ConsumerMeta::consumer    = names::Consumer1,
-          ConsumerMeta::name        = names::Consumer1Name
+        builder::make_consumer_meta_with_map(
+          consumer_meta::consumer    = names::Consumer1,
+          consumer_meta::name        = names::Consumer1Name
         ),
-        builder::makeConsumerMetaWithMap(
-          ConsumerMeta::consumer    = names::Consumer2,
-          ConsumerMeta::name        = names::Consumer2Name
+        builder::make_consumer_meta_with_map(
+          consumer_meta::consumer    = names::Consumer2,
+          consumer_meta::name        = names::Consumer2Name
         )
       )
     );
@@ -74,13 +74,13 @@ int main()
         )
       );
 
-    constexpr auto result = nbdl_def::builder::enumerateConsumers(def);
+    constexpr auto result = nbdl_def::builder::enumerate_consumers(def);
 
     BOOST_HANA_CONSTANT_ASSERT(result ==
       mpdef::make_list(
-        builder::makeConsumerMetaWithMap(
-          ConsumerMeta::consumer    = names::Consumer1,
-          ConsumerMeta::name        = names::Consumer1Name
+        builder::make_consumer_meta_with_map(
+          consumer_meta::consumer    = names::Consumer1,
+          consumer_meta::name        = names::Consumer1Name
         )
       )
     );

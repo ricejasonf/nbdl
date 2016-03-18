@@ -23,34 +23,34 @@ struct Void
 //Traits for Entity
 
 template<typename Impl>
-struct EntityTraits;
+struct entity_traits;
 
 template<class T, class U = void>
-struct IsEntity
+struct is_entity
 {
 	enum { value = 0 };
 };
 template<class T>
-struct IsEntity<T, typename Void<typename EntityTraits<typename std::decay<T>::type>::Members>::type>
+struct is_entity<T, typename Void<typename entity_traits<typename std::decay<T>::type>::Members>::type>
 {
 	enum { value = 1 };
 };
 
 template<typename T, typename U = void>
-using EnableIfEntity = std::enable_if_t<IsEntity<T>::value, U>;
+using enable_if_entity = std::enable_if_t<is_entity<T>::value, U>;
 
 template<typename T, typename U = void>
-using EnableIfEmpty = std::enable_if_t<std::is_empty<T>::value, U>;
+using enable_if_empty = std::enable_if_t<std::is_empty<T>::value, U>;
 
 template<typename E>
-static constexpr auto entityMembers()
+static constexpr auto entity_members()
 {
-  return typename EntityTraits<typename std::decay<E>::type>::Members{};
+  return typename entity_traits<typename std::decay<E>::type>::Members{};
 }
 
 //returns reference to member
 template<typename E, typename T>
-static auto& entityMember(E&& entity, T member_type)
+static auto& entity_member(E&& entity, T member_type)
 {
   using Member_ = typename decltype(member_type)::type;
   return std::forward<E>(entity).*Member_::ptr;
@@ -59,26 +59,26 @@ static auto& entityMember(E&& entity, T member_type)
 //Traits for Member
 
 template<typename T>
-static constexpr auto memberName(T)
+static constexpr auto member_name_(T)
 {
-  return MemberName<typename T::type>::value;
+  return member_name<typename T::type>::value;
 }
 
 //Traits for Variant
 
 template<class T, class U = void>
-struct IsVariant
+struct is_variant
 {
 	enum { value = 0 };
 };
 template<class T>
-struct IsVariant<T, typename Void<typename std::decay<T>::type::VariantTag>::type>
+struct is_variant<T, typename Void<typename std::decay<T>::type::VariantTag>::type>
 {
 	enum { value = 1 };
 };
 
 template<typename T, typename U = void>
-using EnableIfVariant = std::enable_if_t<IsVariant<T>::value, U>;
+using enable_if_variant = std::enable_if_t<is_variant<T>::value, U>;
 
 }//nbdl
 

@@ -26,16 +26,16 @@ template<
   typename ConsumerLookup,
   typename MakeContextCells,
 	typename StoreMap>
-class Context
+class context
 {
   // calling the push functions after
   // the context is destroyed will result
   // in undefined behaviour
-  struct PushUpstreamFn
+  struct push_upstream_fn
   {
-    Context& ctx;
+    context& ctx;
 
-    PushUpstreamFn(Context& c) : ctx(c) { }
+    push_upstream_fn(context& c) : ctx(c) { }
 
     template<typename Message>
     void operator()(Message&& m)
@@ -46,11 +46,11 @@ class Context
     }
   };
 
-  struct PushDownstreamFn
+  struct push_downstream_fn
   {
-    Context& ctx;
+    context& ctx;
 
-    PushDownstreamFn(Context& c) : ctx(c) { }
+    push_downstream_fn(context& c) : ctx(c) { }
 
     template<typename Message>
     void operator()(Message&& m)
@@ -62,8 +62,8 @@ class Context
   };
 
   using Cells = typename decltype(MakeContextCells{}(
-    hana::type_c<PushUpstreamFn>,
-    hana::type_c<PushDownstreamFn>
+    hana::type_c<push_upstream_fn>,
+    hana::type_c<push_downstream_fn>
   ))::type;
 
   Cells cells;
@@ -81,16 +81,16 @@ class Context
   ) + hana::size_c<1>)::value;
 
   template<typename Cell, typename PushFn, bool>
-  struct MakeCellHelper;
+  struct make_cell_helper;
 
   template<std::size_t i, typename... Args>
-  auto makeCell(Args&& ...args)
+  auto make_cell(Args&& ...args)
   {
     using Cell = std::decay_t<decltype(hana::at_c<i>(std::declval<Cells>()))>;
     using PushFn = typename decltype(
       hana::if_(hana::bool_c<(i < provider_count)>, // is provider?
-        hana::type_c<PushDownstreamFn>,
-        hana::type_c<PushUpstreamFn>
+        hana::type_c<push_downstream_fn>,
+        hana::type_c<push_upstream_fn>
       )
     )::type;
 
@@ -98,17 +98,17 @@ class Context
   }
 
   template<typename Message>
-  void propagate_message(Message&& m, message::channel::Upstream)
+  void propagate_message(Message&& m, message::channel::upstream)
   {
-    using Index = decltype(hana::at_key(ProviderLookup{}, hana::decltype_(message::getPath(m))));
+    using Index = decltype(hana::at_key(ProviderLookup{}, hana::decltype_(message::get_path(m))));
     constexpr Index index{};
     nbdl::receive_message(cells[index], std::forward<Message>(m));
   }
 
   template<typename Message>
-  void propagate_message(Message&& m, message::channel::Downstream)
+  void propagate_message(Message&& m, message::channel::downstream)
   {
-    using Index = decltype(hana::at_key(ConsumerLookup{}, hana::decltype_(message::getPath(m))));
+    using Index = decltype(hana::at_key(ConsumerLookup{}, hana::decltype_(message::get_path(m))));
     constexpr Index index{};
     nbdl::receive_message(cells[index], std::forward<Message>(m));
   }
@@ -117,8 +117,8 @@ class Context
   template<typename Message>
   void push_message(Message&& m)
   {
-    constexpr auto path_type = hana::decltype_(message::getPath(m));
-    constexpr auto channel = decltype(message::getChannel(m)){};
+    constexpr auto path_type = hana::decltype_(message::get_path(m));
+    constexpr auto channel = decltype(message::get_channel(m)){};
     propagate_message(
       nbdl::dispatch(
         stores[path_type],
@@ -132,15 +132,15 @@ class Context
   template<std::size_t ...i, typename ...Args,
     typename = std::enable_if_t<(sizeof...(Args) > 0)>
   >
-  Context(std::index_sequence<i...>, Args&& ...args)
-    : cells(makeCell<i>(args)...)
+  context(std::index_sequence<i...>, Args&& ...args)
+    : cells(make_cell<i>(args)...)
     , stores()
   { }
 
   // default constructor helper
   template<std::size_t ...i>
-  explicit Context(std::index_sequence<i...>)
-    : cells(makeCell<i>()...)
+  explicit context(std::index_sequence<i...>)
+    : cells(make_cell<i>()...)
     , stores()
   { }
 
@@ -149,12 +149,12 @@ class Context
   template<typename Arg1, typename ...Args,
     typename = std::enable_if_t<(
       (sizeof...(Args) + 1 == cell_count)
-      && !std::is_same<std::decay_t<Arg1>, Context>::value
+      && !std::is_same<std::decay_t<Arg1>, context>::value
       && !hana::is_a<hana::ext::std::integer_sequence_tag, Arg1>
     )>
   >
-  explicit Context(Arg1&& arg1, Args&& ...args)
-    : Context(
+  explicit context(Arg1&& arg1, Args&& ...args)
+    : context(
         std::make_index_sequence<sizeof...(Args) + 1>{},
         std::forward<Arg1>(arg1),
         std::forward<Args>(args)...
@@ -162,15 +162,15 @@ class Context
   { }
 
   // default constructor
-  Context()
-    : Context(std::make_index_sequence<cell_count>{})
+  context()
+    : context(std::make_index_sequence<cell_count>{})
   { }
 
   // Push functions contain references to self
   // another option is to use shared_from_this,
   // but that responsibility should be on the
   // Providers.
-  Context(Context const&) = delete;
+  context(context const&) = delete;
 };
 
 }//nbdl

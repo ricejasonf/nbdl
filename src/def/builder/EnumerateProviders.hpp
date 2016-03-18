@@ -16,18 +16,18 @@
 namespace nbdl_def {
 namespace builder {
 
-struct EnumerateProviders
+struct enumerate_providers_fn
 {
   template<typename ProviderDefs>
   auto helper(ProviderDefs defs) const
   {
     return hana::unpack(defs,
       [](auto... provider_def) {
-        return mpdef::make_list(builder::makeProviderMeta(
+        return mpdef::make_list(builder::make_provider_meta(
           hana::second(provider_def)[tag::Type],
           hana::find(hana::second(provider_def), tag::Name)
             .value_or(hana::second(provider_def)[tag::Type]),
-          builder::enumerateAccessPoints(provider_def)
+          builder::enumerate_access_points(provider_def)
         )...);
       }
     );
@@ -52,7 +52,7 @@ struct EnumerateProviders
     ){};
   }
 };
-constexpr EnumerateProviders enumerateProviders{};
+constexpr enumerate_providers_fn enumerate_providers{};
 
 }//builder
 }//nbdl_def

@@ -19,12 +19,12 @@ namespace builder {
 
 namespace hana = boost::hana;
 
-struct MapEntityMeta
+struct map_entity_meta_fn
 {
   //TODO make EnumerateMembers
-  struct MembersMetaPlaceholder { };
+  struct members_meta_placeholder { };
 
-  struct Helper
+  struct helper_fn
   {
     template<typename EntityDef>
     constexpr auto operator()(EntityDef) const
@@ -34,8 +34,8 @@ struct MapEntityMeta
 
       return mpdef::make_tree_node(
         hana::find(props, tag::Name).value_or(type),
-        builder::makeEntityMeta(
-          builder::makeEntityKeyMeta(
+        builder::make_entity_meta(
+          builder::make_entity_key_meta(
             type,
             // TODO break out logic for PrimaryKey
             (
@@ -43,7 +43,7 @@ struct MapEntityMeta
                 | hana::reverse_partial(hana::find, tag::Type)
             ).value_or(hana::type_c<int>)
           ),
-          hana::type_c<MembersMetaPlaceholder>
+          hana::type_c<members_meta_placeholder>
         )
       );
     }
@@ -54,10 +54,10 @@ struct MapEntityMeta
   constexpr auto operator()(Def) const
   {
     constexpr auto entities = Def{};
-    return hana::unpack(entities, mpdef::make_map ^hana::on^ Helper{});
+    return hana::unpack(entities, mpdef::make_map ^hana::on^ helper_fn{});
   }
 };
-constexpr MapEntityMeta mapEntityMeta{};
+constexpr map_entity_meta_fn map_entity_meta{};
 
 }//builder
 }//nbdl_def

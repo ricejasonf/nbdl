@@ -12,20 +12,20 @@
 
 TEST_CASE("Create/Parse message in a single, short, unmasked data frame.", "[websocket]") 
 {
-	using MessageParser = nbdl::servers::ws::MessageParser;
-	using MessageGenerator = nbdl::servers::ws::MessageGenerator;
+	using MessageParser = nbdl::servers::ws::message_parser;
+	using MessageGenerator = nbdl::servers::ws::message_generator;
   const std::string message = "Hello world!";
 
   auto gen = MessageGenerator();
-  gen.generateText(message.begin(), message.end(), message.size());
-  auto gen_buffer = gen.getBuffer();
+  gen.generate_text(message.begin(), message.end(), message.size());
+  auto gen_buffer = gen.get_buffer();
 
 	MessageParser parser;	
 	auto result = parser.parse(gen_buffer.begin(), gen_buffer.end());
 
 
-	REQUIRE(result == MessageParser::Result::MESSAGE);
-  auto buffer = parser.getBuffer();
+	REQUIRE(result == MessageParser::result::MESSAGE);
+  auto buffer = parser.get_buffer();
   std::string echoed_message(buffer.begin(), buffer.end());
 
 	CHECK(message == echoed_message);
@@ -33,20 +33,20 @@ TEST_CASE("Create/Parse message in a single, short, unmasked data frame.", "[web
 
 TEST_CASE("Create/Parse message in a single, short, masked data frame.", "[websocket]") 
 {
-	using MessageParser = nbdl::servers::ws::MessageParser;
-	using MessageGenerator = nbdl::servers::ws::MessageGenerator;
+	using MessageParser = nbdl::servers::ws::message_parser;
+	using MessageGenerator = nbdl::servers::ws::message_generator;
   const std::string message = "Hello world!";
 
   std::array<char, 4> mask = {{ 4, 5, 6, 7 }};
   auto gen = MessageGenerator();
-  gen.generateText(message.begin(), message.end(), message.size(), mask);
-  auto gen_buffer = gen.getBuffer();
+  gen.generate_text(message.begin(), message.end(), message.size(), mask);
+  auto gen_buffer = gen.get_buffer();
 
 	MessageParser parser = MessageParser(true);	
 	auto result = parser.parse(gen_buffer.begin(), gen_buffer.end());
 
-	REQUIRE(result == MessageParser::Result::MESSAGE);
-  auto buffer = parser.getBuffer();
+	REQUIRE(result == MessageParser::result::MESSAGE);
+  auto buffer = parser.get_buffer();
   std::string echoed_message(buffer.begin(), buffer.end());
 
 	CHECK(message == echoed_message);
@@ -54,8 +54,8 @@ TEST_CASE("Create/Parse message in a single, short, masked data frame.", "[webso
 
 TEST_CASE("Parse fragmented message with interjecting control frame.", "[websocket]") 
 {
-	using MessageParser = nbdl::servers::ws::MessageParser;
-	using MessageGenerator = nbdl::servers::ws::MessageGenerator;
+	using MessageParser = nbdl::servers::ws::message_parser;
+	using MessageGenerator = nbdl::servers::ws::message_generator;
   const std::string message = "Hello world!";
   const char* expected_result = 
     "Hello world!"
@@ -67,18 +67,18 @@ TEST_CASE("Parse fragmented message with interjecting control frame.", "[websock
   std::vector<MessageGenerator::Buffer> frames;
 
   auto gen = MessageGenerator();
-  const auto& buf = gen.getBuffer();
-  gen.generateTextFragment(message.begin(), message.end(), message.size());
+  const auto& buf = gen.get_buffer();
+  gen.generate_text_fragment(message.begin(), message.end(), message.size());
   frames.push_back(buf);
-  gen.generateContinuation(message.begin(), message.end(), message.size());
+  gen.generate_continuation(message.begin(), message.end(), message.size());
   frames.push_back(buf);
-  gen.generateContinuation(message.begin(), message.end(), message.size());
+  gen.generate_continuation(message.begin(), message.end(), message.size());
   frames.push_back(buf);
-  gen.generatePing();
+  gen.generate_ping();
   frames.push_back(buf);
-  gen.generateContinuation(message.begin(), message.end(), message.size());
+  gen.generate_continuation(message.begin(), message.end(), message.size());
   frames.push_back(buf);
-  gen.generateFinalContinuation(message.begin(), message.end(), message.size());
+  gen.generate_final_continuation(message.begin(), message.end(), message.size());
   frames.push_back(buf);
 
   auto parser = MessageParser();
@@ -86,24 +86,24 @@ TEST_CASE("Parse fragmented message with interjecting control frame.", "[websock
   int i = 0;
   frame = frames[i++];
 	CHECK(parser.parse(frame.begin(), frame.end())
-        == MessageParser::Result::INDETERMINATE);
+        == MessageParser::result::INDETERMINATE);
   frame = frames[i++];
 	CHECK(parser.parse(frame.begin(), frame.end())
-        == MessageParser::Result::INDETERMINATE);
+        == MessageParser::result::INDETERMINATE);
   frame = frames[i++];
 	CHECK(parser.parse(frame.begin(), frame.end())
-        == MessageParser::Result::INDETERMINATE);
+        == MessageParser::result::INDETERMINATE);
   frame = frames[i++];
 	CHECK(parser.parse(frame.begin(), frame.end())
-        == MessageParser::Result::PING);
+        == MessageParser::result::PING);
   frame = frames[i++];
 	CHECK(parser.parse(frame.begin(), frame.end())
-        == MessageParser::Result::INDETERMINATE);
+        == MessageParser::result::INDETERMINATE);
   frame = frames[i++];
 	REQUIRE(parser.parse(frame.begin(), frame.end())
-        == MessageParser::Result::MESSAGE);
+        == MessageParser::result::MESSAGE);
 
-  auto buffer = parser.getBuffer();
+  auto buffer = parser.get_buffer();
   std::string echoed_message(buffer.begin(), buffer.end());
 
 	CHECK(expected_result == echoed_message);

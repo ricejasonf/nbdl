@@ -27,7 +27,7 @@ namespace tag {                                                                 
   constexpr auto NAME = boost::hana::type_c<NAME##_t>;                          \
 }                                                                               \
 template<typename... Tn> constexpr auto NAME(Tn...)                             \
-{ return mpdef::TreeNode<decltype(tag::NAME), mpdef::List<Tn...>>{}; };
+{ return mpdef::tree_node<decltype(tag::NAME), mpdef::list<Tn...>>{}; };
 
 #define MPDEF_DIRECTIVE_LEAF(NAME)                      \
 namespace tag {                                         \
@@ -35,6 +35,6 @@ namespace tag {                                         \
   constexpr auto NAME = boost::hana::type_c<NAME##_t>;  \
 }                                                       \
 template<typename T> constexpr auto NAME(T)             \
-{ return mpdef::TreeNode<decltype(tag::NAME), T>{}; };
+{ return mpdef::tree_node<decltype(tag::NAME), T>{}; };
 
 #endif

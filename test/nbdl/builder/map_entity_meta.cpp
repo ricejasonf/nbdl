@@ -24,42 +24,42 @@ DEFINE_NAME(Entity2);
 
 }//names
 
-struct E1 { };
-struct E2 { };
+struct e1 { };
+struct e2 { };
 
 int main()
 {
   {
     using namespace nbdl_def;
-    using builder::EntityMeta;
-    using builder::EntityKeyMeta;
+    using builder::entity_meta;
+    using builder::entity_key_meta;
 
     constexpr auto entities =
       Entities(
         Entity(
           Name(names::Entity1),
-          Type(hana::type_c<E1>)
+          Type(hana::type_c<e1>)
         ),
         Entity(
           Name(names::Entity2),
-          Type(hana::type_c<E2>)
+          Type(hana::type_c<e2>)
         )
       );
 
-    constexpr auto result = builder::mapEntityMeta(hana::second(entities));
+    constexpr auto result = builder::map_entity_meta(hana::second(entities));
 
     BOOST_HANA_CONSTANT_ASSERT(
-      EntityKeyMeta::entity(EntityMeta::keyMeta(result[names::Entity1]))
-        == hana::type_c<E1>);
+      entity_key_meta::entity(entity_meta::key_meta(result[names::Entity1]))
+        == hana::type_c<e1>);
     BOOST_HANA_CONSTANT_ASSERT(
-      EntityKeyMeta::key(EntityMeta::keyMeta(result[names::Entity1]))
+      entity_key_meta::key(entity_meta::key_meta(result[names::Entity1]))
         == hana::type_c<int>);
 
     BOOST_HANA_CONSTANT_ASSERT(
-      EntityKeyMeta::entity(EntityMeta::keyMeta(result[names::Entity2]))
-        == hana::type_c<E2>);
+      entity_key_meta::entity(entity_meta::key_meta(result[names::Entity2]))
+        == hana::type_c<e2>);
     BOOST_HANA_CONSTANT_ASSERT(
-      EntityKeyMeta::key(EntityMeta::keyMeta(result[names::Entity2]))
+      entity_key_meta::key(entity_meta::key_meta(result[names::Entity2]))
         == hana::type_c<int>);
 
   }

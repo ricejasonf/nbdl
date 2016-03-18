@@ -30,15 +30,15 @@ DEFINE_NAME(path_4_1)
 
 
 template<int x>
-struct ProviderDummy {
+struct provider_dummy {
     int value;
 
-    ProviderDummy()
+    provider_dummy()
         : value(0)
     { }
 
-    ProviderDummy(ProviderDummy const&) = delete;
-    ProviderDummy(ProviderDummy&& other)
+    provider_dummy(provider_dummy const&) = delete;
+    provider_dummy(provider_dummy&& other)
         : value(other.value)
     { }
 };
@@ -68,11 +68,11 @@ TEST_CASE("Map paths to providers.", "[provider_map]")
       path_4_1
     );
 
-    auto result_map = nbdl::make<nbdl::ProviderMap>(
-        hana::make_pair(hana::make_type(provider_1_paths), ProviderDummy<1>{}),
-        hana::make_pair(hana::make_type(provider_2_paths), ProviderDummy<2>{}),
-        hana::make_pair(hana::make_type(provider_3_paths), ProviderDummy<3>{}),
-        hana::make_pair(hana::make_type(provider_4_paths), ProviderDummy<4>{})
+    auto result_map = nbdl::make<nbdl::provider_map>(
+        hana::make_pair(hana::make_type(provider_1_paths), provider_dummy<1>{}),
+        hana::make_pair(hana::make_type(provider_2_paths), provider_dummy<2>{}),
+        hana::make_pair(hana::make_type(provider_3_paths), provider_dummy<3>{}),
+        hana::make_pair(hana::make_type(provider_4_paths), provider_dummy<4>{})
     );
 
     // must be non-const

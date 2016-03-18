@@ -9,35 +9,35 @@
 #include "HttpRequestParser.hpp"
 
 namespace ws = nbdl::servers::ws;
-using Result = ws::HttpRequestParser::Result;
+using Result = ws::http_request_parser::result;
 
 static const char CR = '\r';
 static const char LF = '\n';
 
-Result ws::HttpRequestParser::consume(char c)
+Result ws::http_request_parser::consume(char c)
 {
 	switch(state_)
 	{
 		case METHOD_GET_1:
-			return requireChar(c, 'G', METHOD_GET_2);
+			return require_char(c, 'G', METHOD_GET_2);
 			break;
 		
 		case METHOD_GET_2:
-			return requireChar(c, 'E', METHOD_GET_3);
+			return require_char(c, 'E', METHOD_GET_3);
 			break;
 		
 		case METHOD_GET_3:
-			return requireChar(c, 'T', METHOD_GET_SP);
+			return require_char(c, 'T', METHOD_GET_SP);
 			break;
 		
 		case METHOD_GET_SP:
-			return requireChar(c, ' ', URI);
+			return require_char(c, ' ', URI);
 			break;
 		
 		case URI:
 			if (c == ' ')
 				state_ = HTTP_1;
-			else if (!isCtl(c))
+			else if (!is_ctl(c))
 				request.uri.push_back(c);
 			else
 				return BAD_REQUEST;
@@ -45,43 +45,43 @@ Result ws::HttpRequestParser::consume(char c)
 			break;
 		
 		case HTTP_1:
-			return requireChar(c, 'H', HTTP_2);
+			return require_char(c, 'H', HTTP_2);
 			break;
 		
 		case HTTP_2:
-			return requireChar(c, 'T', HTTP_3);
+			return require_char(c, 'T', HTTP_3);
 			break;
 		
 		case HTTP_3:
-			return requireChar(c, 'T', HTTP_4);
+			return require_char(c, 'T', HTTP_4);
 			break;
 		
 		case HTTP_4:
-			return requireChar(c, 'P', HTTP_SLASH);
+			return require_char(c, 'P', HTTP_SLASH);
 			break;
 		
 		case HTTP_SLASH:
-			return requireChar(c, '/', HTTP_VERSION_MAJOR);
+			return require_char(c, '/', HTTP_VERSION_MAJOR);
 			break;
 		
 		case HTTP_VERSION_MAJOR:
-			return requireChar(c, '1', HTTP_VERSION_POINT);
+			return require_char(c, '1', HTTP_VERSION_POINT);
 			break;
 		
 		case HTTP_VERSION_POINT:
-			return requireChar(c, '.', HTTP_VERSION_MINOR);
+			return require_char(c, '.', HTTP_VERSION_MINOR);
 			break;
 		
 		case HTTP_VERSION_MINOR:
-			return requireChar(c, '1', REQUEST_LINE_CR);
+			return require_char(c, '1', REQUEST_LINE_CR);
 			break;
 		
 		case REQUEST_LINE_CR:
-			return requireChar(c, CR, REQUEST_LINE_LF);
+			return require_char(c, CR, REQUEST_LINE_LF);
 			break;
 		
 		case REQUEST_LINE_LF:
-			return requireChar(c, LF, HEADER_START);
+			return require_char(c, LF, HEADER_START);
 			break;
 		
 		case HEADER_START:
@@ -91,7 +91,7 @@ Result ws::HttpRequestParser::consume(char c)
 				return INDETERMINATE;
 			}
 			state_ = HEADER_NAME;
-			return processHeaderNameChar(c);
+			return process_header_name_char(c);
 			break;
 		
 		case HEADER_NAME:
@@ -100,28 +100,28 @@ Result ws::HttpRequestParser::consume(char c)
 				state_ = HEADER_VALUE_START;
 				return INDETERMINATE;
 			}
-			return processHeaderNameChar(c);
+			return process_header_name_char(c);
 			break;
 		
 		case HEADER_VALUE_START:
-			if (isLws(c))
+			if (is_lws(c))
 				return INDETERMINATE;
 			state_ = HEADER_VALUE;
-			return processHeaderValueChar(c);
+			return process_header_value_char(c);
 			break;
 		
 		case HEADER_VALUE:
 			if (c == CR)
 			{
-				headerValueComplete();
+				header_value_complete();
 				state_ = HEADER_LF;
 				return INDETERMINATE;
 			}
-			return processHeaderValueChar(c);
+			return process_header_value_char(c);
 			break;
 		
 		case HEADER_LF:
-			return requireChar(c, LF, HEADER_START);
+			return require_char(c, LF, HEADER_START);
 			break;
 		
 		case FINAL_LF:
@@ -141,7 +141,7 @@ Result ws::HttpRequestParser::consume(char c)
 	return BAD_REQUEST;
 }
 
-Result ws::HttpRequestParser::requireChar(char l, char r, State next)
+Result ws::http_request_parser::require_char(char l, char r, state next)
 {
 	if (l != r)
 		return BAD_REQUEST;
@@ -151,22 +151,22 @@ Result ws::HttpRequestParser::requireChar(char l, char r, State next)
 
 //don't read or determine state_ in these functions
 
-bool ws::HttpRequestParser::isLws(char c)
+bool ws::http_request_parser::is_lws(char c)
 {
 	return (c == ' ' || c == '\t');
 }
 
-bool ws::HttpRequestParser::isCtl(char c)
+bool ws::http_request_parser::is_ctl(char c)
 {
 	return (c <= 31 || c == 127);
 }
 
-bool ws::HttpRequestParser::isAsciiNonCtl(char c)
+bool ws::http_request_parser::is_ascii_non_ctl(char c)
 {
 	return (c > 31 && c < 127);
 }
 
-bool ws::HttpRequestParser::isSpecialChar(char c)
+bool ws::http_request_parser::is_special_char(char c)
 {
 	switch (c)
 	{
@@ -180,19 +180,19 @@ bool ws::HttpRequestParser::isSpecialChar(char c)
 	}
 }
 
-bool ws::HttpRequestParser::isValidHeaderNameChar(char c)
+bool ws::http_request_parser::is_valid_header_name_char(char c)
 {
-	return (!isSpecialChar(c) && isAsciiNonCtl(c));		
+	return (!is_special_char(c) && is_ascii_non_ctl(c));		
 }
 
-bool ws::HttpRequestParser::isValidHeaderValueChar(char c)
+bool ws::http_request_parser::is_valid_header_value_char(char c)
 {
-	return (!isCtl(c));
+	return (!is_ctl(c));
 }
 
-Result ws::HttpRequestParser::processHeaderNameChar(char c)
+Result ws::http_request_parser::process_header_name_char(char c)
 {
-	if (isValidHeaderNameChar(c))
+	if (is_valid_header_name_char(c))
 	{
 		current_header_name.push_back(std::tolower(c));
 		return INDETERMINATE;
@@ -200,9 +200,9 @@ Result ws::HttpRequestParser::processHeaderNameChar(char c)
 	return BAD_REQUEST;
 }
 
-Result ws::HttpRequestParser::processHeaderValueChar(char c)
+Result ws::http_request_parser::process_header_value_char(char c)
 {
-	if (isValidHeaderValueChar(c))
+	if (is_valid_header_value_char(c))
 	{
 		//todo convert to lowercase
 		current_header_value.push_back(c);
@@ -211,7 +211,7 @@ Result ws::HttpRequestParser::processHeaderValueChar(char c)
 	return BAD_REQUEST;
 }
 
-void ws::HttpRequestParser::headerValueComplete()
+void ws::http_request_parser::header_value_complete()
 {
 	if (current_header_name == "upgrade")
 		request.upgrade_header = current_header_value;

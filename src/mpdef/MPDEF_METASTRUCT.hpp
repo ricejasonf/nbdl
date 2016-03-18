@@ -11,13 +11,13 @@
 #include<mpdef/details/_MPDEF_METASTRUCT_SPEC_NAMES.hpp>
 
 #define MPDEF_METASTRUCT(NAME, ...) \
-struct NAME : ::mpdef::Metastruct<NAME> {\
+struct NAME : ::mpdef::metastruct<NAME> {\
   _MPDEF_METASTRUCT_KEYS(__VA_ARGS__) \
   static constexpr auto spec = mpdef::make_list( \
   _MPDEF_METASTRUCT_SPEC_NAMES(__VA_ARGS__) \
   ); \
 }; \
-constexpr auto make##NAME = mpdef::makeMetastruct<NAME>; \
-constexpr auto make##NAME##WithMap = mpdef::makeMetastructWithMap<NAME>;
+constexpr auto make_##NAME = mpdef::make_metastruct<NAME>; \
+constexpr auto make_##NAME##_with_map = mpdef::make_metastruct_with_map<NAME>;
 
 #endif

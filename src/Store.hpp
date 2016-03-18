@@ -14,7 +14,7 @@ namespace nbdl {
 template<
   typename Container,
   typename PathType >
-class Store
+class store
 {
 	using Entity = typename PathType::Entity;
 
@@ -25,16 +25,16 @@ class Store
 	using Variant_ = typename Container::Variant_;
 
 	template<typename T>
-	void forceAssign(const PathType& path, T&& value)
+	void force_assign(const PathType& path, T&& value)
 	{
 		container.assign(path, std::forward<T>(value));
 	}
 
 	template<typename T>
-	void suggestAssign(const PathType& path, T&& val)
+	void suggest_assign(const PathType& path, T&& val)
 	{
 		Variant_& value = container.get(path);
-    if (value.template is<Unresolved>())
+    if (value.template is<unresolved>())
 		{
 			value = std::forward<T>(val);
 		}
@@ -47,7 +47,7 @@ class Store
 	}
 };
 
-struct NotFound {};
+struct not_found {};
 
 }//nbdl
 

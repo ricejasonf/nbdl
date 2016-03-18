@@ -13,18 +13,18 @@
 namespace nbdl_def {
 namespace builder {
 
-struct Store
+struct store_fn
 {
   template<typename PathType, typename AccessPoint>
   constexpr auto operator()(PathType path_type, AccessPoint access_point) const
   {
-    return hana::template_<nbdl::Store>(
-        AccessPointMeta::storeContainer(access_point)(path_type),
+    return hana::template_<nbdl::store>(
+        access_point_meta::store_container(access_point)(path_type),
         path_type
       );
   }
 };
-constexpr Store store{};
+constexpr store_fn store{};
 
 }//builder
 }//nbdl_def

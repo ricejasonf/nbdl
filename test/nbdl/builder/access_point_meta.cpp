@@ -14,37 +14,37 @@ namespace builder = nbdl_def::builder;
 
 int main()
 {
-  using builder::AccessPointMeta;
+  using builder::access_point_meta;
   constexpr auto name           = hana::int_c<0>;
   constexpr auto actions        = hana::int_c<1>;
-  constexpr auto storeContainer = hana::int_c<2>;
-  constexpr auto entityNames    = hana::int_c<4>;
+  constexpr auto store_container = hana::int_c<2>;
+  constexpr auto entity_names    = hana::int_c<4>;
 
-  constexpr auto x = builder::makeAccessPointMeta(
+  constexpr auto x = builder::make_access_point_meta(
     name
     , actions
-    , storeContainer
-    , entityNames
+    , store_container
+    , entity_names
   );
-  BOOST_HANA_CONSTANT_ASSERT(AccessPointMeta::name(x) == name);
-  BOOST_HANA_CONSTANT_ASSERT(AccessPointMeta::actions(x) == actions);
-  BOOST_HANA_CONSTANT_ASSERT(AccessPointMeta::storeContainer(x) == storeContainer);
-  BOOST_HANA_CONSTANT_ASSERT(AccessPointMeta::entityNames(x) == entityNames);
+  BOOST_HANA_CONSTANT_ASSERT(access_point_meta::name(x) == name);
+  BOOST_HANA_CONSTANT_ASSERT(access_point_meta::actions(x) == actions);
+  BOOST_HANA_CONSTANT_ASSERT(access_point_meta::store_container(x) == store_container);
+  BOOST_HANA_CONSTANT_ASSERT(access_point_meta::entity_names(x) == entity_names);
 
   BOOST_HANA_CONSTANT_ASSERT(hana::equal(x,
-    builder::makeAccessPointMetaWithMap(
-      AccessPointMeta::name = name,
-      AccessPointMeta::actions = actions,
-      AccessPointMeta::storeContainer = storeContainer,
-      AccessPointMeta::entityNames = entityNames
+    builder::make_access_point_meta_with_map(
+      access_point_meta::name = name,
+      access_point_meta::actions = actions,
+      access_point_meta::store_container = store_container,
+      access_point_meta::entity_names = entity_names
     )
   ));
   BOOST_HANA_CONSTANT_ASSERT(hana::equal(x,
-    builder::makeAccessPointMetaWithMap(
-      AccessPointMeta::actions = actions,
-      AccessPointMeta::name = name,
-      AccessPointMeta::storeContainer = storeContainer,
-      AccessPointMeta::entityNames = entityNames
+    builder::make_access_point_meta_with_map(
+      access_point_meta::actions = actions,
+      access_point_meta::name = name,
+      access_point_meta::store_container = store_container,
+      access_point_meta::entity_names = entity_names
     )
   ));
 }

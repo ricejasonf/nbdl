@@ -14,41 +14,41 @@
 #include<string>
 
 template<typename T>
-void fromString(std::string &json, T &my_entity)
+void from_string(std::string &json, T &my_entity)
 {
   Json::Reader reader;
   Json::Value root;
   if (!reader.parse(json, root, false))
     throw std::runtime_error("JSON parse error");
-  nbdl::binders::jsoncpp::Read r(root);
+  nbdl::binders::jsoncpp::read r(root);
   nbdl::bind(r, my_entity);
 }
 
 template<typename T>
-std::string toString(T &my_entity)
+std::string to_string(T &my_entity)
 {
   Json::StyledWriter writer;
   Json::Value root;
-  nbdl::binders::jsoncpp::Write r(root);
+  nbdl::binders::jsoncpp::write r(root);
 
   nbdl::bind(r, my_entity);
   return writer.write(root);
 }
 
-struct Bar
+struct bar
 {
   std::string value;
 };
-using Foo = nbdl::Variant<std::string, int, Bar>;
-struct MyEntity
+using Foo = nbdl::variant<std::string, int, bar>;
+struct my_entity
 {
   Foo foo;
 };
 
 namespace nbdl {
-NBDL_ENTITY(Bar,
+NBDL_ENTITY(bar,
   value );
-NBDL_ENTITY(MyEntity,
+NBDL_ENTITY(my_entity,
   foo );
 }//nbdl
 
@@ -74,23 +74,23 @@ std::string test_json_3 =
 
 TEST_CASE("Bind empty variant to JSON.", "[bind][json]") 
 {
-  MyEntity my_entity;
-  fromString(test_json_1, my_entity);
+  my_entity my_entity;
+  from_string(test_json_1, my_entity);
   bool result = my_entity.foo.match(
-      [](nbdl::Unresolved) {
+      [](nbdl::unresolved) {
         return true;
       },
       [](auto) {
         return false;
       });
   CHECK(result);
-  CHECK(toString(my_entity) == test_json_1);
+  CHECK(to_string(my_entity) == test_json_1);
 }
 
 TEST_CASE("Bind variant containing string to JSON.", "[bind][json]") 
 {
-  MyEntity my_entity;
-  fromString(test_json_2, my_entity);
+  my_entity my_entity;
+  from_string(test_json_2, my_entity);
   bool result = my_entity.foo.match(
       [](std::string str) {
         return str == "a string";
@@ -99,20 +99,20 @@ TEST_CASE("Bind variant containing string to JSON.", "[bind][json]")
         return false;
       });
   CHECK(result);
-  CHECK(toString(my_entity) == test_json_2);
+  CHECK(to_string(my_entity) == test_json_2);
 }
 
 TEST_CASE("Bind variant containing entity to JSON.", "[bind][json]") 
 {
-  MyEntity my_entity;
-  fromString(test_json_3, my_entity);
+  my_entity my_entity;
+  from_string(test_json_3, my_entity);
   bool result = my_entity.foo.match(
-      [](Bar bar) {
+      [](bar bar) {
         return bar.value == "bar";
       },
       [](auto) {
         return false;
       });
   CHECK(result);
-  CHECK(toString(my_entity) == test_json_3);
+  CHECK(to_string(my_entity) == test_json_3);
 }

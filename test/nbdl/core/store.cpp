@@ -12,38 +12,38 @@
 #include<memory>
 
 template<typename Path_>
-using Store = nbdl::Store<
-  nbdl::store::HashMap<Path_>,
+using Store = nbdl::store<
+  nbdl::store_container::hash_map<Path_>,
   Path_ >;
 
-struct Client
+struct client
 {
 	int id;
 };
-struct MyEntity
+struct my_entity
 {
 	int id;
 	int client_id;
 };
-using MyEntityPath = typename decltype(nbdl::path_type<int, Client, MyEntity>)::type;
+using MyEntityPath = typename decltype(nbdl::path_type<int, client, my_entity>)::type;
 namespace nbdl {
 	NBDL_ENTITY(
-		Client,
+		client,
 			id);
 	NBDL_ENTITY(
-		MyEntity,
+		my_entity,
 			id,
 			client_id);
 }//nbdl
 
 TEST_CASE("Access an uninitialized value from a store.", "[store]") 
 {
-	Store<MyEntityPath> store;
+  Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(1, 5);
 
 	bool result = store.get(
     path,
-		[](nbdl::Unresolved) {
+		[](nbdl::unresolved) {
 			return true;
 		},
 		[](auto) {
@@ -56,12 +56,12 @@ TEST_CASE("Force assign and access a value from a store.", "[store]")
 {
 	Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(1, 5);
-	MyEntity my_entity = { 5, 1 };
-	store.forceAssign(path, my_entity);
+	my_entity my_entity_ = { 5, 1 };
+	store.force_assign(path, my_entity_);
 
 	bool result = store.get(
 		path,
-		[](MyEntity entity) {
+		[](my_entity entity) {
 			CHECK(entity.id == 5);
 			return true;	
 		},
@@ -76,12 +76,12 @@ TEST_CASE("Suggest a value to a store.", "[store]")
 {
 	Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(1, 5);
-	MyEntity my_entity = { 5, 1 };
-	store.suggestAssign(path, my_entity);
+	my_entity my_entity_ = { 5, 1 };
+	store.suggest_assign(path, my_entity_);
 
 	bool result = store.get(
 		path,
-		[](MyEntity entity) {
+		[](my_entity entity) {
 			CHECK(entity.id == 5);
 			return true;	
 		},
@@ -97,16 +97,16 @@ TEST_CASE("Suggest a value to a store where the value already exists.", "[store]
 {
 	Store<MyEntityPath> store;
 	MyEntityPath path = MyEntityPath(1, 5);
-	MyEntity my_entity_original = { 6, 1 };
-	MyEntity my_entity = { 5, 1 };
+	my_entity my_entity_original = { 6, 1 };
+	my_entity my_entity_ = { 5, 1 };
 
-	store.forceAssign(path, my_entity_original);
+	store.force_assign(path, my_entity_original);
 
-	store.suggestAssign(path, my_entity);
+	store.suggest_assign(path, my_entity_);
 
 	bool result = store.get(
 		path,
-		[](MyEntity entity) {
+		[](my_entity entity) {
 			CHECK(entity.id == 6);
 			return true;
 		},

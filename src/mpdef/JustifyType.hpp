@@ -15,34 +15,34 @@ namespace mpdef {
 // JustifyType - metafunction that transforms an optional
 // `type` into its contained type
 template<typename T>
-struct JustifyType;
+struct justify_type_t;
 
 template<>
-struct JustifyType<boost::hana::optional<>>
+struct justify_type_t<boost::hana::optional<>>
 {
   using type = const boost::hana::optional<>;
 };
 
 template<typename Type>
-struct JustifyType<boost::hana::optional<Type>>
+struct justify_type_t<boost::hana::optional<Type>>
 {
   using type = boost::hana::optional<typename Type::type>;
 };
 
 // specializations for const :/
 template<>
-struct JustifyType<const boost::hana::optional<>>
+struct justify_type_t<const boost::hana::optional<>>
 {
   using type = const boost::hana::optional<>;
 };
 
 template<typename Type>
-struct JustifyType<const boost::hana::optional<Type>>
+struct justify_type_t<const boost::hana::optional<Type>>
 {
   using type = boost::hana::optional<typename Type::type>;
 };
 
-constexpr auto justify_type = boost::hana::metafunction<mpdef::JustifyType>;
+constexpr auto justify_type = boost::hana::metafunction<mpdef::justify_type_t>;
 
 }//mpdef
 

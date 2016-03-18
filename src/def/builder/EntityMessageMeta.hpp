@@ -13,10 +13,10 @@ namespace nbdl_def {
 namespace builder {
 
 MPDEF_METASTRUCT(
-  EntityMessageMeta
+  entity_message_meta
   , path
-  , entityType 
-  , privatePayload
+  , entity_type 
+  , private_payload
   , action
   , channel
 );

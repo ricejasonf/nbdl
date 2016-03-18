@@ -23,23 +23,23 @@ namespace detail {
   namespace channel = nbdl::message::channel;
 
   template<typename A, typename E, typename Channel>
-  constexpr auto entityMessagePayload(A, E entity_type, action::Create, Channel)
+  constexpr auto entity_message_payload(A, E entity_type, action::create, Channel)
   { return mpdef::justify_type(hana::decltype_(hana::just(entity_type))); }
 
   template<typename A, typename E>
-  constexpr auto entityMessagePayload(A, E, action::Read, channel::Upstream)
+  constexpr auto entity_message_payload(A, E, action::read, channel::upstream)
   { return hana::decltype_(hana::nothing); }
 
   template<typename A, typename E>
-  constexpr auto entityMessagePayload(A, E entity_type, action::Read, channel::Downstream)
+  constexpr auto entity_message_payload(A, E entity_type, action::read, channel::downstream)
   { return mpdef::justify_type(hana::decltype_(hana::just(entity_type))); }
 
   template<typename A, typename E, typename Channel>
-  constexpr auto entityMessagePayload(A, E entity_type, action::UpdateRaw, Channel)
+  constexpr auto entity_message_payload(A, E entity_type, action::update_raw, Channel)
   { return mpdef::justify_type(hana::decltype_(hana::just(entity_type))); }
 
   template<typename A, typename E, typename Channel>
-  constexpr auto entityMessagePayload(A, E, action::Delete, Channel)
+  constexpr auto entity_message_payload(A, E, action::delete_, Channel)
   { return hana::decltype_(hana::nothing); }
 
   /* TODO message payloads for other possible entity actions:
@@ -47,19 +47,19 @@ namespace detail {
    */
 }//detail
 
-struct EntityMessagePayload {
+struct entity_message_payload_fn {
   template<typename A, typename E>
   constexpr auto operator()(A access_point, E entity_message_meta) const
   {
-    return detail::entityMessagePayload(
+    return detail::entity_message_payload(
       access_point,
-      EntityMessageMeta::entityType(entity_message_meta),
-      EntityMessageMeta::action(entity_message_meta),
-      EntityMessageMeta::channel(entity_message_meta)
+      entity_message_meta::entity_type(entity_message_meta),
+      entity_message_meta::action(entity_message_meta),
+      entity_message_meta::channel(entity_message_meta)
     );
   }
 };
-constexpr EntityMessagePayload entityMessagePayload{};
+constexpr entity_message_payload_fn entity_message_payload{};
 
 }//builder
 }//nbdl_def

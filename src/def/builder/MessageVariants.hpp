@@ -22,25 +22,25 @@ namespace builder {
 namespace hana = boost::hana;
 
 // TODO possibly make this a metafunction
-struct MakeMessageVariant
+struct make_message_variant_fn
 {
   template<typename EntityMessageTypes, typename SystemMessageType>
   constexpr auto operator()(EntityMessageTypes, SystemMessageType) const
   {
-    // returns hana::type_c<nbdl::Variant<SystemMessages, EntityMessages...>>
+    // returns hana::type_c<nbdl::variant<SystemMessages, EntityMessages...>>
     return hana::unpack(
       hana::prepend(EntityMessageTypes{}, SystemMessageType{}),
-      hana::template_<nbdl::Variant>
+      hana::template_<nbdl::variant>
     );
   }
 };
-constexpr MakeMessageVariant makeMessageVariant{};
+constexpr make_message_variant_fn make_message_variant{};
 
 // aggregate all entity messages
 // and partition by upstream/downstream
-struct MakeMessageVariants
+struct make_message_variants_fn
 {
-  struct IsUpstreamHelper
+  struct is_upstream_helper_fn
   {
     template<typename Type>
     constexpr auto operator()(Type) const
@@ -48,14 +48,14 @@ struct MakeMessageVariants
       using M = typename Type::type;
       return hana::bool_<decltype(
         hana::equal(
-          hana::decltype_(nbdl::message::getChannel(std::declval<M>())),
-          hana::type_c<nbdl::message::channel::Upstream>
+          hana::decltype_(nbdl::message::get_channel(std::declval<M>())),
+          hana::type_c<nbdl::message::channel::upstream>
         )
       )::value>{};
     }
   };
 
-  struct Helper
+  struct helper_fn
   {
     template<typename UpstreamMessages, typename DownstreamMessages>
     constexpr auto operator()(UpstreamMessages, DownstreamMessages) const
@@ -65,8 +65,8 @@ struct MakeMessageVariants
       // return fn(system_message_type) -> Product of variants
       return hana::demux(hana::make_pair)
       (
-        hana::partial(builder::makeMessageVariant, UpstreamMessages{}),
-        hana::partial(builder::makeMessageVariant, DownstreamMessages{})
+        hana::partial(builder::make_message_variant, UpstreamMessages{}),
+        hana::partial(builder::make_message_variant, DownstreamMessages{})
       );
     } 
   };
@@ -77,20 +77,21 @@ struct MakeMessageVariants
     // return a Metafunction that 
     // takes a SystemMessage type and returns
     // a Product of the upstream/downstream
-    // message nbdl::Variants
+    // message nbdl::variants
     return hana::unpack(
       hana::partition(
         hana::unpack(
-          hana::flatten(hana::unpack(providers, mpdef::make_list ^hana::on^ ProviderMeta::accessPoints)),
-          hana::partial(builder::entityMessages, entity_map)
+          hana::flatten(hana::unpack(providers,
+            mpdef::make_list ^hana::on^ provider_meta::access_points)),
+          hana::partial(builder::entity_messages, entity_map)
         ),
-        IsUpstreamHelper{}
+        is_upstream_helper_fn{}
       ),
-      Helper{}
+      helper_fn{}
     );
   }
 };
-constexpr MakeMessageVariants makeMessageVariants{};
+constexpr make_message_variants_fn make_message_variants{};
 
 }//builder
 }//nbdl_def

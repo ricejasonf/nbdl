@@ -21,30 +21,30 @@ DEFINE_TYPE(Key1);
 int main()
 {
   using namespace nbdl_def;
-  using builder::EntityMeta;
-  using builder::EntityKeyMeta;
+  using builder::entity_meta;
+  using builder::entity_key_meta;
 
-  // EntityMeta
+  // entity_meta
   {
-    constexpr auto key_meta = builder::makeEntityKeyMeta(Entity1, Key1);
+    constexpr auto key_meta = builder::make_entity_key_meta(Entity1, Key1);
     constexpr auto member_meta = hana::int_c<42>;
-    constexpr auto x = builder::makeEntityMeta(key_meta, member_meta);
-    BOOST_HANA_CONSTANT_ASSERT(hana::equal(EntityMeta::keyMeta(x), key_meta));
-    BOOST_HANA_CONSTANT_ASSERT(hana::equal(EntityMeta::membersMeta(x), member_meta));
+    constexpr auto x = builder::make_entity_meta(key_meta, member_meta);
+    BOOST_HANA_CONSTANT_ASSERT(hana::equal(entity_meta::key_meta(x), key_meta));
+    BOOST_HANA_CONSTANT_ASSERT(hana::equal(entity_meta::members_meta(x), member_meta));
   }
 
-  // EntityKeyMeta
+  // entity_key_meta
   {
-    constexpr auto x = builder::makeEntityKeyMeta(Entity1, Key1);
-    BOOST_HANA_CONSTANT_ASSERT(EntityKeyMeta::entity(x) == Entity1);
-    BOOST_HANA_CONSTANT_ASSERT(EntityKeyMeta::key(x) == Key1);
+    constexpr auto x = builder::make_entity_key_meta(Entity1, Key1);
+    BOOST_HANA_CONSTANT_ASSERT(entity_key_meta::entity(x) == Entity1);
+    BOOST_HANA_CONSTANT_ASSERT(entity_key_meta::key(x) == Key1);
   }
 
-  // EntityMemberMeta
+  // entity_member_meta
   {
     /*
      * TODO:
-     *  EntityMemberMeta
+     *  entity_member_meta
      *  - same as all traits in Member.hpp
      *  - defaults to trait definitions
      */

@@ -8,38 +8,38 @@
 #include "MessageGenerator.hpp"
 
 namespace ws = nbdl::servers::ws;
-using Result = ws::MessageGenerator::Result;
+using Result = ws::message_generator::result;
 
-void ws::MessageGenerator::generateHeader()
+void ws::message_generator::generate_header()
 {
   body.push_back(opcode | (1 << 7)); //apply FIN bit
-  generatePayloadLength();
-  generateMask();
+  generate_payload_length();
+  generate_mask();
 }
 
-void ws::MessageGenerator::generatePayloadLength()
+void ws::message_generator::generate_payload_length()
 {
   if (payload_length > 126)
   {
-    body.push_back(applyMaskBit(126));
-    generateExtendedPayloadLength();
+    body.push_back(apply_mask_bit(126));
+    generate_extended_payload_length();
   }
   else
   {
-    body.push_back(applyMaskBit(payload_length));
+    body.push_back(apply_mask_bit(payload_length));
   }
 }
 
-void ws::MessageGenerator::generateExtendedPayloadLength()
+void ws::message_generator::generate_extended_payload_length()
 {
   body.push_back(payload_length >> 8);
   body.push_back(payload_length);
 }
 
-char ws::MessageGenerator::applyMaskBit(char len)
+char ws::message_generator::apply_mask_bit(char len)
 {
   return mask_key.match(
-    [&](Null) {
+    [&](nothing) {
       return len;
     },
     [&](auto) {
@@ -47,7 +47,7 @@ char ws::MessageGenerator::applyMaskBit(char len)
     });
 }
 
-void ws::MessageGenerator::generateMask()
+void ws::message_generator::generate_mask()
 {
   mask_key.match(
     [&](std::array<char, 4> key) {
@@ -58,10 +58,10 @@ void ws::MessageGenerator::generateMask()
     }, noop);
 }
 
-void ws::MessageGenerator::writeByte(int pos, char c)
+void ws::message_generator::write_byte(int pos, char c)
 {
   body.push_back(mask_key.match(
-    [&](Null) {
+    [&](nothing) {
       return c;
     },
     [&](std::array<char, 4> key) {

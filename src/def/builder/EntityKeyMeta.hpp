@@ -13,7 +13,7 @@ namespace nbdl_def {
 namespace builder {
 
 MPDEF_METASTRUCT(
-  EntityKeyMeta
+  entity_key_meta
   , entity
   , key
 );

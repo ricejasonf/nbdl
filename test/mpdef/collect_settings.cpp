@@ -21,8 +21,8 @@ constexpr auto tag4 = hana::type_c<hana::int_<4>>;
 int main()
 {
   {
-    using mpdef::collectSettings;
-    using mpdef::withSettings;
+    using mpdef::collect_settings;
+    using mpdef::with_settings;
 
     constexpr auto xs = mpdef::make_list(
       mpdef::make_tree_node(hana::type_c<void>,
@@ -43,7 +43,7 @@ int main()
     );
     
     BOOST_HANA_CONSTANT_ASSERT(
-      hana::fold_left(xs, withSettings(tag1, tag2, tag3, tag4), collectSettings)
+      hana::fold_left(xs, with_settings(tag1, tag2, tag3, tag4), collect_settings)
         ==
       mpdef::make_map(
         mpdef::make_tree_node(tag1, hana::just(hana::int_c<42>)),

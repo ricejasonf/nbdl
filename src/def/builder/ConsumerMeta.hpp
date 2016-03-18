@@ -13,7 +13,7 @@ namespace nbdl_def {
 namespace builder {
 
 MPDEF_METASTRUCT(
-  ConsumerMeta
+  consumer_meta
   , consumer
   , name
 );

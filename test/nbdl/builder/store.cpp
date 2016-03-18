@@ -27,33 +27,33 @@ namespace names {
 }//names
 
 namespace entity {
-  struct E1
+  struct e1
   {
     int x;
   };
 }
 
 namespace nbdl {
-  NBDL_ENTITY(entity::E1, x);
+  NBDL_ENTITY(entity::e1, x);
 }
 
 int main()
 {
   {
-    using builder::AccessPointMeta;
-    constexpr auto store_impl = hana::template_<nbdl::store::HashMap>;
-    constexpr auto path_type = nbdl::path_type<int, entity::E1>;
-    constexpr auto access_point = builder::makeAccessPointMetaWithMap(
-      AccessPointMeta::name           = names::Foo,
-      AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-      AccessPointMeta::storeContainer = store_impl,
-      AccessPointMeta::entityNames    = hana::make_tuple(names::E1)
+    using builder::access_point_meta;
+    constexpr auto store_impl = hana::template_<nbdl::store_container::hash_map>;
+    constexpr auto path_type = nbdl::path_type<int, entity::e1>;
+    constexpr auto access_point = builder::make_access_point_meta_with_map(
+      access_point_meta::name           = names::Foo,
+      access_point_meta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+      access_point_meta::store_container = store_impl,
+      access_point_meta::entity_names    = hana::make_tuple(names::E1)
     );
 
     BOOST_HANA_CONSTANT_ASSERT(
       builder::store(path_type, access_point)
         ==
-      hana::template_<nbdl::Store>(
+      hana::template_<nbdl::store>(
         store_impl(path_type),
         path_type
       )

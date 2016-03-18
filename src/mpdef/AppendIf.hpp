@@ -17,10 +17,10 @@ namespace hana = boost::hana;
 namespace details {
 
   template<bool cond>
-  struct AppendIfHelper;
+  struct append_if_helper;
 
   template<>
-  struct AppendIfHelper<true>
+  struct append_if_helper<true>
   {
     template<typename State, typename X>
     static constexpr auto apply(State&& state, X&& x)
@@ -30,7 +30,7 @@ namespace details {
   };
 
   template<>
-  struct AppendIfHelper<false>
+  struct append_if_helper<false>
   {
     template<typename State, typename X>
     static constexpr auto apply(State&& state, X)
@@ -41,17 +41,17 @@ namespace details {
 
 }//details
 
-struct AppendIf
+struct append_if_fn
 {
   template<typename Pred, typename State, typename X>
   constexpr auto operator()(Pred, State&& state, X&& x) const
   {
-    return details::AppendIfHelper<
+    return details::append_if_helper<
       static_cast<bool>(std::decay_t<decltype(std::declval<Pred>()(std::declval<X>()))>::value)
     >::apply(std::forward<State>(state), std::forward<X>(x));
   }
 };
-constexpr auto appendIf = hana::curry<3>(AppendIf{});
+constexpr auto append_if = hana::curry<3>(append_if_fn{});
 
 }//mpdef
 #endif

@@ -21,24 +21,24 @@ namespace builder {
 namespace details {
 
   template<typename EntityMap>
-  struct BuildProviderPair
+  struct build_provider_pair_fn
   {
-    template<typename ProviderMeta_>
-    constexpr auto operator()(ProviderMeta_)
+    template<typename ProviderMeta>
+    constexpr auto operator()(ProviderMeta)
     {
-      constexpr ProviderMeta_ provider_meta{};
-      auto path_types = hana::transform(ProviderMeta::accessPoints(provider_meta),
+      constexpr ProviderMeta provider_meta{};
+      auto path_types = hana::transform(provider_meta::access_points(provider_meta),
         hana::partial(builder::path, EntityMap{}));
       return mpdef::make_pair(
-        hana::append(path_types, ProviderMeta::name(provider_meta)),
-        ProviderMeta::provider(provider_meta)
+        hana::append(path_types, provider_meta::name(provider_meta)),
+        provider_meta::provider(provider_meta)
       );
     }
   };
 
 }//details
 
-struct ProviderMap
+struct provider_map_fn
 {
   template<typename EntityMap, typename Providers>
   constexpr auto operator()(EntityMap, Providers providers) const
@@ -46,12 +46,12 @@ struct ProviderMap
     return hana::unpack(providers,
       hana::on(
         mpdef::make_map,
-        details::BuildProviderPair<EntityMap>{}
+        details::build_provider_pair_fn<EntityMap>{}
       )
     );
   }
 };
-constexpr ProviderMap providerMap{};
+constexpr provider_map_fn provider_map{};
 
 }//builder
 }//nbdl_def

@@ -16,47 +16,47 @@ namespace mpdef {
 
 namespace hana = boost::hana;
 
-struct MetastructTag { };
+struct metastruct_tag { };
 
 template<typename Impl>
-struct Metastruct
+struct metastruct
 {
   template<typename ...T>
-  struct List { using hana_tag = mpdef::MetastructTag ; };
+  struct list { using hana_tag = mpdef::metastruct_tag ; };
 
   template<std::size_t i>
-  struct At
+  struct at_fn
   {
     template<typename... T>
-    constexpr auto operator()(List<T...>) const
+    constexpr auto operator()(list<T...>) const
       -> decltype(hana::arg<i + 1>(T{}...))
     { return {}; }
 
     template<typename T>
     constexpr auto operator=(T) const
-      -> mpdef::TreeNode<At<i>, T>
+      -> mpdef::tree_node<at_fn<i>, T>
     { return {}; }
   };
 
   template<std::size_t i>
-  static constexpr At<i> at_c{};
+  static constexpr at_fn<i> at_c{};
 };
 
 template<typename  M>
-struct MakeMetastruct
+struct make_metastruct_fn
 {
   template<typename... T>
   constexpr auto operator()(T...) const
   {
-    return typename M::template List<T...>{};
+    return typename M::template list<T...>{};
   }
 };
 
 template<typename M>
-constexpr MakeMetastruct<M> makeMetastruct{};
+constexpr make_metastruct_fn<M> make_metastruct{};
 
 template<typename M>
-struct MakeMetastructWithMap
+struct make_metastruct_with_map_fn
 {
   template<typename... Pairs>
   constexpr auto operator()(Pairs ...pairs) const
@@ -65,7 +65,7 @@ struct MakeMetastructWithMap
       , "Keys provided must match the spec for the Metastruct.");
     return hana::unpack(M::spec,
       hana::on(
-        MakeMetastruct<M>{},
+        make_metastruct<M>,
         hana::partial(hana::at_key, mpdef::make_map(pairs...))
       )
     );
@@ -73,14 +73,14 @@ struct MakeMetastructWithMap
 };
 
 template<typename M>
-constexpr MakeMetastructWithMap<M> makeMetastructWithMap{};
+constexpr make_metastruct_with_map_fn<M> make_metastruct_with_map{};
 
 
 } // mpdef
 
 namespace boost { namespace hana {
   template<>
-  struct equal_impl<mpdef::MetastructTag, mpdef::MetastructTag>
+  struct equal_impl<mpdef::metastruct_tag, mpdef::metastruct_tag>
   {
     template<typename T, typename U>
     static constexpr auto apply(T, U)

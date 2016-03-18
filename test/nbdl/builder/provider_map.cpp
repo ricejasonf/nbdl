@@ -34,34 +34,34 @@ namespace names {
   DEFINE_TYPE(Entity_2_1);
 }//names
 namespace entity {
-  struct E_1_1 {};
-  struct E_1_2 {};
-  struct E_2_1 {};
+  struct e_1_1 {};
+  struct e_1_2 {};
+  struct e_2_1 {};
 }//entity
 
-constexpr auto entity_1_1 = builder::makeEntityMetaWithMap(
-  builder::EntityMeta::keyMeta =
-    builder::makeEntityKeyMetaWithMap(
-      builder::EntityKeyMeta::entity  = hana::type_c<entity::E_1_1>,
-      builder::EntityKeyMeta::key     = hana::type_c<int>
+constexpr auto entity_1_1 = builder::make_entity_meta_with_map(
+  builder::entity_meta::key_meta =
+    builder::make_entity_key_meta_with_map(
+      builder::entity_key_meta::entity  = hana::type_c<entity::e_1_1>,
+      builder::entity_key_meta::key     = hana::type_c<int>
     ),
-  builder::EntityMeta::membersMeta = hana::type_c<void>
+  builder::entity_meta::members_meta = hana::type_c<void>
 );
-constexpr auto entity_1_2 = builder::makeEntityMetaWithMap(
-  builder::EntityMeta::keyMeta =
-    builder::makeEntityKeyMetaWithMap(
-      builder::EntityKeyMeta::entity  = hana::type_c<entity::E_1_2>,
-      builder::EntityKeyMeta::key     = hana::type_c<int>
+constexpr auto entity_1_2 = builder::make_entity_meta_with_map(
+  builder::entity_meta::key_meta =
+    builder::make_entity_key_meta_with_map(
+      builder::entity_key_meta::entity  = hana::type_c<entity::e_1_2>,
+      builder::entity_key_meta::key     = hana::type_c<int>
     ),
-  builder::EntityMeta::membersMeta = hana::type_c<void>
+  builder::entity_meta::members_meta = hana::type_c<void>
 );
-constexpr auto entity_2_1 = builder::makeEntityMetaWithMap(
-  builder::EntityMeta::keyMeta =
-    builder::makeEntityKeyMetaWithMap(
-      builder::EntityKeyMeta::entity  = hana::type_c<entity::E_2_1>,
-      builder::EntityKeyMeta::key     = hana::type_c<int>
+constexpr auto entity_2_1 = builder::make_entity_meta_with_map(
+  builder::entity_meta::key_meta =
+    builder::make_entity_key_meta_with_map(
+      builder::entity_key_meta::entity  = hana::type_c<entity::e_2_1>,
+      builder::entity_key_meta::key     = hana::type_c<int>
     ),
-  builder::EntityMeta::membersMeta = hana::type_c<void>
+  builder::entity_meta::members_meta = hana::type_c<void>
 );
 constexpr auto entity_map = hana::make_map(
   hana::make_pair(names::Entity_1_1, entity_1_1),
@@ -70,26 +70,26 @@ constexpr auto entity_map = hana::make_map(
 );
 
 constexpr auto access_points_1 = hana::make_tuple(
-  builder::makeAccessPointMetaWithMap(
-    builder::AccessPointMeta::name           = names::Foo,
-    builder::AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-    builder::AccessPointMeta::storeContainer = hana::type_c<void>,
-    builder::AccessPointMeta::entityNames    = hana::make_tuple(names::Entity_1_1)
+  builder::make_access_point_meta_with_map(
+    builder::access_point_meta::name            = names::Foo,
+    builder::access_point_meta::actions         = hana::make_tuple(nbdl_def::tag::Create),
+    builder::access_point_meta::store_container = hana::type_c<void>,
+    builder::access_point_meta::entity_names    = hana::make_tuple(names::Entity_1_1)
   ),
-  builder::makeAccessPointMetaWithMap(
-    builder::AccessPointMeta::name           = names::Foo,
-    builder::AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-    builder::AccessPointMeta::storeContainer = hana::type_c<void>,
-    builder::AccessPointMeta::entityNames    = hana::make_tuple(names::Entity_1_2)
+  builder::make_access_point_meta_with_map(
+    builder::access_point_meta::name            = names::Foo,
+    builder::access_point_meta::actions         = hana::make_tuple(nbdl_def::tag::Create),
+    builder::access_point_meta::store_container = hana::type_c<void>,
+    builder::access_point_meta::entity_names    = hana::make_tuple(names::Entity_1_2)
   )
 );
 
 constexpr auto access_points_2 = hana::make_tuple(
-  builder::makeAccessPointMetaWithMap(
-    builder::AccessPointMeta::name           = names::Foo,
-    builder::AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-    builder::AccessPointMeta::storeContainer = hana::type_c<void>,
-    builder::AccessPointMeta::entityNames    = hana::make_tuple(names::Entity_2_1)
+  builder::make_access_point_meta_with_map(
+    builder::access_point_meta::name            = names::Foo,
+    builder::access_point_meta::actions         = hana::make_tuple(nbdl_def::tag::Create),
+    builder::access_point_meta::store_container = hana::type_c<void>,
+    builder::access_point_meta::entity_names    = hana::make_tuple(names::Entity_2_1)
   )
 );
 
@@ -100,19 +100,19 @@ int main()
 {
   {
     constexpr auto providers_meta = hana::make_tuple(
-      builder::makeProviderMetaWithMap(
-        builder::ProviderMeta::provider     = names::Provider1,
-        builder::ProviderMeta::name         = names::Provider1Name,
-        builder::ProviderMeta::accessPoints = access_points_1
+      builder::make_provider_meta_with_map(
+        builder::provider_meta::provider     = names::Provider1,
+        builder::provider_meta::name         = names::Provider1Name,
+        builder::provider_meta::access_points = access_points_1
       ),
-      builder::makeProviderMetaWithMap(
-        builder::ProviderMeta::provider     = names::Provider2,
-        builder::ProviderMeta::name         = names::Provider2Name,
-        builder::ProviderMeta::accessPoints = access_points_2
+      builder::make_provider_meta_with_map(
+        builder::provider_meta::provider     = names::Provider2,
+        builder::provider_meta::name         = names::Provider2Name,
+        builder::provider_meta::access_points = access_points_2
       )
     );
 
-    constexpr auto result = nbdl_def::builder::providerMap(entity_map, providers_meta);
+    constexpr auto result = nbdl_def::builder::provider_map(entity_map, providers_meta);
 
     BOOST_HANA_CONSTANT_ASSERT(
       result[

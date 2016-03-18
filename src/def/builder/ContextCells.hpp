@@ -15,10 +15,10 @@ namespace builder {
 namespace hana = boost::hana;
 
 // return provider lookup, consumer lookup, and tuple of the instances of those
-struct ContextCells
+struct context_cells_fn
 {
   template<typename ProviderKeys>
-  struct MakeProviderLookupPairList
+  struct make_provider_lookup_pair_list_fn
   {
     template<typename Index>
     constexpr auto operator()(Index i) const
@@ -29,7 +29,7 @@ struct ContextCells
   };
 
   template<typename ConsumerKeys>
-  struct MakeConsumerLookupPair
+  struct make_consumer_lookup_pair_fn
   {
     template<typename Index>
     constexpr auto operator()(Index i) const
@@ -39,7 +39,7 @@ struct ContextCells
   };
 
   template<typename ProviderMfs, typename ConsumerMfs>
-  struct MakeContextCells
+  struct make_context_cells_fn
   {
     template<typename PushUpstreamFnType, typename PushDownstreamFnType>
     constexpr auto operator()(PushUpstreamFnType, PushDownstreamFnType)
@@ -67,7 +67,7 @@ struct ContextCells
     constexpr auto plookup = hana::decltype_(hana::unpack(
       hana::flatten(hana::unpack(
         hana::make_range(hana::size_c<0>, hana::length(pkeys)),
-        mpdef::make_list ^on^ MakeProviderLookupPairList<decltype(pkeys)>{}
+        mpdef::make_list ^on^ make_provider_lookup_pair_list_fn<decltype(pkeys)>{}
       )),
       mpdef::make_map
     ));
@@ -75,17 +75,19 @@ struct ContextCells
     constexpr auto cvals = hana::unpack(ConsumerMap{}, mpdef::make_list ^on^ hana::second);
     constexpr auto clookup = hana::decltype_(hana::unpack(
       hana::make_range(hana::size_c<0>, hana::length(ckeys)),
-      mpdef::make_map ^on^ MakeConsumerLookupPair<decltype(ckeys)>{}
+      mpdef::make_map ^on^ make_consumer_lookup_pair_fn<decltype(ckeys)>{}
     ));
 
-    constexpr auto make_context_cells = hana::type_c<MakeContextCells<decltype(pvals), decltype(cvals)>>;
+    constexpr auto make_context_cells = hana::type_c<
+      make_context_cells_fn<decltype(pvals), decltype(cvals)>
+    >;
 
     // the order should match the first three
     // template params of nbdl::Context
     return mpdef::make_list(plookup, clookup, make_context_cells);
   }
 };
-constexpr ContextCells contextCells{};
+constexpr context_cells_fn context_cells{};
 
 }//builder
 }//nbdl_def

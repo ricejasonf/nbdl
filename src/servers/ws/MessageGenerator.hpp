@@ -16,13 +16,13 @@ namespace nbdl {
 namespace servers {
 namespace ws {
 
-class MessageGenerator
+class message_generator
 {
   public:
 
-  using MaskKey = Optional<std::array<char, 4>>;
+  using MaskKey = optional<std::array<char, 4>>;
 
-  enum class Result {
+  enum class result {
     UNFINISHED,
     FINISHED,
     ERROR
@@ -38,14 +38,14 @@ class MessageGenerator
   MaskKey mask_key;
   bool has_error;
 
-  void generateHeader();
-  void generatePayloadLength();
-  void generateExtendedPayloadLength();
-  void generateMask();
-  void writeByte(int, char);
-  char applyMaskBit(char);
+  void generate_header();
+  void generate_payload_length();
+  void generate_extended_payload_length();
+  void generate_mask();
+  void write_byte(int, char);
+  char apply_mask_bit(char);
 
-  void initFrame(int length, int opcode_, MaskKey mask = Null{})
+  void init_frame(int length, int opcode_, MaskKey mask = nothing{})
   {
     if (length < 0 || length > 65535)
       has_error = true;
@@ -58,7 +58,7 @@ class MessageGenerator
   {
     if (body.size())
       body.clear();
-    generateHeader();
+    generate_header();
     if (has_error)
       return false;
     return true;
@@ -70,70 +70,70 @@ class MessageGenerator
     int pos = 0;
     if (body.size())
       body.clear();
-    generateHeader();
+    generate_header();
     if (has_error)
       return false;
 		while (begin != end)
 		{
-      writeByte(pos++, *begin++);
+      write_byte(pos++, *begin++);
 		}
 		return true;
 	}
 
   public:
 
-  const Buffer& getBuffer() const { return body; }
+  const Buffer& get_buffer() const { return body; }
 
 	template<typename InputIterator>
-  bool generateText(InputIterator begin, InputIterator end, int length, MaskKey mask = Null{})
+  bool generate_text(InputIterator begin, InputIterator end, int length, MaskKey mask = nothing{})
   {
-    initFrame(length, 0x1, mask);
+    init_frame(length, 0x1, mask);
     return generate(begin, end);
   }
 	template<typename InputIterator>
-  bool generateBinary(InputIterator begin, InputIterator end, int length, MaskKey mask = Null{})
+  bool generate_binary(InputIterator begin, InputIterator end, int length, MaskKey mask = nothing{})
   {
-    initFrame(length, 0x2, mask);
+    init_frame(length, 0x2, mask);
     return generate(begin, end);
   }
-  bool generateClose()
+  bool generate_close()
   {
-    initFrame(0, 0x8);
+    init_frame(0, 0x8);
     return generate();
   }
-  bool generatePing()
+  bool generate_ping()
   {
-    initFrame(0, 0x9);
+    init_frame(0, 0x9);
     return generate();
   }
-  bool generatePong()
+  bool generate_pong()
   {
-    initFrame(0, 0xA);
+    init_frame(0, 0xA);
     return generate();
   }
 
   //the following are for testing the parser
 	template<typename InputIterator>
-  bool generateTextFragment(InputIterator begin, InputIterator end, int length,
-      MaskKey mask = Null{})
+  bool generate_text_fragment(InputIterator begin, InputIterator end, int length,
+      MaskKey mask = nothing{})
   {
-    initFrame(length, 0x1, mask);
+    init_frame(length, 0x1, mask);
     bool result = generate(begin, end);
     body[0] = 0x1; //no fin bit
     return result;
   }
 	template<typename InputIterator>
-  bool generateFinalContinuation(InputIterator begin, InputIterator end, int length,
-      MaskKey mask = Null{})
+  bool generate_final_continuation(InputIterator begin, InputIterator end, int length,
+      MaskKey mask = nothing{})
   {
-    initFrame(length, 0x0, mask);
+    init_frame(length, 0x0, mask);
     return generate(begin, end);
   }
 	template<typename InputIterator>
-  bool generateContinuation(InputIterator begin, InputIterator end, int length,
-      MaskKey mask = Null{})
+  bool generate_continuation(InputIterator begin, InputIterator end, int length,
+      MaskKey mask = nothing{})
   {
-    initFrame(length, 0x0, mask);
+    init_frame(length, 0x0, mask);
     bool result = generate(begin, end);
     body[0] = 0x0; //no fin bit
     return result;

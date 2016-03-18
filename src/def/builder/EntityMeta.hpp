@@ -13,9 +13,9 @@ namespace nbdl_def {
 namespace builder {
 
 MPDEF_METASTRUCT(
-  EntityMeta
-  , keyMeta
-  , membersMeta
+  entity_meta
+  , key_meta
+  , members_meta
 );
 
 }//builder

@@ -21,25 +21,25 @@ namespace map_detail {
   struct elt { };
 
   template<typename Key, typename Value>
-  Value get(map_detail::elt<Key, Value>);
+  Value get_(map_detail::elt<Key, Value>);
 
   template<typename Key, typename Value>
-  hana::optional<Value> maybe_get(map_detail::elt<Key, Value>);
+  hana::optional<Value> maybe_get_(map_detail::elt<Key, Value>);
 
   template<typename Key>
-  hana::optional<> maybe_get(...);
+  hana::optional<> maybe_get_(...);
 
   template<typename Map, typename Key>
-  using Get = decltype(get<std::add_const_t<Key>>(typename Map::TypeTable{}));
+  using get = decltype(get_<std::add_const_t<Key>>(typename Map::type_table{}));
 
   template<typename Map, typename Key>
-  using MaybeGet = decltype(maybe_get<std::add_const_t<Key>>(typename Map::TypeTable{}));
+  using maybe_get = decltype(maybe_get_<std::add_const_t<Key>>(typename Map::type_table{}));
 }
 
 template<typename... Pairs>
-struct Map
+struct map
 {
-  struct TypeTable
+  struct type_table
     : map_detail::elt<
         std::add_const_t<decltype(hana::first(Pairs{}))>,
         decltype(hana::second(Pairs{}))
@@ -48,29 +48,29 @@ struct Map
 
   template<typename T>
   constexpr auto operator[](T) const
-    -> map_detail::Get<Map<Pairs...>, T>
+    -> map_detail::get<map<Pairs...>, T>
   { return {}; }
 };
 
-struct MapTag;
+struct map_tag;
 
-struct MakeMap
+struct make_map_fn
 {
   template<typename... Pairs>
   constexpr auto operator()(Pairs...) const
-    -> mpdef::Map<Pairs...>
+    -> mpdef::map<Pairs...>
   {
     return {};
   }
 };
-constexpr MakeMap make_map{};
+constexpr make_map_fn make_map{};
 
 template<typename... PairsA, typename... PairsB>
-static constexpr auto operator==(mpdef::Map<PairsA...> a, mpdef::Map<PairsB...> b)
+static constexpr auto operator==(mpdef::map<PairsA...> a, mpdef::map<PairsB...> b)
 { return hana::equal(a, b); }
 
 template<typename... PairsA, typename... PairsB>
-static constexpr auto operator!=(mpdef::Map<PairsA...> a, mpdef::Map<PairsB...> b)
+static constexpr auto operator!=(mpdef::map<PairsA...> a, mpdef::map<PairsB...> b)
 { return hana::not_equal(a, b); }
 
 }//mpdef
@@ -78,14 +78,14 @@ static constexpr auto operator!=(mpdef::Map<PairsA...> a, mpdef::Map<PairsB...> 
 namespace boost { namespace hana {
 
   template<typename... Pairs>
-  struct tag_of<mpdef::Map<Pairs...>> { using type = mpdef::MapTag; };
+  struct tag_of<mpdef::map<Pairs...>> { using type = mpdef::map_tag; };
 
   template<>
-  struct keys_impl<mpdef::MapTag>
+  struct keys_impl<mpdef::map_tag>
   {
     template<typename... Pairs>
-    static constexpr auto apply(mpdef::Map<Pairs...>)
-      -> mpdef::List<decltype(hana::first(Pairs{}))...>
+    static constexpr auto apply(mpdef::map<Pairs...>)
+      -> mpdef::list<decltype(hana::first(Pairs{}))...>
     {
       return {};
     }
@@ -94,7 +94,7 @@ namespace boost { namespace hana {
   // Comparable
 
   template<>
-  struct equal_impl<mpdef::MapTag, mpdef::MapTag>
+  struct equal_impl<mpdef::map_tag, mpdef::map_tag>
   {
     template<typename A, typename B>
     static constexpr auto helper(A, B, hana::false_)
@@ -115,7 +115,7 @@ namespace boost { namespace hana {
     }
 
     template<typename... PairsA, typename... PairsB>
-    static constexpr auto apply(mpdef::Map<PairsA...> a, mpdef::Map<PairsB...> b)
+    static constexpr auto apply(mpdef::map<PairsA...> a, mpdef::map<PairsB...> b)
     {
       return helper(a, b, hana::bool_c<sizeof...(PairsA) == sizeof...(PairsB)>);
     }
@@ -124,10 +124,10 @@ namespace boost { namespace hana {
   // Foldable
 
   template<>
-  struct unpack_impl<mpdef::MapTag>
+  struct unpack_impl<mpdef::map_tag>
   {
     template<typename... Pairs, typename F>
-    static constexpr auto apply(mpdef::Map<Pairs...>, F&& f)
+    static constexpr auto apply(mpdef::map<Pairs...>, F&& f)
     {
       return std::forward<F>(f)(Pairs{}...);
     }
@@ -136,39 +136,39 @@ namespace boost { namespace hana {
   // Searchable
 
   template<>
-  struct at_key_impl<mpdef::MapTag>
+  struct at_key_impl<mpdef::map_tag>
   {
     template<typename Map, typename Key>
     static constexpr auto apply(Map, Key)
-      -> mpdef::map_detail::Get<Map, Key>
+      -> mpdef::map_detail::get<Map, Key>
     {
       return {};
     }
   };
 
   template<>
-  struct find_impl<mpdef::MapTag>
+  struct find_impl<mpdef::map_tag>
   {
     template<typename Map, typename Key>
     static constexpr auto apply(Map, Key)
-      -> mpdef::map_detail::MaybeGet<Map, Key>
+      -> mpdef::map_detail::maybe_get<Map, Key>
     {
       return {};
     }
   };
 
   template<>
-  struct contains_impl<mpdef::MapTag>
+  struct contains_impl<mpdef::map_tag>
   {
     template<typename Map, typename Key>
     static constexpr auto apply(Map, Key)
     {
-      return hana::is_just(mpdef::map_detail::MaybeGet<Map, Key>{});
+      return hana::is_just(mpdef::map_detail::maybe_get<Map, Key>{});
     }
   };
 
   template<>
-  struct find_if_impl<mpdef::MapTag>
+  struct find_if_impl<mpdef::map_tag>
   {
     template<typename Map, typename Pred>
     static constexpr auto apply(Map m, Pred&& pred)
@@ -184,7 +184,7 @@ namespace boost { namespace hana {
   };
 
   template<>
-  struct any_of_impl<mpdef::MapTag>
+  struct any_of_impl<mpdef::map_tag>
   {
     template<typename Map, typename Pred>
     static constexpr auto apply(Map m, Pred&& pred)

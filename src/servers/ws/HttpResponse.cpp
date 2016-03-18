@@ -6,7 +6,7 @@
 namespace ws = nbdl::servers::ws;
 using Base64Encode = nbdl::openssl::Base64Encode;
 
-void ws::HttpResponse::generateAcceptToken(const std::string& key)
+void ws::http_response::generate_accept_token(const std::string& key)
 {
 	const char* guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 	constexpr int guid_len = 36;

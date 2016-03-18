@@ -14,7 +14,7 @@ namespace details {
 // and the following copyright
 // Copyright 2005-2009 Daniel James.
 template <class T>
-void HashCombine(std::size_t& seed, T const& v)
+void hash_combine(std::size_t& seed, T const& v)
 {
 	std::hash<T> hasher;
 	seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);

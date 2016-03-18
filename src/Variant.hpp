@@ -19,13 +19,13 @@ namespace hana = boost::hana;
 namespace details {
 
 template<typename DefaultType, typename... Tn>
-class Variant
+class variant
 {
   static_assert(std::is_empty<DefaultType>::value, "DefaultType must be an empty tag struct");
   using Storage = typename std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>::type;
 
   static constexpr auto types() { return hana::tuple_t<DefaultType, Tn...>; }
-  static auto typeIds()
+  static auto type_ids()
   {
     return hana::unpack(hana::range_c<int, 1, sizeof...(Tn)+1>, [](auto ...i) {
       return hana::make_map(
@@ -40,13 +40,13 @@ class Variant
   Storage value_;
 
   template<typename T>
-  constexpr int typeIdFromType() const
+  constexpr int type_id_from_type() const
   {
-    return *hana::find(typeIds(), hana::type_c<T>);
+    return *hana::find(type_ids(), hana::type_c<T>);
   }
 
   template<typename Fn>
-  void callByType(const int value_type_id, Fn&& fn)
+  void call_by_type(const int value_type_id, Fn&& fn)
   {
     hana::for_each(
       hana::range_c<int, 0, hana::length(types())>,
@@ -58,28 +58,28 @@ class Variant
 
   void copy(const int src_type_id, const void* src, void* dest)
   {
-    callByType(src_type_id, [&](auto matched) {
+    call_by_type(src_type_id, [&](auto matched) {
       using T = typename decltype(matched)::type;
       new (dest) T(*reinterpret_cast<const T*>(src));
     });
   }
   void move(const int src_type_id, const void* src, void* dest)
   {
-    callByType(src_type_id, [&](auto matched) {
+    call_by_type(src_type_id, [&](auto matched) {
       using T = typename decltype(matched)::type;
       new (dest) T(std::move(*reinterpret_cast<const T*>(src)));
     });
   }
   void destroy(const int value_type_id, void* value)
   {
-    callByType(value_type_id, [&](auto matched) {
+    call_by_type(value_type_id, [&](auto matched) {
       using T = typename decltype(matched)::type;
       reinterpret_cast<const T*>(value)->~T();
     });
   }
 
   template<typename Index, typename Fn>
-  auto matchByTypeHelper(Index i, const int type_id_x, Fn fn) const
+  auto match_by_type_helper(Index i, const int type_id_x, Fn fn) const
     ->  nbdl::detail::common_type_t<
           decltype(fn(hana::at(types(), i))),
           decltype(fn(hana::at(types(), hana::int_c<0>)))
@@ -88,10 +88,10 @@ class Variant
     if (type_id_x == Index::value)
       return fn(hana::at(types(), i));
     else
-      return matchByTypeHelper(i + hana::int_c<1>, type_id_x, fn);
+      return match_by_type_helper(i + hana::int_c<1>, type_id_x, fn);
   }
   template<typename Fn>
-  auto matchByTypeHelper(LastTypeId i, const int type_id_x, Fn fn) const
+  auto match_by_type_helper(LastTypeId i, const int type_id_x, Fn fn) const
     ->  nbdl::detail::common_type_t<
           decltype(fn(hana::at(types(), i))),
           decltype(fn(hana::at(types(), hana::int_c<0>)))
@@ -105,12 +105,12 @@ class Variant
   }
 
   template<typename Fn1>
-  auto matchOverload(Fn1 fn1) const
+  auto match_overload(Fn1 fn1) const
   {
     return fn1;
   }
   template<typename Fn1, typename Fn2, typename... Fns>
-  auto matchOverload(Fn1 fn1, Fn2 fn2, Fns... fns) const
+  auto match_overload(Fn1 fn1, Fn2 fn2, Fns... fns) const
   {
     return hana::overload_linearly(fn1, fn2, fns...);
   }
@@ -118,7 +118,7 @@ class Variant
   //provides a better compiler error that outputs 
   //the type in question should it be invalid
   template<typename Type, typename TypeType>
-  auto convertFromType(const Type& val, TypeType t)
+  auto convert_from_type(const Type& val, TypeType t)
     -> std::enable_if_t<hana::contains(types(), t)>
   {
     //it is critical that types are restricted to types supported by the Variant
@@ -129,7 +129,7 @@ class Variant
     type_id = 0; //in case shit goes horribly wrong
     destroy(type_id, &value_);
     new (&value_) Type(val);
-    type_id = typeIdFromType<Type>();
+    type_id = type_id_from_type<Type>();
   }
 
   public:
@@ -137,22 +137,22 @@ class Variant
   //used to easily identify variant with sfinae
   using VariantTag = void;
 
-  Variant() : type_id(0) {}
-  Variant(const Variant& old)
+  variant() : type_id(0) {}
+  variant(const variant& old)
     : type_id(old.type_id)
   {
     copy(old.type_id, &old.value_, &value_);
   }
-  Variant(Variant&& old)
+  variant(variant&& old)
     : type_id(old.type_id)
   {
     move(old.type_id, &old.value_, &value_);
   }
-  ~Variant()
+  ~variant()
   {
     destroy(type_id, &value_);
   }
-  Variant& operator= (Variant src)
+  variant& operator= (variant src)
   {
     std::swap(type_id, src.type_id);
     std::swap(value_, src.value_);
@@ -160,18 +160,18 @@ class Variant
   }
 
   template<typename Type>
-  Variant(Type val)
+  variant(Type val)
   {
-    convertFromType(val, hana::type_c<Type>);
+    convert_from_type(val, hana::type_c<Type>);
   }
 
   //for serialization
-  int getTypeId() const
+  int get_type_id() const
   {
     return type_id;
   }
 
-  bool isValidTypeId(int type_id_x) const
+  bool is_valid_type_id(int type_id_x) const
   {
     // perhaps this should just assume that type_ids are sequential indices
     if (type_id_x == 0)
@@ -180,9 +180,9 @@ class Variant
     }
     else
     {
-      return matchByType(type_id_x,
+      return match_by_type(type_id_x,
         [&](auto type) {
-          return (type_id_x == typeIdFromType<typename decltype(type)::type>());
+          return (type_id_x == type_id_from_type<typename decltype(type)::type>());
         });
     }
   }
@@ -190,12 +190,12 @@ class Variant
   //calls overload function with type type
   //used for serialization
   template<typename... Fns>
-  auto matchByType(const int type_id_x, Fns... fns) const
+  auto match_by_type(const int type_id_x, Fns... fns) const
   {
-    auto overload_ = matchOverload(fns...);
+    auto overload_ = match_overload(fns...);
 
     //if type_id_x is invalid it will call with the default, empty type
-    return matchByTypeHelper(
+    return match_by_type_helper(
         hana::int_c<0>,
         type_id_x,
         overload_
@@ -205,15 +205,15 @@ class Variant
   template<typename T>
   bool is()
   {
-    return (type_id == typeIdFromType<T>());
+    return (type_id == type_id_from_type<T>());
   }
 
   template<typename... Fns>
   auto match(Fns... fns) const
   {
-    auto overload_ = matchOverload(fns...);
+    auto overload_ = match_overload(fns...);
 
-    return matchByTypeHelper(hana::int_c<0>, type_id, [&](auto type) {
+    return match_by_type_helper(hana::int_c<0>, type_id, [&](auto type) {
         using T = typename decltype(type)::type;
         return overload_(*reinterpret_cast<const T*>(&value_));
       });
@@ -227,14 +227,14 @@ class Variant
 auto noop = [](auto){};
 
 //tags for empty variant value (always has type_id of 0)
-struct Unresolved {};
-struct Null {};
+struct unresolved {};
+struct nothing {};
 
 template<typename... Tn>
-using Variant = details::Variant<Unresolved, Tn...>;
+using variant = details::variant<unresolved, Tn...>;
 
 template<typename T>
-using Optional = details::Variant<Null, T>;
+using optional = details::variant<nothing, T>;
 
 }//nbdl
 

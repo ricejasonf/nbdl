@@ -31,42 +31,42 @@ namespace names {
 }//names
 
 namespace entity {
-  struct E1 { int x; };
-  struct E2 { int x; };
-  struct E3 { int x; };
+  struct e1 { int x; };
+  struct e2 { int x; };
+  struct e3 { int x; };
 }
 
 namespace nbdl {
-  NBDL_ENTITY(entity::E1, x);
-  NBDL_ENTITY(entity::E2, x);
-  NBDL_ENTITY(entity::E3, x);
+  NBDL_ENTITY(entity::e1, x);
+  NBDL_ENTITY(entity::e2, x);
+  NBDL_ENTITY(entity::e3, x);
 }
 
-constexpr auto entity1_ = builder::makeEntityMetaWithMap(
-  builder::EntityMeta::keyMeta =
-    builder::makeEntityKeyMetaWithMap(
-      builder::EntityKeyMeta::entity  = hana::type_c<entity::E1>,
-      builder::EntityKeyMeta::key     = hana::type_c<int>
+constexpr auto entity1_ = builder::make_entity_meta_with_map(
+  builder::entity_meta::key_meta =
+    builder::make_entity_key_meta_with_map(
+      builder::entity_key_meta::entity  = hana::type_c<entity::e1>,
+      builder::entity_key_meta::key     = hana::type_c<int>
     ),
-  builder::EntityMeta::membersMeta =
+  builder::entity_meta::members_meta =
     hana::type_c<void>
 );
-constexpr auto entity2_ = builder::makeEntityMetaWithMap(
-  builder::EntityMeta::keyMeta =
-    builder::makeEntityKeyMetaWithMap(
-      builder::EntityKeyMeta::entity  = hana::type_c<entity::E2>,
-      builder::EntityKeyMeta::key     = hana::type_c<int>
+constexpr auto entity2_ = builder::make_entity_meta_with_map(
+  builder::entity_meta::key_meta =
+    builder::make_entity_key_meta_with_map(
+      builder::entity_key_meta::entity  = hana::type_c<entity::e2>,
+      builder::entity_key_meta::key     = hana::type_c<int>
     ),
-  builder::EntityMeta::membersMeta =
+  builder::entity_meta::members_meta =
     hana::type_c<void>
 );
-constexpr auto entity3_ = builder::makeEntityMetaWithMap(
-  builder::EntityMeta::keyMeta =
-    builder::makeEntityKeyMetaWithMap(
-      builder::EntityKeyMeta::entity  = hana::type_c<entity::E3>,
-      builder::EntityKeyMeta::key     = hana::type_c<int>
+constexpr auto entity3_ = builder::make_entity_meta_with_map(
+  builder::entity_meta::key_meta =
+    builder::make_entity_key_meta_with_map(
+      builder::entity_key_meta::entity  = hana::type_c<entity::e3>,
+      builder::entity_key_meta::key     = hana::type_c<int>
     ),
-  builder::EntityMeta::membersMeta =
+  builder::entity_meta::members_meta =
     hana::type_c<void>
 );
 constexpr auto entity_map = hana::make_map(
@@ -78,54 +78,54 @@ constexpr auto entity_map = hana::make_map(
 int main()
 {
   {
-    using builder::AccessPointMeta;
-    using builder::EntityKeyMeta;
-    using builder::EntityMeta;
-    constexpr auto path_type_1 = nbdl::path_type<int, entity::E1>;
-    constexpr auto path_type_2 = nbdl::path_type<int, entity::E1, entity::E2>;
-    constexpr auto path_type_3 = nbdl::path_type<int, entity::E3>;
+    using builder::access_point_meta;
+    using builder::entity_key_meta;
+    using builder::entity_meta;
+    constexpr auto path_type_1 = nbdl::path_type<int, entity::e1>;
+    constexpr auto path_type_2 = nbdl::path_type<int, entity::e1, entity::e2>;
+    constexpr auto path_type_3 = nbdl::path_type<int, entity::e3>;
 
-    constexpr auto store_impl = hana::template_<nbdl::store::HashMap>;
+    constexpr auto store_impl = hana::template_<nbdl::store_container::hash_map>;
     constexpr auto access_points = hana::make_tuple(
-      builder::makeAccessPointMetaWithMap(
-        AccessPointMeta::name           = names::Foo1,
-        AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-        AccessPointMeta::storeContainer = store_impl,
-        AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1)
+      builder::make_access_point_meta_with_map(
+        access_point_meta::name           = names::Foo1,
+        access_point_meta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+        access_point_meta::store_container = store_impl,
+        access_point_meta::entity_names    = hana::make_tuple(names::Entity1)
       ),
-      builder::makeAccessPointMetaWithMap(
-        AccessPointMeta::name           = names::Foo2,
-        AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-        AccessPointMeta::storeContainer = store_impl,
-        AccessPointMeta::entityNames    = hana::make_tuple(names::Entity1, names::Entity2)
+      builder::make_access_point_meta_with_map(
+        access_point_meta::name           = names::Foo2,
+        access_point_meta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+        access_point_meta::store_container = store_impl,
+        access_point_meta::entity_names    = hana::make_tuple(names::Entity1, names::Entity2)
       ),
-      builder::makeAccessPointMetaWithMap(
-        AccessPointMeta::name           = names::Foo3,
-        AccessPointMeta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-        AccessPointMeta::storeContainer = store_impl,
-        AccessPointMeta::entityNames    = hana::make_tuple(names::Entity3)
+      builder::make_access_point_meta_with_map(
+        access_point_meta::name           = names::Foo3,
+        access_point_meta::actions        = hana::make_tuple(nbdl_def::tag::Create),
+        access_point_meta::store_container = store_impl,
+        access_point_meta::entity_names    = hana::make_tuple(names::Entity3)
       )
     );
 
     BOOST_HANA_CONSTANT_ASSERT(
-      builder::storeMap(entity_map, access_points)
+      builder::store_map(entity_map, access_points)
         ==
       hana::decltype_(
         hana::make_map(
           hana::make_pair(path_type_1,
-            typename decltype(hana::template_<nbdl::Store>(
+            typename decltype(hana::template_<nbdl::store>(
               store_impl(path_type_1),
               path_type_1
             ))::type{}
           ),
           hana::make_pair(path_type_2,
-            typename decltype(hana::template_<nbdl::Store>(
+            typename decltype(hana::template_<nbdl::store>(
               store_impl(path_type_2),
               path_type_2
             ))::type{}
           ),
           hana::make_pair(path_type_3,
-            typename decltype(hana::template_<nbdl::Store>(
+            typename decltype(hana::template_<nbdl::store>(
               store_impl(path_type_3),
               path_type_3
             ))::type{}

@@ -21,7 +21,7 @@ namespace hana = boost::hana;
 namespace binders {
 namespace jsoncpp {
 
-class Read
+class read
 {
   void bind_(const Json::Value&, bool &);
   void bind_(const Json::Value&, unsigned int &);
@@ -30,14 +30,14 @@ class Read
   void bind_(const Json::Value&, std::string &);
 
   template<typename Variant_>
-  int getVariantTypeId(const Variant_& variant)
+  int get_variant_type_id(const Variant_& variant)
   {
     int type_id;
     if (json_val.isIntegral())
     {
       type_id = json_val.asInt();
-      variant.matchByType(type_id,
-        [&](auto type) -> EnableIfEmpty<decltype(type)> {},
+      variant.match_by_type(type_id,
+        [&](auto type) -> enable_if_empty<decltype(type)> {},
         [&](auto)
         {
           throw std::runtime_error("Serialized variant is misrepresented as an empty type.");
@@ -53,7 +53,7 @@ class Read
     {
       throw std::runtime_error("JSON representation of variant type expected");
     }
-    if (!variant.isValidTypeId(type_id))
+    if (!variant.is_valid_type_id(type_id))
       throw std::runtime_error("Invalid type_id specified for variant.");
     return type_id;
   }
@@ -62,30 +62,30 @@ class Read
 
   public:
 
-  Read(const Json::Value &value) :
+  read(const Json::Value &value) :
     json_val(value)
   { }
 
   template<typename T>
-  void bindMember(T&& field)
+  void bind_member(T&& field)
   {
     bind_(json_val, field);
   }
 
   template<typename T>
-  void bindEntityMember(const char* name, T&& field)
+  void bind_entity_member(const char* name, T&& field)
   {
-    nbdl::bind(Read(json_val[name]), std::forward<T>(field));
+    nbdl::bind(read(json_val[name]), std::forward<T>(field));
   }
 
   template<typename X>
-  void bindSequence(X&& x)
+  void bind_sequence(X&& x)
   {
     nbdl::bind(*this, std::forward<X>(x));
   }
   
   template<typename X1, typename X2, typename... Xs>
-  void bindSequence(X1&& x1, X2&& x2, Xs&&... xs)
+  void bind_sequence(X1&& x1, X2&& x2, Xs&&... xs)
   {
     if (!json_val.isArray() || json_val.size() != sizeof...(Xs) + 2)
       throw std::runtime_error("JSON Array expected when binding sequence.");
@@ -96,17 +96,17 @@ class Read
         std::ref(x2),
         std::ref(xs)...),
       [&](auto&& x) {
-        nbdl::bind(Read(*iter++), std::forward<decltype(x)>(x));
+        nbdl::bind(read(*iter++), std::forward<decltype(x)>(x));
       });
   }
 
   template<typename V>
-  void bindVariant(V&& variant)
+  void bind_variant(V&& variant)
   {
-    int type_id = getVariantTypeId(variant);
+    int type_id = get_variant_type_id(variant);
 
-    variant.matchByType(type_id,
-      [&](auto type) -> EnableIfEmpty<typename decltype(type)::type>
+    variant.match_by_type(type_id,
+      [&](auto type) -> enable_if_empty<typename decltype(type)::type>
       {
         using T = typename decltype(type)::type;
         variant = T{};
@@ -118,7 +118,7 @@ class Read
         Json::Value contents = json_val[1u];
         if (contents.isNull())
           throw std::runtime_error("JSON value expected for contents of variant");
-        nbdl::bind(Read(contents), value);
+        nbdl::bind(read(contents), value);
         variant = value;
       });
   }
@@ -129,14 +129,14 @@ class Read
 }//binders
 
 template<typename E_>
-struct BindImpl<binders::jsoncpp::Read, E_, EnableIfEntity<E_>>
+struct bind_impl<binders::jsoncpp::read, E_, enable_if_entity<E_>>
 {
   template<typename Binder, typename E>
   static void apply(Binder&& binder, E&& entity)
   {
-    hana::for_each(entityMembers<E>(),
+    hana::for_each(entity_members<E>(),
       [&](auto member_type) {
-        binder.bindEntityMember(memberName(member_type), entityMember(entity, member_type));
+        binder.bind_entity_member(member_name_(member_type), entity_member(entity, member_type));
       });
   }
 };

@@ -14,9 +14,9 @@ namespace nbdl {
 namespace servers {
 namespace ws {
 
-class HttpResponse
+class http_response
 {
-	void generateAcceptToken(const std::string& key);
+	void generate_accept_token(const std::string& key);
 
 	static constexpr const char* response_start = "HTTP/1.1 101 Switching Protocols"
 		"\r\n"
@@ -30,10 +30,10 @@ class HttpResponse
 
 	std::string response;
 
-	HttpResponse(const HttpRequest& req)
+	http_response(const http_request& req)
 		: response(response_start)
 	{
-		generateAcceptToken(req.sec_websocket_key_header);
+		generate_accept_token(req.sec_websocket_key_header);
 		response += "\r\n\r\n";
 	}
 };

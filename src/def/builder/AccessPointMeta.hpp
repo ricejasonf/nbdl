@@ -14,11 +14,11 @@ namespace nbdl_def {
 namespace builder {
 
 MPDEF_METASTRUCT(
-  AccessPointMeta
+  access_point_meta
   , name
   , actions
-  , storeContainer
-  , entityNames
+  , store_container
+  , entity_names
 );
 
 #if 0

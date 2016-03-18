@@ -16,10 +16,10 @@ namespace mpdef {
 
 namespace hana = boost::hana;
 
-struct CollectSettings
+struct collect_settings_fn
 {
   template<typename State>
-  struct HelperHelper
+  struct helper_helper
   {
     template<typename Key>
     static constexpr auto helper(Key key, hana::optional<>)
@@ -35,20 +35,20 @@ struct CollectSettings
   };
   
   template<typename State, typename X>
-  struct Helper
+  struct helper_fn
   {
     template<typename... Key>
     constexpr auto operator()(Key... key) const
     {
       return mpdef::make_map(mpdef::make_tree_node(key,
-        HelperHelper<State>::helper(key, hana::find(X{}, key)))...);
+        helper_helper<State>::helper(key, hana::find(X{}, key)))...);
     }
   };
 
   template<typename State, typename X>
   constexpr auto helper(State state, X, hana::true_) const
   {
-    return hana::unpack(hana::keys(state), Helper<State, X>{});
+    return hana::unpack(hana::keys(state), helper_fn<State, X>{});
   }
 
   template<typename State, typename X>
@@ -64,14 +64,14 @@ struct CollectSettings
     return helper(
       state,
       children,
-      hana::is_a<mpdef::MapTag>(children)
+      hana::is_a<mpdef::map_tag>(children)
     );
   }
 };
-constexpr CollectSettings collectSettings{};
+constexpr collect_settings_fn collect_settings{};
 
 template<typename... Tag>
-constexpr auto withSettings(Tag&&... tag)
+constexpr auto with_settings(Tag&&... tag)
 {
   return mpdef::make_map(mpdef::make_tree_node(std::forward<Tag>(tag), hana::nothing)...);
 }

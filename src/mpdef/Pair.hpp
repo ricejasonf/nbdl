@@ -12,7 +12,7 @@
 namespace mpdef {
 
 template<typename First, typename Second>
-using Pair = mpdef::TreeNode<First, Second>;
+using pair = mpdef::tree_node<First, Second>;
 
 constexpr auto make_pair = mpdef::make_tree_node;
 

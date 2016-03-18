@@ -8,75 +8,75 @@
 #include "MessageParser.hpp"
 
 namespace ws = nbdl::servers::ws;
-using Result = ws::MessageParser::Result;
+using Result = ws::message_parser::result;
 
-Result ws::MessageParser::consume(unsigned char c)
+Result ws::message_parser::consume(unsigned char c)
 {
   switch(state)
   {
     case FRAME_HEADER:
-      return consumeFrameHeader(c);
+      return consume_frame_header(c);
     case PAYLOAD_LENGTH:
-      return consumePayloadLength(c);
+      return consume_payload_length(c);
     case EXTENDED_PAYLOAD_LENGTH_16BIT_1:
-      return applyToLength(c, 0);
+      return apply_to_length(c, 0);
     case EXTENDED_PAYLOAD_LENGTH_16BIT_2:
-      finishReadingLength();
-      return applyToLength(c, 1);
+      finish_reading_length();
+      return apply_to_length(c, 1);
     case EXTENDED_PAYLOAD_LENGTH_64BIT_1:
-      return applyToLength(c, 0);
+      return apply_to_length(c, 0);
     case EXTENDED_PAYLOAD_LENGTH_64BIT_2:
-      return applyToLength(c, 1);
+      return apply_to_length(c, 1);
     case EXTENDED_PAYLOAD_LENGTH_64BIT_3:
-      return applyToLength(c, 2);
+      return apply_to_length(c, 2);
     case EXTENDED_PAYLOAD_LENGTH_64BIT_4:
-      return applyToLength(c, 3);
+      return apply_to_length(c, 3);
     case EXTENDED_PAYLOAD_LENGTH_64BIT_5:
-      return applyToLength(c, 4);
+      return apply_to_length(c, 4);
     case EXTENDED_PAYLOAD_LENGTH_64BIT_6:
-      return applyToLength(c, 5);
+      return apply_to_length(c, 5);
     case EXTENDED_PAYLOAD_LENGTH_64BIT_7:
-      return applyToLength(c, 6);
+      return apply_to_length(c, 6);
     case EXTENDED_PAYLOAD_LENGTH_64BIT_8:
-      finishReadingLength();
-      return applyToLength(c, 7);
+      finish_reading_length();
+      return apply_to_length(c, 7);
     case MASK_KEY_1:
       state = MASK_KEY_2;
-      return applyToMaskKey(c, 0);
+      return apply_to_mask_key(c, 0);
     case MASK_KEY_2:
       state = MASK_KEY_3;
-      return applyToMaskKey(c, 1);
+      return apply_to_mask_key(c, 1);
     case MASK_KEY_3:
       state = MASK_KEY_4;
-      return applyToMaskKey(c, 2);
+      return apply_to_mask_key(c, 2);
     case MASK_KEY_4:
       if (payload_length == 0)
       {
-        return finishFrame();
+        return finish_frame();
       }
       else
       {
         state = READING_PAYLOAD;
-        return applyToMaskKey(c, 3);
+        return apply_to_mask_key(c, 3);
       }
     case READING_PAYLOAD:
-      return consumeReadingPayload(c);
+      return consume_reading_payload(c);
     case FINISHED_MESSAGE:
       //start it all over anew
       //is clear the right choice here?
       body.clear();
-      consumeFrameHeader(c);
+      consume_frame_header(c);
   }
   return Result::BAD;
 }
 
-Result ws::MessageParser::applyToLength(unsigned char c, int i)
+Result ws::message_parser::apply_to_length(unsigned char c, int i)
 {
   payload_length |= (c << (8 * i));
   return Result::INDETERMINATE;
 }
 
-Result ws::MessageParser::consumeFrameHeader(unsigned char c)
+Result ws::message_parser::consume_frame_header(unsigned char c)
 {
   unsigned char opcode = c & 0x0F;
   switch (opcode)
@@ -98,7 +98,7 @@ Result ws::MessageParser::consumeFrameHeader(unsigned char c)
   return Result::INDETERMINATE;
 }
 
-Result ws::MessageParser::consumePayloadLength(unsigned char c)
+Result ws::message_parser::consume_payload_length(unsigned char c)
 {
   //mask bit must be set the 1
   has_mask = ((c >> 7) != 0);
@@ -117,14 +117,14 @@ Result ws::MessageParser::consumePayloadLength(unsigned char c)
     default:
       payload_length = c;
       if (payload_length == 0)
-        return finishFrame();
-      finishReadingLength();
+        return finish_frame();
+      finish_reading_length();
       break;
   }
   return Result::INDETERMINATE;
 }
 
-void ws::MessageParser::finishReadingLength()
+void ws::message_parser::finish_reading_length()
 {
   if (has_mask)
     state = MASK_KEY_1;
@@ -132,13 +132,13 @@ void ws::MessageParser::finishReadingLength()
     state = READING_PAYLOAD;
 }
 
-Result ws::MessageParser::applyToMaskKey(unsigned char c, int i)
+Result ws::message_parser::apply_to_mask_key(unsigned char c, int i)
 {
   mask_key[i] = c;
   return Result::INDETERMINATE;
 }
 
-Result ws::MessageParser::consumeReadingPayload(unsigned char c)
+Result ws::message_parser::consume_reading_payload(unsigned char c)
 {
   if (!control_opcode)
   {
@@ -146,14 +146,14 @@ Result ws::MessageParser::consumeReadingPayload(unsigned char c)
     ++payload_pos;
   }
   if (payload_pos >= payload_length)
-    return finishFrame();
+    return finish_frame();
   return Result::INDETERMINATE;
 }
 
-Result ws::MessageParser::finishFrame()
+Result ws::message_parser::finish_frame()
 {
   if (control_opcode)
-    return finishControlFrame();
+    return finish_control_frame();
 
   payload_pos = 0;
   if (is_last_frame)
@@ -170,7 +170,7 @@ Result ws::MessageParser::finishFrame()
   return Result::BAD;
 }
 
-Result ws::MessageParser::finishControlFrame()
+Result ws::message_parser::finish_control_frame()
 {
   //setup to read next frame
   state = FRAME_HEADER;

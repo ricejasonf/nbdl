@@ -9,14 +9,14 @@
 #include<catch.hpp>
 #include<string>
 
-struct SomeTag {};
+struct some_tag {};
 
 TEST_CASE("Unitialized variant should match Unresolved.", "[variant]") 
 {
-	using Number = nbdl::Variant<int, std::string, SomeTag>;
+	using Number = nbdl::variant<int, std::string, some_tag>;
 	Number number;
 	CHECK(number.match(
-		[](nbdl::Unresolved) {
+		[](nbdl::unresolved) {
 			return 56;
 		},
 		[](std::string) {
@@ -25,18 +25,18 @@ TEST_CASE("Unitialized variant should match Unresolved.", "[variant]")
 		[](int value) {
 			return value;
 		},
-		[](SomeTag) {
+		[](some_tag) {
 			return 3;
 		}) == 56);
 }
 
 TEST_CASE("Assign a value to a variant and use the callback interface to retrieve it.", "[variant]") 
 {
-	using Number = nbdl::Variant<int, std::string, SomeTag>;
+	using Number = nbdl::variant<int, std::string, some_tag>;
 	
 	Number number = 512;
 	CHECK(number.match(
-		[](nbdl::Unresolved) {
+		[](nbdl::unresolved) {
 			return 56;
 		},
 		[](std::string) {
@@ -45,19 +45,19 @@ TEST_CASE("Assign a value to a variant and use the callback interface to retriev
 		[](int value) {
 			return value;
 		},
-		[](SomeTag) {
+		[](some_tag) {
 			return 3;
 		}) == 512);
 }
 
 TEST_CASE("Copy a variant value.", "[variant]") 
 {
-	using Number = nbdl::Variant<int, SomeTag>;
+	using Number = nbdl::variant<int, some_tag>;
 	Number number1, number2;
 	number1 = 123;
 	number2 = Number(number1);
 	CHECK(number2.match(
-		[](nbdl::Unresolved) {
+		[](nbdl::unresolved) {
 			return 56;
 		},
 		[](std::string) {
@@ -66,24 +66,24 @@ TEST_CASE("Copy a variant value.", "[variant]")
 		[](int value) {
 			return value;
 		},
-		[](SomeTag) {
+		[](some_tag) {
 			return 3;
 		}) == 123);
 }
 
 TEST_CASE("Use the catch all to catch an unspecified tag", "[variant]")
 {
-	using Number = nbdl::Variant<int, std::string, SomeTag>;
+	using Number = nbdl::variant<int, std::string, some_tag>;
 	
 	Number number = 185;
 	CHECK(number.match(
-		[](nbdl::Unresolved) {
+		[](nbdl::unresolved) {
 			return 56;
 		},
 		[](std::string) {
 			return 1;
 		},
-		[](SomeTag) {
+		[](some_tag) {
 			return 3;
 		},
 		[](auto) {
@@ -91,7 +91,7 @@ TEST_CASE("Use the catch all to catch an unspecified tag", "[variant]")
 		}) == 123);
 	number = 93;
 	CHECK(number.match(
-		[](nbdl::Unresolved) {
+		[](nbdl::unresolved) {
 			return 56;
 		},
 		[](std::string) {
@@ -101,17 +101,17 @@ TEST_CASE("Use the catch all to catch an unspecified tag", "[variant]")
 		[](auto) {
 			return 25;
 		},
-		[](SomeTag) {
+		[](some_tag) {
 			return 9;
 		}) == 25);
 }
 TEST_CASE("Catch should not be called if there is a valid match.", "[variant]")
 {
-	using Number = nbdl::Variant<int, std::string, SomeTag>;
+	using Number = nbdl::variant<int, std::string, some_tag>;
 	Number number = 185;
 
 	CHECK(number.match(
-		[](nbdl::Unresolved) {
+		[](nbdl::unresolved) {
 			return 56;
 		},
 		[](int) {
@@ -125,20 +125,20 @@ TEST_CASE("Catch should not be called if there is a valid match.", "[variant]")
 //todo perhaps a matchRef function could allow mutable values in variants
 TEST_CASE("Modify a struct's member in a variant", "[variant]")
 {
-	struct Person {
+	struct person {
 		std::string name_first;
 		std::string name_last;
 	};
-	using MyVar = nbdl::Variant<Person, int, std::string, SomeTag>;
+	using MyVar = nbdl::variant<person, int, std::string, some_tag>;
 	
-	MyVar var = Person { "Jason", "Rice" };
+	MyVar var = person { "Jason", "Rice" };
 	var.match(
-		[&](Person person) {
+		[&](person person) {
 			person.name_last = "Ricez";
 			var = person;
 		}, nbdl::noop);
 	bool proof = var.match(
-		[](Person person) {
+		[](person person) {
 			CHECK(person.name_last == "Ricez");
 			return true;
 		},

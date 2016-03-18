@@ -33,7 +33,7 @@ DEFINE_NAME(Root2);
 int main()
 {
   using namespace nbdl_def;
-  using builder::ProviderMeta;
+  using builder::provider_meta;
   {
 
     constexpr auto access_points_def_1 = AccessPoints(
@@ -69,19 +69,19 @@ int main()
         )
       );
 
-    constexpr auto result = nbdl_def::builder::enumerateProviders(def);
+    constexpr auto result = nbdl_def::builder::enumerate_providers(def);
 
     BOOST_HANA_CONSTANT_ASSERT(result ==
       mpdef::make_list(
-        builder::makeProviderMetaWithMap(
-          ProviderMeta::provider    = names::Provider1,
-          ProviderMeta::name        = names::Provider1Name,
-          ProviderMeta::accessPoints = builder::enumerateAccessPoints(access_points_def_1)
+        builder::make_provider_meta_with_map(
+          provider_meta::provider    = names::Provider1,
+          provider_meta::name        = names::Provider1Name,
+          provider_meta::access_points = builder::enumerate_access_points(access_points_def_1)
         ),
-        builder::makeProviderMetaWithMap(
-          ProviderMeta::provider    = names::Provider2,
-          ProviderMeta::name        = names::Provider2Name,
-          ProviderMeta::accessPoints = builder::enumerateAccessPoints(access_points_def_2)
+        builder::make_provider_meta_with_map(
+          provider_meta::provider    = names::Provider2,
+          provider_meta::name        = names::Provider2Name,
+          provider_meta::access_points = builder::enumerate_access_points(access_points_def_2)
         )
       )
     );
@@ -106,14 +106,14 @@ int main()
         )
       );
 
-    constexpr auto result = nbdl_def::builder::enumerateProviders(def);
+    constexpr auto result = nbdl_def::builder::enumerate_providers(def);
 
     BOOST_HANA_CONSTANT_ASSERT(result ==
       mpdef::make_list(
-        builder::makeProviderMetaWithMap(
-          ProviderMeta::provider    = names::Provider1,
-          ProviderMeta::name        = names::Provider1Name,
-          ProviderMeta::accessPoints = builder::enumerateAccessPoints(access_points_def_1)
+        builder::make_provider_meta_with_map(
+          provider_meta::provider       = names::Provider1,
+          provider_meta::name           = names::Provider1Name,
+          provider_meta::access_points = builder::enumerate_access_points(access_points_def_1)
         )
       )
     );

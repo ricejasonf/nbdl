@@ -28,7 +28,7 @@ namespace builder {
 
 namespace hana = boost::hana;
 
-struct Context
+struct context_fn
 {
   template<typename Def>
   constexpr auto operator()(Def) const
@@ -36,24 +36,24 @@ struct Context
     static_assert(hana::first(Def{}) == tag::Context, "");
     constexpr auto defs = hana::second(Def{});
 
-    constexpr auto entity_meta_map  = builder::mapEntityMeta(defs[tag::Entities]);
-    constexpr auto providers_meta   = builder::enumerateProviders(Def{});
-    constexpr auto consumers_meta   = builder::enumerateConsumers(Def{});
-    constexpr auto provider_map     = builder::providerMap(entity_meta_map, providers_meta);
-    constexpr auto consumer_map     = builder::consumerMap(consumers_meta);
-    constexpr auto cell_info        = builder::contextCells(provider_map, consumer_map);
-    constexpr auto store_map        = builder::storeMap(entity_meta_map,
+    constexpr auto entity_meta_map  = builder::map_entity_meta(defs[tag::Entities]);
+    constexpr auto providers_meta   = builder::enumerate_providers(Def{});
+    constexpr auto consumers_meta   = builder::enumerate_consumers(Def{});
+    constexpr auto provider_map     = builder::provider_map(entity_meta_map, providers_meta);
+    constexpr auto consumer_map     = builder::consumer_map(consumers_meta);
+    constexpr auto cell_info        = builder::context_cells(provider_map, consumer_map);
+    constexpr auto store_map        = builder::store_map(entity_meta_map,
                                         hana::flatten(
                                           hana::unpack(providers_meta,
-                                          mpdef::make_list ^hana::on^ ProviderMeta::accessPoints)
+                                          mpdef::make_list ^hana::on^ provider_meta::access_points)
                                         )
                                       );
     constexpr auto params = hana::append(cell_info, store_map);
 
-    return hana::unpack(params, hana::template_<nbdl::Context>);
+    return hana::unpack(params, hana::template_<nbdl::context>);
   }
 };
-constexpr Context context{};
+constexpr context_fn context{};
 
 }//builder
 
@@ -61,7 +61,7 @@ template<typename ContextDef>
 using make_context_t = typename decltype(builder::context(ContextDef{}))::type;
 
 template<typename Context_>
-struct ContextFactory
+struct context_factory_fn
 {
   template<typename ...Args>
   constexpr auto operator()(Args&& ...args) const
@@ -74,7 +74,7 @@ template<typename ContextDef>
 constexpr auto make_context_factory(ContextDef const&)
 {
   using Context_ = make_context_t<ContextDef>;
-  return ContextFactory<Context_>{};
+  return context_factory_fn<Context_>{};
 }
 
 }//nbdl_def

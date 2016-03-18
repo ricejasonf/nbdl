@@ -14,7 +14,7 @@ namespace nbdl {
 
 //general high order make function
 template<template<class...> class T>
-struct Make
+struct make_fn
 {
   template<typename... X>
   constexpr auto operator()(X... x) const
@@ -24,7 +24,7 @@ struct Make
   }
 };
 template<template<class...> class T>
-constexpr Make<T> make{};
+constexpr make_fn<T> make{};
 
 }//nbdl
 

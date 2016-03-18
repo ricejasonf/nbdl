@@ -13,21 +13,21 @@
 
 namespace nbdl {
 
-struct NotFound;
+struct not_found;
 
-namespace store {
+namespace store_container {
 
 template<typename Path_>
-class HashMap
+class hash_map
 {
 	public:
 
-	using Variant_ = Variant<typename Path_::Entity, NotFound>;
+	using Variant_ = variant<typename Path_::Entity, not_found>;
 
 	private:
 
-	using HashFn = typename Path_::HashFn;
-	using PredFn = typename Path_::PredFn;
+	using HashFn = typename Path_::hash_fn;
+	using PredFn = typename Path_::pred_fn;
 	using Container = std::unordered_map<Path_, Variant_, HashFn, PredFn>;
 	Container map;
 
@@ -39,7 +39,7 @@ class HashMap
 		return map[path] = std::forward<T>(value);
 	}
 
-	bool hasEntry(const Path_& path)
+	bool has_entry(const Path_& path)
 	{
 		auto iter = map.find(path);
 		return iter != map.end();
@@ -51,7 +51,7 @@ class HashMap
 	}
 };
 
-}//store
+}//store_container
 }//nbdl
 
 #endif

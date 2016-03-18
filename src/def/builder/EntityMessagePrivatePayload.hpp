@@ -25,28 +25,28 @@ namespace detail {
   // The PrivatePayload can only be sent Upstream
   // with a Create action
   template<typename MaybePrivatePayload>
-  constexpr auto entityMessagePrivatePayload(MaybePrivatePayload p, action::Create, channel::Upstream)
+  constexpr auto entity_message_private_payload(MaybePrivatePayload p, action::create, channel::upstream)
   {
     return mpdef::justify_type(hana::decltype_(p));
   }
 
   // other actions don't ever get a private payload
-  constexpr auto entityMessagePrivatePayload(...)
+  constexpr auto entity_message_private_payload(...)
   { return hana::decltype_(hana::nothing); }
 }// detail
 
-struct EntityMessagePrivatePayload {
+struct entity_message_private_payload_fn {
   template<typename A, typename M>
   constexpr auto operator()(A, M entity_message_meta) const
   {
-    return detail::entityMessagePrivatePayload(
-      EntityMessageMeta::privatePayload(entity_message_meta),
-      EntityMessageMeta::action(entity_message_meta),
-      EntityMessageMeta::channel(entity_message_meta)
+    return detail::entity_message_private_payload(
+      entity_message_meta::private_payload(entity_message_meta),
+      entity_message_meta::action(entity_message_meta),
+      entity_message_meta::channel(entity_message_meta)
     );
   }
 };
-constexpr EntityMessagePrivatePayload entityMessagePrivatePayload{};
+constexpr entity_message_private_payload_fn entity_message_private_payload{};
 
 }// builder
 }// nbdl_def

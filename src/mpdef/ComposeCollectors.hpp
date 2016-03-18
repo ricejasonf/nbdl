@@ -16,7 +16,7 @@ namespace mpdef {
 
 namespace hana = boost::hana;
 
-struct ComposeCollectors
+struct compose_collectors_fn
 {
   template<std::size_t... i, typename... Collector>
   constexpr auto helper(std::index_sequence<i...>, Collector&&... collector) const
@@ -38,7 +38,7 @@ struct ComposeCollectors
         std::forward<Collector>(collector)...);
   }
 };
-constexpr ComposeCollectors composeCollectors{};
+constexpr compose_collectors_fn compose_collectors{};
 
 }//mpdef
 #endif

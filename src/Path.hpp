@@ -20,13 +20,13 @@ namespace nbdl {
 
 namespace hana = boost::hana;
 
-struct PathTag {};
+struct path_tag {};
 
 template<typename Spec>
-class Path
+class path
 {
-  friend struct boost::hana::unpack_impl<nbdl::PathTag>;
-  friend struct boost::hana::equal_impl<nbdl::PathTag, nbdl::PathTag>;
+  friend struct boost::hana::unpack_impl<nbdl::path_tag>;
+  friend struct boost::hana::equal_impl<nbdl::path_tag, nbdl::path_tag>;
 
   static constexpr auto spec() { return Spec{}; }
 
@@ -38,7 +38,7 @@ class Path
       });
   }
 
-  static auto entityTypes()
+  static auto entity_types()
   {
     constexpr auto spec_ = spec();
     return hana::unpack(
@@ -50,14 +50,14 @@ class Path
   }
 
   template<typename T>
-  static constexpr auto entityTypeIndex(T type)
+  static constexpr auto entity_type_index(T type)
   {
-    auto types = entityTypes();
+    auto types = entity_types();
     return types[type];
   }
 
   //todo filter out empty or void
-  static auto storageType()
+  static auto storage_type()
   {
     return hana::unpack(spec(),
       [](auto... t) {
@@ -68,33 +68,33 @@ class Path
   }
 
   using Key = typename decltype(+hana::second(hana::back(spec())))::type;
-  using Storage = typename decltype(storageType())::type;
+  using Storage = typename decltype(storage_type())::type;
 
   Storage storage;
 
   public:
 
-  using hana_tag = PathTag;
+  using hana_tag = path_tag;
   using Entity = typename decltype(+hana::first(hana::back(spec())))::type;
-  using Parent = Path<decltype(hana::drop_back(spec(), hana::size_c<1>))>;
+  using Parent = path<decltype(hana::drop_back(spec(), hana::size_c<1>))>;
 
-  static_assert(IsEntity<Entity>::value, "");
+  static_assert(is_entity<Entity>::value, "");
 
   template<typename EntityType, typename KeyType>
-  static constexpr auto createChildType(EntityType e, KeyType k)
+  static constexpr auto create_child_type(EntityType e, KeyType k)
   {
-    return hana::type_c<Path<decltype(hana::append(spec(), hana::make_pair(e, k)))>>;
+    return hana::type_c<path<decltype(hana::append(spec(), hana::make_pair(e, k)))>>;
   }
 
   template<typename... Args>
-  Path(Args... args) :
+  path(Args... args) :
     storage(hana::make_tuple(args...))
   {}
 
   template<typename E = Entity>
-  Key getKey() const
+  Key get_key() const
   {
-    return hana::at(storage, entityTypeIndex(hana::type_c<E>));
+    return hana::at(storage, entity_type_index(hana::type_c<E>));
   }
 
   Parent parent() const
@@ -105,22 +105,22 @@ class Path
       });
   }
 
-  struct HashFn
+  struct hash_fn
   {
-    std::size_t operator()(const Path& path) const
+    std::size_t operator()(const path& path) const
     {
       std::size_t seed;
       hana::for_each(path.storage,
         [&](const auto& x) {
-          nbdl::details::HashCombine(seed, x);
+          nbdl::details::hash_combine(seed, x);
         });
       return seed;
     }
   };
 
-  struct PredFn
+  struct pred_fn
   {
-    bool operator()(const Path& t1, const Path& t2) const
+    bool operator()(const path& t1, const path& t2) const
     {
       return hana::equal(t1.storage, t2.storage);
     }
@@ -128,19 +128,19 @@ class Path
 
 };
 
-struct MakePathTypeFromPairs
+struct make_path_type_from_pairs_fn
 {
   template<typename... Pairs>
   constexpr auto operator()(Pairs... pairs) const
   {
     using Spec = decltype(hana::make_tuple(pairs...));
-    return hana::type_c<Path<Spec>>;
+    return hana::type_c<path<Spec>>;
   }
 };
-constexpr MakePathTypeFromPairs makePathTypeFromPairs{};
+constexpr make_path_type_from_pairs_fn make_path_type_from_pairs{};
 
 template<typename Key, typename... EntityType>
-constexpr auto path_type = makePathTypeFromPairs(
+constexpr auto path_type = make_path_type_from_pairs(
     hana::make_pair(hana::type_c<EntityType>, hana::type_c<Key>)...
   );
 
@@ -152,7 +152,7 @@ constexpr auto path_type = makePathTypeFromPairs(
 namespace boost { namespace hana {
 
 template<>
-struct unpack_impl<nbdl::PathTag>
+struct unpack_impl<nbdl::path_tag>
 {
   template<typename Xs, typename F>
   static constexpr decltype(auto) apply(Xs&& xs, F&& f)
@@ -162,7 +162,7 @@ struct unpack_impl<nbdl::PathTag>
 };
 
 template<>
-struct equal_impl<nbdl::PathTag, nbdl::PathTag>
+struct equal_impl<nbdl::path_tag, nbdl::path_tag>
 {
   template<typename X, typename Y>
   static constexpr decltype(auto) apply(X&& x, Y&& y)

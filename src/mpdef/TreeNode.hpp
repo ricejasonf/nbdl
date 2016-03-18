@@ -16,30 +16,30 @@ namespace mpdef {
 namespace hana = boost::hana;
 
 template<typename First, typename Second>
-struct TreeNode { };
+struct tree_node { };
 
-struct TreeNodeTag;
+struct tree_node_tag;
 
-struct MakeTreeNode
+struct make_tree_node_fn
 {
   template<typename T, typename U>
   constexpr auto operator()(T, U) const
   {
-    return mpdef::TreeNode<T, U>{};
+    return mpdef::tree_node<T, U>{};
   }
 };
-constexpr MakeTreeNode make_tree_node{};
+constexpr make_tree_node_fn make_tree_node{};
 
-struct IsTreeNode
+struct is_tree_node_fn
 {
   template <typename First, typename Second>
-  constexpr auto operator()(mpdef::TreeNode<First, Second>) const
+  constexpr auto operator()(mpdef::tree_node<First, Second>) const
   { return hana::true_c; }
   template <typename T>
   constexpr auto operator()(T) const
   { return hana::false_c; }
 };
-constexpr IsTreeNode is_tree_node{};
+constexpr is_tree_node_fn is_tree_node{};
 
 }//mpdef
 
@@ -48,44 +48,44 @@ namespace boost { namespace hana {
   // Product
 
   template<typename First, typename Second>
-  struct first_impl<mpdef::TreeNode<First, Second>>
+  struct first_impl<mpdef::tree_node<First, Second>>
   {
-    static constexpr First apply(mpdef::TreeNode<First, Second>) { return First{}; }
+    static constexpr First apply(mpdef::tree_node<First, Second>) { return First{}; }
   };
 
   template<typename First, typename Second>
-  struct second_impl<mpdef::TreeNode<First, Second>>
+  struct second_impl<mpdef::tree_node<First, Second>>
   {
-    static constexpr Second apply(mpdef::TreeNode<First, Second>) { return Second{}; }
+    static constexpr Second apply(mpdef::tree_node<First, Second>) { return Second{}; }
   };
 
   // Searchable - proxies search to Second
 
   template<typename First, typename Second>
-  struct find_if_impl<mpdef::TreeNode<First, Second>>
+  struct find_if_impl<mpdef::tree_node<First, Second>>
   {
     template<typename Pred>
-    static constexpr auto apply(mpdef::TreeNode<First, Second>, Pred const& pred)
+    static constexpr auto apply(mpdef::tree_node<First, Second>, Pred const& pred)
     {
       return hana::find_if(Second{}, pred);
     }
   };
 
   template<typename First, typename Second>
-  struct find_impl<mpdef::TreeNode<First, Second>>
+  struct find_impl<mpdef::tree_node<First, Second>>
   {
     template<typename Tag>
-    static constexpr auto apply(mpdef::TreeNode<First, Second>, Tag)
+    static constexpr auto apply(mpdef::tree_node<First, Second>, Tag)
     {
       return hana::find(Second{}, Tag{});
     }
   };
 
   template<typename First, typename Second>
-  struct any_of_impl<mpdef::TreeNode<First, Second>>
+  struct any_of_impl<mpdef::tree_node<First, Second>>
   {
     template<typename Pred>
-    static constexpr auto apply(mpdef::TreeNode<First, Second>, Pred const& pred)
+    static constexpr auto apply(mpdef::tree_node<First, Second>, Pred const& pred)
     {
       return hana::any_of(Second{}, pred);
     }
