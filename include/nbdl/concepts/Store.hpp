@@ -7,11 +7,13 @@
 #ifndef NBDL_CONCEPTS_STORE_HPP
 #define NBDL_CONCEPTS_STORE_HPP
 
-#include<nbdl/fwd/dispatch.hpp>
+#include<nbdl/fwd/make_store.hpp>
+#include<nbdl/fwd/apply_action.hpp>
+#include<nbdl/fwd/has.hpp>
+#include<nbdl/fwd/get.hpp>
 
-#include<boost/hana/is_default.hpp>
-#include<boost/hana/tag_of.hpp>
-#include<boost/hana/when.hpp>
+#include<boost/hana/core/default.hpp>
+#include<boost/hana/core/tag_of.hpp>
 
 namespace nbdl
 {
@@ -21,7 +23,12 @@ namespace nbdl
   struct Store
   {
     using Tag = typename hana::tag_of<T>::type;
-    static constexpr bool value = !hana::is_default<nbdl::dispatch_impl<Tag>>::value;
+    static constexpr bool value =
+          !hana::is_default<nbdl::make_store_impl     <Tag>>::value
+      &&  !hana::is_default<nbdl::apply_action_impl   <Tag>>::value
+      &&  !hana::is_default<nbdl::has_impl            <Tag>>::value
+      &&  !hana::is_default<nbdl::get_impl            <Tag>>::value
+      ;
   };
 } // nbdl
 

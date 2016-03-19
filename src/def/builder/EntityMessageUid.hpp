@@ -8,7 +8,7 @@
 #define NBDL_DEF_BUILDER_ENTITY_MESSAGE_UID_HPP
 
 #include<def/directives.hpp>
-#include<Message.hpp>
+#include<nbdl/message.hpp>
 #include<Uid.hpp>
 
 #include<boost/hana.hpp>

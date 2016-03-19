@@ -9,7 +9,7 @@
 
 #include<def/directives.hpp>
 #include<def/builder/EntityMessageMeta.hpp>
-#include<Message.hpp>
+#include<nbdl/message.hpp>
 
 #include<boost/hana.hpp>
 #include<utility>
@@ -47,12 +47,12 @@ namespace detail {
 
 struct entity_message_is_from_root_fn {
   template<typename A, typename M>
-  constexpr auto operator()(A access_point, M entity_message_meta) const
+  constexpr auto operator()(A access_point, M em_meta) const
   {
     return detail::entity_message_is_from_root(
       access_point,
-      entity_message_meta::action(entity_message_meta),
-      entity_message_meta::channel(entity_message_meta)
+      entity_message_meta::action(em_meta),
+      entity_message_meta::channel(em_meta)
     );
   }
 };

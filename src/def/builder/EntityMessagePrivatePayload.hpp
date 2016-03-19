@@ -9,7 +9,7 @@
 
 #include<mpdef/JustifyType.hpp>
 #include<def/builder/EntityMessageMeta.hpp>
-#include<Message.hpp>
+#include<nbdl/message.hpp>
 
 #include<boost/hana.hpp>
 

@@ -7,10 +7,14 @@
 #ifndef NBDL_CONTEXT_HPP
 #define NBDL_CONTEXT_HPP
 
+#include<nbdl/concepts/Consumer.hpp>
 #include<nbdl/concepts/UpstreamMessage.hpp>
 #include<nbdl/concepts/DownstreamMessage.hpp>
-#include<nbdl/dispatch.hpp>
-#include<nbdl/receive_message.hpp>
+#include<nbdl/concepts/StateConsumer.hpp>
+#include<nbdl/apply_action.hpp>
+#include<nbdl/message.hpp>
+#include<nbdl/send_downstream_message.hpp>
+#include<nbdl/send_upstream_message.hpp>
 
 #include<boost/hana.hpp>
 #include<boost/hana/ext/std/integer_sequence.hpp>
@@ -41,8 +45,8 @@ class context
     void operator()(Message&& m)
     {
       static_assert(UpstreamMessage<Message>::value,
-        "nbdl::context::push_upstream requires an UpstreamMessage");
-       ctx.pushUpstream(std::forward<Message>(m));
+        "nbdl::context::push_upstream_fn requires an UpstreamMessage");
+       ctx.push_message(std::forward<Message>(m));
     }
   };
 
@@ -56,8 +60,8 @@ class context
     void operator()(Message&& m)
     {
       static_assert(DownstreamMessage<Message>::value,
-        "nbdl::context::push_downstream requires a DownMessage");
-       ctx.pushDownstream(std::forward<Message>(m));
+        "nbdl::context::push_downstream_fn requires a DownMessage");
+       ctx.push_message(std::forward<Message>(m));
     }
   };
 
@@ -84,7 +88,7 @@ class context
   struct make_cell_helper;
 
   template<std::size_t i, typename... Args>
-  auto make_cell(Args&& ...args)
+  decltype(auto) make_cell(Args&& ...args)
   {
     using Cell = std::decay_t<decltype(hana::at_c<i>(std::declval<Cells>()))>;
     using PushFn = typename decltype(
@@ -102,15 +106,17 @@ class context
   {
     using Index = decltype(hana::at_key(ProviderLookup{}, hana::decltype_(message::get_path(m))));
     constexpr Index index{};
-    nbdl::receive_message(cells[index], std::forward<Message>(m));
+    nbdl::send_upstream_message(cells[index], std::forward<Message>(m));
   }
 
   template<typename Message>
   void propagate_message(Message&& m, message::channel::downstream)
   {
-    using Index = decltype(hana::at_key(ConsumerLookup{}, hana::decltype_(message::get_path(m))));
-    constexpr Index index{};
-    nbdl::receive_message(cells[index], std::forward<Message>(m));
+    // notify all consumers
+    hana::while_(hana::less.than(hana::length(cells)), provider_count,
+      [&](auto i) {
+        nbdl::send_downstream_message(cells[i], std::forward<Message>(m));
+      });
   }
 
   // called inside PushUpstreamMessageFn and PushDownstreamMessageFn
@@ -119,13 +125,17 @@ class context
   {
     constexpr auto path_type = hana::decltype_(message::get_path(m));
     constexpr auto channel = decltype(message::get_channel(m)){};
-    propagate_message(
-      nbdl::dispatch(
-        stores[path_type],
-        std::forward<Message>(m)
-      ),
-      channel
-    );
+    // TODO:
+    // apply the action to the store
+    //
+    // for upstream messages that cause a state change
+    // send a new downstream message to Consumers (if any)
+    //
+    // anything that causes a state change should notify
+    // StateConsumers
+    //
+    // propagate the original message except for upstream
+    // reads when the value is already present in the store
   }
 
   // constructor helper

@@ -10,7 +10,7 @@
 #include<def/directives.hpp>
 #include<def/builder/EntityMessages.hpp>
 #include<def/builder/ProviderMeta.hpp>
-#include<Message.hpp>
+#include<nbdl/message.hpp>
 #include<Variant.hpp>
 
 #include<boost/hana.hpp>

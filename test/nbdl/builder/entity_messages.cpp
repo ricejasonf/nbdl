@@ -11,7 +11,7 @@
 #include<def/builder/EntityKeyMeta.hpp>
 #include<def/directives.hpp>
 #include<macros/NBDL_ENTITY.hpp>
-#include<Message.hpp>
+#include<nbdl/message.hpp>
 #include<Path.hpp>
 #include<mpdef/List.hpp>
 

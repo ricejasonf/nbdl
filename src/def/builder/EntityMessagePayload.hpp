@@ -8,7 +8,7 @@
 #define NBDL_DEF_BUILDER_ENTITY_MESSAGE_PAYLOAD_HPP
 
 #include<mpdef/JustifyType.hpp>
-#include<Message.hpp>
+#include<nbdl/message.hpp>
 
 #include<boost/hana.hpp>
 

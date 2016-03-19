@@ -16,7 +16,7 @@
 #include<def/builder/EntityMessageUid.hpp>
 #include<def/builder/Path.hpp>
 #include<mpdef/Map.hpp>
-#include<Message.hpp>
+#include<nbdl/message.hpp>
 
 #include<boost/hana.hpp>
 

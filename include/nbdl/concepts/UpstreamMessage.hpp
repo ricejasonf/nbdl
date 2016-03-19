@@ -7,7 +7,7 @@
 #ifndef NBDL_CONCEPTS_UPSTREAM_MESSAGE_HPP
 #define NBDL_CONCEPTS_UPSTREAM_MESSAGE_HPP
 
-#include<Message.hpp>// FIXME
+#include<nbdl/message.hpp>
 
 #include<boost/hana/core/when.hpp>
 #include<type_traits>
