@@ -4,36 +4,15 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<Bind.hpp>
-#include<binders/jsoncpp/Read.hpp>
-#include<binders/jsoncpp/Write.hpp>
+#include<nbdl/binder/jsoncpp.hpp>
 #include<Variant.hpp>
 
 #include<catch.hpp>
 #include<jsoncpp/json/json.h>
 #include<string>
 
-template<typename T>
-void from_string(std::string &json, T &my_entity)
-{
-  Json::Reader reader;
-  Json::Value root;
-  if (!reader.parse(json, root, false))
-    throw std::runtime_error("JSON parse error");
-  nbdl::binders::jsoncpp::read r(root);
-  nbdl::bind(r, my_entity);
-}
-
-template<typename T>
-std::string to_string(T &my_entity)
-{
-  Json::StyledWriter writer;
-  Json::Value root;
-  nbdl::binders::jsoncpp::write r(root);
-
-  nbdl::bind(r, my_entity);
-  return writer.write(root);
-}
+using nbdl::binder::jsoncpp::from_string;
+using nbdl::binder::jsoncpp::to_string;
 
 struct bar
 {
@@ -52,7 +31,7 @@ NBDL_ENTITY(my_entity,
   foo );
 }//nbdl
 
-//note that empty types should just be represented by their type_id
+// note that empty types should just be represented by their type_id
 
 std::string test_json_1 =
   "{\n"

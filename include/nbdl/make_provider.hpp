@@ -7,14 +7,14 @@
 #ifndef NBDL_MAKE_PROVIDER_HPP
 #define NBDL_MAKE_PROVIDER_HPP
 
-#include<nbdl/concepts/Provider.hpp>
+#include<nbdl/concept/Provider.hpp>
 #include<nbdl/fwd/make_provider.hpp>
 
 namespace nbdl
 {
   template <typename T>
   template <typename PushFn, typename ...Args>
-  constexpr auto make_provider_fn<T>::operator()(PushFn&& push, Args&& ...args) const
+  constexpr decltype(auto) make_provider_fn<T>::operator()(PushFn&& push, Args&& ...args) const
   {
     using Tag = hana::tag_of_t<T>;
     using Impl = make_provider_impl<Tag>;
@@ -22,7 +22,7 @@ namespace nbdl
 
     static_assert(
       nbdl::Provider<Return>::value
-      "nbdl::make_provider<T>(push, args...) must return a Provider.");
+      , "nbdl::make_provider<T>(push, args...) must return a Provider.");
 
     return Impl::apply(std::forward<PushFn>(push), std::forward<Args>(args)...);
   };

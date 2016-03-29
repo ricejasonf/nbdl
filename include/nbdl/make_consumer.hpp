@@ -7,7 +7,7 @@
 #ifndef NBDL_MAKE_CONSUMER_HPP
 #define NBDL_MAKE_CONSUMER_HPP
 
-#include<nbdl/concepts/Consumer.hpp>
+#include<nbdl/concept/Consumer.hpp>
 #include<nbdl/fwd/make_consumer.hpp>
 
 namespace nbdl
@@ -22,7 +22,7 @@ namespace nbdl
 
     static_assert(
       nbdl::Consumer<Return>::value
-      "nbdl::make_consumer<T>(push, args...) must return a Consumer.");
+      , "nbdl::make_consumer<T>(push, args...) must return a Consumer.");
 
     return Impl::apply(std::forward<PushFn>(push), std::forward<Args>(args)...);
   };

@@ -17,6 +17,5 @@ nbdl_catch_test_suite(build_targets test.nbdl.binders.jsoncpp
 )
 
 foreach(_target IN LISTS build_targets)
-  target_link_libraries(${_target} nbdl_binders_jsoncpp)
   target_link_libraries(${_target} ${JsonCpp})
 endforeach()

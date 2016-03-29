@@ -7,14 +7,13 @@
 #ifndef NBDL_PATH_HPP
 #define NBDL_PATH_HPP
 
-#include<utility>
-#include<type_traits>
-#include<tuple>
-#include<boost/hana.hpp>
-//#include<boost/functional/hash.hpp>
+#include <nbdl/concept/Entity.hpp>
+
+#include <utility>
+#include <type_traits>
+#include <boost/hana.hpp>
 
 #include "details/Hash.hpp"
-#include "Traits.hpp"
 
 namespace nbdl {
 
@@ -78,7 +77,7 @@ class path
   using Entity = typename decltype(+hana::first(hana::back(spec())))::type;
   using Parent = path<decltype(hana::drop_back(spec(), hana::size_c<1>))>;
 
-  static_assert(is_entity<Entity>::value, "");
+  static_assert(nbdl::Entity<Entity>::value, "");
 
   template<typename EntityType, typename KeyType>
   static constexpr auto create_child_type(EntityType e, KeyType k)

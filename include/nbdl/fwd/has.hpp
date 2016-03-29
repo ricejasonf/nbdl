@@ -11,6 +11,8 @@
 
 namespace nbdl
 {
+  namespace hana = boost::hana;
+
   template<typename T, typename = void>
   struct has_impl : has_impl<T, hana::when<true>> { };
 

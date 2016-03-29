@@ -11,6 +11,8 @@
 
 namespace nbdl
 {
+  namespace hana = boost::hana;
+
   template <typename T, typename = void>
   struct make_state_consumer_impl : make_state_consumer_impl<T, hana::when<true>> { };
 
@@ -26,4 +28,3 @@ namespace nbdl
 } // nbdl
 
 #endif
-

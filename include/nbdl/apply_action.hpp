@@ -7,8 +7,9 @@
 #ifndef NBDL_APPLY_ACTION_HPP
 #define NBDL_APPLY_ACTION_HPP
 
-#include<nbdl/concepts/Store.hpp>
 #include<nbdl/fwd/apply_action.hpp>
+
+#include<nbdl/concept/Store.hpp>
 
 #include<utility>
 

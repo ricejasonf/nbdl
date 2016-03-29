@@ -4,38 +4,16 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<Bind.hpp>
-#include<binders/jsoncpp/Read.hpp>
-#include<binders/jsoncpp/Write.hpp>
+#include<nbdl/binder/jsoncpp.hpp>
 
 #include<boost/hana.hpp>
 #include<catch.hpp>
-#include<jsoncpp/json/json.h>
 #include<string>
 
 namespace hana = boost::hana;
 
-template<typename T>
-void from_string(std::string &json, T& t)
-{
-  Json::Reader reader;
-  Json::Value root;
-  if (!reader.parse(json, root, false))
-    throw std::runtime_error("JSON parse error");
-  nbdl::binders::jsoncpp::read r(root);
-  nbdl::bind(r, t);
-}
-
-template<typename T>
-std::string to_string(T&& t)
-{
-  Json::StyledWriter writer;
-  Json::Value root;
-  nbdl::binders::jsoncpp::write r(root);
-
-  nbdl::bind(r, std::forward<T>(t));
-  return writer.write(root);
-}
+using nbdl::binder::jsoncpp::from_string;
+using nbdl::binder::jsoncpp::to_string;
 
 std::string seq_json = "[ \"Hello\", \"World!\", 5, 6 ]\n";
 auto expected_xs = hana::make_tuple(std::string("Hello"), std::string("World!"), 5, 6);

@@ -13,7 +13,6 @@
 #include<def/builder/ProviderMeta.hpp>
 #include<def/directives.hpp>
 #include<Make.hpp>
-#include<ProviderMap.hpp>
 
 #include<boost/hana.hpp>
 

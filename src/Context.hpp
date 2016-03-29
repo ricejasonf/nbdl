@@ -7,10 +7,10 @@
 #ifndef NBDL_CONTEXT_HPP
 #define NBDL_CONTEXT_HPP
 
-#include<nbdl/concepts/Consumer.hpp>
-#include<nbdl/concepts/UpstreamMessage.hpp>
-#include<nbdl/concepts/DownstreamMessage.hpp>
-#include<nbdl/concepts/StateConsumer.hpp>
+#include<nbdl/concept/Consumer.hpp>
+#include<nbdl/concept/UpstreamMessage.hpp>
+#include<nbdl/concept/DownstreamMessage.hpp>
+#include<nbdl/concept/StateConsumer.hpp>
 #include<nbdl/apply_action.hpp>
 #include<nbdl/message.hpp>
 #include<nbdl/send_downstream_message.hpp>

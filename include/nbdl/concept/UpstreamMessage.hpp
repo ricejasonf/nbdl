@@ -4,8 +4,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_CONCEPTS_DOWNSTREAM_MESSAGE_HPP
-#define NBDL_CONCEPTS_DOWNSTREAM_MESSAGE_HPP
+#ifndef NBDL_CONCEPT_UPSTREAM_MESSAGE_HPP
+#define NBDL_CONCEPT_UPSTREAM_MESSAGE_HPP
+
+#include<nbdl/fwd/concept/UpstreamMessage.hpp>
 
 #include<nbdl/message.hpp>
 
@@ -16,18 +18,18 @@ namespace nbdl
 {
   namespace hana = boost::hana;
 
-  template<typename T, typename = void>
-  struct DownstreamMessage
+  template<typename T>
+  struct UpstreamMessage<T , hana::when<true>>
   {
     static constexpr bool value = false;
   };
 
   template<typename T>
-  struct DownstreamMessage<T, hana::when<hana::Sequence<T>::value>>
+  struct UpstreamMessage<T, hana::when<hana::Sequence<T>::value>>
   {
     static constexpr bool value = std::is_same<
       decltype(message::get_channel(std::declval<T>())),
-      message::channel::downstream
+      message::channel::upstream
     >::value;
   };
 } // nbdl

@@ -7,9 +7,9 @@
 #ifndef NBDL_TEST_ASSETS_ACCOUNT_HPP
 #define NBDL_TEST_ASSETS_ACCOUNT_HPP
 
+#include <nbdl/entity_members.hpp>
+
 #include <string>
-#include <EntityTraits.hpp>
-#include <Bind.hpp>
 
 struct address
 {

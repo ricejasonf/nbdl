@@ -7,7 +7,7 @@
 #ifndef NBDL_HAS_HPP
 #define NBDL_HAS_HPP
 
-#include<nbdl/concepts/Store.hpp>
+#include<nbdl/concept/Store.hpp>
 #include<nbdl/fwd/has.hpp>
 
 #include<utility>
@@ -15,7 +15,7 @@
 namespace nbdl
 {
   template<typename Store, typename Path>
-  constexpr auto const& has_fn::operator()(Store&& s, Path&& p) const
+  constexpr bool has_fn::operator()(Store&& s, Path&& p) const
   {
     using Tag = hana::tag_of_t<Store>;
     using Impl = has_impl<Tag>;

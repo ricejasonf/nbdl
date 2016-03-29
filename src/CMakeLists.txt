@@ -18,16 +18,8 @@ if (NOT OPENSSL_FOUND)
   message(WARNING "OpenSSL Not Found")
 endif (NOT OPENSSL_FOUND)
 
-if (NOT JsonCpp)
-  list(APPEND SKIP_TARGETS "nbdl_binders_jsoncpp")
-  message(WARNING "JsonCpp Not Found")
-endif (NOT JsonCpp)
-
 add_library(nbdl_regex STATIC 
   Regex.cpp
-  )
-add_library(nbdl_binders_jsoncpp STATIC 
-  binders/jsoncpp/Read.cpp
   )
 add_library(nbdl_servers_ws STATIC 
   openssl/Base64Encode.cpp
@@ -36,10 +28,6 @@ add_library(nbdl_servers_ws STATIC
   servers/ws/MessageParser.cpp
   servers/ws/MessageGenerator.cpp
   )
-
-if (JsonCpp)
-  target_link_libraries(nbdl_binders_jsoncpp ${JsonCpp})
-endif(JsonCpp)
 
 if (OPENSSL_FOUND)
   target_link_libraries(nbdl_servers_ws ${OPENSSL_LIBRARIES})

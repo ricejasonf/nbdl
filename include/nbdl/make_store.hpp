@@ -7,7 +7,7 @@
 #ifndef NBDL_MAKE_STORE_HPP
 #define NBDL_MAKE_STORE_HPP
 
-#include<nbdl/concepts/Store.hpp>
+#include<nbdl/concept/Store.hpp>
 #include<nbdl/fwd/make_store.hpp>
 
 namespace nbdl
@@ -19,12 +19,11 @@ namespace nbdl
     using Tag = hana::tag_of_t<T>;
     using Impl = make_store_impl<Tag>;
     using Return = decltype(Impl::apply(PathType{}));
-    using ReturnTag = hana::tag_of_t<Return>;
 
     static_assert(
       nbdl::Store<Return>::value
       && std::is_default_constructible<Return>::value
-      "nbdl::make_store<T>(path_type) must return a Store (default constructible)");
+      , "nbdl::make_store<T>(path_type) must return a Store (default constructible)");
   };
 
   template <typename Tag, bool condition>

@@ -7,7 +7,7 @@
 #ifndef NBDL_GET_HPP
 #define NBDL_GET_HPP
 
-#include<nbdl/concepts/Store.hpp>
+#include<nbdl/concept/Store.hpp>
 #include<nbdl/fwd/get.hpp>
 
 #include<utility>

@@ -11,12 +11,12 @@
 #include<def/builder/MessageVariants.hpp>
 #include<def/builder/ProviderMeta.hpp>
 #include<def/directives.hpp>
-#include<macros/NBDL_ENTITY.hpp>
-#include<nbdl/message.hpp>
+#include <nbdl/entity_members.hpp>
+#include <nbdl/message.hpp>
 #include<Path.hpp>
-#include<mpdef/List.hpp>
+#include <mpdef/List.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace hana = boost::hana;
 namespace builder = nbdl_def::builder;

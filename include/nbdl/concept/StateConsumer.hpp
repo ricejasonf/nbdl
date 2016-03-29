@@ -4,11 +4,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_CONCEPTS_STATE_CONSUMER_HPP
-#define NBDL_CONCEPTS_STATE_CONSUMER_HPP
+#ifndef NBDL_CONCEPT_STATE_CONSUMER_HPP
+#define NBDL_CONCEPT_STATE_CONSUMER_HPP
 
-#include<nbdl/fwd/make_state_consumer.hpp>
-#include<nbdl/fwd/notify_state_change.hpp>
+#include<nbdl/fwd/concept/StateConsumer.hpp>
+
+#include<nbdl/make_state_consumer.hpp>
+#include<nbdl/notify_state_change.hpp>
 
 #include<boost/hana/core/default.hpp>
 

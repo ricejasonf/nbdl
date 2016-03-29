@@ -5,12 +5,12 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 //
-#include<Traits.hpp>
-#include<Path.hpp>
-#include<macros/NBDL_ENTITY.hpp>
 
-#include<catch.hpp>
-#include<unordered_set> //for unique check
+#include <nbdl/entity_members.hpp>
+#include<Path.hpp>
+
+#include <catch.hpp>
+#include <unordered_set> //for unique check
 
 struct client
 {

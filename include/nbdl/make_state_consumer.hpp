@@ -4,11 +4,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_MAKE_CONSUMER_HPP
-#define NBDL_MAKE_CONSUMER_HPP
+#ifndef NBDL_MAKE_STATE_CONSUMER_HPP
+#define NBDL_MAKE_STATE_CONSUMER_HPP
 
-#include<nbdl/concepts/StateConsumer.hpp>
 #include<nbdl/fwd/make_state_consumer.hpp>
+
+#include<nbdl/concept/StateConsumer.hpp>
 
 namespace nbdl
 {
@@ -30,7 +31,7 @@ namespace nbdl
 
     static_assert(
       nbdl::Consumer<Return>::value
-      "nbdl::make_state_consumer<T>(push, args...) must return a StateConsumer.");
+      , "nbdl::make_state_consumer<T>(push, args...) must return a StateConsumer.");
 
     return Impl::apply(
       std::forward<PushFn>(push),

@@ -11,6 +11,8 @@
 
 namespace nbdl
 {
+  namespace hana = boost::hana;
+
   template <typename T, typename = void>
   struct make_provider_impl : make_provider_impl<T, hana::when<true>> { };
 

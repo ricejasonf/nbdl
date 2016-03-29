@@ -4,12 +4,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<macros/NBDL_ENTITY.hpp>
+#include <nbdl/entity_members.hpp>
 #include<Store.hpp>
 #include<Path.hpp>
 
-#include<catch.hpp>
-#include<memory>
+#include <catch.hpp>
+#include <memory>
 
 template<typename Path_>
 using Store = nbdl::store<

@@ -7,8 +7,9 @@
 #ifndef NBDL_SEND_DOWNSTREAM_MESSAGE_HPP
 #define NBDL_SEND_DOWNSTREAM_MESSAGE_HPP
 
-#include<nbdl/concepts/Provider.hpp>
-#include<nbdl/concepts/DownstreamMessage.hpp>
+#include<nbdl/concept/Provider.hpp>
+#include<nbdl/concept/DownstreamMessage.hpp>
+#include<nbdl/concept/StateConsumer.hpp>
 #include<nbdl/fwd/send_downstream_message.hpp>
 
 #include<boost/hana/core/tag_of.hpp>

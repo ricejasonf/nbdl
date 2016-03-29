@@ -11,6 +11,8 @@
 
 namespace nbdl
 {
+  namespace hana = boost::hana;
+
   template<typename T, typename = void>
   struct notify_state_change_impl : notify_state_change_impl<T, hana::when<true>> { };
 

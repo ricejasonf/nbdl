@@ -7,6 +7,8 @@
 #ifndef NBDL_HASH_HPP
 #define NBDL_HASH_HPP
 
+#include <functional>
+
 namespace nbdl {
 namespace details {
 

@@ -10,7 +10,7 @@
 #include<def/builder/Path.hpp>
 #include<def/builder/Store.hpp>
 #include<def/directives.hpp>
-#include<EntityTraits.hpp>
+#include <nbdl/entity_members.hpp>
 #include<Path.hpp>
 
 #include<boost/hana.hpp>

@@ -11,6 +11,8 @@
 
 namespace nbdl
 {
+  namespace hana = boost::hana;
+
   template <typename T, typename = void>
   struct make_store_impl : make_store_impl<T, hana::when<true>> { };
 
@@ -21,7 +23,7 @@ namespace nbdl
   struct make_store_fn
   {
     template <typename PathType>
-    constexpr auto const& operator()(PathType const&) const;
+    constexpr auto operator()(PathType const&) const;
   };
 
   template <typename T>

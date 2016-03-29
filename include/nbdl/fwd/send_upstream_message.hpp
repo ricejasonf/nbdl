@@ -11,6 +11,8 @@
 
 namespace nbdl
 {
+  namespace hana = boost::hana;
+
   template<typename T, typename = void>
   struct send_upstream_message_impl : send_upstream_message_impl<T, hana::when<true>> { };
 

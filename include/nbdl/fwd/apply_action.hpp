@@ -11,6 +11,8 @@
 
 namespace nbdl
 {
+  namespace hana = boost::hana;
+
   template<typename T, typename = void>
   struct apply_action_impl : apply_action_impl<T, hana::when<true>> { };
 

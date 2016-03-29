@@ -10,10 +10,10 @@
 
 #include<def/builder/Context.hpp>
 #include<def/directives.hpp>
-#include<macros/NBDL_ENTITY.hpp>
+#include <nbdl/entity_members.hpp>
 #include<Path.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace test_context {
   namespace name {
