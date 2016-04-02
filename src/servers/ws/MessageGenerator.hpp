@@ -7,10 +7,11 @@
 #ifndef NBDL_SERVERS_WS_MESSAGE_GENERATOR_HPP
 #define NBDL_SERVERS_WS_MESSAGE_GENERATOR_HPP
 
-#include<array>
-#include<vector>
-#include<cstdint>
-#include "../../Variant.hpp"
+#include <nbdl/variant.hpp>
+
+#include <array>
+#include <vector>
+#include <cstdint>
 
 namespace nbdl {
 namespace servers {
@@ -20,7 +21,7 @@ class message_generator
 {
   public:
 
-  using MaskKey = optional<std::array<char, 4>>;
+  using MaskKey = nbdl::optional<std::array<char, 4>>;
 
   enum class result {
     UNFINISHED,

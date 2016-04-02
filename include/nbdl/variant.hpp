@@ -12,6 +12,7 @@
 
 #include <type_traits>
 #include <boost/hana.hpp>
+#include <boost/hana/experimental/types.hpp>
 
 namespace nbdl
 {
@@ -20,7 +21,7 @@ namespace nbdl
 
   struct variant_tag { };
 
-  namespace details {
+  namespace detail {
 
     template <typename DefaultType, typename... Tn>
     class variant
@@ -28,7 +29,7 @@ namespace nbdl
       static_assert(std::is_empty<DefaultType>::value, "DefaultType must be an empty tag struct");
       using Storage = typename std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>::type;
 
-      static constexpr auto types() { return hana::tuple_t<DefaultType, Tn...>; }
+      using Types = hana::experimental::types<DefaultType, Tn...>;
       static auto type_ids()
       {
         return hana::unpack(hana::range_c<int, 1, sizeof...(Tn)+1>, [](auto ...i) {
@@ -53,10 +54,10 @@ namespace nbdl
       void call_by_type(const int value_type_id, Fn&& fn)
       {
         hana::for_each(
-          hana::range_c<int, 0, hana::length(types())>,
+          hana::range_c<int, 0, hana::length(Types{})>,
           [&](auto i) {
             if (value_type_id == hana::value(i))
-              fn(hana::at(types(), i));
+              fn(hana::at(Types{}, i));
           });
       }
 
@@ -85,27 +86,27 @@ namespace nbdl
       template <typename Index, typename Fn>
       auto match_by_type_helper(Index i, const int type_id_x, Fn fn) const
         ->  nbdl::detail::common_type_t<
-              decltype(fn(hana::at(types(), i))),
-              decltype(fn(hana::at(types(), hana::int_c<0>)))
+              decltype(fn(hana::at(Types{}, i))),
+              decltype(fn(hana::at(Types{}, hana::int_c<0>)))
             >
       {
         if (type_id_x == Index::value)
-          return fn(hana::at(types(), i));
+          return fn(hana::at(Types{}, i));
         else
           return match_by_type_helper(i + hana::int_c<1>, type_id_x, fn);
       }
       template <typename Fn>
       auto match_by_type_helper(LastTypeId i, const int type_id_x, Fn fn) const
         ->  nbdl::detail::common_type_t<
-              decltype(fn(hana::at(types(), i))),
-              decltype(fn(hana::at(types(), hana::int_c<0>)))
+              decltype(fn(hana::at(Types{}, i))),
+              decltype(fn(hana::at(Types{}, hana::int_c<0>)))
             >
       {
         //if type_id_x is invalid, use default, empty type
         if (type_id_x == LastTypeId::value)
-          return fn(hana::at(types(), i));
+          return fn(hana::at(Types{}, i));
         else
-          return fn(hana::at(types(), hana::int_c<0>));
+          return fn(hana::at(Types{}, hana::int_c<0>));
       }
 
       template <typename Fn1>
@@ -123,11 +124,11 @@ namespace nbdl
       //the type in question should it be invalid
       template <typename Type, typename TypeType>
       auto convert_from_type(const Type& val, TypeType t)
-        -> std::enable_if_t<hana::contains(types(), t)>
+        -> std::enable_if_t<hana::contains(Types{}, t)>
       {
         //it is critical that types are restricted to types supported by the Variant
         //this check is now redundant
-        static_assert(hana::contains(types(), hana::type_c<Type>),
+        static_assert(hana::contains(Types{}, hana::type_c<Type>),
           "This variant does not support conversion to Type.");
 
         type_id = 0; //in case shit goes horribly wrong
@@ -224,7 +225,7 @@ namespace nbdl
 
     };
 
-  }//details
+  }//detail
 
   //useful for match catch all
   auto noop = [](auto){};
@@ -234,10 +235,10 @@ namespace nbdl
   struct nothing {};
 
   template <typename... Tn>
-  using variant = details::variant<unresolved, Tn...>;
+  using variant = detail::variant<unresolved, Tn...>;
 
   template <typename T>
-  using optional = details::variant<nothing, T>;
+  using optional = detail::variant<nothing, T>;
 
   // BindableVariant
 

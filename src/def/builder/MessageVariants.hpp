@@ -7,14 +7,14 @@
 #ifndef NBDL_DEF_BUILDER_MAKE_MESSAGE_VARIANTS_HPP
 #define NBDL_DEF_BUILDER_MAKE_MESSAGE_VARIANTS_HPP
 
-#include<def/directives.hpp>
-#include<def/builder/EntityMessages.hpp>
-#include<def/builder/ProviderMeta.hpp>
-#include<nbdl/message.hpp>
-#include<Variant.hpp>
+#include <def/directives.hpp>
+#include <def/builder/EntityMessages.hpp>
+#include <def/builder/ProviderMeta.hpp>
+#include <nbdl/message.hpp>
+#include <nbdl/variant.hpp>
 
-#include<boost/hana.hpp>
-#include<type_traits>
+#include <boost/hana.hpp>
+#include <type_traits>
 
 namespace nbdl_def {
 namespace builder {

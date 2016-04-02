@@ -4,12 +4,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<nbdl/binder/jsoncpp.hpp>
-#include<Variant.hpp>
+#include <nbdl/binder/jsoncpp.hpp>
+#include <nbdl/variant.hpp>
 
-#include<catch.hpp>
-#include<jsoncpp/json/json.h>
-#include<string>
+#include <catch.hpp>
+#include <jsoncpp/json/json.h>
+#include <string>
 
 using nbdl::binder::jsoncpp::from_string;
 using nbdl::binder::jsoncpp::to_string;

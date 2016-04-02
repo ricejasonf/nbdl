@@ -4,10 +4,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<Variant.hpp>
+#include <nbdl/variant.hpp>
 
-#include<catch.hpp>
-#include<string>
+#include <catch.hpp>
+#include <string>
 
 struct some_tag {};
 
