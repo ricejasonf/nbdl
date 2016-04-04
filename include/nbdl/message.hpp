@@ -47,5 +47,18 @@ namespace nbdl { namespace message
   constexpr auto get_maybe_payload            = hana::reverse_partial(hana::at, hana::int_c< 5 >);
   constexpr auto get_maybe_private_payload    = hana::reverse_partial(hana::at, hana::int_c< 6 >);
 
+  // The path type is used as a key
+  // in a few places.
+  struct get_path_type_fn
+  {
+    template <typename Message>
+    constexpr auto operator()(Message const& m)
+    {
+      return hana::type_c<std::decay_t<decltype(message::get_path(m))>>;
+    }
+  };
+
+  constexpr get_path_type_fn get_path_type{};
+
 }} // nbdl::message
 #endif

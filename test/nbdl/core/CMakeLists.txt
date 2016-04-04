@@ -11,3 +11,9 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   store.cpp
   provider_map.cpp
 )
+
+# compile-time tests
+nbdl_add_test("test.nbdl.core.detail.concept_pred"
+  detail/concept_pred.cpp
+)
+
