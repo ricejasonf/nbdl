@@ -7,45 +7,90 @@
 #ifndef NBDL_MESSAGE_HPP
 #define NBDL_MESSAGE_HPP
 
-#include<boost/hana.hpp>
+#include <nbdl/fwd/message.hpp>
+
+#include <nbdl/concept/DownstreamMessage.hpp>
+#include <nbdl/concept/UpstreamMessage.hpp>
+
+#include <boost/hana/at.hpp>
+#include <boost/hana/core/when.hpp>
+#include <boost/hana/optional.hpp>
 
 namespace nbdl { namespace message
 {
 
   namespace hana = boost::hana;
 
-  /*
-   * A message is just a tuple right now.
-   *
-   * The action and channel tags serve to
-   * indicate how the message should be
-   * dispatched.
-   */
+  namespace detail
+  {
+    // Hack UpstreamMessages.
+    // Since they never have is_from_root,
+    // it is just removed from the sequence
+    // This is just a really hacky way to
+    // remap a indices.
+    template <typename M, int i, typename = void>
+    struct fix_index_t
+    {
+      static constexpr int value = i;
+    };
 
-  namespace action {
-    struct create { };
-    struct read { };
-    struct update { };
-    struct update_raw { };
-    struct delete_ { };
+    template <typename M>
+    struct fix_index_t<M, 5, std::enable_if_t<nbdl::UpstreamMessage<M>::value>>
+    {
+      static constexpr int value = 4;
+    };
 
-    struct validation_fail { };
-  } // action
+    template <typename M>
+    struct fix_index_t<M, 6, std::enable_if_t<nbdl::UpstreamMessage<M>::value>>
+    {
+      static constexpr int value = 5;
+    };
 
-  namespace channel {
-    struct upstream { };
-    struct downstream { };
-  } // channel
+    template <typename Message, int i>
+    constexpr auto fix_index = hana::size_c<fix_index_t<Message, i>::value>;
+
+    template <int i>
+    struct get_fn
+    {
+      template <typename M>
+      constexpr decltype(auto) operator()(M&& m) const
+      {
+        return hana::at(std::forward<M>(m), hana::int_c<i>);
+      }
+    };
+
+    template <int i>
+    struct get_maybe_fn
+    {
+      template <typename M>
+      constexpr decltype(auto) operator()(
+        M const&,
+        std::enable_if_t<
+          (nbdl::UpstreamMessage<M>::value &&  i == 4)
+          || decltype(hana::length(std::declval<M>()) <= detail::fix_index<M, i>)::value
+        , int> = 0
+      ) const
+      {
+        return hana::nothing;
+      }
+
+      template <typename M>
+      constexpr decltype(auto) operator()(M&& m, ...) const
+      {
+        return hana::at(std::forward<M>(m), detail::fix_index<M, i>);
+      }
+    };
+  } // detail
 
   // The offsets of these properties should match the
   // formation of the message in `builder::EntityMessage`.
-  constexpr auto get_channel                  = hana::reverse_partial(hana::at, hana::int_c< 0 >);
-  constexpr auto get_action                   = hana::reverse_partial(hana::at, hana::int_c< 1 >);
-  constexpr auto get_path                     = hana::reverse_partial(hana::at, hana::int_c< 2 >);
-  constexpr auto get_maybe_is_from_root       = hana::reverse_partial(hana::at, hana::int_c< 3 >);
-  constexpr auto get_maybe_uid                = hana::reverse_partial(hana::at, hana::int_c< 4 >);
-  constexpr auto get_maybe_payload            = hana::reverse_partial(hana::at, hana::int_c< 5 >);
-  constexpr auto get_maybe_private_payload    = hana::reverse_partial(hana::at, hana::int_c< 6 >);
+  constexpr detail::get_fn      < 0 > get_channel{};
+  constexpr detail::get_fn      < 1 > get_action{};
+  constexpr detail::get_fn      < 2 > get_path{};
+  constexpr detail::get_maybe_fn< 3 > get_maybe_uid{};
+  constexpr detail::get_maybe_fn< 4 > get_maybe_is_from_root{};
+  constexpr detail::get_maybe_fn< 5 > get_maybe_payload{};
+  constexpr detail::get_maybe_fn< 6 > get_maybe_private_payload{};
 
   // The path type is used as a key
   // in a few places.

@@ -86,10 +86,8 @@ int main()
             channel::upstream,
             action::create,
             PathType,
-            const hana::optional<>,
             hana::optional<nbdl::uid>,
-            hana::optional<entity::e1>,
-            const hana::optional<>
+            hana::optional<entity::e1>
           >
         >
       >
@@ -106,10 +104,9 @@ int main()
             channel::downstream,
             action::create,
             PathType,
-            const hana::optional<>,
             hana::optional<nbdl::uid>,
-            hana::optional<entity::e1>,
-            const hana::optional<>
+            hana::optional<bool>,
+            hana::optional<entity::e1>
           >
         >
       >

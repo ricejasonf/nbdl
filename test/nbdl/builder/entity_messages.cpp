@@ -70,19 +70,16 @@ int main()
           channel::upstream,
           action::create,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
-          hana::optional<entity::e1>,
-          const hana::optional<>
+          hana::optional<entity::e1>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
           action::create,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
-          hana::optional<entity::e1>,
-          const hana::optional<>
+          hana::optional<bool>,
+          hana::optional<entity::e1>
         >>
       )
     );
@@ -110,73 +107,58 @@ int main()
           channel::upstream,
           action::create,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
-          hana::optional<entity::e1>,
-          const hana::optional<>
+          hana::optional<entity::e1>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
           action::create,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
-          hana::optional<entity::e1>,
-          const hana::optional<>
+          hana::optional<bool>,
+          hana::optional<entity::e1>
         >>,
         hana::type_c<hana::tuple<
           channel::upstream,
           action::read,
           PathType,
-          const hana::optional<>,
-          hana::optional<nbdl::uid>,
-          const hana::optional<>, //has no payload
-          const hana::optional<>
+          hana::optional<nbdl::uid>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
           action::read,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
-          hana::optional<entity::e1>,
-          const hana::optional<>
+          hana::optional<bool>,
+          hana::optional<entity::e1>
         >>,
         hana::type_c<hana::tuple<
           channel::upstream,
           action::update_raw,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
-          hana::optional<entity::e1>,
-          const hana::optional<>
+          hana::optional<entity::e1>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
           action::update_raw,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
-          hana::optional<entity::e1>,
-          const hana::optional<>
+          hana::optional<bool>,
+          hana::optional<entity::e1>
         >>,
         hana::type_c<hana::tuple<
           channel::upstream,
           action::delete_,
           PathType,
-          const hana::optional<>,
-          hana::optional<nbdl::uid>,
-          const hana::optional<>,
-          const hana::optional<>
+          hana::optional<nbdl::uid>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
           action::delete_,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
-          const hana::optional<>,
-          const hana::optional<>
+          hana::optional<bool>
         >>
       )
     );

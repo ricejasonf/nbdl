@@ -36,6 +36,43 @@ namespace entity_messages_detail {
     mpdef::make_tree_node(tag::Delete,      action::delete_{})
   );
   constexpr auto get_action = hana::partial(hana::at_key, action_map);
+
+  template <typename AccessPoint, typename EntityMessage, typename = void>
+  struct get_maybes;
+
+  template <typename A, typename E>
+  struct get_maybes<A, E, std::enable_if_t<std::is_same<
+        decltype(entity_message_meta::channel(E{})),
+        nbdl::message::channel::upstream
+      >::value>
+  > 
+  {
+    // these are reversed to truncate the nothings
+    using Xs = hana::tuple<
+      typename decltype(builder::entity_message_private_payload(A{}, E{}))::type,
+      typename decltype(builder::entity_message_payload(A{}, E{}))::type,
+      typename decltype(builder::entity_message_uid(A{}, E{}))::type
+    >;
+    using type = decltype(hana::reverse(hana::drop_while(std::declval<Xs>(), hana::is_nothing)));
+  };
+
+  template <typename A, typename E>
+  struct get_maybes<A, E, std::enable_if_t<std::is_same<
+        decltype(entity_message_meta::channel(E{})),
+        nbdl::message::channel::downstream
+      >::value>
+  > 
+  {
+    // these are reversed to truncate the nothings
+    using Xs = hana::tuple<
+      typename decltype(builder::entity_message_private_payload(A{}, E{}))::type,
+      typename decltype(builder::entity_message_payload(A{}, E{}))::type,
+      typename decltype(builder::entity_message_is_from_root(A{}, E{}))::type,
+      typename decltype(builder::entity_message_uid(A{}, E{}))::type
+    >;
+    // these are reversed to truncate the nothings
+    using type = decltype(hana::reverse(hana::drop_while(std::declval<Xs>(), hana::is_nothing)));
+  };
 }
 
 // TODO possibly make this a metafunction
@@ -45,18 +82,16 @@ struct entity_message_fn
   template<typename EntityMessageMeta>
   constexpr auto operator()(EntityMessageMeta e) const
   {
-    constexpr AccessPoint a{};
-    return hana::type_c<
+    using Comps = 
       hana::tuple<
         decltype(entity_message_meta::channel(e)),
         decltype(entity_message_meta::action(e)),
-        typename decltype(entity_message_meta::path(e))::type,
-        typename decltype(builder::entity_message_is_from_root(a, e))::type,
-        typename decltype(builder::entity_message_uid(a, e))::type,
-        typename decltype(builder::entity_message_payload(a, e))::type,
-        typename decltype(builder::entity_message_private_payload(a, e))::type
-      >
-    >;
+        typename decltype(entity_message_meta::path(e))::type
+      >;
+    using Maybes = typename entity_messages_detail::get_maybes<AccessPoint, EntityMessageMeta>::type;
+    using Tuple = decltype(hana::concat(std::declval<Comps>(), std::declval<Maybes>()));
+
+    return hana::type_c<Tuple>;
   }
 };
 

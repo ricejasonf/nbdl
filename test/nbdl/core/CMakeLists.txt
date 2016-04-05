@@ -10,6 +10,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   variant.cpp
   store.cpp
   provider_map.cpp
+  message_api.cpp
 )
 
 # compile-time tests

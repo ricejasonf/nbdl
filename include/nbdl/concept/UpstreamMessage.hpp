@@ -9,17 +9,19 @@
 
 #include<nbdl/fwd/concept/UpstreamMessage.hpp>
 
-#include<nbdl/message.hpp>
+#include<nbdl/fwd/message.hpp>
 
-#include<boost/hana/core/when.hpp>
+#include<boost/hana/at.hpp>
+#include<boost/hana/integral_constant.hpp>
 #include<type_traits>
+#include<utility>
 
 namespace nbdl
 {
   namespace hana = boost::hana;
 
   template<typename T>
-  struct UpstreamMessage<T , hana::when<true>>
+  struct UpstreamMessage<T, hana::when<!hana::Sequence<T>::value>>
   {
     static constexpr bool value = false;
   };
@@ -28,7 +30,7 @@ namespace nbdl
   struct UpstreamMessage<T, hana::when<hana::Sequence<T>::value>>
   {
     static constexpr bool value = std::is_same<
-      decltype(message::get_channel(std::declval<T>())),
+      std::decay_t<decltype(hana::at(std::declval<T>(), hana::int_c<0>))>,
       message::channel::upstream
     >::value;
   };
