@@ -72,8 +72,8 @@ namespace nbdl
         channel,
         action,
         std::forward<Path>(path),
-        false,
         nbdl::uid{},
+        false,
         std::forward<T>(t)... // <== payload and private payload
       );
     }
@@ -107,12 +107,12 @@ namespace nbdl
 
     // UpdateRaw
     template <typename ...T>
-    decltype(auto) make_upstream_delta_message(T&& ...t)
-    { return make_message(Upstream, message::action::delta, std::forward<T>(t)...); }
+    decltype(auto) make_upstream_update_raw_message(T&& ...t)
+    { return make_message(Upstream, message::action::update_raw, std::forward<T>(t)...); }
 
     template <typename ...T>
-    decltype(auto) make_downstream_delta_message(T&& ...t)
-    { return make_message(Downstream, message::action::delta, std::forward<T>(t)...); }
+    decltype(auto) make_downstream_update_raw_message(T&& ...t)
+    { return make_message(Downstream, message::action::update_raw, std::forward<T>(t)...); }
 
     // Delete
     template <typename ...T>

@@ -51,8 +51,8 @@ struct entity_message_fn
         decltype(entity_message_meta::channel(e)),
         decltype(entity_message_meta::action(e)),
         typename decltype(entity_message_meta::path(e))::type,
-        typename decltype(builder::entity_message_is_from_root(a, e))::type,
         typename decltype(builder::entity_message_uid(a, e))::type,
+        typename decltype(builder::entity_message_is_from_root(a, e))::type,
         typename decltype(builder::entity_message_payload(a, e))::type,
         typename decltype(builder::entity_message_private_payload(a, e))::type
       >

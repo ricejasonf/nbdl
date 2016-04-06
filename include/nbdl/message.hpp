@@ -42,8 +42,8 @@ namespace nbdl { namespace message
   constexpr auto get_channel                  = hana::reverse_partial(hana::at, hana::int_c< 0 >);
   constexpr auto get_action                   = hana::reverse_partial(hana::at, hana::int_c< 1 >);
   constexpr auto get_path                     = hana::reverse_partial(hana::at, hana::int_c< 2 >);
-  constexpr auto get_maybe_is_from_root       = hana::reverse_partial(hana::at, hana::int_c< 3 >);
-  constexpr auto get_maybe_uid                = hana::reverse_partial(hana::at, hana::int_c< 4 >);
+  constexpr auto get_maybe_uid                = hana::reverse_partial(hana::at, hana::int_c< 3 >);
+  constexpr auto get_maybe_is_from_root       = hana::reverse_partial(hana::at, hana::int_c< 4 >);
   constexpr auto get_maybe_payload            = hana::reverse_partial(hana::at, hana::int_c< 5 >);
   constexpr auto get_maybe_private_payload    = hana::reverse_partial(hana::at, hana::int_c< 6 >);
 
