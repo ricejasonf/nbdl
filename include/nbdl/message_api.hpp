@@ -35,6 +35,12 @@ namespace nbdl
     }
   }
 
+  // wrapper for safe overloading
+  struct from_root
+  {
+    bool is_from_root;
+  };
+
   template <typename UpstreamTypes, typename DownstreamTypes>
   struct message_api
   {
@@ -73,8 +79,7 @@ namespace nbdl
         action,
         std::forward<Path>(path),
         nbdl::uid{},
-        false,
-        std::forward<T>(t)... // <== payload and private payload
+        std::forward<T>(t)... // <== is_from_root, payload and private payload
       );
     }
 
@@ -85,7 +90,11 @@ namespace nbdl
 
     template <typename ...T>
     decltype(auto) make_downstream_create_message(T&& ...t)
-    { return make_message(Downstream, message::action::create, std::forward<T>(t)...); }
+    { return make_message(Downstream, message::action::create, false, std::forward<T>(t)...); }
+
+    template <typename ...T>
+    decltype(auto) make_downstream_create_message(nbd::from_root r, T&& ...t)
+    { return make_message(Downstream, message::action::create, r.is_from_root, std::forward<T>(t)...); }
 
     // Read
     template <typename ...T>
@@ -94,7 +103,11 @@ namespace nbdl
 
     template <typename ...T>
     decltype(auto) make_downstream_read_message(T&& ...t)
-    { return make_message(Downstream, message::action::read, std::forward<T>(t)...); }
+    { return make_message(Downstream, message::action::read, false, std::forward<T>(t)...); }
+
+    template <typename ...T>
+    decltype(auto) make_downstream_read_message(nbdl::from_root r, T&& ...t)
+    { return make_message(Downstream, message::action::read, r.is_from_root, std::forward<T>(t)...); }
 
     // Update
     template <typename ...T>
@@ -103,7 +116,11 @@ namespace nbdl
 
     template <typename ...T>
     decltype(auto) make_downstream_update_message(T&& ...t)
-    { return make_message(Downstream, message::action::update, std::forward<T>(t)...); }
+    { return make_message(Downstream, message::action::update, false, std::forward<T>(t)...); }
+
+    template <typename ...T>
+    decltype(auto) make_downstream_update_message(nbdl::from_root r, T&& ...t)
+    { return make_message(Downstream, message::action::update, r.is_from_root, std::forward<T>(t)...); }
 
     // UpdateRaw
     template <typename ...T>
@@ -112,7 +129,11 @@ namespace nbdl
 
     template <typename ...T>
     decltype(auto) make_downstream_update_raw_message(T&& ...t)
-    { return make_message(Downstream, message::action::update_raw, std::forward<T>(t)...); }
+    { return make_message(Downstream, message::action::update_raw, false, std::forward<T>(t)...); }
+
+    template <typename ...T>
+    decltype(auto) make_downstream_update_raw_message(nbdl::from_root r, T&& ...t)
+    { return make_message(Downstream, message::action::update_raw, r.is_from_root, std::forward<T>(t)...); }
 
     // Delete
     template <typename ...T>
@@ -121,7 +142,11 @@ namespace nbdl
 
     template <typename ...T>
     decltype(auto) make_downstream_delete_message(T&& ...t)
-    { return make_message(Downstream, message::action::delete_, std::forward<T>(t)...); }
+    { return make_message(Downstream, message::action::delete_, false, std::forward<T>(t)...); }
+
+    template <typename ...T>
+    decltype(auto) make_downstream_delete_message(nbdl::from_root r, T&& ...t)
+    { return make_message(Downstream, message::action::delete_, r.is_from_root, std::forward<T>(t)...); }
   };
 } // nbdl
 
