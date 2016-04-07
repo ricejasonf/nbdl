@@ -70,8 +70,8 @@ int main()
           channel::upstream,
           action::create,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
+          const hana::optional<>,
           hana::optional<entity::e1>,
           const hana::optional<>
         >>,
@@ -79,8 +79,8 @@ int main()
           channel::downstream,
           action::create,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
+          const hana::optional<>,
           hana::optional<entity::e1>,
           const hana::optional<>
         >>
@@ -110,8 +110,8 @@ int main()
           channel::upstream,
           action::create,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
+          const hana::optional<>,
           hana::optional<entity::e1>,
           const hana::optional<>
         >>,
@@ -119,8 +119,8 @@ int main()
           channel::downstream,
           action::create,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
+          const hana::optional<>,
           hana::optional<entity::e1>,
           const hana::optional<>
         >>,
@@ -128,8 +128,8 @@ int main()
           channel::upstream,
           action::read,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
+          const hana::optional<>,
           const hana::optional<>, //has no payload
           const hana::optional<>
         >>,
@@ -137,8 +137,8 @@ int main()
           channel::downstream,
           action::read,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
+          const hana::optional<>,
           hana::optional<entity::e1>,
           const hana::optional<>
         >>,
@@ -146,8 +146,8 @@ int main()
           channel::upstream,
           action::update_raw,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
+          const hana::optional<>,
           hana::optional<entity::e1>,
           const hana::optional<>
         >>,
@@ -155,8 +155,8 @@ int main()
           channel::downstream,
           action::update_raw,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
+          const hana::optional<>,
           hana::optional<entity::e1>,
           const hana::optional<>
         >>,
@@ -164,8 +164,8 @@ int main()
           channel::upstream,
           action::delete_,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
+          const hana::optional<>,
           const hana::optional<>,
           const hana::optional<>
         >>,
@@ -173,8 +173,8 @@ int main()
           channel::downstream,
           action::delete_,
           PathType,
-          const hana::optional<>,
           hana::optional<nbdl::uid>,
+          const hana::optional<>,
           const hana::optional<>,
           const hana::optional<>
         >>

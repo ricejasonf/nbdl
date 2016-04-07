@@ -30,6 +30,12 @@ namespace detail {
 #if 0
     // we only care if it is from root if we
     // have a local version of the object
+    // UPDATE: Actually since we won't know
+    // if the server might be sending downstream
+    // messages that are confirmed by root then
+    // all downstream messages should have this
+    // bool.
+    // FIXME
     return hana::type_c<decltype(
       hana::if_(
         hana::find(access_point, tag::UseLocalVersion).value_or(hana::false_c),
