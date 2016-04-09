@@ -53,8 +53,8 @@ nbdl_add_test("test.nbdl.builder.entity_messages"
   entity_messages.cpp
 )
 
-nbdl_add_test("test.nbdl.builder.message_variants"
-  message_variants.cpp
+nbdl_add_test("test.nbdl.builder.message_api"
+  message_api.cpp
 )
 
 nbdl_add_test("test.nbdl.builder.context"

@@ -123,7 +123,7 @@ namespace nbdl
       //provides a better compiler error that outputs 
       //the type in question should it be invalid
       template <typename Type, typename TypeType>
-      auto convert_from_type(const Type& val, TypeType t)
+      auto convert_from_type(Type const& val, TypeType t)
         -> std::enable_if_t<hana::contains(Types{}, t)>
       {
         //it is critical that types are restricted to types supported by the Variant
@@ -164,7 +164,7 @@ namespace nbdl
       }
 
       template <typename Type>
-      variant(Type val)
+      variant(Type const& val)
       {
         convert_from_type(val, hana::type_c<Type>);
       }

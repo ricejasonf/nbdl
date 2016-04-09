@@ -30,7 +30,8 @@ template <
 	typename ProviderLookup,
   typename ConsumerLookup,
   typename MakeContextCells,
-	typename StoreMap>
+	typename StoreMap,
+  typename MessageApi >
 class context
 {
   // calling the push functions after

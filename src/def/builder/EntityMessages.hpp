@@ -15,6 +15,7 @@
 #include<def/builder/EntityMessagePrivatePayload.hpp>
 #include<def/builder/EntityMessageUid.hpp>
 #include<def/builder/Path.hpp>
+#include<mpdef/Pair.hpp>
 #include<mpdef/Map.hpp>
 #include<nbdl/message.hpp>
 
@@ -29,11 +30,11 @@ namespace tag = nbdl_def::tag;
 namespace entity_messages_detail {
   namespace action = nbdl::message::action;
   constexpr auto action_map = mpdef::make_map(
-    mpdef::make_tree_node(tag::Create,      action::create{}),
-    mpdef::make_tree_node(tag::Read,        action::read{}),
-    mpdef::make_tree_node(tag::Update,      action::update{}),
-    mpdef::make_tree_node(tag::UpdateRaw,   action::update_raw{}),
-    mpdef::make_tree_node(tag::Delete,      action::delete_{})
+    mpdef::make_pair(tag::Create,      action::create{}),
+    mpdef::make_pair(tag::Read,        action::read{}),
+    mpdef::make_pair(tag::Update,      action::update{}),
+    mpdef::make_pair(tag::UpdateRaw,   action::update_raw{}),
+    mpdef::make_pair(tag::Delete,      action::delete_{})
   );
   constexpr auto get_action = hana::partial(hana::at_key, action_map);
 
@@ -119,7 +120,7 @@ struct entity_messages_fn
     );
   #endif
     const auto actions = hana::unpack(access_point_meta::actions(access_point),
-      mpdef::make_list ^hana::on^ entity_messages_detail::get_action);
+      mpdef::make_list ^hana::on^ hana::compose(entity_messages_detail::get_action, hana::first));
 
     const auto private_payload = hana::nothing;
 

@@ -56,7 +56,7 @@ int main()
   {
     constexpr auto access_point = builder::make_access_point_meta_with_map(
       access_point_meta::name           = names::Foo,
-      access_point_meta::actions        = mpdef::make_list(nbdl_def::tag::Create),
+      access_point_meta::actions        = mpdef::make_map(nbdl_def::Create()),
       access_point_meta::store_container = hana::type_c<void>,
       access_point_meta::entity_names    = mpdef::make_list(names::Entity1)
     );
@@ -88,11 +88,11 @@ int main()
     constexpr auto access_point = builder::make_access_point_meta_with_map(
       access_point_meta::name = names::Foo,
       access_point_meta::actions =
-        mpdef::make_list(
-          nbdl_def::tag::Create,
-          nbdl_def::tag::Read,
-          nbdl_def::tag::UpdateRaw,
-          nbdl_def::tag::Delete
+        mpdef::make_map(
+          nbdl_def::Create(),
+          nbdl_def::Read(),
+          nbdl_def::UpdateRaw(),
+          nbdl_def::Delete()
         ),
       access_point_meta::store_container = hana::type_c<void>,
       access_point_meta::entity_names    = mpdef::make_list(names::Entity1)

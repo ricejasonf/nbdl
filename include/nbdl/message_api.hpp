@@ -11,6 +11,7 @@
 #include <mpdef/Pair.hpp>
 #include <nbdl/message.hpp>
 #include <Uid.hpp> // FIXME
+#include <nbdl/variant.hpp>
 
 #include <boost/hana/type.hpp>
 #include <boost/hana/traits.hpp>
@@ -77,6 +78,22 @@ namespace nbdl
         , "This message API does not support the channel/action for this path.");
 
       return *message_type;
+    }
+
+    template <typename SystemMessage, typename Message>
+    auto make_upstream_variant(Message&& m) const
+    {
+      using Variant = typename decltype(hana::unpack(UpstreamTypes{},
+        hana::partial(hana::template_<nbdl::variant>, hana::type_c<SystemMessage>)))::type;
+      return Variant(std::forward<Message>(m));
+    }
+
+    template <typename SystemMessage, typename Message>
+    auto make_downstream_variant(Message&& m) const
+    {
+      using Variant = typename decltype(hana::unpack(DownstreamTypes{},
+        hana::partial(hana::template_<nbdl::variant>, hana::type_c<SystemMessage>)))::type;
+      return Variant(std::forward<Message>(m));
     }
 
     template <typename Channel, typename Action, typename Path, typename ...T>

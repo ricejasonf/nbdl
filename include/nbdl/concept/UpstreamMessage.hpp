@@ -24,6 +24,8 @@ namespace nbdl
   struct UpstreamMessage<T, hana::when<!hana::Sequence<T>::value>>
   {
     static constexpr bool value = false;
+
+    using type = hana::bool_<value>;
   };
 
   template<typename T>
@@ -33,6 +35,8 @@ namespace nbdl
       std::decay_t<decltype(hana::at(std::declval<T>(), hana::int_c<0>))>,
       message::channel::upstream
     >::value;
+
+    using type = hana::bool_<value>;
   };
 } // nbdl
 

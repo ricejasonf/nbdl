@@ -15,6 +15,7 @@
 #include <def/builder/EnumerateProviders.hpp>
 #include <def/builder/EnumerateConsumers.hpp>
 #include <def/builder/MapEntityMeta.hpp>
+#include <def/builder/MessageApi.hpp>
 #include <def/builder/Path.hpp>
 #include <def/builder/ProviderMap.hpp>
 #include <def/builder/ProviderMeta.hpp>
@@ -48,7 +49,8 @@ struct context_fn
                                           mpdef::make_list ^hana::on^ provider_meta::access_points)
                                         )
                                       );
-    constexpr auto params = hana::append(cell_info, store_map);
+    constexpr auto message_api      = builder::make_message_api(entity_meta_map, providers_meta);
+    constexpr auto params = hana::concat(cell_info, mpdef::make_list(store_map, message_api));
 
     return hana::unpack(params, hana::template_<nbdl::context>);
   }
