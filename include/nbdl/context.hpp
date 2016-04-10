@@ -166,7 +166,7 @@ class context
 
 #if 0
   template <typename Message>
-  void dispatch(Message const& m, message::channel::downstream, message::action::delta)
+  void dispatch(Message const& m, message::channel::downstream, message::action::update)
   {
     // TODO Github issue #15: Handle Downstream Detlas
     constexpr auto path_type = decltype(message::get_path_type(m)){};

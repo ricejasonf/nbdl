@@ -15,6 +15,7 @@
 
 #include <boost/hana/type.hpp>
 #include <boost/hana/traits.hpp>
+#include <functional>
 #include <utility>
 
 namespace nbdl
@@ -41,7 +42,37 @@ namespace nbdl
           ;
       }
     };
-  }
+
+    template <typename Message, typename = void>
+    struct make_is_from_root_fn;
+
+    template <typename Message>
+    struct make_is_from_root_fn<Message,
+      std::enable_if_t<decltype(
+        hana::is_just(message::get_maybe_is_from_root(std::declval<Message>()))
+      )::value>
+    >
+    {
+      template <typename IsFromRoot>
+      constexpr auto operator()(IsFromRoot)
+      {
+        return hana::just(IsFromRoot::value);
+      }
+    };
+
+    template <typename Message>
+    struct make_is_from_root_fn<Message,
+      std::enable_if_t<decltype(
+        !hana::is_just(message::get_maybe_is_from_root(std::declval<Message>()))
+      )::value>
+    >
+    {
+      constexpr auto operator()(...)
+      {
+        return hana::nothing;
+      }
+    };
+  } // detail
 
   // wrapper for safe overloading
   struct from_root
@@ -50,7 +81,7 @@ namespace nbdl
   };
 
   template <typename UpstreamTypes, typename DownstreamTypes>
-  struct message_api
+  class message_api
   {
     using upstream    = message::channel::upstream;
     using downstream  = message::channel::downstream;
@@ -64,6 +95,40 @@ namespace nbdl
       mpdef::make_pair(hana::type_c<upstream>, hana::type_c<UpstreamTypes>),
       mpdef::make_pair(hana::type_c<downstream>, hana::type_c<DownstreamTypes>)
     );
+
+    template <typename M, typename Payload, typename IsFromRoot>
+    decltype(auto) to_downstream_helper(M const& m, Payload const& payload, IsFromRoot) const
+    {
+      using Message = typename decltype(get_message_type(
+        downstream{},
+        message::get_action(m),
+        message::get_path(m)
+      ))::type;
+
+      // truncate trailing nothings
+      return hana::unpack(
+        hana::drop_back(
+          hana::make_tuple(
+            std::cref(message::get_path(m)),
+            std::cref(message::get_maybe_uid(m)),
+            detail::make_is_from_root_fn<Message>{}(IsFromRoot{}),
+            std::cref(payload)
+          ),
+          decltype(hana::size_c<6> - hana::length(std::declval<Message>())){}
+        ),
+        [&](auto ...x)
+        {
+          return Message(
+            downstream{},
+            message::get_action(m),
+            x...
+          );
+        }
+      );
+        
+    }
+
+    public:
 
     template <typename Channel, typename Action, typename Path>
     constexpr auto get_message_type(Channel, Action, Path) const
@@ -100,7 +165,7 @@ namespace nbdl
     auto make_message(Channel const& channel, Action const& action, Path&& path, T&& ...t) const
     {
       using Message = typename decltype(get_message_type(channel, action, path))::type;
-      using UidOrNothing = decltype(hana::if_( 
+      using UidOrNothing = decltype(hana::if_(
         hana::is_just(message::get_maybe_uid(std::declval<Message>())),
         nbdl::uid{},
         hana::nothing
@@ -218,6 +283,32 @@ namespace nbdl
     {
       return make_message(downstream{}, delete_{}, std::forward<Path>(p),
         r.is_from_root, std::forward<T>(t)...);
+    }
+
+    // Convert to Downstream
+
+    template <typename Message>
+    decltype(auto) to_downstream(Message const& m) const
+    {
+      return to_downstream_helper(m, message::get_maybe_payload(m), hana::false_c);
+    }
+
+    template <typename Message, typename Payload>
+    decltype(auto) to_downstream(Message && m, Payload&& p) const
+    {
+      return to_downstream_helper(std::forward<Message>(m), std::forward<Payload>(p), hana::false_c);
+    }
+
+    template <typename Message>
+    decltype(auto) to_downstream_from_root(Message const& m) const
+    {
+      return to_downstream_helper(m, message::get_maybe_payload(m), hana::true_c);
+    }
+
+    template <typename Message, typename Payload>
+    decltype(auto) to_downstream_from_root(Message && m, Payload&& p) const
+    {
+      return to_downstream_helper(std::forward<Message>(m), std::forward<Payload>(p), hana::true_c);
     }
   };
 } // nbdl
