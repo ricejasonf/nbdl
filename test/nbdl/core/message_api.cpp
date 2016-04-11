@@ -217,6 +217,8 @@ TEST_CASE("to_downstream (create)", "[message_api]")
   CHECK(hana::equal(message::get_path(down2), Path<1>{1}));
   CHECK(hana::equal(*message::get_maybe_payload(down1), Payload<1>{11}));
   CHECK(hana::equal(*message::get_maybe_payload(down2), Payload<1>{111}));
+  CHECK(*message::get_maybe_is_from_root(down1) == false);
+  CHECK(*message::get_maybe_is_from_root(down2) == false);
 }
 
 TEST_CASE("to_downstream (read)", "[message_api]")
@@ -247,4 +249,19 @@ TEST_CASE("to_downstream (delete)", "[message_api]")
   auto down = msgs.to_downstream(m);
   BOOST_HANA_CONSTANT_ASSERT(hana::decltype_(down) == hana::type_c<DownstreamDelete<3>>);
   CHECK(hana::equal(message::get_path(down), Path<3>{3}));
+}
+
+TEST_CASE("to_downstream_from_root (create)", "[message_api]")
+{
+  auto m = msgs.make_upstream_create_message(Path<1>{1}, Payload<1>{11});
+  auto down1 = msgs.to_downstream_from_root(m);
+  auto down2 = msgs.to_downstream_from_root(m, Payload<1>{111}); // different payload
+  BOOST_HANA_CONSTANT_ASSERT(hana::decltype_(down1) == hana::type_c<DownstreamCreate<1>>);
+  BOOST_HANA_CONSTANT_ASSERT(hana::decltype_(down2) == hana::type_c<DownstreamCreate<1>>);
+  CHECK(hana::equal(message::get_path(down1), Path<1>{1}));
+  CHECK(hana::equal(message::get_path(down2), Path<1>{1}));
+  CHECK(hana::equal(*message::get_maybe_payload(down1), Payload<1>{11}));
+  CHECK(hana::equal(*message::get_maybe_payload(down2), Payload<1>{111}));
+  CHECK(*message::get_maybe_is_from_root(down1) == true);
+  CHECK(*message::get_maybe_is_from_root(down2) == true);
 }
