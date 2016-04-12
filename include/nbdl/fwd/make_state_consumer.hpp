@@ -19,8 +19,8 @@ namespace nbdl
   template <typename T>
   struct make_state_consumer_fn
   {
-    template <typename PushFn, typename GetFn, typename ...Args>
-    constexpr decltype(auto) operator()(PushFn&&, GetFn&&, Args&& ...) const;
+    template <typename PushApi, typename GetFn, typename ...Args>
+    constexpr decltype(auto) operator()(PushApi&&, GetFn&&, Args&& ...) const;
   };
 
   template <typename T>

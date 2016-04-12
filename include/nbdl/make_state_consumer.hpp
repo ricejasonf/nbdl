@@ -14,9 +14,9 @@
 namespace nbdl
 {
   template <typename T>
-  template <typename PushFn, typename GetFn, typename ...Args>
+  template <typename PushApi, typename GetFn, typename ...Args>
   constexpr decltype(auto) make_state_consumer_fn<T>::operator()(
-    PushFn&& push,
+    PushApi&& push,
     GetFn&& get,
     Args&& ...args
   ) const
@@ -24,7 +24,7 @@ namespace nbdl
     using Tag = hana::tag_of_t<T>;
     using Impl = make_state_consumer_impl<Tag>;
     using Return = decltype(Impl::apply(
-      std::forward<PushFn>(push),
+      std::forward<PushApi>(push),
       std::forward<GetFn>(get),
       std::forward<Args>(args)...
     ));
@@ -34,7 +34,7 @@ namespace nbdl
       , "nbdl::make_state_consumer<T>(push, args...) must return a StateConsumer.");
 
     return Impl::apply(
-      std::forward<PushFn>(push),
+      std::forward<PushApi>(push),
       std::forward<GetFn>(get),
       std::forward<Args>(args)...
     );
@@ -44,7 +44,8 @@ namespace nbdl
   struct make_state_consumer_impl<Tag, hana::when<condition>>
     : hana::default_
   {
-    static constexpr auto apply(...) = delete;
+    // Not marking this as delete makes for a better error message.
+    static constexpr void apply(...) { }
   };
 } // nbdl
 

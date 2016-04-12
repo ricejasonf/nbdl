@@ -16,19 +16,19 @@
 
 namespace nbdl
 {
-  template<typename T, typename Message>
-  constexpr auto send_upstream_message_fn::operator()(T&& t, Message&& m) const
+  template<typename Provider, typename Message>
+  constexpr auto send_upstream_message_fn::operator()(Provider&& p, Message&& m) const
   {
-    using Tag = hana::tag_of_t<T>;
+    using Tag = hana::tag_of_t<Provider>;
     using Impl = send_upstream_message_impl<Tag>;
     using MessageTag = hana::tag_of_t<Message>;
 
-    static_assert(nbdl::Provider<T>::value,
-      "nbdl::send_upstream_message(t, m) requires 't' to be a Provider");
+    static_assert(nbdl::Provider<Provider>::value,
+      "nbdl::send_upstream_message(p, m) requires 'p' to be a Provider");
     static_assert(nbdl::UpstreamMessage<MessageTag>::value,
-      "nbdl::send_upstream_message(t, m) requires 'm' to be an UpstreamMessage");
+      "nbdl::send_upstream_message(p, m) requires 'm' to be an UpstreamMessage");
 
-    return Impl::apply(std::forward<T>(t), std::forward<Message>(m));
+    return Impl::apply(std::forward<Provider>(p), std::forward<Message>(m));
   };
 
   template<typename Tag, bool condition>

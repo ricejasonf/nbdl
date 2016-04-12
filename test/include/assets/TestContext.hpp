@@ -8,12 +8,14 @@
 #ifndef NBDL_TEST_ASSETS_TEST_CONTEXT_HPP
 #define NBDL_TEST_ASSETS_TEST_CONTEXT_HPP
 
-#include<def/builder/Context.hpp>
-#include<def/directives.hpp>
+#include <def/builder/Context.hpp>
+#include <def/directives.hpp>
 #include <nbdl/entity_members.hpp>
-#include<Path.hpp>
+#include <Path.hpp>
 
 #include <boost/hana.hpp>
+#include <utility>
+#include <vector>
 
 namespace test_context {
   namespace name {
@@ -61,6 +63,7 @@ namespace test_context_def {
   namespace entity = test_context::entity;
   using namespace nbdl_def;
 
+  // Provider and Consumer are actually tags
   template<typename Provider1, typename Provider2, typename Consumer1, typename Consumer2>
   constexpr auto make(
       Provider1 const& p1,
@@ -132,10 +135,15 @@ namespace test_context {
     int_tag() : x(i) { }
   };
 
-  template<typename PushFn, typename T = void>
+  struct provider_tag { };
+  struct consumer_tag { };
+  struct null_system_message { };
+
+  template<typename PushApi, typename T = void>
   struct provider
   {
-    PushFn push;
+    using hana_tag = test_context::provider_tag;
+    PushApi push;
     T t_;
 
     template<typename P, typename A>
@@ -145,34 +153,51 @@ namespace test_context {
     { }
   };
 
-  template<typename PushFn>
-  struct provider<PushFn, void>
+  template<typename PushApi>
+  struct provider<PushApi, void>
   {
-    PushFn push;
+    using hana_tag = test_context::provider_tag;
+
+    // If there are other providers the variants supplied by the PushApi
+    // will probably not be sufficient.
+    using MessageVariant = decltype(std::declval<PushApi>()
+      .template get_upstream_variant_type<null_system_message>());
+
+    PushApi push;
+    std::vector<MessageVariant> recorded_messages;
 
     template<typename P>
     provider(P&& p)
       : push(std::forward<P>(p))
+      , recorded_messages()
     { }
   };
 
-  template<typename PushFn, typename T = void>
+  template<typename PushApi, typename T = void>
   struct consumer
   {
-    PushFn push;
+    using hana_tag = test_context::consumer_tag;
+
+    using MessageVariant = decltype(std::declval<PushApi>()
+      .template get_downstream_variant_type<null_system_message>());
+
+    PushApi push;
     T t_;
+    std::vector<MessageVariant> recorded_messages;
 
     template<typename P, typename A>
     consumer(P&& p, A&& a)
       : push(std::forward<P>(p))
       , t_(std::forward<A>(a))
+      , recorded_messages()
     { }
   };
 
-  template<typename PushFn>
-  struct consumer<PushFn, void>
+  template<typename PushApi>
+  struct consumer<PushApi, void>
   {
-    PushFn push;
+    using hana_tag = test_context::consumer_tag;
+    PushApi push;
 
     template<typename P>
     consumer(P&& p)
@@ -188,5 +213,52 @@ namespace test_context {
     nbdl::path_type<int, entity::root2, entity::my_entity>
   )::type;
 } // test_context
+
+namespace nbdl
+{
+  // Provider
+
+  template <>
+  struct make_provider_impl<test_context::provider_tag>
+  {
+    template <typename ...Args>
+    static constexpr auto apply(Args&& ...args)
+    {
+      return test_context::provider<std::decay_t<Args>...>(std::forward<Args>(args)...);
+    }
+  };
+
+  template <>
+  struct send_upstream_message_impl<test_context::provider_tag>
+  {
+    template <typename Provider, typename Message>
+    static constexpr auto apply(Provider& p, Message&& m)
+    {
+      p.recorded_messages.push_back(std::forward<Message>(m));
+    }
+  };
+
+  // Consumer
+
+  template <>
+  struct make_consumer_impl<test_context::consumer_tag>
+  {
+    template <typename ...Args>
+    static constexpr auto apply(Args&& ...args)
+    {
+      return test_context::consumer<std::decay_t<Args>...>(std::forward<Args>(args)...);
+    }
+  };
+
+  template <>
+  struct send_downstream_message_impl<test_context::consumer_tag>
+  {
+    template <typename Provider, typename Message>
+    static constexpr auto apply(Provider& p, Message&& m)
+    {
+      p.recorded_messages.push_back(std::forward<Message>(m));
+    }
+  };
+} // nbdl
 
 #endif

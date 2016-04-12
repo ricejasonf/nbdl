@@ -21,9 +21,13 @@ namespace nbdl
   template<typename T>
   struct Consumer
   {
+    using Tag = typename hana::tag_of<T>::type;
     static constexpr bool value =
-          !hana::is_default<nbdl::send_downstream_message_impl  <T>>::value
-      &&  !hana::is_default<nbdl::make_consumer_impl            <T>>::value
+          !hana::is_default<nbdl::send_downstream_message_impl  <Tag>>::value
+      && (
+          !hana::is_default<nbdl::make_consumer_impl            <Tag>>::value
+      ||  !hana::is_default<nbdl::make_state_consumer_impl      <Tag>>::value
+      )
       ;
   };
 } // nbdl

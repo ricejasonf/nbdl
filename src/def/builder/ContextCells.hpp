@@ -8,11 +8,13 @@
 #define NBDL_DEF_BUILDER_CONTEXT_CELLS_HPP
 
 #include<boost/hana.hpp>
+#include<boost/hana/experimental/types.hpp>
 
 namespace nbdl_def {
 namespace builder {
 
-namespace hana = boost::hana;
+namespace hana  = boost::hana;
+namespace hanax = boost::hana::experimental;
 
 // return provider lookup, consumer lookup, and tuple of the instances of those
 struct context_cells_fn
@@ -38,19 +40,14 @@ struct context_cells_fn
     }
   };
 
-  template<typename ProviderMfs, typename ConsumerMfs>
-  struct make_context_cells_fn
+  struct make_cell_tags_fn
   {
-    template<typename PushUpstreamFnType, typename PushDownstreamFnType>
-    constexpr auto operator()(PushUpstreamFnType, PushDownstreamFnType)
+    template<typename ...ProviderTags, typename ...ConsumerTags>
+    constexpr auto operator()(mpdef::list<ProviderTags...>, mpdef::list<ConsumerTags...>)
     {
-      return hana::unpack(
-        hana::concat(
-          hana::ap(ProviderMfs{}, mpdef::make_list(PushDownstreamFnType{})),
-          hana::ap(ConsumerMfs{}, mpdef::make_list(PushUpstreamFnType{}))
-        ),
-        hana::template_<hana::tuple>
-      );
+      return hana::type_c<
+        hanax::types<hana::tag_of_t<ProviderTags>..., hana::tag_of_t<ConsumerTags>...>
+      >;
     }
   };
 
@@ -78,13 +75,9 @@ struct context_cells_fn
       mpdef::make_map ^on^ make_consumer_lookup_pair_fn<decltype(ckeys)>{}
     ));
 
-    constexpr auto make_context_cells = hana::type_c<
-      make_context_cells_fn<decltype(pvals), decltype(cvals)>
-    >;
-
     // the order should match the first three
     // template params of nbdl::Context
-    return mpdef::make_list(plookup, clookup, make_context_cells);
+    return mpdef::make_list(plookup, clookup, make_cell_tags_fn{}(pvals, cvals));
   }
 };
 constexpr context_cells_fn context_cells{};

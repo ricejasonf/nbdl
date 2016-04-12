@@ -145,19 +145,31 @@ namespace nbdl
       return *message_type;
     }
 
+    template <typename SystemMessage>
+    constexpr auto get_upstream_variant_type() const
+    {
+      return hana::unpack(UpstreamTypes{},
+        hana::partial(hana::template_<nbdl::variant>, hana::type_c<SystemMessage>));
+    }
+
+    template <typename SystemMessage>
+    constexpr auto get_downstream_variant_type() const
+    {
+      return hana::unpack(DownstreamTypes{},
+        hana::partial(hana::template_<nbdl::variant>, hana::type_c<SystemMessage>));
+    }
+
     template <typename SystemMessage, typename Message>
     auto make_upstream_variant(Message&& m) const
     {
-      using Variant = typename decltype(hana::unpack(UpstreamTypes{},
-        hana::partial(hana::template_<nbdl::variant>, hana::type_c<SystemMessage>)))::type;
+      using Variant = typename decltype(get_upstream_variant_type<SystemMessage>())::type;
       return Variant(std::forward<Message>(m));
     }
 
     template <typename SystemMessage, typename Message>
     auto make_downstream_variant(Message&& m) const
     {
-      using Variant = typename decltype(hana::unpack(DownstreamTypes{},
-        hana::partial(hana::template_<nbdl::variant>, hana::type_c<SystemMessage>)))::type;
+      using Variant = typename decltype(get_downstream_variant_type<SystemMessage>())::type;
       return Variant(std::forward<Message>(m));
     }
 

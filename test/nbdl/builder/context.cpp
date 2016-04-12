@@ -5,10 +5,11 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include<assets/TestContext.hpp>
-#include<def/builder/Context.hpp>
+#include <assets/TestContext.hpp>
+#include <def/builder/Context.hpp>
+#include <nbdl/make_context.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace hana = boost::hana;
 
@@ -17,26 +18,31 @@ int main()
   // these are just constructor smoke tests
   {
     // test default construction
-    auto def = test_context_def::make(
-      hana::template_<test_context::provider>,
-      hana::template_<test_context::provider>,
-      hana::template_<test_context::consumer>,
-      hana::template_<test_context::consumer>
+    constexpr auto def = test_context_def::make(
+      test_context::provider_tag{},
+      test_context::provider_tag{},
+      test_context::consumer_tag{},
+      test_context::consumer_tag{}
     );
-    using Context = test_context_def::make_context_t<decltype(def)>;
-    Context();
+    auto context_ptr = nbdl::make_unique_context(def);
   }
   {
     using test_context::int_tag;
-    // test single parameter construction
-    auto def = test_context_def::make(
-      hana::reverse_partial(hana::template_<test_context::provider>, hana::type_c<int_tag<1>>),
-      hana::reverse_partial(hana::template_<test_context::provider>, hana::type_c<int_tag<2>>),
-      hana::reverse_partial(hana::template_<test_context::consumer>, hana::type_c<int_tag<3>>),
-      hana::reverse_partial(hana::template_<test_context::consumer>, hana::type_c<int_tag<4>>)
+    constexpr auto def = test_context_def::make(
+      test_context::provider_tag{},
+      test_context::provider_tag{},
+      test_context::consumer_tag{},
+      test_context::consumer_tag{}
     );
-    using Context = test_context_def::make_context_t<decltype(def)>;
-    Context(int_tag<1>{}, int_tag<2>{}, int_tag<3>{}, int_tag<4>{});
+    // test single parameter construction
+    auto context_ptr = nbdl::make_unique_context(
+      def,
+      int_tag<1>{},
+      int_tag<2>{},
+      int_tag<3>{},
+      int_tag<4>{}
+    );
   }
-  // TODO: construct a context with a hana::map
+  // It would be nice to be able to
+  // construct a context with named params.
 }
