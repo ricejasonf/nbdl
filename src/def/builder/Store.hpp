@@ -7,8 +7,10 @@
 #ifndef NBDL_DEF_BUILDER_STORE_HPP
 #define NBDL_DEF_BUILDER_STORE_HPP
 
-#include<def/builder/AccessPointMeta.hpp>
-#include<Store.hpp>
+#include <def/builder/AccessPointMeta.hpp>
+//#include<Store.hpp>
+#include <nbdl/make_store.hpp>
+#include <nbdl/null_store.hpp>
 
 namespace nbdl_def {
 namespace builder {
@@ -16,12 +18,9 @@ namespace builder {
 struct store_fn
 {
   template<typename PathType, typename AccessPoint>
-  constexpr auto operator()(PathType path_type, AccessPoint access_point) const
+  constexpr auto operator()(PathType path_type, AccessPoint) const
   {
-    return hana::template_<nbdl::store>(
-        access_point_meta::store_container(access_point)(path_type),
-        path_type
-      );
+    return hana::type_c<decltype(nbdl::make_store<nbdl::null_store>(path_type))>;
   }
 };
 constexpr store_fn store{};

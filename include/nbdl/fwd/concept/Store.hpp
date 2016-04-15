@@ -9,7 +9,7 @@
 
 namespace nbdl
 {
-  template<typename T>
+  template <typename T>
   struct Store;
 } // nbdl
 

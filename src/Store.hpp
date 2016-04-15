@@ -8,6 +8,7 @@
 #define NBDL_STORE_HPP
 
 #include "store/HashMap.hpp"
+#include <nbdl/fwd/make_store.hpp> // for nbdl::not_found
 
 namespace nbdl {
 
@@ -46,8 +47,6 @@ class store
 		return container.get(path).match(fns...);
 	}
 };
-
-struct not_found {};
 
 }//nbdl
 

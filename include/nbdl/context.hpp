@@ -53,7 +53,7 @@ namespace nbdl {
       template <typename Message>
       void push(Message&& m)
       {
-        static_assert(UpstreamMessage<Message>::value,
+        static_assert(nbdl::UpstreamMessage<Message>::value,
           "nbdl::context::push_upstream_api requires an UpstreamMessage");
          ctx.push_message(std::forward<Message>(m));
       }
@@ -71,7 +71,7 @@ namespace nbdl {
       template <typename Message>
       void push(Message&& m)
       {
-        static_assert(DownstreamMessage<Message>::value,
+        static_assert(nbdl::DownstreamMessage<Message>::value,
           "nbdl::context::push_downstream_api requires a DownstreamMessage");
          ctx.push_message(std::forward<Message>(m));
       }
@@ -207,26 +207,25 @@ namespace nbdl {
     template <typename Message>
     void propagate_message(Message&& m, message::channel::downstream)
     {
-      propagate_downstream(std::forward<Message>(m), message::channel::downstream{});
+      propagate_downstream(std::forward<Message>(m), message::channel::downstream{},
+        hana::size_c<consumer_count>);
     }
 
     template <typename Message>
-    void propagate_downstream(Message const&, message::channel::upstream,
-      hana::when<(consumer_count == 0)> = {})
+    void propagate_downstream(Message const&, message::channel::upstream, hana::size_t<0>)
     { }
 
     template <typename Message>
-    void propagate_downstream(Message const& m, message::channel::upstream,
-      hana::when<(consumer_count > 0)> = {})
+    void propagate_downstream(Message const& m, message::channel::upstream, ...)
     {
       propagate_downstream(MessageApi{}.to_downstream(m), message::channel::downstream{});
     }
 
     template <typename Message>
-    void propagate_downstream(Message const& m, message::channel::downstream)
+    void propagate_downstream(Message const& m, message::channel::downstream, ...)
     {
       // notify all consumers
-      hana::while_(hana::less.than(hana::length(cells)), provider_count,
+      hana::for_each(hana::make_range(hana::size_c<provider_count>, hana::length(cells)),
         [&](auto i) {
           nbdl::send_downstream_message(cells[i], m);
         });
@@ -286,8 +285,8 @@ namespace nbdl {
       if (nbdl::apply_action(store, m))
       {
         // the state changed
-        propagate_downstream(m, message::get_channel(m));
-        notify_state_consumers(message::get_path(m));
+        propagate_downstream(m, message::get_channel(m), hana::size_c<consumer_count>);
+        //notify_state_consumers(message::get_path(m));
       }
       propagate_message(m, message::get_channel(m));
     }
@@ -296,7 +295,7 @@ namespace nbdl {
     template <typename Message>
     void push_message(Message&& m)
     {
-      constexpr auto channel = decltype(message::get_channel(m)){};
+      constexpr auto channel = std::decay_t<decltype(message::get_channel(m))>{};
       dispatch(std::forward<Message>(m), channel);
     }
 
@@ -343,6 +342,14 @@ namespace nbdl {
     // but that responsibility should be on the
     // Providers.
     context(context const&) = delete;
+
+    // Access cell by its position
+    // in the tuple of Providers/Consumers
+    template <std::size_t i>
+    auto& cell()
+    {
+      return hana::at_c<i>(cells);
+    }
   };
 }//nbdl
 

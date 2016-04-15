@@ -7,11 +7,11 @@
 #ifndef NBDL_NULL_STORE_HPP
 #define NBDL_NULL_STORE_HPP
 
-#include<nbdl/fwd/null_store.hpp>
-#include<nbdl/fwd/make_store.hpp>
-#include<nbdl/fwd/apply_action.hpp>
-#include<nbdl/fwd/get.hpp>
-#include<nbdl/fwd/has.hpp>
+#include<nbdl/null_store.hpp>
+#include<nbdl/make_store.hpp>
+#include<nbdl/apply_action.hpp>
+#include<nbdl/get.hpp>
+#include<nbdl/has.hpp>
 
 namespace nbdl
 {

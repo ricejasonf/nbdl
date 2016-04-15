@@ -21,11 +21,10 @@ namespace nbdl
   {
     using Tag = hana::tag_of_t<Provider>;
     using Impl = send_upstream_message_impl<Tag>;
-    using MessageTag = hana::tag_of_t<Message>;
 
     static_assert(nbdl::Provider<Provider>::value,
       "nbdl::send_upstream_message(p, m) requires 'p' to be a Provider");
-    static_assert(nbdl::UpstreamMessage<MessageTag>::value,
+    static_assert(nbdl::UpstreamMessage<Message>::value,
       "nbdl::send_upstream_message(p, m) requires 'm' to be an UpstreamMessage");
 
     return Impl::apply(std::forward<Provider>(p), std::forward<Message>(m));

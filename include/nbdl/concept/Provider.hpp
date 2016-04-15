@@ -19,7 +19,7 @@ namespace nbdl
 {
   namespace hana = boost::hana;
 
-  template<typename T>
+  template <typename T>
   struct Provider
   {
     using Tag = typename hana::tag_of<T>::type;

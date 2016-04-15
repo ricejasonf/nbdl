@@ -97,7 +97,7 @@ namespace nbdl { namespace message
   struct get_path_type_fn
   {
     template <typename Message>
-    constexpr auto operator()(Message const& m)
+    constexpr auto operator()(Message const& m) const
     {
       return hana::type_c<std::decay_t<decltype(message::get_path(m))>>;
     }

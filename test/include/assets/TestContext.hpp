@@ -143,12 +143,12 @@ namespace test_context {
   struct provider
   {
     using hana_tag = test_context::provider_tag;
-    PushApi push;
+    PushApi push_api;
     T t_;
 
     template<typename P, typename A>
     provider(P&& p, A&& a)
-      : push(std::forward<P>(p))
+      : push_api(std::forward<P>(p))
       , t_(std::forward<A>(a))
     { }
   };
@@ -160,15 +160,15 @@ namespace test_context {
 
     // If there are other providers the variants supplied by the PushApi
     // will probably not be sufficient.
-    using MessageVariant = decltype(std::declval<PushApi>()
-      .template get_upstream_variant_type<null_system_message>());
+    using MessageVariant = typename decltype(std::declval<PushApi>()
+      .template get_upstream_variant_type<null_system_message>())::type;
 
-    PushApi push;
+    PushApi push_api;
     std::vector<MessageVariant> recorded_messages;
 
     template<typename P>
     provider(P&& p)
-      : push(std::forward<P>(p))
+      : push_api(std::forward<P>(p))
       , recorded_messages()
     { }
   };
@@ -178,16 +178,16 @@ namespace test_context {
   {
     using hana_tag = test_context::consumer_tag;
 
-    using MessageVariant = decltype(std::declval<PushApi>()
-      .template get_downstream_variant_type<null_system_message>());
+    using MessageVariant = typename decltype(std::declval<PushApi>()
+      .template get_downstream_variant_type<null_system_message>())::type;
 
-    PushApi push;
+    PushApi push_api;
     T t_;
     std::vector<MessageVariant> recorded_messages;
 
     template<typename P, typename A>
     consumer(P&& p, A&& a)
-      : push(std::forward<P>(p))
+      : push_api(std::forward<P>(p))
       , t_(std::forward<A>(a))
       , recorded_messages()
     { }
@@ -197,11 +197,17 @@ namespace test_context {
   struct consumer<PushApi, void>
   {
     using hana_tag = test_context::consumer_tag;
-    PushApi push;
+
+    using MessageVariant = typename decltype(std::declval<PushApi>()
+      .template get_downstream_variant_type<null_system_message>())::type;
+
+    PushApi push_api;
+    std::vector<MessageVariant> recorded_messages;
 
     template<typename P>
     consumer(P&& p)
-      : push(std::forward<P>(p))
+      : push_api(std::forward<P>(p))
+      , recorded_messages()
     { }
   };
 

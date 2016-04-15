@@ -11,6 +11,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   store.cpp
   provider_map.cpp
   message_api.cpp
+  context.cpp
 )
 
 # compile-time tests

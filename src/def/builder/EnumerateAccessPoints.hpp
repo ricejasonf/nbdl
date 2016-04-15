@@ -7,18 +7,19 @@
 #ifndef NBDL_DEF_BUILDER_ENUMERATE_ACCESS_POINTS_HPP
 #define NBDL_DEF_BUILDER_ENUMERATE_ACCESS_POINTS_HPP
 
-#include<def/builder/AccessPointMeta.hpp>
-#include<mpdef/AppendIf.hpp>
-#include<mpdef/CollectSettings.hpp>
-#include<mpdef/ComposeCollectors.hpp>
-#include<mpdef/FindInTree.hpp>
-#include<mpdef/List.hpp>
-#include<mpdef/TreeNode.hpp>
-#include<def/directives.hpp>
-#include<Store.hpp>
+#include <def/builder/AccessPointMeta.hpp>
+#include <mpdef/AppendIf.hpp>
+#include <mpdef/CollectSettings.hpp>
+#include <mpdef/ComposeCollectors.hpp>
+#include <mpdef/FindInTree.hpp>
+#include <mpdef/List.hpp>
+#include <mpdef/TreeNode.hpp>
+#include <def/directives.hpp>
+//#include <Store.hpp>
+#include <nbdl/null_store.hpp>
 
-#include<boost/hana.hpp>
-#include<utility>
+#include <boost/hana.hpp>
+#include <utility>
 
 namespace nbdl_def {
 namespace builder {
@@ -104,9 +105,7 @@ namespace enum_access_points_detail {
       return builder::make_access_point_meta(
         node_children[tag::Name],
         node_children[tag::Actions],
-        settings[tag::StoreContainer].value_or(
-          hana::template_<nbdl::store_container::hash_map>
-        ),
+        settings[tag::StoreContainer].value_or(hana::type_c<nbdl::null_store>),
         entity_names
       );
     }

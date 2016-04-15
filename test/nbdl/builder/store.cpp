@@ -41,22 +41,18 @@ int main()
 {
   {
     using builder::access_point_meta;
-    constexpr auto store_impl = hana::template_<nbdl::store_container::hash_map>;
     constexpr auto path_type = nbdl::path_type<int, entity::e1>;
     constexpr auto access_point = builder::make_access_point_meta_with_map(
-      access_point_meta::name           = names::Foo,
-      access_point_meta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-      access_point_meta::store_container = store_impl,
-      access_point_meta::entity_names    = hana::make_tuple(names::E1)
+      access_point_meta::name             = names::Foo,
+      access_point_meta::actions          = hana::make_tuple(nbdl_def::tag::Create),
+      access_point_meta::store_container  = nbdl::null_store{},
+      access_point_meta::entity_names     = hana::make_tuple(names::E1)
     );
 
     BOOST_HANA_CONSTANT_ASSERT(
       builder::store(path_type, access_point)
         ==
-      hana::template_<nbdl::store>(
-        store_impl(path_type),
-        path_type
-      )
+      hana::type_c<nbdl::null_store>
     );
   }
 }

@@ -7,7 +7,7 @@
 #ifndef NBDL_SEND_DOWNSTREAM_MESSAGE_HPP
 #define NBDL_SEND_DOWNSTREAM_MESSAGE_HPP
 
-#include<nbdl/concept/Provider.hpp>
+#include<nbdl/concept/Consumer.hpp>
 #include<nbdl/concept/DownstreamMessage.hpp>
 #include<nbdl/concept/StateConsumer.hpp>
 #include<nbdl/fwd/send_downstream_message.hpp>
@@ -22,11 +22,10 @@ namespace nbdl
   {
     using Tag = hana::tag_of_t<T>;
     using Impl = send_downstream_message_impl<Tag>;
-    using MessageTag = hana::tag_of_t<Message>;
 
-    static_assert(nbdl::Provider<T>::value,
-      "nbdl::send_downstream_message(t, m) requires 't' to be a Provider");
-    static_assert(nbdl::DownstreamMessage<MessageTag>::value,
+    static_assert(nbdl::Consumer<T>::value,
+      "nbdl::send_downstream_message(t, m) requires 't' to be a Consumer");
+    static_assert(nbdl::DownstreamMessage<Message>::value,
       "nbdl::send_downstream_message(t, m) requires 'm' to be an DownstreamMessage");
 
     return Impl::apply(std::forward<T>(t), std::forward<Message>(m));

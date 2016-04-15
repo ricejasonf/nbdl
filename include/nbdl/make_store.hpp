@@ -7,8 +7,9 @@
 #ifndef NBDL_MAKE_STORE_HPP
 #define NBDL_MAKE_STORE_HPP
 
-#include<nbdl/concept/Store.hpp>
 #include<nbdl/fwd/make_store.hpp>
+
+#include<nbdl/concept/Store.hpp>
 
 namespace nbdl
 {
@@ -24,6 +25,7 @@ namespace nbdl
       nbdl::Store<Return>::value
       && std::is_default_constructible<Return>::value
       , "nbdl::make_store<T>(path_type) must return a Store (default constructible)");
+    return Return{};
   };
 
   template <typename Tag, bool condition>

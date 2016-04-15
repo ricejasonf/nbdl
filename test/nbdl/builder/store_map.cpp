@@ -85,7 +85,7 @@ int main()
     constexpr auto path_type_2 = nbdl::path_type<int, entity::e1, entity::e2>;
     constexpr auto path_type_3 = nbdl::path_type<int, entity::e3>;
 
-    constexpr auto store_impl = hana::template_<nbdl::store_container::hash_map>;
+    constexpr auto store_impl = hana::type_c<nbdl::null_store>;
     constexpr auto access_points = hana::make_tuple(
       builder::make_access_point_meta_with_map(
         access_point_meta::name           = names::Foo1,
@@ -112,24 +112,9 @@ int main()
         ==
       hana::decltype_(
         hana::make_map(
-          hana::make_pair(path_type_1,
-            typename decltype(hana::template_<nbdl::store>(
-              store_impl(path_type_1),
-              path_type_1
-            ))::type{}
-          ),
-          hana::make_pair(path_type_2,
-            typename decltype(hana::template_<nbdl::store>(
-              store_impl(path_type_2),
-              path_type_2
-            ))::type{}
-          ),
-          hana::make_pair(path_type_3,
-            typename decltype(hana::template_<nbdl::store>(
-              store_impl(path_type_3),
-              path_type_3
-            ))::type{}
-          )
+          hana::make_pair(path_type_1, nbdl::null_store{}),
+          hana::make_pair(path_type_2, nbdl::null_store{}),
+          hana::make_pair(path_type_3, nbdl::null_store{})
         )
       )
     );

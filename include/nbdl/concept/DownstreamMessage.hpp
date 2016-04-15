@@ -30,7 +30,7 @@ namespace nbdl
   struct DownstreamMessage<T, hana::when<hana::Sequence<T>::value>>
   {
     static constexpr bool value = std::is_same<
-      decltype(hana::at(std::declval<T>(), hana::int_c<0>)),
+      std::decay_t<decltype(hana::at(std::declval<T>(), hana::int_c<0>))>,
       message::channel::downstream
     >::value;
   };
