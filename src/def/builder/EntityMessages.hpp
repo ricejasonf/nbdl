@@ -17,6 +17,7 @@
 #include<def/builder/Path.hpp>
 #include<mpdef/Pair.hpp>
 #include<mpdef/Map.hpp>
+#include<nbdl/make_store.hpp> // nbdl::not_found
 #include<nbdl/message.hpp>
 
 #include<boost/hana.hpp>
@@ -74,9 +75,22 @@ namespace entity_messages_detail {
     // these are reversed to truncate the nothings
     using type = decltype(hana::reverse(hana::drop_while(std::declval<Xs>(), hana::is_nothing)));
   };
+
+  struct entity_message_meta_is_downstream_read_fn
+  {
+    template <typename EntityMessageMeta>
+    constexpr auto operator()(EntityMessageMeta m)
+    {
+      return
+            hana::decltype_(entity_message_meta::action(m))
+              == hana::type_c<nbdl::message::action::read>
+        &&  hana::decltype_(entity_message_meta::channel(m))
+              == hana::type_c<nbdl::message::channel::downstream>
+        ;
+    }
+  };
 }
 
-// TODO possibly make this a metafunction
 template <typename AccessPoint>
 struct entity_message_fn
 {
@@ -93,6 +107,23 @@ struct entity_message_fn
     using Tuple = decltype(hana::concat(std::declval<Comps>(), std::declval<Maybes>()));
 
     return hana::type_c<Tuple>;
+  }
+};
+
+template <typename AccessPoint>
+struct entity_not_found_message_fn
+{
+  template<typename EntityMessageMeta>
+  constexpr auto operator()(EntityMessageMeta e) const
+  {
+    constexpr auto message_meta = builder::make_entity_message_meta(
+      entity_message_meta::path(e),
+      hana::decltype_(nbdl::not_found{}), // sub the entity with not_found
+      entity_message_meta::private_payload(e),
+      entity_message_meta::action(e),
+      entity_message_meta::channel(e)
+    );
+    return entity_message_fn<AccessPoint>{}(message_meta);
   }
 };
 
@@ -135,10 +166,14 @@ struct entity_messages_fn
       mpdef::make_list ^hana::on^ hana::fuse(builder::make_entity_message_meta)
     );
 
-    // TODO: add ValidationFail response messages??
-
-    return hana::unpack(messages_meta,
-      mpdef::make_list ^hana::on^ entity_message_fn<AccessPoint>{}
+    // add a nbdl::not_found message if a read is present
+    return hana::concat(
+      hana::unpack(messages_meta, mpdef::make_list ^hana::on^ entity_message_fn<AccessPoint>{}),
+      hana::maybe(
+        mpdef::make_list(),
+        hana::compose(mpdef::make_list, entity_not_found_message_fn<AccessPoint>{}),
+        hana::find_if(messages_meta,
+          entity_messages_detail::entity_message_meta_is_downstream_read_fn{}))
     );
   }
 };

@@ -59,7 +59,7 @@ namespace nbdl
     static constexpr bool apply(Store&&, Path&&)
     {
       // has nothing
-      return true;
+      return false;
     }
   };
 } // nbdl

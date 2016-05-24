@@ -12,7 +12,7 @@
 #include<nbdl/make_store.hpp>
 #include<nbdl/apply_action.hpp>
 #include<nbdl/has.hpp>
-#include<nbdl/get.hpp>
+#include<nbdl/match.hpp>
 
 #include<boost/hana/core/default.hpp>
 #include<boost/hana/core/tag_of.hpp>
@@ -29,7 +29,10 @@ namespace nbdl
           !hana::is_default<nbdl::make_store_impl     <Tag>>::value
       &&  !hana::is_default<nbdl::apply_action_impl   <Tag>>::value
       &&  !hana::is_default<nbdl::has_impl            <Tag>>::value
-      &&  !hana::is_default<nbdl::get_impl            <Tag>>::value
+      && (
+              !hana::is_default<nbdl::match_impl      <Tag>>::value
+          ||  !hana::is_default<nbdl::get_impl        <Tag>>::value
+         )
       ;
   };
 } // nbdl

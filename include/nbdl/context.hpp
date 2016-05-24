@@ -14,9 +14,11 @@
 #include <nbdl/concept/StateConsumer.hpp>
 #include <nbdl/detail/concept_pred.hpp>
 #include <nbdl/apply_action.hpp>
+#include <nbdl/match.hpp>
 #include <nbdl/message.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>
+#include <nbdl/variant.hpp>
 
 #include <boost/hana.hpp>
 #include <boost/hana/experimental/types.hpp>
@@ -199,7 +201,8 @@ namespace nbdl {
     template <typename Message>
     void propagate_message(Message const& m, message::channel::upstream)
     {
-      using Index = decltype(hana::at_key(ProviderLookup{}, hana::decltype_(message::get_path(m))));
+      using Path = std::decay_t<decltype(message::get_path(m))>;
+      using Index = decltype(hana::at_key(ProviderLookup{}, hana::type_c<Path>));
       constexpr Index index{};
       nbdl::send_upstream_message(cells[index], m);
     }
@@ -243,14 +246,29 @@ namespace nbdl {
       {
         nbdl::apply_action(store, m);
         // send response message
-        propagate_message(
-          MessageApi{}.to_downstream(m, nbdl::get(store, message::get_path(m))),
-          message::channel::downstream{}
+        nbdl::match(store, message::get_path(m),
+          [&](nbdl::unresolved)
+          {
+            // Do nothing. A read is already in process.
+            // The Consumer should notify the appropriate requestors
+            // once the response (downstream read message)
+            // is received.
+          },
+          [&](auto&& value)
+          {
+            // There is a resolved value in the store
+            // so send it as a downstream read message,
+            // and don't bother the Provider with it.
+            propagate_message(
+              MessageApi{}.to_downstream(m, std::forward<decltype(value)>(value)),
+              message::channel::downstream{}
+            );
+          }
         );
       }
       else
       {
-        // the Store should create an 'unresolved'
+        // The Store should create an 'unresolved'
         // placeholder to prevent duplicate upstream
         // read requests and so any StateConsumer
         // gets a value
@@ -296,7 +314,8 @@ namespace nbdl {
     void push_message(Message&& m)
     {
       constexpr auto channel = std::decay_t<decltype(message::get_channel(m))>{};
-      dispatch(std::forward<Message>(m), channel);
+      constexpr auto action = std::decay_t<decltype(message::get_action(m))>{};
+      dispatch(std::forward<Message>(m), channel, action);
     }
 
     // constructor helper

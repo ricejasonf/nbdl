@@ -94,7 +94,7 @@ namespace test_context_def {
               AccessPoint(
                 Name(hana::type_c<void>),
                 EntityName(hana::type_c<entity::my_entity>),
-                Actions(Read())
+                Actions(Create(), Read())
               )
             )
           ),
@@ -107,7 +107,7 @@ namespace test_context_def {
               AccessPoint(
                 Name(hana::type_c<void>),
                 EntityName(hana::type_c<entity::my_entity>),
-                Actions(Read())
+                Actions(Create(), Read())
               )
             )
           )

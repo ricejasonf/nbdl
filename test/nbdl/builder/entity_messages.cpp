@@ -159,6 +159,14 @@ int main()
           PathType,
           hana::optional<nbdl::uid>,
           hana::optional<bool>
+        >>,
+        hana::type_c<hana::tuple<
+          channel::downstream,
+          action::read,
+          PathType,
+          hana::optional<nbdl::uid>,
+          hana::optional<bool>,
+          hana::optional<nbdl::not_found>
         >>
       )
     );

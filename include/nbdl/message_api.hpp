@@ -11,6 +11,7 @@
 #include <mpdef/Pair.hpp>
 #include <nbdl/message.hpp>
 #include <Uid.hpp> // FIXME
+#include <nbdl/make_store.hpp> // nbdl::not_found
 #include <nbdl/variant.hpp>
 
 #include <boost/hana/type.hpp>
@@ -24,8 +25,11 @@ namespace nbdl
 
   namespace detail
   {
+    template <typename Channel, typename Action, typename Path, typename ...>
+    struct message_lookup_predicate_fn;
+
     template <typename Channel, typename Action, typename Path>
-    struct message_lookup_predicate_fn
+    struct message_lookup_predicate_fn<Channel, Action, Path>
     {
       template <typename MessageType>
       constexpr auto operator()(MessageType const&)
@@ -39,6 +43,22 @@ namespace nbdl
                 == decay(hana::type_c<Action>)
           &&  decay(hana::type_c<decltype(message::get_path(std::declval<M>()))>)
                 == decay(hana::type_c<Path>)
+          ;
+      }
+    };
+
+    template <typename Channel, typename Action, typename Path, typename Payload>
+    struct message_lookup_predicate_fn<Channel, Action, Path, Payload>
+    {
+      template <typename MessageType>
+      constexpr auto operator()(MessageType const&)
+      {
+        using hana::traits::decay;
+        using M = typename MessageType::type;
+        return
+              message_lookup_predicate_fn<Channel, Action, Path>{}(MessageType{})
+          &&  decay(hana::type_c<decltype(message::get_maybe_payload(std::declval<M>()))>)
+                == decay(hana::type_c<decltype(hana::just(std::declval<Payload>()))>)
           ;
       }
     };
@@ -102,47 +122,62 @@ namespace nbdl
       using Message = typename decltype(get_message_type(
         downstream{},
         message::get_action(m),
-        message::get_path(m)
+        message::get_path(m),
+        payload
       ))::type;
 
-      // truncate trailing nothings
+      // truncate to length of Message
+      constexpr auto is_from_root = detail::make_is_from_root_fn<Message>{}(IsFromRoot{});
       return hana::unpack(
         hana::drop_back(
           hana::make_tuple(
             std::cref(message::get_path(m)),
             std::cref(message::get_maybe_uid(m)),
-            detail::make_is_from_root_fn<Message>{}(IsFromRoot{}),
+            std::cref(is_from_root),
             std::cref(payload)
           ),
           decltype(hana::size_c<6> - hana::length(std::declval<Message>())){}
         ),
-        [&](auto ...x)
+        [&](auto ...ref)
         {
           return Message(
             downstream{},
             message::get_action(m),
-            x...
+            ref.get()...
           );
         }
       );
-        
     }
 
-    public:
-
-    template <typename Channel, typename Action, typename Path>
-    constexpr auto get_message_type(Channel, Action, Path) const
+    template <typename Channel, typename Pred>
+    constexpr auto get_message_type_helper(Channel, Pred pred) const
     {
       using Messages = typename decltype(
         hana::at_key(type_list_by_channel, hana::type_c<Channel>)
       )::type;
-      constexpr auto message_type = hana::find_if(Messages{},
-        detail::message_lookup_predicate_fn<Channel, Action, Path>{});
+      constexpr auto message_type = hana::find_if(Messages{}, pred);
 
       static_assert(decltype(hana::is_just(message_type))::value
         , "This message API does not support the channel/action for this path.");
 
       return *message_type;
+    }
+
+    public:
+
+    // The fourth parameter would be the payload.
+    template <typename Path>
+    constexpr auto get_message_type(downstream, read, Path, nbdl::not_found) const
+    {
+      return get_message_type_helper(downstream{}, 
+        detail::message_lookup_predicate_fn<downstream, read, Path, nbdl::not_found>{});
+    }
+
+    template <typename Channel, typename Action, typename Path>
+    constexpr auto get_message_type(Channel, Action, Path, ...) const
+    {
+      return get_message_type_helper(Channel{}, 
+        detail::message_lookup_predicate_fn<Channel, Action, Path>{});
     }
 
     template <typename SystemMessage>
@@ -306,7 +341,7 @@ namespace nbdl
     }
 
     template <typename Message, typename Payload>
-    decltype(auto) to_downstream(Message && m, Payload&& p) const
+    decltype(auto) to_downstream(Message&& m, Payload&& p) const
     {
       return to_downstream_helper(std::forward<Message>(m), std::forward<Payload>(p), hana::false_c);
     }
@@ -318,7 +353,7 @@ namespace nbdl
     }
 
     template <typename Message, typename Payload>
-    decltype(auto) to_downstream_from_root(Message && m, Payload&& p) const
+    decltype(auto) to_downstream_from_root(Message&& m, Payload&& p) const
     {
       return to_downstream_helper(std::forward<Message>(m), std::forward<Payload>(p), hana::true_c);
     }

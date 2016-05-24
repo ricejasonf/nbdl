@@ -25,7 +25,7 @@ struct context_cells_fn
     template<typename Index>
     constexpr auto operator()(Index i) const
     {
-      return hana::unpack(ProviderKeys{}, mpdef::make_list ^hana::on^
+      return hana::unpack(hana::at(ProviderKeys{}, i), mpdef::make_list ^hana::on^
         hana::reverse_partial(mpdef::make_pair, i));
     }
   };

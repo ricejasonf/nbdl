@@ -17,7 +17,7 @@ namespace hana    = boost::hana;
 namespace entity  = test_context::entity;
 namespace message = nbdl::message;
 
-TEST_CASE("", "[context]")
+TEST_CASE("Dispatch Upstream/Downstream Read Messages", "[context]")
 {
   constexpr auto def = test_context_def::make(
     test_context::provider_tag{},
@@ -45,8 +45,11 @@ TEST_CASE("", "[context]")
   auto check_downstream_read = [](auto const& consumer)
   {
     return consumer.recorded_messages[0].match(
+      [](nbdl::unresolved) { return false; },
+      [](test_context::null_system_message) { return false; },
       [](auto const& m)
-        -> std::enable_if_t<nbdl::DownstreamMessage<decltype(m)>::value, bool>
+        -> std::enable_if_t<nbdl::DownstreamMessage<decltype(m)>::value,
+          decltype((*message::get_maybe_payload(m)).id == 2)>
       {
         auto const& payload = *message::get_maybe_payload(m);
         CHECK(payload.id == 2);
@@ -69,12 +72,6 @@ TEST_CASE("", "[context]")
   // read message from provider0
   CHECK(check_downstream_read(consumer2));
   CHECK(check_downstream_read(consumer3));
-
-#if 0
-  // TODO: Change nbdl::get to nbdl::match since they should
-  // be able to be different types (e.g. nbdl::not_found)
-  // The downstream read message will have to store the variant
-  // as the payload.
 
   // Send upstream read to provider0.
   consumer2.push_api.push(
@@ -106,5 +103,4 @@ TEST_CASE("", "[context]")
 
   // provider0 should record an upstream read message.
   CHECK(check_upstream_read(provider0));
-#endif // end of todo
 }
