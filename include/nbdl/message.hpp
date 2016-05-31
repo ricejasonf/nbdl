@@ -75,7 +75,12 @@ namespace nbdl { namespace message
       }
 
       template <typename M>
-      constexpr decltype(auto) operator()(M&& m, ...) const
+      constexpr decltype(auto) operator()(M&& m,
+        std::enable_if_t<!(
+          (nbdl::UpstreamMessage<M>::value &&  i == 4)
+          || decltype(hana::length(std::declval<M>()) <= detail::fix_index<M, i>)::value
+        ), int> = 0
+      ) const
       {
         return hana::at(std::forward<M>(m), detail::fix_index<M, i>);
       }
