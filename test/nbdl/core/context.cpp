@@ -113,43 +113,182 @@ TEST_CASE("Dispatch Upstream Read Message", "[context]")
 
 TEST_CASE("Dispatch Downstream Create Message", "[context]")
 {
-  init_record_messages();
+  hana::for_each(hana::make_tuple(
+    hana::make_pair(hana::type_c<test_context::path<0>>, hana::type_c<entity::my_entity<1>>),
+    hana::make_pair(hana::type_c<test_context::path<1>>, hana::type_c<entity::my_entity<1>>),
+    hana::make_pair(hana::type_c<test_context::path<2>>, hana::type_c<entity::my_entity<2>>),
+    hana::make_pair(hana::type_c<test_context::path<3>>, hana::type_c<entity::my_entity<3>>),
+    hana::make_pair(hana::type_c<test_context::path<4>>, hana::type_c<entity::my_entity<4>>)
+  ), [](auto types)
+  {
+    using Path = typename decltype(+hana::first(types))::type;
+    using Entity = typename decltype(+hana::second(types))::type;
+    init_record_messages();
 
-  // Send downstream create to consumers.
-  auto msg = provider0.push_api.make_downstream_create_message(
-    test_context::path1(1, 2),
-    entity::my_entity<1>{2, 1}
-  );
-  provider0.push_api.push(msg);
+    // Send downstream create to consumers.
+    auto msg = provider0.push_api.make_downstream_create_message(
+      Path(1, 2),
+      Entity{2, 1}
+    );
+    provider0.push_api.push(msg);
 
-  CHECK(provider0.recorded_messages.size() == 0);
-  CHECK(provider1.recorded_messages.size() == 0);
-  CHECK(consumer2.recorded_messages.size() == 1);
-  CHECK(consumer3.recorded_messages.size() == 1);
+    CHECK(provider0.recorded_messages.size() == 0);
+    CHECK(provider1.recorded_messages.size() == 0);
+    CHECK(consumer2.recorded_messages.size() == 1);
+    CHECK(consumer3.recorded_messages.size() == 1);
 
-  // Both consumers got the downstream
-  // create message from provider0
-  CHECK(check_message_equal(consumer2.recorded_messages[0], msg));
-  CHECK(check_message_equal(consumer3.recorded_messages[0], msg));
+    // Both consumers got the downstream
+    // create message from provider0
+    CHECK(check_message_equal(consumer2.recorded_messages[0], msg));
+    CHECK(check_message_equal(consumer3.recorded_messages[0], msg));
+  });
 }
 
 TEST_CASE("Dispatch Upstream Create Message", "[context]")
 {
-  init_record_messages();
+  // root1
+  hana::for_each(hana::make_tuple(
+    hana::make_pair(hana::type_c<test_context::path<0>>, hana::type_c<entity::my_entity<1>>)
+  ), [](auto types)
+  {
+    using Path = typename decltype(+hana::first(types))::type;
+    using Entity = typename decltype(+hana::second(types))::type;
+    init_record_messages();
 
-  // Send upstream create to provider0.
-  auto msg = consumer2.push_api.make_upstream_create_message(
-    test_context::path1(1, 2),
-    entity::my_entity<1>{2, 1}
-  );
-  consumer2.push_api.push(msg);
+    // Send upstream create to provider0.
+    auto msg = consumer2.push_api.make_upstream_create_message(
+      Path(1, 2),
+      Entity{2, 1}
+    );
+    consumer2.push_api.push(msg);
 
-  // provider1 should not receive the message.
-  CHECK(provider0.recorded_messages.size() == 1);
-  CHECK(provider1.recorded_messages.size() == 0);
-  CHECK(consumer2.recorded_messages.size() == 0);
-  CHECK(consumer3.recorded_messages.size() == 0);
+    // provider1 should not receive the message.
+    CHECK(provider0.recorded_messages.size() == 1);
+    CHECK(provider1.recorded_messages.size() == 0);
+    CHECK(consumer2.recorded_messages.size() == 0);
+    CHECK(consumer3.recorded_messages.size() == 0);
 
-  // provider0 should record an upstream create message.
-  CHECK(check_message_equal(provider0.recorded_messages[0], msg));
+    // provider0 should record an upstream create message.
+    CHECK(check_message_equal(provider0.recorded_messages[0], msg));
+  });
+
+  // root2
+  hana::for_each(hana::make_tuple(
+    hana::make_pair(hana::type_c<test_context::path<1>>, hana::type_c<entity::my_entity<1>>),
+    hana::make_pair(hana::type_c<test_context::path<2>>, hana::type_c<entity::my_entity<2>>),
+    hana::make_pair(hana::type_c<test_context::path<3>>, hana::type_c<entity::my_entity<3>>),
+    hana::make_pair(hana::type_c<test_context::path<4>>, hana::type_c<entity::my_entity<4>>)
+  ), [](auto types)
+  {
+    using Path = typename decltype(+hana::first(types))::type;
+    using Entity = typename decltype(+hana::second(types))::type;
+    init_record_messages();
+
+    // Send upstream create to provider0.
+    auto msg = consumer2.push_api.make_upstream_create_message(
+      Path(1, 2),
+      Entity{2, 1}
+    );
+    consumer2.push_api.push(msg);
+
+    // provider0 should not receive the message.
+    CHECK(provider0.recorded_messages.size() == 0);
+    CHECK(provider1.recorded_messages.size() == 1);
+    CHECK(consumer2.recorded_messages.size() == 0);
+    CHECK(consumer3.recorded_messages.size() == 0);
+
+    // provider1 should record an upstream create message.
+    CHECK(check_message_equal(provider1.recorded_messages[0], msg));
+  });
+}
+
+TEST_CASE("Dispatch Downstream Update Message", "[context]")
+{
+  hana::for_each(hana::make_tuple(
+    hana::make_pair(hana::type_c<test_context::path<0>>, hana::type_c<entity::my_entity<1>>),
+    hana::make_pair(hana::type_c<test_context::path<1>>, hana::type_c<entity::my_entity<1>>),
+    hana::make_pair(hana::type_c<test_context::path<2>>, hana::type_c<entity::my_entity<2>>),
+    hana::make_pair(hana::type_c<test_context::path<3>>, hana::type_c<entity::my_entity<3>>),
+    hana::make_pair(hana::type_c<test_context::path<4>>, hana::type_c<entity::my_entity<4>>)
+  ), [](auto types)
+  {
+    using Path = typename decltype(+hana::first(types))::type;
+    using Entity = typename decltype(+hana::second(types))::type;
+    init_record_messages();
+
+    // Send downstream update to consumers.
+    auto msg = provider0.push_api.make_downstream_update_raw_message(
+      Path(1, 2),
+      Entity{2, 1}
+    );
+    provider0.push_api.push(msg);
+
+    CHECK(provider0.recorded_messages.size() == 0);
+    CHECK(provider1.recorded_messages.size() == 0);
+    CHECK(consumer2.recorded_messages.size() == 1);
+    CHECK(consumer3.recorded_messages.size() == 1);
+
+    // Both consumers got the downstream
+    // update message from provider0
+    CHECK(check_message_equal(consumer2.recorded_messages[0], msg));
+    CHECK(check_message_equal(consumer3.recorded_messages[0], msg));
+  });
+}
+
+TEST_CASE("Dispatch Upstream Update Message", "[context]")
+{
+  // root1
+  hana::for_each(hana::make_tuple(
+    hana::make_pair(hana::type_c<test_context::path<0>>, hana::type_c<entity::my_entity<1>>)
+  ), [](auto types)
+  {
+    using Path = typename decltype(+hana::first(types))::type;
+    using Entity = typename decltype(+hana::second(types))::type;
+    init_record_messages();
+
+    // Send upstream update to provider0.
+    auto msg = consumer2.push_api.make_upstream_update_raw_message(
+      Path(1, 2),
+      Entity{2, 1}
+    );
+    consumer2.push_api.push(msg);
+
+    // provider1 should not receive the message.
+    CHECK(provider0.recorded_messages.size() == 1);
+    CHECK(provider1.recorded_messages.size() == 0);
+    CHECK(consumer2.recorded_messages.size() == 0);
+    CHECK(consumer3.recorded_messages.size() == 0);
+
+    // provider0 should record an upstream update message.
+    CHECK(check_message_equal(provider0.recorded_messages[0], msg));
+  });
+
+  // root2
+  hana::for_each(hana::make_tuple(
+    hana::make_pair(hana::type_c<test_context::path<1>>, hana::type_c<entity::my_entity<1>>),
+    hana::make_pair(hana::type_c<test_context::path<2>>, hana::type_c<entity::my_entity<2>>),
+    hana::make_pair(hana::type_c<test_context::path<3>>, hana::type_c<entity::my_entity<3>>),
+    hana::make_pair(hana::type_c<test_context::path<4>>, hana::type_c<entity::my_entity<4>>)
+  ), [](auto types)
+  {
+    using Path = typename decltype(+hana::first(types))::type;
+    using Entity = typename decltype(+hana::second(types))::type;
+    init_record_messages();
+
+    // Send upstream update to provider0.
+    auto msg = consumer2.push_api.make_upstream_update_raw_message(
+      Path(1, 2),
+      Entity{2, 1}
+    );
+    consumer2.push_api.push(msg);
+
+    // provider0 should not receive the message.
+    CHECK(provider0.recorded_messages.size() == 0);
+    CHECK(provider1.recorded_messages.size() == 1);
+    CHECK(consumer2.recorded_messages.size() == 0);
+    CHECK(consumer3.recorded_messages.size() == 0);
+
+    // provider1 should record an upstream update message.
+    CHECK(check_message_equal(provider1.recorded_messages[0], msg));
+  });
 }
