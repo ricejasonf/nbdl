@@ -40,166 +40,116 @@ void init_record_messages()
   consumer3.recorded_messages = {};
 }
 
-template <typename Channel, typename Action>
-struct check_message_fn
+struct check_message_equal_fn
 {
-  template <typename Message, typename Fn>
-  constexpr auto operator()(Message const& m, Fn const& fn) const
+  template <typename Message, typename Orig>
+  constexpr auto operator()(Message const& m, Orig const& o) const
   {
     return m.match(
-      [](nbdl::unresolved) { return false; },
-      [](test_context::null_system_message) { return false; },
       [&](auto const& m)
-        -> std::enable_if_t<decltype(
-              hana::type_c<const Channel> == hana::decltype_(message::get_channel(m))
-          &&  hana::type_c<const Action>  == hana::decltype_(message::get_action(m))
-          )::value, decltype(fn(m))>
+        -> std::enable_if_t<std::is_same<std::decay_t<decltype(m)>, std::decay_t<Orig>>::value, bool>
       {
-        return fn(m);
+        CHECK(hana::equal(
+          hana::decltype_(message::get_channel(m)),
+          hana::decltype_(message::get_channel(o))
+        ));
+        CHECK(hana::equal(
+          hana::decltype_(message::get_action(m)),
+          hana::decltype_(message::get_action(o))
+        ));
+        CHECK(hana::equal(message::get_path(m), message::get_path(o)));
+        CHECK(hana::equal(message::get_maybe_payload(m), message::get_maybe_payload(o)));
+        CHECK(hana::equal(message::get_maybe_private_payload(m), message::get_maybe_private_payload(o)));
+        CHECK(hana::equal(message::get_maybe_is_from_root(m), message::get_maybe_is_from_root(o)));
+        // TODO compare nbdl::uids
+        return true;
       },
       [](auto const&) { return false; }
     );
   }
 };
 
-template <typename Channel, typename Action>
-constexpr check_message_fn<Channel, Action> check_message{};
+constexpr struct check_message_equal_fn check_message_equal{};
 
-template <typename Message>
-void check_path(Message const& m)
-{
-  CHECK(hana::equal(
-    message::get_path(m), 
-    test_context::path1(1, 2)
-  ));
-}
-
-template <typename Message>
-void check_payload(Message const& m)
-{
-  auto const& payload = *message::get_maybe_payload(m);
-  CHECK(payload.id == 2);
-  CHECK(payload.root_id == 1);
-}
-
-template <typename Message>
-constexpr auto has_payload(Message const&)
-{
-  return decltype(hana::equal(
-    hana::maybe(
-      hana::type_c<void>,
-      hana::decltype_,
-      message::get_maybe_payload(std::declval<Message>())
-    ),
-    hana::type_c<entity::my_entity>
-  )){};
-}
-
-TEST_CASE("Dispatch Upstream/Downstream Read Messages", "[context]")
+TEST_CASE("Dispatch Downstream Read Message", "[context]")
 {
   init_record_messages();
 
   // Send downstream read to consumers.
-  provider0.push_api.push(
-    provider0.push_api.make_downstream_read_message(
+  auto msg = provider0.push_api.make_downstream_read_message(
       test_context::path1(1, 2),
-      entity::my_entity{2, 1}
-    )
+      entity::my_entity<1>{2, 1}
   );
+  provider0.push_api.push(msg);
+
+  CHECK(provider0.recorded_messages.size() == 0);
+  CHECK(provider1.recorded_messages.size() == 0);
   CHECK(consumer2.recorded_messages.size() == 1);
   CHECK(consumer3.recorded_messages.size() == 1);
 
-  auto check_downstream_read = [](auto const& consumer)
-  {
-    return check_message<channel::downstream, action::read>(consumer.recorded_messages[0],
-      [](auto const& m)
-        -> std::enable_if_t<decltype(has_payload(m))::value, bool>
-      {
-        check_path(m);
-        check_payload(m);
-        return true;
-      }
-    );
-  };
-
   // Both consumers got the downstream
   // read message from provider0
-  CHECK(check_downstream_read(consumer2));
-  CHECK(check_downstream_read(consumer3));
-
-  // Send upstream read to provider0.
-  consumer2.push_api.push(
-    consumer2.push_api.make_upstream_read_message(test_context::path1(1, 2))
-  );
-  CHECK(provider0.recorded_messages.size() == 1);
-  // provider1 should not receive the message.
-  CHECK(provider1.recorded_messages.size() == 0);
-
-  bool result = check_message<channel::upstream, action::read>(provider0.recorded_messages[0],
-    [](auto const& m)
-    {
-      check_path(m);
-      return true;
-    }
-  );
-
-  // provider0 should record an upstream read message.
-  CHECK(result);
+  CHECK(check_message_equal(consumer2.recorded_messages[0], msg));
+  CHECK(check_message_equal(consumer3.recorded_messages[0], msg));
 }
 
-TEST_CASE("Dispatch Upstream/Downstream Create Messages", "[context]")
+TEST_CASE("Dispatch Upstream Read Message", "[context]")
+{
+  init_record_messages();
+
+  // Send upstream read to provider0.
+  auto msg = consumer2.push_api.make_upstream_read_message(test_context::path1(1, 2));
+  consumer2.push_api.push(msg);
+
+  // provider1 should not receive the message.
+  CHECK(provider0.recorded_messages.size() == 1);
+  CHECK(provider1.recorded_messages.size() == 0);
+  CHECK(consumer2.recorded_messages.size() == 0);
+  CHECK(consumer3.recorded_messages.size() == 0);
+
+  // provider0 should record an upstream read message.
+  CHECK(check_message_equal(provider0.recorded_messages[0], msg));
+}
+
+TEST_CASE("Dispatch Downstream Create Message", "[context]")
 {
   init_record_messages();
 
   // Send downstream create to consumers.
-  provider0.push_api.push(
-    provider0.push_api.make_downstream_create_message(
-      test_context::path1(1, 2),
-      entity::my_entity{2, 1}
-    )
+  auto msg = provider0.push_api.make_downstream_create_message(
+    test_context::path1(1, 2),
+    entity::my_entity<1>{2, 1}
   );
+  provider0.push_api.push(msg);
+
+  CHECK(provider0.recorded_messages.size() == 0);
+  CHECK(provider1.recorded_messages.size() == 0);
   CHECK(consumer2.recorded_messages.size() == 1);
   CHECK(consumer3.recorded_messages.size() == 1);
 
-  auto check_downstream_create = [](auto const& consumer)
-  {
-    return check_message<channel::downstream, action::create>(consumer.recorded_messages[0],
-      [](auto const& m)
-        -> std::enable_if_t<decltype(has_payload(m))::value, bool>
-      {
-        check_path(m);
-        check_payload(m);
-        return true;
-      }
-    );
-  };
-
   // Both consumers got the downstream
   // create message from provider0
-  CHECK(check_downstream_create(consumer2));
-  CHECK(check_downstream_create(consumer3));
+  CHECK(check_message_equal(consumer2.recorded_messages[0], msg));
+  CHECK(check_message_equal(consumer3.recorded_messages[0], msg));
+}
+
+TEST_CASE("Dispatch Upstream Create Message", "[context]")
+{
+  init_record_messages();
 
   // Send upstream create to provider0.
-  consumer2.push_api.push(
-    consumer2.push_api.make_upstream_create_message(
-      test_context::path1(1, 2),
-      entity::my_entity{2, 1}
-    )
+  auto msg = consumer2.push_api.make_upstream_create_message(
+    test_context::path1(1, 2),
+    entity::my_entity<1>{2, 1}
   );
-  CHECK(provider0.recorded_messages.size() == 1);
-  // provider1 should not receive the message.
-  CHECK(provider1.recorded_messages.size() == 0);
+  consumer2.push_api.push(msg);
 
-  bool result = check_message<channel::upstream, action::create>(provider0.recorded_messages[0],
-    [](auto const& m)
-        -> std::enable_if_t<decltype(has_payload(m))::value, bool>
-    {
-      check_path(m);
-      check_payload(m);
-      return true;
-    }
-  );
+  // provider1 should not receive the message.
+  CHECK(provider0.recorded_messages.size() == 1);
+  CHECK(provider1.recorded_messages.size() == 0);
+  CHECK(consumer2.recorded_messages.size() == 0);
+  CHECK(consumer3.recorded_messages.size() == 0);
 
   // provider0 should record an upstream create message.
-  CHECK(result);
+  CHECK(check_message_equal(provider0.recorded_messages[0], msg));
 }

@@ -6,12 +6,13 @@
 #
 
 nbdl_catch_test_suite(build_targets "test.nbdl.core"
-  path.cpp
-  variant.cpp
-  store.cpp
-  provider_map.cpp
-  message_api.cpp
   context.cpp
+  entity.cpp
+  path.cpp
+  message_api.cpp
+  provider_map.cpp
+  store.cpp
+  variant.cpp
 )
 
 # compile-time tests

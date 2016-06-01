@@ -7,17 +7,18 @@
 #ifndef NBDL_BIND_SEQUENCE_HPP
 #define NBDL_BIND_SEQUENCE_HPP
 
-#include<nbdl/fwd/bind_sequence.hpp>
+#include <nbdl/fwd/bind_sequence.hpp>
 
-#include<nbdl/concept/BindableSequence.hpp>
-#include<nbdl/detail/filter_empties.hpp>
+#include <nbdl/concept/BindableSequence.hpp>
+#include <nbdl/detail/filter_empties.hpp>
+#include <nbdl/entity_members.hpp>
 
-#include<boost/hana/concept/product.hpp>
-#include<boost/hana/concept/sequence.hpp>
-#include<boost/hana/core/tag_of.hpp>
-#include<boost/hana/fwd/optional.hpp>
-#include<type_traits>
-#include<utility>
+#include <boost/hana/concept/product.hpp>
+#include <boost/hana/concept/sequence.hpp>
+#include <boost/hana/core/tag_of.hpp>
+#include <boost/hana/fwd/optional.hpp>
+#include <type_traits>
+#include <utility>
 
 namespace nbdl
 {
@@ -49,7 +50,7 @@ namespace nbdl
     template <typename Entity, typename BindFn>
     static void apply(Entity&& e, BindFn&& f)
     {
-      hana::unpack(entity_members<Entity>, [&](auto ...m)
+      hana::unpack(nbdl::entity_members<Entity>, [&](auto ...m)
       {
         f(nbdl::get_member<decltype(m)>>(e)...);
       });

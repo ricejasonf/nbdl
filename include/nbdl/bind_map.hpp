@@ -47,7 +47,7 @@ namespace nbdl
     template <typename Entity, typename BindKeyValueFn>
     static void apply(Entity&& e, BindKeyValueFn&& f)
     {
-      hana::for_each(entity_members<Entity>, [&](auto m)
+      hana::for_each(nbdl::entity_members<Entity>, [&](auto m)
       {
         using Member = decltype(m);
         f(nbdl::member_name<Member>, nbdl::get_member<Member>(e));

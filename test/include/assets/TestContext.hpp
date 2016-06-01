@@ -10,7 +10,7 @@
 
 #include <def/builder/Context.hpp>
 #include <def/directives.hpp>
-#include <nbdl/entity_members.hpp>
+#include <nbdl/entity.hpp>
 #include <Path.hpp>
 
 #include <boost/hana.hpp>
@@ -37,6 +37,7 @@ namespace test_context {
     {
       int id;
     };
+    template <int>
     struct my_entity
     {
       int id;
@@ -53,7 +54,19 @@ namespace nbdl {
     test_context::entity::root2,
       id);
   NBDL_ENTITY(
-    test_context::entity::my_entity,
+    test_context::entity::my_entity<1>,
+      id,
+      root_id );
+  NBDL_ENTITY(
+    test_context::entity::my_entity<2>,
+      id,
+      root_id );
+  NBDL_ENTITY(
+    test_context::entity::my_entity<3>,
+      id,
+      root_id );
+  NBDL_ENTITY(
+    test_context::entity::my_entity<4>,
       id,
       root_id );
 } // nbdl
@@ -80,9 +93,10 @@ namespace test_context_def {
           Entity(
             Type(hana::type_c<entity::root2>)
           ),
-          Entity(
-            Type(hana::type_c<entity::my_entity>)
-          )
+          Entity(Type(hana::type_c<entity::my_entity<1>>)),
+          Entity(Type(hana::type_c<entity::my_entity<2>>)),
+          Entity(Type(hana::type_c<entity::my_entity<3>>)),
+          Entity(Type(hana::type_c<entity::my_entity<4>>))
         ),
         Providers(
           Provider(
@@ -93,7 +107,7 @@ namespace test_context_def {
               EntityName(hana::type_c<entity::root1>),
               AccessPoint(
                 Name(hana::type_c<void>),
-                EntityName(hana::type_c<entity::my_entity>),
+                EntityName(hana::type_c<entity::my_entity<1>>),
                 Actions(Create(), Read())
               )
             )
@@ -106,7 +120,34 @@ namespace test_context_def {
               EntityName(hana::type_c<entity::root2>),
               AccessPoint(
                 Name(hana::type_c<void>),
-                EntityName(hana::type_c<entity::my_entity>),
+                EntityName(hana::type_c<entity::my_entity<1>>),
+                Actions(Create(), Read())
+              )
+            ),
+            AccessPoint(
+              Name(hana::type_c<void>),
+              EntityName(hana::type_c<entity::root2>),
+              AccessPoint(
+                Name(hana::type_c<void>),
+                EntityName(hana::type_c<entity::my_entity<2>>),
+                Actions(Create(), Read())
+              )
+            ),
+            AccessPoint(
+              Name(hana::type_c<void>),
+              EntityName(hana::type_c<entity::root2>),
+              AccessPoint(
+                Name(hana::type_c<void>),
+                EntityName(hana::type_c<entity::my_entity<3>>),
+                Actions(Create(), Read())
+              )
+            ),
+            AccessPoint(
+              Name(hana::type_c<void>),
+              EntityName(hana::type_c<entity::root2>),
+              AccessPoint(
+                Name(hana::type_c<void>),
+                EntityName(hana::type_c<entity::my_entity<4>>),
                 Actions(Create(), Read())
               )
             )
@@ -212,11 +253,12 @@ namespace test_context {
   };
 
   using path1 = typename decltype(
-    nbdl::path_type<int, entity::root1, entity::my_entity>
+    nbdl::path_type<int, entity::root1, entity::my_entity<1>>
   )::type;
 
-  using path2 = typename decltype(
-    nbdl::path_type<int, entity::root2, entity::my_entity>
+  template <int i>
+  using path = typename decltype(
+    nbdl::path_type<int, entity::root2, entity::my_entity<i>>
   )::type;
 } // test_context
 
