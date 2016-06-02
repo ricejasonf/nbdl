@@ -242,39 +242,35 @@ namespace nbdl {
     {
       constexpr auto path_type = decltype(message::get_path_type(m)){};
       auto& store = stores[path_type];
-      if (nbdl::has(store, message::get_path(m)))
-      {
-        nbdl::apply_action(store, m);
-        // send response message
-        nbdl::match(store, message::get_path(m),
-          [&](nbdl::unresolved)
-          {
-            // Do nothing. A read is already in process.
-            // The Consumer should notify the appropriate requestors
-            // once the response (downstream read message)
-            // is received.
-          },
-          [&](auto&& value)
-          {
-            // There is a resolved value in the store
-            // so send it as a downstream read message,
-            // and don't bother the Provider with it.
-            propagate_message(
-              MessageApi{}.to_downstream(m, std::forward<decltype(value)>(value)),
-              message::channel::downstream{}
-            );
-          }
-        );
-      }
-      else
-      {
-        // The Store should create an 'unresolved'
-        // placeholder to prevent duplicate upstream
-        // read requests and so any StateConsumer
-        // gets a value
-        nbdl::apply_action(store, m);
-        propagate_message(m, message::get_channel(m));
-      }
+      nbdl::apply_action(store, m);
+      // send response message
+      nbdl::match(store, message::get_path(m),
+        [&](nbdl::uninitialized)
+        {
+          // The Store should create an 'unresolved'
+          // placeholder to prevent duplicate upstream
+          // read requests and so any StateConsumer
+          // gets a value
+          propagate_message(m, message::get_channel(m));
+        },
+        [&](nbdl::unresolved)
+        {
+          // Do nothing. A read is already in progress.
+          // The Consumer should notify the appropriate requestors
+          // once the response (downstream read message)
+          // is received.
+        },
+        [&](auto&& value)
+        {
+          // There is a resolved value in the store
+          // so send it as a downstream read message,
+          // and don't bother the Provider with it.
+          propagate_message(
+            MessageApi{}.to_downstream(m, std::forward<decltype(value)>(value)),
+            message::channel::downstream{}
+          );
+        }
+      );
     }
 
 #if 0

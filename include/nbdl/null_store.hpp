@@ -7,11 +7,11 @@
 #ifndef NBDL_NULL_STORE_HPP
 #define NBDL_NULL_STORE_HPP
 
-#include<nbdl/null_store.hpp>
+#include<nbdl/fwd/null_store.hpp>
+
 #include<nbdl/make_store.hpp>
 #include<nbdl/apply_action.hpp>
 #include<nbdl/get.hpp>
-#include<nbdl/has.hpp>
 
 namespace nbdl
 {
@@ -25,8 +25,8 @@ namespace nbdl
   template <>
   struct make_store_impl<null_store>
   {
-    template <typename Path>
-    static constexpr auto apply(Path&&)
+    template <typename PathType>
+    static constexpr auto apply(PathType)
       -> nbdl::null_store
     { return {}; }
   };
@@ -42,25 +42,13 @@ namespace nbdl
     }
   };
 
-  // really I don't see `get` or `has` ever being called
   template <>
   struct get_impl<null_store>
   {
     template <typename Store, typename Path>
     static constexpr auto apply(Store&&, Path&&)
-      -> nbdl::not_found
+      -> nbdl::uninitialized
     { return {}; }
-  };
-
-  template <>
-  struct has_impl<null_store>
-  {
-    template <typename Store, typename Path>
-    static constexpr bool apply(Store&&, Path&&)
-    {
-      // has nothing
-      return false;
-    }
   };
 } // nbdl
 

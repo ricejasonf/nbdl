@@ -30,6 +30,7 @@ namespace nbdl
   constexpr make_store_fn<T> make_store{};
 
   // tags used for possible store values
+  struct uninitialized { };
   struct not_found { };
 } // nbdl
 

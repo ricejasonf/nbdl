@@ -110,5 +110,31 @@ namespace nbdl { namespace message
 
   constexpr get_path_type_fn get_path_type{};
 
+  struct get_entity_type_fn
+  {
+    template <typename Message>
+    constexpr auto operator()(Message const& m) const
+    {
+      return hana::type_c<typename std::decay_t<decltype(message::get_path(m))>::Entity>;
+    }
+  };
+
+  constexpr get_entity_type_fn get_entity_type{};
+
+  // Stores can receive messages from paths
+  // that are not their own. These are 'foreign'.
+  template <typename Path>
+  struct is_foreign_fn
+  {
+    template <typename Message>
+    constexpr auto operator()(Message const& m) const
+    {
+      return hana::not_(hana::equal(hana::type_c<Path>, message::get_path_type(m)));
+    }
+  };
+
+  template <typename Path>
+  constexpr is_foreign_fn<Path> is_foreign{};
+
 }} // nbdl::message
 #endif
