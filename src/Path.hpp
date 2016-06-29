@@ -68,6 +68,7 @@ class path
 
   using Key = typename decltype(+hana::second(hana::back(spec())))::type;
   using Storage = typename decltype(storage_type())::type;
+  using First = std::decay_t<decltype(hana::at_c<0>(std::declval<Storage>()))>;
 
   Storage storage;
 
@@ -86,8 +87,13 @@ class path
   }
 
   template<typename... Args>
-  path(Args... args) :
-    storage(hana::make_tuple(args...))
+  path(First const& first, Args&&... args) :
+    storage(first, std::forward<Args>(args)...)
+  {}
+
+  template<typename... Args>
+  path(First&& first, Args&&... args) :
+    storage(std::move(first), std::forward<Args>(args)...)
   {}
 
   template<typename E = Entity>
