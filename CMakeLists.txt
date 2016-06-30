@@ -3,12 +3,6 @@ cmake_minimum_required(VERSION 2.8)
 project(nbdl_project)
 enable_testing()
 
-#if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-#set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-
-#CMAKE_CXX_STANDARD 14 doesn't work until cmake 3.1+
-#set(CMAKE_CXX_STANDARD 14)
-#set(CMAKE_CXX_STANDARD_REQUIRED on)
 add_custom_target(check
   COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --exclude-regex "individual"
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -50,8 +44,8 @@ function(nbdl_catch_test_suite out suite_name)
 endfunction()
 
 #todo find a cross platform way to set -Wall -Wextra
-add_definitions(-std=c++14)
-add_definitions(-ftemplate-backtrace-limit=0)
+add_definitions(-std=c++1z)
+#add_definitions(-ftemplate-backtrace-limit=0)
 add_definitions(-Wall)
 add_definitions(-Wextra)
 if (${EMSCRIPTEN})

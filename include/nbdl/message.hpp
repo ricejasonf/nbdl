@@ -136,5 +136,40 @@ namespace nbdl { namespace message
   template <typename Path>
   constexpr is_foreign_fn<Path> is_foreign{};
 
+  template <typename Message>
+  constexpr bool is_upstream = std::is_same<
+      std::decay_t<decltype(hana::at(std::declval<Message>(), hana::int_c<0>))>,
+      message::channel::upstream
+    >::value;
+
+  template <typename Message>
+  constexpr bool is_downstream = std::is_same<
+      std::decay_t<decltype(hana::at(std::declval<Message>(), hana::int_c<0>))>,
+      message::channel::downstream
+    >::value;
+
+  template <typename Message>
+  constexpr bool is_create = std::is_same<
+      std::decay_t<decltype(hana::at(std::declval<Message>(), hana::int_c<1>))>,
+      message::action::create
+    >::value;
+
+  template <typename Message>
+  constexpr bool is_read = std::is_same<
+      std::decay_t<decltype(hana::at(std::declval<Message>(), hana::int_c<1>))>,
+      message::action::read
+    >::value;
+
+  template <typename Message>
+  constexpr bool is_update = std::is_same<
+      std::decay_t<decltype(hana::at(std::declval<Message>(), hana::int_c<1>))>,
+      message::action::update
+    >::value;
+
+  template <typename Message>
+  constexpr bool is_delete = std::is_same<
+      std::decay_t<decltype(hana::at(std::declval<Message>(), hana::int_c<1>))>,
+      message::action::delete_
+    >::value;
 }} // nbdl::message
 #endif

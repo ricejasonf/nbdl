@@ -199,84 +199,84 @@ namespace nbdl {
     }
 
     template <typename Message>
-    void propagate_message(Message const& m, message::channel::upstream)
+    void propagate_message(Message&& m)
     {
-      using Path = std::decay_t<decltype(message::get_path(m))>;
-      using Index = decltype(hana::at_key(ProviderLookup{}, hana::type_c<Path>));
-      constexpr Index index{};
-      nbdl::send_upstream_message(cells[index], m);
+        if constexpr(message::is_upstream<Message>)
+        {
+          using Path = std::decay_t<decltype(message::get_path(m))>;
+          using Index = decltype(hana::at_key(ProviderLookup{}, hana::type_c<Path>));
+          nbdl::send_upstream_message(cells[Index{}], std::forward<Message>(m));
+        }
+        else
+        {
+          propagate_downstream(std::forward<Message>(m));
+        }
     }
 
     template <typename Message>
-    void propagate_message(Message&& m, message::channel::downstream)
+    void propagate_downstream(Message const& m)
     {
-      propagate_downstream(std::forward<Message>(m), message::channel::downstream{},
-        hana::size_c<consumer_count>);
-    }
-
-    template <typename Message>
-    void propagate_downstream(Message const&, message::channel::upstream, hana::size_t<0>)
-    { }
-
-    template <typename Message>
-    void propagate_downstream(Message const& m, message::channel::upstream, ...)
-    {
-      propagate_downstream(MessageApi{}.to_downstream(m), message::channel::downstream{});
-    }
-
-    template <typename Message>
-    void propagate_downstream(Message const& m, message::channel::downstream, ...)
-    {
-      // notify all consumers
-      hana::for_each(hana::make_range(hana::size_c<provider_count>, hana::length(cells)),
-        [&](auto i) {
-          nbdl::send_downstream_message(cells[i], m);
-        });
+      if constexpr(consumer_count > 0)
+      {
+        if constexpr(message::is_upstream<Message>)
+        {
+          propagate_downstream(MessageApi{}.to_downstream(m));
+        }
+        else
+        {
+          // notify all consumers
+          hana::for_each(hana::make_range(hana::size_c<provider_count>, hana::length(cells)),
+            [&](auto i)
+            {
+              nbdl::send_downstream_message(cells[i], m);
+            });
+        }
+      }
     }
 
     // All actions MUST be applied to the
     // store BEFORE the message is propagated!
 
+    // called inside PushUpstreamMessageFn and PushDownstreamMessageFn
     template <typename Message>
-    void dispatch(Message const& m, message::channel::upstream, message::action::read)
+    void push_message(Message&& m)
     {
-      constexpr auto path_type = decltype(message::get_path_type(m)){};
-      auto& store = stores[path_type];
-      nbdl::apply_action(store, m);
-      // send response message
-      nbdl::match(store, message::get_path(m),
-        [&](nbdl::uninitialized)
-        {
-          // The Store should create an 'unresolved'
-          // placeholder to prevent duplicate upstream
-          // read requests and so any StateConsumer
-          // gets a value
-          propagate_message(m, message::get_channel(m));
-        },
-        [&](nbdl::unresolved)
-        {
-          // Do nothing. A read is already in progress.
-          // The Consumer should notify the appropriate requestors
-          // once the response (downstream read message)
-          // is received.
-        },
-        [&](auto&& value)
-        {
-          // There is a resolved value in the store
-          // so send it as a downstream read message,
-          // and don't bother the Provider with it.
-          propagate_message(
-            MessageApi{}.to_downstream(m, std::forward<decltype(value)>(value)),
-            message::channel::downstream{}
-          );
-        }
-      );
-    }
-
+      if constexpr(message::is_upstream<Message> && message::is_read<Message>)
+      {
+        constexpr auto path_type = decltype(message::get_path_type(m)){};
+        auto& store = stores[path_type];
+        nbdl::apply_action(store, m);
+        // send response message
+        nbdl::match(store, message::get_path(m),
+          [&](nbdl::uninitialized)
+          {
+            // The Store should create an 'unresolved'
+            // placeholder to prevent duplicate upstream
+            // read requests and so any StateConsumer
+            // gets a value
+            propagate_message(std::forward<Message>(m));
+          },
+          [&](nbdl::unresolved)
+          {
+            // Do nothing. A read is already in progress.
+            // The Consumer should notify the appropriate requestors
+            // once the response (downstream read message)
+            // is received.
+          },
+          [&](auto&& value)
+          {
+            // There is a resolved value in the store
+            // so send it as a downstream read message,
+            // and don't bother the Provider with it.
+            propagate_message(
+              MessageApi{}.to_downstream(std::forward<Message>(m), std::forward<decltype(value)>(value))
+            );
+          }
+        );
+      }
 #if 0
-    template <typename Message>
-    void dispatch(Message const& m, message::channel::downstream, message::action::update)
-    {
+      else if constexpr(message::is_downstream<Message> && message::is_update<Message>)
+      {
       // TODO Github issue #15: Handle Downstream Deltas by squashing them
       constexpr auto path_type = decltype(message::get_path_type(m)){};
       auto& store = stores[path_type];
@@ -288,30 +288,23 @@ namespace nbdl {
         },
         nbdl::noop
       );
-    }
-#endif
-
-    template <typename Message>
-    void dispatch(Message const& m, ...)
-    {
-      constexpr auto path_type = decltype(message::get_path_type(m)){};
-      auto& store = stores[path_type];
-      if (nbdl::apply_action(store, m))
-      {
-        // the state changed
-        propagate_downstream(m, message::get_channel(m), hana::size_c<consumer_count>);
-        //notify_state_consumers(message::get_path(m));
       }
-      propagate_message(m, message::get_channel(m));
-    }
-
-    // called inside PushUpstreamMessageFn and PushDownstreamMessageFn
-    template <typename Message>
-    void push_message(Message&& m)
-    {
-      constexpr auto channel = std::decay_t<decltype(message::get_channel(m))>{};
-      constexpr auto action = std::decay_t<decltype(message::get_action(m))>{};
-      dispatch(std::forward<Message>(m), channel, action);
+#endif
+      else
+      {
+        constexpr auto path_type = decltype(message::get_path_type(m)){};
+        auto& store = stores[path_type];
+        if (nbdl::apply_action(store, m))
+        {
+          // the state changed
+          if constexpr(message::is_upstream<Message>)
+          {
+            propagate_downstream(m);
+          }
+          //notify_state_consumers(message::get_path(m));
+        }
+        propagate_message(std::forward<Message>(m));
+      }
     }
 
     // constructor helper
