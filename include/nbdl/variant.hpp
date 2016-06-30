@@ -84,19 +84,19 @@ namespace nbdl
       }
 
       template <typename Index, typename Fn>
-      auto match_by_type_helper(Index i, const int type_id_x, Fn fn) const
+      auto match_by_type_helper(Index i, const int type_id_x, Fn&& fn) const
         ->  nbdl::detail::common_type_t<
               decltype(fn(hana::at(Types{}, i))),
               decltype(fn(hana::at(Types{}, hana::int_c<0>)))
             >
       {
         if (type_id_x == Index::value)
-          return fn(hana::at(Types{}, i));
+          return std::forward<Fn>(fn)(hana::at(Types{}, i));
         else
-          return match_by_type_helper(i + hana::int_c<1>, type_id_x, fn);
+          return match_by_type_helper(i + hana::int_c<1>, type_id_x, std::forward<Fn>(fn));
       }
       template <typename Fn>
-      auto match_by_type_helper(LastTypeId i, const int type_id_x, Fn fn) const
+      auto match_by_type_helper(LastTypeId i, const int type_id_x, Fn&& fn) const
         ->  nbdl::detail::common_type_t<
               decltype(fn(hana::at(Types{}, i))),
               decltype(fn(hana::at(Types{}, hana::int_c<0>)))
@@ -104,9 +104,9 @@ namespace nbdl
       {
         //if type_id_x is invalid, use default, empty type
         if (type_id_x == LastTypeId::value)
-          return fn(hana::at(Types{}, i));
+          return std::forward<Fn>(fn)(hana::at(Types{}, i));
         else
-          return fn(hana::at(Types{}, hana::int_c<0>));
+          return std::forward<Fn>(fn)(hana::at(Types{}, hana::int_c<0>));
       }
 
       template <typename Fn1>
