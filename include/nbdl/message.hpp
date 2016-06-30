@@ -167,6 +167,13 @@ namespace nbdl { namespace message
     >::value;
 
   template <typename Message>
+  constexpr bool is_update_raw = std::is_same<
+      std::decay_t<decltype(hana::at(std::declval<Message>(), hana::int_c<1>))>,
+      message::action::update_raw
+    >::value;
+
+
+  template <typename Message>
   constexpr bool is_delete = std::is_same<
       std::decay_t<decltype(hana::at(std::declval<Message>(), hana::int_c<1>))>,
       message::action::delete_

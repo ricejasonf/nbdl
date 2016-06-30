@@ -7,6 +7,9 @@
 #ifndef NBDL_DETAIL_MESSAGE_DISPATCHER_HPP
 #define NBDL_DETAIL_MESSAGE_DISPATCHER_HPP
 
+// THIS FILE IS DEPRECATED IN FAVOR OF USING C++1z `if constexpr` WHERE NEEDED.
+// The file should remain until there is no going back.
+
 #include <nbdl/message.hpp>
 #include <nbdl/fwd/make_store.hpp> // not_found
 

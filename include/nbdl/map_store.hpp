@@ -11,7 +11,6 @@
 
 #include <nbdl/make_store.hpp>
 #include <nbdl/apply_action.hpp>
-#include <nbdl/detail/message_dispatch.hpp>
 #include <nbdl/get.hpp>
 #include <nbdl/variant.hpp>
 
@@ -24,101 +23,45 @@ namespace nbdl
 
   namespace detail
   {
-    // TODO move the logic for each action here
-    struct map_store_action_handler
+    template <typename Message, typename Map>
+    bool handle_map_store_action(Message&& m, Map&& map)
     {
-      template <typename Message, typename Map>
-      bool handle_upstream_read(Message const& m, Map&& map)
+      if constexpr(message::is_upstream<Message>)
       {
-        if (map.find(message::get_path(m)) != map.end())
+        if constexpr(message::is_read<Message>)
         {
-          return false;
+          if (map.find(message::get_path(m)) == map.end())
+          {
+            map[message::get_path(m)] = nbdl::unresolved{};
+            return true;
+          }
         }
-        else
+      }
+      else // if downstream
+      {
+        if constexpr(message::is_create<Message> || message::is_update_raw<Message>)
         {
-          map[message::get_path(m)] = nbdl::unresolved{};
+          map[message::get_path(m)] = *message::get_maybe_payload(m);
+          return true;
+        }
+        else if constexpr(message::is_read<Message>)
+        {
+          return map[message::get_path(m)].match(
+            [&](nbdl::unresolved)
+            {
+               map[message::get_path(m)] = *message::get_maybe_payload(m);
+               return true;
+            },
+            [](auto const&) { return false; }
+          );
+        }
+        else if constexpr(message::is_delete<Message>)
+        {
+          map.erase(message::get_path(m));
           return true;
         }
       }
-
-      template <typename Message, typename Map>
-      bool handle_downstream_read(Message&& m, Map&& map)
-      {
-        return map[message::get_path(m)].match(
-          [&](nbdl::unresolved)
-          {
-             map[message::get_path(m)] = *message::get_maybe_payload(m);
-             return true;
-          },
-          [](auto const&)
-          {
-            return false;
-          }
-        );
-      }
-
-      template <typename Message, typename Map>
-      bool handle_downstream_read_not_found(Message&& m, Map&& map)
-      {
-        return map[message::get_path(m)].match(
-          [&](nbdl::unresolved)
-          {
-             map[message::get_path(m)] = nbdl::not_found{};
-             return true;
-          },
-          [](auto const&)
-          {
-            return false;
-          }
-        );
-      }
-
-      template <typename Message, typename Map>
-      bool handle_upstream_create(Message&&, Map&&)
-      {
-        return false;
-      }
-
-      template <typename Message, typename Map>
-      bool handle_downstream_create(Message&& m, Map&& map)
-      {
-        map[message::get_path(m)] = *message::get_maybe_payload(m);
-        return true;
-      }
-
-      // TODO: handle diffs
-
-      template <typename Message, typename Map>
-      bool handle_upstream_update_raw(Message&&, Map&&)
-      {
-        return false;
-      }
-
-      template <typename Message, typename Map>
-      bool handle_downstream_update_raw(Message&& m, Map&& map)
-      {
-        map[message::get_path(m)] = *message::get_maybe_payload(m);
-        return true;
-      }
-
-      template <typename Message, typename Map>
-      bool handle_upstream_delete(Message&&, Map&&)
-      {
-        return false;
-      }
-
-      template <typename Message, typename Map>
-      bool handle_downstream_delete(Message&& m, Map&& map)
-      {
-        map.erase(message::get_path(m));
-        return true;
-      }
-
-      template <typename Message, typename Map>
-      bool handle_foreign(Message&&, Map&&)
-      {
-        return false;
-      }
+      return false;
     };
   } // detail
 
@@ -155,12 +98,15 @@ namespace nbdl
     template <typename Store, typename Message>
     static constexpr bool apply(Store&& s, Message&& m)
     {
-      return detail::message_dispatch<typename std::decay_t<Store>::path, Message>
-        ::apply(
-          detail::map_store_action_handler{},
-          std::forward<Message>(m),
-          std::forward<Store>(s).map
-        );
+      using Path = typename std::decay_t<Store>::path;
+      if constexpr(decltype(message::is_foreign<Path>(m))::value)
+      {
+        return false;
+      }
+      else
+      {
+        return handle_map_store_action(std::forward<Message>(m), std::forward<Store>(s).map);
+      }
     }
   };
 
