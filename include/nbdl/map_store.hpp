@@ -104,7 +104,7 @@ namespace nbdl
     static constexpr bool apply(Store&& s, Message&& m)
     {
       using Path = typename std::decay_t<Store>::path;
-      static_assert(decltype(hana::equal(hana::type_c<Path>, message::get_path_type(m)))::value);
+      static_assert(decltype(hana::type_c<Path> == message::get_path_type(m))::value);
       return handle_map_store_action(std::forward<Message>(m), std::forward<Store>(s).map);
     }
   };

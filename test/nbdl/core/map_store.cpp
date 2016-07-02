@@ -242,18 +242,20 @@ TEST_CASE("Apply action downstream delete with value present.", "[map_store][app
   CHECK(store.map.size() == 0);
 }
 
-#if 0
-// TODO: use nbdl::apply_foreign_action
 TEST_CASE("Apply action with foreign path.", "[map_store][apply_action]")
 {
   auto store = make_test_store();
-  bool did_state_change = nbdl::apply_action(store,
+  bool did_state_change = false;
+  nbdl::apply_foreign_action(store,
     push_api.make_downstream_create_message(
       test_context::path<2>(0, 0),
       test_context::entity::my_entity<2>{0, 0}
-    )
+    ),
+    [&](auto const&)
+    {
+      did_state_change = true;
+    }
   );
   CHECK(did_state_change == false);
   CHECK(store.map.size() == 0);
 }
-#endif

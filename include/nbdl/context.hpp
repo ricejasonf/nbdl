@@ -306,7 +306,6 @@ namespace nbdl {
       {
         if constexpr(!decltype(hana::equal(hana::first(pair), path_type))::value)
         {
-#if 0
           nbdl::apply_foreign_action(hana::second(pair), m, [&](auto const& path)
           {
             static_assert(
@@ -317,9 +316,8 @@ namespace nbdl {
                 )
               )::value
               , "Store can only mark its own path as modified.");
-            notify_state_consumers(path);
+            //notify_state_consumers(path);
           });
-#endif
         }
       });
     }

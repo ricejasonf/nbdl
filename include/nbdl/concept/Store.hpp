@@ -11,6 +11,7 @@
 
 #include<nbdl/make_store.hpp>
 #include<nbdl/apply_action.hpp>
+#include<nbdl/apply_foreign_action.hpp>
 #include<nbdl/match.hpp>
 
 #include<boost/hana/core/default.hpp>
@@ -25,11 +26,14 @@ namespace nbdl
   {
     using Tag = typename hana::tag_of<T>::type;
     static constexpr bool value =
-          !hana::is_default<nbdl::make_store_impl     <Tag>>::value
-      &&  !hana::is_default<nbdl::apply_action_impl   <Tag>>::value
+              !hana::is_default<nbdl::make_store_impl             <Tag>>::value
       && (
-              !hana::is_default<nbdl::match_impl      <Tag>>::value
-          ||  !hana::is_default<nbdl::get_impl        <Tag>>::value
+              !hana::is_default<nbdl::apply_action_impl           <Tag>>::value
+          ||  !hana::is_default<nbdl::apply_foreign_action_impl   <Tag>>::value
+         )
+      && (
+              !hana::is_default<nbdl::match_impl                  <Tag>>::value
+          ||  !hana::is_default<nbdl::get_impl                    <Tag>>::value
          )
       ;
   };
