@@ -242,6 +242,8 @@ TEST_CASE("Apply action downstream delete with value present.", "[map_store][app
   CHECK(store.map.size() == 0);
 }
 
+#if 0
+// TODO: use nbdl::apply_foreign_action
 TEST_CASE("Apply action with foreign path.", "[map_store][apply_action]")
 {
   auto store = make_test_store();
@@ -254,3 +256,4 @@ TEST_CASE("Apply action with foreign path.", "[map_store][apply_action]")
   CHECK(did_state_change == false);
   CHECK(store.map.size() == 0);
 }
+#endif

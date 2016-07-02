@@ -241,10 +241,10 @@ namespace nbdl {
     template <typename Message>
     void push_message(Message&& m)
     {
+      constexpr auto path_type = decltype(message::get_path_type(m)){};
+      auto& store = stores[path_type];
       if constexpr(message::is_upstream<Message> && message::is_read<Message>)
       {
-        constexpr auto path_type = decltype(message::get_path_type(m)){};
-        auto& store = stores[path_type];
         nbdl::apply_action(store, m);
         // send response message
         nbdl::match(store, message::get_path(m),
@@ -254,7 +254,7 @@ namespace nbdl {
             // placeholder to prevent duplicate upstream
             // read requests and so any StateConsumer
             // gets a value
-            propagate_message(std::forward<Message>(m));
+            propagate_message(m);
           },
           [&](nbdl::unresolved)
           {
@@ -269,7 +269,7 @@ namespace nbdl {
             // so send it as a downstream read message,
             // and don't bother the Provider with it.
             propagate_message(
-              MessageApi{}.to_downstream(std::forward<Message>(m), std::forward<decltype(value)>(value))
+              MessageApi{}.to_downstream(m, std::forward<decltype(value)>(value))
             );
           }
         );
@@ -278,8 +278,6 @@ namespace nbdl {
       else if constexpr(message::is_downstream<Message> && message::is_update<Message>)
       {
       // TODO Github issue #15: Handle Downstream Deltas by squashing them
-      constexpr auto path_type = decltype(message::get_path_type(m)){};
-      auto& store = stores[path_type];
       nbdl::apply_action_downstream_delta(store, m).match(
         [](auto&& d)
           -> std::enable_if_t<nbdl::Delta<decltype(d)>::value>
@@ -292,8 +290,6 @@ namespace nbdl {
 #endif
       else
       {
-        constexpr auto path_type = decltype(message::get_path_type(m)){};
-        auto& store = stores[path_type];
         if (nbdl::apply_action(store, m))
         {
           // the state changed
@@ -303,8 +299,29 @@ namespace nbdl {
           }
           //notify_state_consumers(message::get_path(m));
         }
-        propagate_message(std::forward<Message>(m));
+        propagate_message(m);
       }
+      // apply the action to ALL OTHER stores
+      hana::for_each(stores, [&](auto& pair)
+      {
+        if constexpr(!decltype(hana::equal(hana::first(pair), path_type))::value)
+        {
+#if 0
+          nbdl::apply_foreign_action(hana::second(pair), m, [&](auto const& path)
+          {
+            static_assert(
+              decltype(
+                hana::equal(
+                  hana::traits::decay(hana::decltype_(path)),
+                  hana::first(pair)
+                )
+              )::value
+              , "Store can only mark its own path as modified.");
+            notify_state_consumers(path);
+          });
+#endif
+        }
+      });
     }
 
     // constructor helper

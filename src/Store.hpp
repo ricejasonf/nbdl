@@ -23,6 +23,10 @@ class store
 
 	public:
 
+  store()
+    : container()
+  { }
+
 	using Variant_ = typename Container::Variant_;
 
 	template<typename T>

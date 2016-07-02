@@ -79,7 +79,12 @@ namespace nbdl
 
     using hana_tag = nbdl::map_store_tag;
     using path = Path;
+
     Container map;
+
+    map_store()
+      : map()
+    { }
   };
 
 
@@ -99,14 +104,8 @@ namespace nbdl
     static constexpr bool apply(Store&& s, Message&& m)
     {
       using Path = typename std::decay_t<Store>::path;
-      if constexpr(decltype(message::is_foreign<Path>(m))::value)
-      {
-        return false;
-      }
-      else
-      {
-        return handle_map_store_action(std::forward<Message>(m), std::forward<Store>(s).map);
-      }
+      static_assert(decltype(hana::equal(hana::type_c<Path>, message::get_path_type(m)))::value);
+      return handle_map_store_action(std::forward<Message>(m), std::forward<Store>(s).map);
     }
   };
 

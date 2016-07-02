@@ -33,6 +33,10 @@ class hash_map
 
 	public:
 
+  hash_map()
+    : map()
+  { }
+
 	template<typename T>
 	const Variant_& assign(const Path_& path, T&& value)
 	{

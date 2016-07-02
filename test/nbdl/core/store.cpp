@@ -38,7 +38,7 @@ namespace nbdl {
 
 TEST_CASE("Access an uninitialized value from a store.", "[store]") 
 {
-  Store<MyEntityPath> store;
+  Store<MyEntityPath> store{};
 	MyEntityPath path = MyEntityPath(1, 5);
 
 	bool result = store.get(
@@ -54,7 +54,7 @@ TEST_CASE("Access an uninitialized value from a store.", "[store]")
 }
 TEST_CASE("Force assign and access a value from a store.", "[store]") 
 {
-	Store<MyEntityPath> store;
+	Store<MyEntityPath> store{};
 	MyEntityPath path = MyEntityPath(1, 5);
 	my_entity my_entity_ = { 5, 1 };
 	store.force_assign(path, my_entity_);
@@ -74,7 +74,7 @@ TEST_CASE("Force assign and access a value from a store.", "[store]")
 
 TEST_CASE("Suggest a value to a store.", "[store]") 
 {
-	Store<MyEntityPath> store;
+	Store<MyEntityPath> store{};
 	MyEntityPath path = MyEntityPath(1, 5);
 	my_entity my_entity_ = { 5, 1 };
 	store.suggest_assign(path, my_entity_);
@@ -95,7 +95,7 @@ TEST_CASE("Suggest a value to a store.", "[store]")
 
 TEST_CASE("Suggest a value to a store where the value already exists.", "[store]") 
 {
-	Store<MyEntityPath> store;
+	Store<MyEntityPath> store{};
 	MyEntityPath path = MyEntityPath(1, 5);
 	my_entity my_entity_original = { 6, 1 };
 	my_entity my_entity_ = { 5, 1 };

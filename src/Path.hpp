@@ -114,12 +114,12 @@ class path
   {
     std::size_t operator()(const path& path) const
     {
-      std::size_t seed;
+      std::size_t digest = 0;
       hana::for_each(path.storage,
         [&](const auto& x) {
-          nbdl::details::hash_combine(seed, x);
+          nbdl::details::hash_combine(digest, x);
         });
-      return seed;
+      return digest;
     }
   };
 
