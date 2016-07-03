@@ -72,13 +72,13 @@ constexpr auto access_points_1 = hana::make_tuple(
   builder::make_access_point_meta_with_map(
     builder::access_point_meta::name            = names::Foo,
     builder::access_point_meta::actions         = hana::make_tuple(nbdl_def::tag::Create),
-    builder::access_point_meta::store_container = hana::type_c<void>,
+    builder::access_point_meta::store           = hana::type_c<void>,
     builder::access_point_meta::entity_names    = hana::make_tuple(names::Entity_1_1)
   ),
   builder::make_access_point_meta_with_map(
     builder::access_point_meta::name            = names::Foo,
     builder::access_point_meta::actions         = hana::make_tuple(nbdl_def::tag::Create),
-    builder::access_point_meta::store_container = hana::type_c<void>,
+    builder::access_point_meta::store           = hana::type_c<void>,
     builder::access_point_meta::entity_names    = hana::make_tuple(names::Entity_1_2)
   )
 );
@@ -87,7 +87,7 @@ constexpr auto access_points_2 = hana::make_tuple(
   builder::make_access_point_meta_with_map(
     builder::access_point_meta::name            = names::Foo,
     builder::access_point_meta::actions         = hana::make_tuple(nbdl_def::tag::Create),
-    builder::access_point_meta::store_container = hana::type_c<void>,
+    builder::access_point_meta::store           = hana::type_c<void>,
     builder::access_point_meta::entity_names    = hana::make_tuple(names::Entity_2_1)
   )
 );

@@ -28,7 +28,7 @@ namespace hana = boost::hana;
 
 namespace enum_access_points_detail {
 
-  constexpr auto settings = mpdef::with_settings(tag::StoreContainer);
+  constexpr auto settings = mpdef::with_settings(tag::Store);
   constexpr auto pred = hana::demux(hana::eval_if)
   (
     mpdef::is_tree_node,
@@ -105,7 +105,7 @@ namespace enum_access_points_detail {
       return builder::make_access_point_meta(
         node_children[tag::Name],
         node_children[tag::Actions],
-        settings[tag::StoreContainer].value_or(hana::type_c<nbdl::null_store>),
+        settings[tag::Store].value_or(hana::type_c<nbdl::null_store>),
         entity_names
       );
     }

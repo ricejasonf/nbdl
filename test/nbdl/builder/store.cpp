@@ -45,7 +45,7 @@ int main()
     constexpr auto access_point = builder::make_access_point_meta_with_map(
       access_point_meta::name             = names::Foo,
       access_point_meta::actions          = hana::make_tuple(nbdl_def::tag::Create),
-      access_point_meta::store_container  = nbdl::null_store{},
+      access_point_meta::store            = nbdl::null_store{},
       access_point_meta::entity_names     = hana::make_tuple(names::E1)
     );
 

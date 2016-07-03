@@ -79,7 +79,8 @@ namespace test_context_def {
   using namespace nbdl_def;
 
   // Provider and Consumer are actually tags
-  template<typename Provider1, typename Provider2, typename Consumer1, typename Consumer2>
+  template<typename Provider1, typename Provider2, typename Consumer1, typename Consumer2, 
+    typename Store_ = nbdl::null_store>
   constexpr auto make(
       Provider1 const& p1,
       Provider2 const& p2,
@@ -88,6 +89,7 @@ namespace test_context_def {
   ) {
     return
       Context(
+        Store(hana::type_c<Store_>),
         Entities(
           Entity(
             Type(hana::type_c<entity::root1>)

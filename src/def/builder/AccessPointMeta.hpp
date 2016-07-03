@@ -17,7 +17,7 @@ MPDEF_METASTRUCT(
   access_point_meta
   , name
   , actions
-  , store_container
+  , store
   , entity_names
 );
 

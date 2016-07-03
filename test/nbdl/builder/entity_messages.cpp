@@ -57,8 +57,8 @@ int main()
     constexpr auto access_point = builder::make_access_point_meta_with_map(
       access_point_meta::name           = names::Foo,
       access_point_meta::actions        = mpdef::make_map(nbdl_def::Create()),
-      access_point_meta::store_container = hana::type_c<void>,
-      access_point_meta::entity_names    = mpdef::make_list(names::Entity1)
+      access_point_meta::store          = hana::type_c<void>,
+      access_point_meta::entity_names   = mpdef::make_list(names::Entity1)
     );
     using PathType = typename decltype(nbdl::path_type<int, entity::e1>)::type;
 
@@ -94,7 +94,7 @@ int main()
           nbdl_def::UpdateRaw(),
           nbdl_def::Delete()
         ),
-      access_point_meta::store_container = hana::type_c<void>,
+      access_point_meta::store = hana::type_c<void>,
       access_point_meta::entity_names    = mpdef::make_list(names::Entity1)
     );
     using PathType = typename decltype(nbdl::path_type<int, entity::e1>)::type;

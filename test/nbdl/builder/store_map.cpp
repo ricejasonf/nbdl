@@ -90,20 +90,20 @@ int main()
       builder::make_access_point_meta_with_map(
         access_point_meta::name           = names::Foo1,
         access_point_meta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-        access_point_meta::store_container = store_impl,
-        access_point_meta::entity_names    = hana::make_tuple(names::Entity1)
+        access_point_meta::store          = store_impl,
+        access_point_meta::entity_names   = hana::make_tuple(names::Entity1)
       ),
       builder::make_access_point_meta_with_map(
         access_point_meta::name           = names::Foo2,
         access_point_meta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-        access_point_meta::store_container = store_impl,
-        access_point_meta::entity_names    = hana::make_tuple(names::Entity1, names::Entity2)
+        access_point_meta::store          = store_impl,
+        access_point_meta::entity_names   = hana::make_tuple(names::Entity1, names::Entity2)
       ),
       builder::make_access_point_meta_with_map(
         access_point_meta::name           = names::Foo3,
         access_point_meta::actions        = hana::make_tuple(nbdl_def::tag::Create),
-        access_point_meta::store_container = store_impl,
-        access_point_meta::entity_names    = hana::make_tuple(names::Entity3)
+        access_point_meta::store          = store_impl,
+        access_point_meta::entity_names   = hana::make_tuple(names::Entity3)
       )
     );
 

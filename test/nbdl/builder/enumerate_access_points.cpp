@@ -61,7 +61,7 @@ int main()
     constexpr auto def =
       Context(
         PrimaryKey(Type(hana::type_c<unsigned>)),
-        StoreContainer(hana::type_c<decltype(hana::template_<nbdl::store_container::hash_map>)>),
+        Store(hana::type_c<nbdl::null_store>),
         Providers(
           Provider(
             Name(names::Provider1),
@@ -112,8 +112,8 @@ int main()
           mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
-        access_point_meta::store_container =
-          hana::type_c<decltype(hana::template_<nbdl::store_container::hash_map>)>,
+        access_point_meta::store =
+          hana::type_c<nbdl::null_store>,
         access_point_meta::entity_names = mpdef::make_list(names::Root2)
       ),
       // Root3
@@ -122,8 +122,8 @@ int main()
         access_point_meta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
-        access_point_meta::store_container =
-          hana::type_c<decltype(hana::template_<nbdl::store_container::hash_map>)>,
+        access_point_meta::store =
+          hana::type_c<nbdl::null_store>,
         access_point_meta::entity_names = mpdef::make_list(names::Root3)
       ),
       // Root1/Nested1
@@ -135,8 +135,8 @@ int main()
           mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
-        access_point_meta::store_container =
-          hana::type_c<decltype(hana::template_<nbdl::store_container::hash_map>)>,
+        access_point_meta::store =
+          hana::type_c<nbdl::null_store>,
         access_point_meta::entity_names = mpdef::make_list(names::Root1, names::Nested1)
       ),
       // Root1/Nested2/Nested3
@@ -145,8 +145,8 @@ int main()
         access_point_meta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
-        access_point_meta::store_container =
-          hana::type_c<decltype(hana::template_<nbdl::store_container::hash_map>)>,
+        access_point_meta::store =
+          hana::type_c<nbdl::null_store>,
         access_point_meta::entity_names = mpdef::make_list(
           names::Root1,
           names::Nested2,
@@ -162,8 +162,8 @@ int main()
           mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
-        access_point_meta::store_container =
-          hana::type_c<decltype(hana::template_<nbdl::store_container::hash_map>)>,
+        access_point_meta::store =
+          hana::type_c<nbdl::null_store>,
         access_point_meta::entity_names = mpdef::make_list(
           names::Root2,
           names::Nested1
@@ -175,8 +175,8 @@ int main()
         access_point_meta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
-        access_point_meta::store_container =
-          hana::type_c<decltype(hana::template_<nbdl::store_container::hash_map>)>,
+        access_point_meta::store =
+          hana::type_c<nbdl::null_store>,
         access_point_meta::entity_names = mpdef::make_list(
           names::Root2,
           names::Nested2,
@@ -192,8 +192,8 @@ int main()
           mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
           mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
         ),
-        access_point_meta::store_container =
-          hana::type_c<decltype(hana::template_<nbdl::store_container::hash_map>)>,
+        access_point_meta::store =
+          hana::type_c<nbdl::null_store>,
         access_point_meta::entity_names = mpdef::make_list(
           names::Root3,
           names::Nested1
@@ -205,8 +205,8 @@ int main()
         access_point_meta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
-        access_point_meta::store_container =
-          hana::type_c<decltype(hana::template_<nbdl::store_container::hash_map>)>,
+        access_point_meta::store =
+          hana::type_c<nbdl::null_store>,
         access_point_meta::entity_names = mpdef::make_list(
           names::Root3,
           names::Nested2,
@@ -227,9 +227,9 @@ int main()
       )
     );
     BOOST_HANA_CONSTANT_ASSERT(
-      access_point_meta::store_container(hana::at(result, hana::int_c<0>))
+      access_point_meta::store(hana::at(result, hana::int_c<0>))
         ==
-      hana::type_c<decltype(hana::template_<nbdl::store_container::hash_map>)>
+      hana::type_c<nbdl::null_store>
     );
     BOOST_HANA_CONSTANT_ASSERT(
       access_point_meta::entity_names(hana::at(result, hana::int_c<0>))
