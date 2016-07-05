@@ -97,11 +97,22 @@ struct entity_message_fn
   template<typename EntityMessageMeta>
   constexpr auto operator()(EntityMessageMeta e) const
   {
+
+    using Channel = decltype(entity_message_meta::channel(e));
+    using Action = decltype(entity_message_meta::action(e));
+    using Path_ = typename decltype(entity_message_meta::path(e))::type;
+    using Path = typename decltype(hana::if_(
+      hana::and_(
+        std::is_same<Channel, nbdl::message::channel::upstream>{},
+        std::is_same<Action, nbdl::message::action::create>{}
+      ),
+      Path_::make_create_path_type(), hana::type_c<Path_>
+    ))::type;
     using Comps = 
       hana::tuple<
-        decltype(entity_message_meta::channel(e)),
-        decltype(entity_message_meta::action(e)),
-        typename decltype(entity_message_meta::path(e))::type
+        Channel,
+        Action,
+        Path
       >;
     using Maybes = typename entity_messages_detail::get_maybes<AccessPoint, EntityMessageMeta>::type;
     using Tuple = decltype(hana::concat(std::declval<Comps>(), std::declval<Maybes>()));

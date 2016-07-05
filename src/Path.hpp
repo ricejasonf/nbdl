@@ -66,7 +66,7 @@ class path
       });
   }
 
-  using Key = typename decltype(+hana::second(hana::back(spec())))::type;
+  using key = typename decltype(+hana::second(hana::back(spec())))::type;
   using Storage = typename decltype(storage_type())::type;
   using First = std::decay_t<decltype(hana::at_c<0>(std::declval<Storage>()))>;
 
@@ -75,8 +75,12 @@ class path
   public:
 
   using hana_tag = path_tag;
-  using Entity = typename decltype(+hana::first(hana::back(spec())))::type;
+  using canonical_key = typename decltype(
+    hana::if_(hana::is_a<hana::type_tag, key>, key{}, hana::type_c<key>)
+  )::type;
+  using entity = typename decltype(+hana::first(hana::back(spec())))::type;
   using Parent = path<decltype(hana::drop_back(spec(), hana::size_c<1>))>;
+  using Entity = entity; // deprecated
 
   static_assert(nbdl::Entity<Entity>::value, "");
 
@@ -89,15 +93,15 @@ class path
   template<typename... Args>
   path(First const& first, Args&&... args) :
     storage(first, std::forward<Args>(args)...)
-  {}
+  { }
 
   template<typename... Args>
   path(First&& first, Args&&... args) :
     storage(std::move(first), std::forward<Args>(args)...)
-  {}
+  { }
 
   template<typename E = Entity>
-  Key get_key() const
+  key get_key() const
   {
     return hana::at(storage, entity_type_index(hana::type_c<E>));
   }
@@ -108,6 +112,72 @@ class path
       [](auto... n) {
         return Parent(n...);
       });
+  }
+
+  // Generic function to convert path to not actually store the
+  // yet to be assigned key. (idempotent)
+  constexpr static auto make_create_path_type()
+  {
+    using CreatePathSpec = decltype(hana::append(
+      hana::drop_back(Spec{}, hana::size_c<1>),
+      hana::make_pair(
+        hana::type_c<Entity>,
+        hana::type_c<hana::type<canonical_key>>
+      )
+    ));
+    return hana::type_c<nbdl::path<CreatePathSpec>>;
+  }
+
+  // Generic function to convert path to not actually store the
+  // yet to be assigned key. (idempotent)
+  template <typename ...Args>
+  static auto make_create_path(Args&& ...args)
+  {
+    using CreatePath = typename decltype(make_create_path_type())::type;
+    static_assert(std::is_constructible<CreatePath, Args...>{},
+      "CreatePath is not constructible.");
+    return CreatePath(std::forward<Args>(args)..., hana::type_c<canonical_key>);
+  }
+
+  constexpr static auto make_canonical_path_type()
+  {
+    if constexpr(hana::is_a<hana::type_tag, key>)
+    {
+      using CanonicalKey = typename key::type;
+      using CanonicalPathSpec = decltype(hana::append(
+        hana::drop_back(Spec{}, hana::size_c<1>),
+        hana::make_pair(
+          hana::type_c<Entity>,
+          hana::type_c<CanonicalKey>
+        )
+      ));
+      return hana::type_c<nbdl::path<CanonicalPathSpec>>;
+    }
+    else
+    {
+      return hana::type_c<nbdl::path<Spec>>;
+    }
+  }
+
+  using canonical_path = typename decltype(make_canonical_path_type())::type;
+
+  template <typename Key>
+  auto canonicalize_path(Key&& k)
+  {
+    if constexpr(hana::type_c<canonical_key> == hana::type_c<key>)
+    {
+      return std::forward<Key>(k);
+    }
+    else
+    {
+      return hana::unpack(
+        hana::drop_back(storage, hana::size_c<1>),
+        [&](auto&& ...xs)
+        {
+          return canonical_path(std::forward<decltype(xs)>(xs)..., k);
+        }
+      );
+    }
   }
 
   struct hash_fn

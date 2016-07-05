@@ -64,6 +64,8 @@ namespace nbdl {
     class push_downstream_api
       : public MessageApi
     {
+      protected:
+
       context& ctx;
 
       public:
@@ -76,6 +78,20 @@ namespace nbdl {
         static_assert(nbdl::DownstreamMessage<Message>::value,
           "nbdl::context::push_downstream_api requires a DownstreamMessage");
          ctx.push_message(std::forward<Message>(m));
+      }
+    };
+
+    class push_upstream_api_state_consumer
+      : public push_upstream_api
+    {
+      public:
+
+      using push_upstream_api::push_upstream_api;
+
+      template <typename Path, typename ...Fns>
+      decltype(auto) match(Path&& path, Fns&& ...fns)
+      {
+        return this->ctx.match(std::forward<Path>(path), std::forward<Fns&&>(fns)...);
       }
     };
 
@@ -95,61 +111,28 @@ namespace nbdl {
     static constexpr std::size_t consumer_count = decltype(hana::count_if(CellTagTypes{},
       hana::compose(detail::concept_pred<Consumer>, hana::traits::declval)))::value;
 
-    template <typename CellTag>
-    static constexpr auto cell_factory_helper(std::enable_if_t<
-      nbdl::Provider<CellTag>::value
-    , int> = 0)
-    { return nbdl::make_provider<CellTag>; }
-
-#if 0 // TODO: Support StateConsumer
-    template <typename CellTag>
-    static constexpr auto cell_factory_helper(std::enable_if_t<
-      nbdl::StateConsumer<CellTag>::value
-    , int> = 0)
-    { return nbdl::make_state_consumer<CellTag>; }
-#endif
-
-    template <typename CellTag>
-    static constexpr auto cell_factory_helper(std::enable_if_t<
-          nbdl::Consumer<CellTag>::value
-      && !nbdl::StateConsumer<CellTag>::value
-    , int> = 0)
-    { return nbdl::make_consumer<CellTag>; }
-
     template <std::size_t i>
     static constexpr auto cell_factory()
     {
       using CellTag = typename decltype(hana::at_c<i>(CellTagTypes{}))::type;
-      return cell_factory_helper<CellTag>();
+      if constexpr(nbdl::Provider<CellTag>::value)
+        return nbdl::make_provider<CellTag>;
+      else if constexpr(nbdl::StateConsumer<CellTag>::value)
+        return nbdl::make_state_consumer<CellTag>;
+      else // if Consumer
+        return nbdl::make_consumer<CellTag>;
     }
-
-    template <typename CellTag>
-    static constexpr auto get_push_api_type_helper(std::enable_if_t<
-      nbdl::Provider<CellTag>::value
-    , int> = 0)
-    { return hana::type_c<push_downstream_api>; }
-
-#if 0 // TODO: Support StateConsumer
-    // Remember that a StateConsumer can also be a Consumer
-    template <typename CellTag>
-    static constexpr auto get_push_api_type_helper(std::enable_if_t<
-      nbdl::StateConsumer<CellTag>::value
-    , int> = 0)
-    { return hana::type_c<TBD>; }
-#endif
-
-    template <typename CellTag>
-    static constexpr auto get_push_api_type_helper(std::enable_if_t<
-          nbdl::Consumer<CellTag>::value
-      && !nbdl::StateConsumer<CellTag>::value
-    , int> = 0)
-    { return hana::type_c<push_upstream_api>; }
 
     template <std::size_t i>
     static constexpr auto get_push_api_type()
     {
       using CellTag = typename decltype(hana::at_c<i>(CellTagTypes{}))::type;
-      return get_push_api_type_helper<CellTag>();
+      if constexpr(nbdl::Provider<CellTag>::value)
+        return hana::type_c<push_downstream_api>;
+      else if constexpr(nbdl::StateConsumer<CellTag>::value)
+        return hana::type_c<push_upstream_api_state_consumer>;
+      else // if Consumer
+        return hana::type_c<push_upstream_api>;
     }
 
     template <std::size_t i>
@@ -204,7 +187,8 @@ namespace nbdl {
         if constexpr(message::is_upstream<Message>)
         {
           using Path = std::decay_t<decltype(message::get_path(m))>;
-          using Index = decltype(hana::at_key(ProviderLookup{}, hana::type_c<Path>));
+          using Index = decltype(hana::at_key(ProviderLookup{}, 
+            hana::type_c<typename Path::canonical_path>));
           nbdl::send_upstream_message(cells[Index{}], std::forward<Message>(m));
         }
         else
@@ -229,9 +213,18 @@ namespace nbdl {
             [&](auto i)
             {
               nbdl::send_downstream_message(cells[i], m);
-            });
+            }
+          );
         }
       }
+    }
+
+    // called inside push_downstream_api_state_consumer
+    template <typename Path, typename ...Fns>
+    decltype(auto) match(Path&& path, Fns&& ...fns)
+    {
+      constexpr auto path_type = decltype(hana::traits::decay(hana::decltype_(path))){};
+      return nbdl::match(stores[path_type], std::forward<Path>(path), std::forward<Fns>(fns)...);
     }
 
     // All actions MUST be applied to the
@@ -290,12 +283,18 @@ namespace nbdl {
 #endif
       else
       {
-        if (nbdl::apply_action(store, m))
+        if constexpr(!hana::equal(
+          hana::type_c<decltype(nbdl::apply_action(store, m))>,
+          hana::type_c<hana::false_>
+        ))
         {
-          // the state changed
-          if constexpr(message::is_upstream<Message>)
+          if (nbdl::apply_action(store, m))
           {
-            propagate_downstream(m);
+            // the state changed
+            if constexpr(message::is_upstream<Message>)
+            {
+              propagate_downstream(m);
+            }
           }
           //notify_state_consumers(message::get_path(m));
         }

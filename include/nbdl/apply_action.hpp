@@ -16,7 +16,7 @@
 namespace nbdl
 {
   template<typename Store, typename Message>
-  constexpr bool apply_action_fn::operator()(Store&& s, Message&& m) const
+  constexpr auto apply_action_fn::operator()(Store&& s, Message&& m) const
   {
     using Tag = hana::tag_of_t<Store>;
     using Impl = apply_action_impl<Tag>;

@@ -65,7 +65,8 @@ int main()
       access_point_meta::store            = hana::type_c<void>,
       access_point_meta::entity_names     = hana::make_tuple(names::Entity1)
     );
-    using PathType = typename decltype(nbdl::path_type<int, entity::e1>)::type;
+    using Path = typename decltype(nbdl::path_type<int, entity::e1>)::type;
+    using CreatePath = typename decltype(Path::make_create_path_type())::type;
     constexpr auto provider_1 = builder::make_provider_meta_with_map(
       provider_meta::provider       = hana::type_c<provider1>,
       provider_meta::name           = names::Provider1,
@@ -94,7 +95,7 @@ int main()
           hana::tuple<
             channel::upstream,
             action::create,
-            PathType,
+            CreatePath,
             hana::optional<nbdl::uid>,
             hana::optional<entity::e1>
           >
@@ -112,7 +113,7 @@ int main()
           hana::tuple<
             channel::downstream,
             action::create,
-            PathType,
+            Path,
             hana::optional<nbdl::uid>,
             hana::optional<bool>,
             hana::optional<entity::e1>

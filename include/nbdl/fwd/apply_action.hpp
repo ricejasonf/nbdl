@@ -20,7 +20,7 @@ namespace nbdl
   {
     // returns true if the state changed in any way
     template<typename Store, typename Message>
-    constexpr bool operator()(Store&&, Message&&) const;
+    constexpr auto operator()(Store&&, Message&&) const;
   };
 
   constexpr apply_action_fn apply_action{};

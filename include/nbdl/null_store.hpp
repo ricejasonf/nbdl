@@ -35,10 +35,10 @@ namespace nbdl
   struct apply_action_impl<null_store>
   {
     template <typename Store, typename Message>
-    static constexpr bool apply(Store&&, Message&&)
+    static constexpr auto apply(Store&&, Message&&)
     {
       // changes nothing
-      return false;
+      return hana::false_c;
     }
   };
 

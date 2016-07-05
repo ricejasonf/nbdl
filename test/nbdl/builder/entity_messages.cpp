@@ -53,6 +53,7 @@ int main()
   using builder::access_point_meta;
   namespace channel = nbdl::message::channel;
   namespace action = nbdl::message::action;
+
   {
     constexpr auto access_point = builder::make_access_point_meta_with_map(
       access_point_meta::name           = names::Foo,
@@ -60,7 +61,8 @@ int main()
       access_point_meta::store          = hana::type_c<void>,
       access_point_meta::entity_names   = mpdef::make_list(names::Entity1)
     );
-    using PathType = typename decltype(nbdl::path_type<int, entity::e1>)::type;
+    using Path = typename decltype(nbdl::path_type<int, entity::e1>)::type;
+    using CreatePath = typename decltype(Path::make_create_path_type())::type;
 
     BOOST_HANA_CONSTANT_ASSERT(
       builder::entity_messages(entity_map, access_point)
@@ -69,14 +71,14 @@ int main()
         hana::type_c<hana::tuple<
           channel::upstream,
           action::create,
-          PathType,
+          CreatePath,
           hana::optional<nbdl::uid>,
           hana::optional<entity::e1>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
           action::create,
-          PathType,
+          Path,
           hana::optional<nbdl::uid>,
           hana::optional<bool>,
           hana::optional<entity::e1>
@@ -97,7 +99,8 @@ int main()
       access_point_meta::store = hana::type_c<void>,
       access_point_meta::entity_names    = mpdef::make_list(names::Entity1)
     );
-    using PathType = typename decltype(nbdl::path_type<int, entity::e1>)::type;
+    using Path = typename decltype(nbdl::path_type<int, entity::e1>)::type;
+    using CreatePath = typename decltype(Path::make_create_path_type())::type;
 
     BOOST_HANA_CONSTANT_ASSERT(
       builder::entity_messages(entity_map, access_point)
@@ -106,14 +109,14 @@ int main()
         hana::type_c<hana::tuple<
           channel::upstream,
           action::create,
-          PathType,
+          CreatePath,
           hana::optional<nbdl::uid>,
           hana::optional<entity::e1>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
           action::create,
-          PathType,
+          Path,
           hana::optional<nbdl::uid>,
           hana::optional<bool>,
           hana::optional<entity::e1>
@@ -121,13 +124,13 @@ int main()
         hana::type_c<hana::tuple<
           channel::upstream,
           action::read,
-          PathType,
+          Path,
           hana::optional<nbdl::uid>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
           action::read,
-          PathType,
+          Path,
           hana::optional<nbdl::uid>,
           hana::optional<bool>,
           hana::optional<entity::e1>
@@ -135,14 +138,14 @@ int main()
         hana::type_c<hana::tuple<
           channel::upstream,
           action::update_raw,
-          PathType,
+          Path,
           hana::optional<nbdl::uid>,
           hana::optional<entity::e1>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
           action::update_raw,
-          PathType,
+          Path,
           hana::optional<nbdl::uid>,
           hana::optional<bool>,
           hana::optional<entity::e1>
@@ -150,20 +153,20 @@ int main()
         hana::type_c<hana::tuple<
           channel::upstream,
           action::delete_,
-          PathType,
+          Path,
           hana::optional<nbdl::uid>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
           action::delete_,
-          PathType,
+          Path,
           hana::optional<nbdl::uid>,
           hana::optional<bool>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
           action::read,
-          PathType,
+          Path,
           hana::optional<nbdl::uid>,
           hana::optional<bool>,
           hana::optional<nbdl::not_found>

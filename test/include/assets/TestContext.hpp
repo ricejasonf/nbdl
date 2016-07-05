@@ -11,6 +11,7 @@
 #include <def/builder/Context.hpp>
 #include <def/directives.hpp>
 #include <nbdl/entity.hpp>
+#include <nbdl/null_store.hpp>
 #include <Path.hpp>
 
 #include <boost/hana.hpp>
@@ -182,6 +183,7 @@ namespace test_context {
 
   struct provider_tag { };
   struct consumer_tag { };
+  struct state_consumer_tag { };
   struct null_system_message { };
 
   template<typename PushApi, typename T = void>
@@ -268,6 +270,19 @@ namespace test_context {
       decltype(hana::if_(hana::bool_c<i == 0>, entity::my_entity<1>{}, entity::my_entity<i>{}))
     >
   )::type;
+
+  struct state_consumer
+  {
+    using hana_tag = test_context::state_consumer_tag;
+    using PathVariant = nbdl::variant<path<0>, path<1>, path<2>, path<3>, path<4>>;
+
+    std::vector<PathVariant> recorded_notifications;
+
+    state_consumer()
+      : recorded_notifications()
+    { }
+  };
+
 } // test_context
 
 namespace nbdl
@@ -315,6 +330,29 @@ namespace nbdl
       p.recorded_messages.push_back(std::forward<Message>(m));
     }
   };
+
+  // StateConsumer
+
+  template <>
+  struct make_state_consumer_impl<test_context::state_consumer_tag>
+  {
+    template <typename ...Args>
+    static constexpr auto apply(Args&& ...args)
+    {
+      return test_context::provider<std::decay_t<Args>...>(std::forward<Args>(args)...);
+    }
+  };
+
+  template <>
+  struct notify_state_change_impl<test_context::state_consumer_tag>
+  {
+    template <typename StateConsumer, typename Path>
+    static constexpr void apply(StateConsumer&& s, Path&& p)
+    {
+      std::forward<StateConsumer>(s).recorded_notifications.push_back(std::forward<Path>(p));
+    }
+  };
+
 } // nbdl
 
 #endif

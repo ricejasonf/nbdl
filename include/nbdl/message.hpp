@@ -97,14 +97,17 @@ namespace nbdl { namespace message
   constexpr detail::get_maybe_fn< 5 > get_maybe_payload{};
   constexpr detail::get_maybe_fn< 6 > get_maybe_private_payload{};
 
-  // The path type is used as a key
-  // in a few places.
+  // The path type is used as a key in a few places.
+  // If the last element is a hana type then extract
+  // that type. (It is used as a placeholder for create
+  // messages)
+  // TODO: Rename as `get_canonical_path_type`... maybe
   struct get_path_type_fn
   {
     template <typename Message>
     constexpr auto operator()(Message const& m) const
     {
-      return hana::type_c<std::decay_t<decltype(message::get_path(m))>>;
+      return hana::type_c<typename std::decay_t<decltype(message::get_path(m))>::canonical_path>;
     }
   };
 

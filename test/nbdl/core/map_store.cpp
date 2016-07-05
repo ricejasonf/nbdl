@@ -31,8 +31,8 @@ template <typename Variant, typename T>
 bool test_variant_equal(Variant const& v, T const& t)
 {
   return v.match(
-    [&](T const& t_) { return hana::equal(t, t_); },
-    [](auto&&)      { return false; }
+    [&](T const& t_)  { return hana::equal(t, t_); },
+    [](auto&&)        { return false; }
   );
 }
 
@@ -41,7 +41,7 @@ TEST_CASE("Apply action upstream create.", "[map_store][apply_action]")
   auto store = make_test_store();
   bool did_state_change = nbdl::apply_action(store,
     push_api.make_upstream_create_message(
-      test_context::path<1>(1, 2),
+      test_context::path<1>::make_create_path(1),
       test_context::entity::my_entity<1>{2, 1}
     )
   );
@@ -72,7 +72,9 @@ TEST_CASE("Apply action upstream read.", "[map_store][apply_action]")
   bool did_state_change = nbdl::apply_action(store,
     push_api.make_upstream_read_message(test_context::path<1>(1, 2))
   );
-  CHECK(did_state_change == true);
+  // A placeholder (nbdl::unresolved) is created, but
+  // technically the state does not change.
+  CHECK(did_state_change == false);
   CHECK(store.map.size() == 1);
   auto node = store.map.find(test_context::path<1>(1, 2));
   REQUIRE(node != store.map.end());

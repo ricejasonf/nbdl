@@ -157,7 +157,7 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
 
     // Send upstream create to provider0.
     auto msg = consumer2.push_api.make_upstream_create_message(
-      Path(1, 2),
+      Path::make_create_path(1),
       Entity{2, 1}
     );
     consumer2.push_api.push(msg);
@@ -186,7 +186,7 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
 
     // Send upstream create to provider0.
     auto msg = consumer2.push_api.make_upstream_create_message(
-      Path(1, 2),
+      Path::make_create_path(1),
       Entity{2, 1}
     );
     consumer2.push_api.push(msg);

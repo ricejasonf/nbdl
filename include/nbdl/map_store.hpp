@@ -24,17 +24,24 @@ namespace nbdl
   namespace detail
   {
     template <typename Message, typename Map>
-    bool handle_map_store_action(Message&& m, Map&& map)
+    auto handle_map_store_action(Message&& m, Map&& map)
     {
       if constexpr(message::is_upstream<Message>)
       {
         if constexpr(message::is_read<Message>)
         {
+          // Create `nbdl::unresolved` placeholder to signify that,
+          // when the message comes downstream, it is stored.
           if (map.find(message::get_path(m)) == map.end())
           {
             map[message::get_path(m)] = nbdl::unresolved{};
-            return true;
           }
+          // Adding the placeholder does not mean that state changed.
+          return hana::false_c;
+        }
+        else
+        {
+          return hana::false_c;
         }
       }
       else // if downstream
@@ -42,6 +49,11 @@ namespace nbdl
         if constexpr(message::is_create<Message> || message::is_update_raw<Message>)
         {
           map[message::get_path(m)] = *message::get_maybe_payload(m);
+          return true;
+        }
+        else if constexpr(message::is_delete<Message>)
+        {
+          map.erase(message::get_path(m));
           return true;
         }
         else if constexpr(message::is_read<Message>)
@@ -55,13 +67,11 @@ namespace nbdl
             [](auto const&) { return false; }
           );
         }
-        else if constexpr(message::is_delete<Message>)
+        else
         {
-          map.erase(message::get_path(m));
-          return true;
+          return hana::false_c;
         }
       }
-      return false;
     };
   } // detail
 
@@ -101,10 +111,12 @@ namespace nbdl
   struct apply_action_impl<map_store_tag>
   {
     template <typename Store, typename Message>
-    static constexpr bool apply(Store&& s, Message&& m)
+    static constexpr auto apply(Store&& s, Message&& m)
     {
       using Path = typename std::decay_t<Store>::path;
-      static_assert(decltype(hana::type_c<Path> == message::get_path_type(m))::value);
+      static_assert(
+        decltype(hana::type_c<typename Path::canonical_path> == message::get_path_type(m))::value
+      );
       return handle_map_store_action(std::forward<Message>(m), std::forward<Store>(s).map);
     }
   };

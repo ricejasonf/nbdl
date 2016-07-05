@@ -346,6 +346,8 @@ namespace nbdl
       return to_downstream_helper(std::forward<Message>(m), std::forward<Payload>(p), hana::false_c);
     }
 
+    // TODO:
+    // If a message is coming from root, the caller must specify the value of the key.
     template <typename Message>
     decltype(auto) to_downstream_from_root(Message const& m) const
     {
