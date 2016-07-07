@@ -25,6 +25,24 @@ namespace nbdl
 
   namespace detail
   {
+    template <typename P, typename MaybeUid>
+    decltype(auto) canonicalize_path_with_maybe_uid(P&& p, MaybeUid&& k)
+    {
+      using Path = std::decay_t<P>;
+      if constexpr(
+              decltype(hana::is_just(k))::value
+          &&  !std::is_same<Path, typename Path::canonical_path>::value
+      )
+      {
+        // The value_or is used to make it dependent.
+        return std::forward<P>(p).canonicalize_path(k.value_or(p));
+      }
+      else
+      {
+        return std::forward<P>(p);
+      }
+    }
+
     template <typename Channel, typename Action, typename Path, typename ...>
     struct message_lookup_predicate_fn;
 
@@ -116,22 +134,20 @@ namespace nbdl
       mpdef::make_pair(hana::type_c<downstream>, hana::type_c<DownstreamTypes>)
     );
 
-    template <typename M, typename Payload, typename IsFromRoot>
-    decltype(auto) to_downstream_helper(M const& m, Payload const& payload, IsFromRoot) const
+    template <typename Message, typename M, typename Path, typename Payload, typename IsFromRoot>
+    decltype(auto) to_downstream_helper_helper(
+      M const& m,
+      Path const& path,
+      Payload const& payload,
+      IsFromRoot
+    ) const
     {
-      using Message = typename decltype(get_message_type(
-        downstream{},
-        message::get_action(m),
-        message::get_path(m),
-        payload
-      ))::type;
-
-      // truncate to length of Message
       constexpr auto is_from_root = detail::make_is_from_root_fn<Message>{}(IsFromRoot{});
+      // truncate to length of Message
       return hana::unpack(
         hana::drop_back(
           hana::make_tuple(
-            std::cref(message::get_path(m)),
+            std::cref(path),
             std::cref(message::get_maybe_uid(m)),
             std::cref(is_from_root),
             std::cref(payload)
@@ -146,6 +162,37 @@ namespace nbdl
             ref.get()...
           );
         }
+      );
+    }
+
+    template <typename M, typename Path, typename Payload, typename IsFromRoot>
+    decltype(auto) to_downstream_helper(
+      M&& m,
+      Path&& path,
+      Payload&& payload,
+      IsFromRoot
+    ) const
+    {
+      using Message = typename decltype(get_message_type(
+        downstream{},
+        message::get_action(m),
+        detail::canonicalize_path_with_maybe_uid(
+          std::forward<Path>(path),
+          message::get_maybe_uid(m)
+        ),
+        payload
+      ))::type;
+
+      // `canonicalize_path` idempotently sets the path key
+      // to the uid if something isn't already specified.
+      return to_downstream_helper_helper<Message>(
+        std::forward<M>(m),
+        detail::canonicalize_path_with_maybe_uid(
+          std::forward<Path>(path),
+          message::get_maybe_uid(m)
+        ),
+        std::forward<Payload>(payload),
+        IsFromRoot{}
       );
     }
 
@@ -337,27 +384,70 @@ namespace nbdl
     template <typename Message>
     decltype(auto) to_downstream(Message const& m) const
     {
-      return to_downstream_helper(m, message::get_maybe_payload(m), hana::false_c);
+      return to_downstream_helper(
+        m,
+        message::get_path(m),
+        message::get_maybe_payload(m),
+        hana::false_c
+      );
     }
 
     template <typename Message, typename Payload>
-    decltype(auto) to_downstream(Message&& m, Payload&& p) const
+    decltype(auto) to_downstream(Message const& m, Payload&& p) const
     {
-      return to_downstream_helper(std::forward<Message>(m), std::forward<Payload>(p), hana::false_c);
+      return to_downstream_helper(
+        m,
+        message::get_path(m),
+        std::forward<Payload>(p),
+        hana::false_c
+      );
     }
 
     // TODO:
     // If a message is coming from root, the caller must specify the value of the key.
+    // (for create messages)
     template <typename Message>
     decltype(auto) to_downstream_from_root(Message const& m) const
     {
-      return to_downstream_helper(m, message::get_maybe_payload(m), hana::true_c);
+      return to_downstream_helper(
+        m,
+        message::get_path(m),
+        message::get_maybe_payload(m),
+        hana::true_c
+      );
+    }
+
+    template <typename Message, typename Key>
+    decltype(auto) to_downstream_from_root(Message const& m, Key&& k) const
+    {
+      return to_downstream_helper(
+        m,
+        message::get_path(m).canonicalize_path(std::forward<Key>(k)),
+        message::get_maybe_payload(m),
+        hana::true_c
+      );
     }
 
     template <typename Message, typename Payload>
-    decltype(auto) to_downstream_from_root(Message&& m, Payload&& p) const
+    decltype(auto) to_downstream_from_root_with_payload(Message const& m, Payload&& p) const
     {
-      return to_downstream_helper(std::forward<Message>(m), std::forward<Payload>(p), hana::true_c);
+      return to_downstream_helper(
+        m,
+        message::get_path(m),
+        std::forward<Payload>(p),
+        hana::true_c
+      );
+    }
+
+    template <typename Message, typename Key, typename Payload>
+    decltype(auto) to_downstream_from_root_with_payload(Message const& m, Key&& k, Payload&& p) const
+    {
+      return to_downstream_helper(
+        m,
+        message::get_path(m).canonicalize_path(std::forward<Key>(k)),
+        std::forward<Payload>(p),
+        hana::true_c
+      );
     }
   };
 } // nbdl

@@ -6,6 +6,7 @@
 //
 
 #include <nbdl/message_api.hpp>
+#include <Path.hpp>// FIXME
 #include <Uid.hpp> // FIXME
 
 #include <boost/hana/experimental/types.hpp>
@@ -32,11 +33,12 @@ constexpr auto decay_c(T)
   return hana::type_c<std::decay_t<T>>;
 }
 
-template <int i> struct Path { int id; };
 template <int i> struct Payload { int value; };
+template <int i> using Path = typename decltype(nbdl::path_type<int, Payload<i>>)::type;
 template <int i> using MaybePayload = hana::optional<Payload<i>>;
 
 namespace boost { namespace hana {
+#if 0
   template <int i>
   struct equal_impl<Path<i>, Path<i>>
   {
@@ -44,6 +46,7 @@ namespace boost { namespace hana {
     static constexpr auto apply(T1 const& t1, T2 const& t2)
     { return t1.id == t2.id; }
   };
+#endif
 
   template <int i>
   struct equal_impl<Payload<i>, Payload<i>>
@@ -56,7 +59,9 @@ namespace boost { namespace hana {
 
 // TODO create a better way for making a message type for testing (ie named params)
 template <int i>
-using UpstreamCreate = hana::tuple<upstream, create, Path<i>, maybe_uid, MaybePayload<i>>;
+using UpstreamCreate = hana::tuple<upstream, create,
+  typename decltype(Path<i>::make_create_path_type())::type,
+  maybe_uid, MaybePayload<i>>;
 template <int i>
 using UpstreamRead = hana::tuple<upstream, read, Path<i>, maybe_uid>;
 template <int i>
@@ -106,7 +111,7 @@ constexpr nbdl::message_api<UpstreamMessages, DownstreamMessages> msgs{};
 // Test the search for message types
 
 BOOST_HANA_CONSTANT_ASSERT(
-  msgs.get_message_type(upstream{}, create{}, Path<1>{1}) == hana::type_c<UpstreamCreate<1>>
+  msgs.get_message_type(upstream{}, create{}, Path<1>::make_create_path()) == hana::type_c<UpstreamCreate<1>>
 );
 BOOST_HANA_CONSTANT_ASSERT(
   msgs.get_message_type(upstream{}, read{}, Path<1>{1}) == hana::type_c<UpstreamRead<1>>
@@ -126,10 +131,10 @@ BOOST_HANA_CONSTANT_ASSERT(
 
 TEST_CASE("make_upstream_create_message", "[message_api]")
 {
-  auto m = msgs.make_upstream_create_message(Path<1>{1}, Payload<1>{11});
+  auto m = msgs.make_upstream_create_message(Path<1>::make_create_path(), Payload<1>{11});
   BOOST_HANA_CONSTANT_ASSERT(decay_c(message::get_channel(m)) == hana::type_c<upstream>);
   BOOST_HANA_CONSTANT_ASSERT(decay_c(message::get_action(m)) == hana::type_c<create>);
-  CHECK(hana::equal(message::get_path(m), Path<1>{1}));
+  CHECK(hana::equal(message::get_path(m), Path<1>::make_create_path()));
   CHECK(hana::equal(*message::get_maybe_payload(m), Payload<1>{11}));
 }
 
@@ -206,9 +211,14 @@ TEST_CASE("make_downstream_delete_message", "[message_api]")
   CHECK(*message::get_maybe_is_from_root(m) == false);
 }
 
+#if 0
+// TODO: test with a path that has a uid
+// This test must use a path that has a uid or you can't
+// convert it to downstream unless it is from root such
+// that a value is provided for the key.
 TEST_CASE("to_downstream (create)", "[message_api]")
 {
-  auto m = msgs.make_upstream_create_message(Path<1>{1}, Payload<1>{11});
+  auto m = msgs.make_upstream_create_message(Path<1>::make_create_path(), Payload<1>{11});
   auto down1 = msgs.to_downstream(m);
   auto down2 = msgs.to_downstream(m, Payload<1>{111}); // different payload
   BOOST_HANA_CONSTANT_ASSERT(hana::decltype_(down1) == hana::type_c<DownstreamCreate<1>>);
@@ -220,6 +230,7 @@ TEST_CASE("to_downstream (create)", "[message_api]")
   CHECK(*message::get_maybe_is_from_root(down1) == false);
   CHECK(*message::get_maybe_is_from_root(down2) == false);
 }
+#endif
 
 TEST_CASE("to_downstream (read)", "[message_api]")
 {
@@ -253,9 +264,9 @@ TEST_CASE("to_downstream (delete)", "[message_api]")
 
 TEST_CASE("to_downstream_from_root (create)", "[message_api]")
 {
-  auto m = msgs.make_upstream_create_message(Path<1>{1}, Payload<1>{11});
-  auto down1 = msgs.to_downstream_from_root(m);
-  auto down2 = msgs.to_downstream_from_root(m, Payload<1>{111}); // different payload
+  auto m = msgs.make_upstream_create_message(Path<1>::make_create_path(), Payload<1>{11});
+  auto down1 = msgs.to_downstream_from_root(m, 1);
+  auto down2 = msgs.to_downstream_from_root_with_payload(m, 1, Payload<1>{111}); // different payload
   BOOST_HANA_CONSTANT_ASSERT(hana::decltype_(down1) == hana::type_c<DownstreamCreate<1>>);
   BOOST_HANA_CONSTANT_ASSERT(hana::decltype_(down2) == hana::type_c<DownstreamCreate<1>>);
   CHECK(hana::equal(message::get_path(down1), Path<1>{1}));

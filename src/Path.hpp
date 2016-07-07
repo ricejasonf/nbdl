@@ -19,6 +19,25 @@ namespace nbdl {
 
 namespace hana = boost::hana;
 
+namespace detail
+{
+  struct first_or_fn
+  {
+    template <typename Xs, typename Default>
+    constexpr decltype(auto) operator()(Xs&& xs, Default&& d)
+    {
+      if constexpr(decltype(hana::length(xs)){} == hana::size_c<0>)
+      {
+        return std::forward<Default>(d);
+      }
+      else
+      {
+        return hana::at_c<0>(std::forward<Xs>(xs));
+      }
+    }
+  };
+}
+
 struct path_tag {};
 
 template<typename Spec>
@@ -60,15 +79,22 @@ class path
   {
     return hana::unpack(spec(),
       [](auto... t) {
-        return hana::type_c<decltype(hana::make_tuple(
-            std::declval<typename decltype(+hana::second(t))::type>()...
-          ))>;
+        return hana::type_c<decltype(hana::transform(
+          hana::remove_if(
+            hana::make_tuple(hana::second(t)...),
+            hana::traits::is_empty
+          ),
+          hana::traits::declval
+        ))>;
       });
   }
 
   using key = typename decltype(+hana::second(hana::back(spec())))::type;
   using Storage = typename decltype(storage_type())::type;
-  using First = std::decay_t<decltype(hana::at_c<0>(std::declval<Storage>()))>;
+  using First = std::decay_t<decltype(detail::first_or_fn{}(
+      std::declval<Storage>(),
+      hana::type_c<void>
+    ))>;
 
   Storage storage;
 
@@ -82,8 +108,6 @@ class path
   using Parent = path<decltype(hana::drop_back(spec(), hana::size_c<1>))>;
   using Entity = entity; // deprecated
 
-  static_assert(nbdl::Entity<Entity>::value, "");
-
   template<typename EntityType, typename KeyType>
   static constexpr auto create_child_type(EntityType e, KeyType k)
   {
@@ -91,14 +115,16 @@ class path
   }
 
   template<typename... Args>
-  path(First const& first, Args&&... args) :
+  explicit path(First const& first, Args&&... args) :
     storage(first, std::forward<Args>(args)...)
   { }
 
   template<typename... Args>
-  path(First&& first, Args&&... args) :
+  explicit path(First&& first, Args&&... args) :
     storage(std::move(first), std::forward<Args>(args)...)
   { }
+
+  path() = default;
 
   template<typename E = Entity>
   key get_key() const
@@ -136,7 +162,7 @@ class path
     using CreatePath = typename decltype(make_create_path_type())::type;
     static_assert(std::is_constructible<CreatePath, Args...>{},
       "CreatePath is not constructible.");
-    return CreatePath(std::forward<Args>(args)..., hana::type_c<canonical_key>);
+    return CreatePath(std::forward<Args>(args)...);
   }
 
   constexpr static auto make_canonical_path_type()
@@ -162,22 +188,15 @@ class path
   using canonical_path = typename decltype(make_canonical_path_type())::type;
 
   template <typename Key>
-  auto canonicalize_path(Key&& k)
+  auto canonicalize_path(Key const& k) const
   {
-    if constexpr(hana::type_c<canonical_key> == hana::type_c<key>)
-    {
-      return std::forward<Key>(k);
-    }
-    else
-    {
-      return hana::unpack(
-        hana::drop_back(storage, hana::size_c<1>),
-        [&](auto&& ...xs)
-        {
-          return canonical_path(std::forward<decltype(xs)>(xs)..., k);
-        }
-      );
-    }
+    return hana::unpack(
+      hana::drop_back(storage, hana::size_c<1>),
+      [&](auto&& ...xs)
+      {
+        return canonical_path(std::forward<decltype(xs)>(xs)..., k);
+      }
+    );
   }
 
   struct hash_fn
