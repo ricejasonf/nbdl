@@ -33,7 +33,6 @@ namespace nbdl {
 
   template <
     typename ProviderLookup,
-    typename ConsumerLookup,
     typename CellTagTypes,
     typename StoreMap,
     typename MessageApi,
@@ -97,19 +96,6 @@ namespace nbdl {
 
     static constexpr std::size_t cell_count = decltype(hana::size(CellTagTypes{}))::value;
     static constexpr auto cell_index_sequence = std::make_index_sequence<cell_count>{};
-
-    static constexpr std::size_t provider_count = decltype(hana::at(
-      hana::take_back(
-        hana::unpack(ProviderLookup{},
-          mpdef::make_list ^hana::on^ hana::second
-        ),
-        hana::size_c<1>
-      ),
-      hana::size_c<0>
-    ) + hana::size_c<1>)::value;
-
-    static constexpr std::size_t consumer_count = decltype(hana::count_if(CellTagTypes{},
-      hana::compose(detail::concept_pred<Consumer>, hana::traits::declval)))::value;
 
     template <std::size_t i>
     static constexpr auto cell_factory()
@@ -182,42 +168,25 @@ namespace nbdl {
     }
 
     template <typename Message>
-    void propagate_message(Message&& m)
+    void propagate_upstream(Message&& m)
     {
-        if constexpr(message::is_upstream<Message>)
-        {
-          using Path = std::decay_t<decltype(message::get_path(m))>;
-          using Index = decltype(hana::at_key(ProviderLookup{}, 
-            hana::type_c<typename Path::canonical_path>));
-          nbdl::send_upstream_message(cells[Index{}], std::forward<Message>(m));
-        }
-        else
-        {
-          propagate_downstream(std::forward<Message>(m));
-        }
+      using Path = std::decay_t<decltype(message::get_path(m))>;
+      using Index = decltype(hana::at_key(ProviderLookup{}, 
+        hana::type_c<typename Path::canonical_path>));
+      nbdl::send_upstream_message(cells[Index{}], std::forward<Message>(m));
     }
 
     template <typename Message>
     void propagate_downstream(Message const& m)
     {
-      if constexpr(consumer_count > 0)
+      // notify all consumers
+      hana::for_each(cells, [&](auto& cell)
       {
-        if constexpr(message::is_upstream<Message>)
+        if constexpr(nbdl::Consumer<decltype(cell)>::value)
         {
-          propagate_downstream(MessageApi{}.to_downstream(m));
+          nbdl::send_downstream_message(cell, m);
         }
-        else
-        {
-          // notify all consumers
-          hana::for_each(cells, [&](auto& cell)
-          {
-            if constexpr(nbdl::Consumer<decltype(cell)>::value)
-            {
-              nbdl::send_downstream_message(cell, m);
-            }
-          });
-        }
-      }
+      });
     }
 
     template <typename Path>
@@ -260,7 +229,7 @@ namespace nbdl {
             // placeholder to prevent duplicate upstream
             // read requests and so any StateConsumer
             // gets a value
-            propagate_message(m);
+            propagate_upstream(m);
           },
           [&](nbdl::unresolved)
           {
@@ -274,7 +243,7 @@ namespace nbdl {
             // There is a resolved value in the store
             // so send it as a downstream read message,
             // and don't bother the Provider with it.
-            propagate_message(
+            propagate_downstream(
               MessageApi{}.to_downstream(m, std::forward<decltype(value)>(value))
             );
           }
@@ -311,7 +280,15 @@ namespace nbdl {
             notify_state_consumers(message::get_path(m));
           }
         }
-        propagate_message(m);
+
+        if constexpr(message::is_upstream<Message>)
+        {
+          propagate_upstream(m);
+        }
+        else
+        {
+          propagate_downstream(m);
+        }
       }
 
       // apply the action to ALL OTHER stores

@@ -110,6 +110,38 @@ namespace nbdl
         return hana::nothing;
       }
     };
+
+    template <typename Message, typename M, typename Path, typename Payload, typename IsFromRoot>
+    decltype(auto) to_downstream_helper_helper(
+      M const& m,
+      Path const& path,
+      Payload const& payload,
+      IsFromRoot
+    )
+    {
+      constexpr auto is_from_root = detail::make_is_from_root_fn<Message>{}(IsFromRoot{});
+      // truncate to length of Message
+      return hana::unpack(
+        hana::drop_back(
+          hana::make_tuple(
+            std::cref(path),
+            std::cref(message::get_maybe_uid(m)),
+            std::cref(is_from_root),
+            std::cref(payload)
+          ),
+          decltype(hana::size_c<6> - hana::length(std::declval<Message>())){}
+        ),
+        [&](auto ...ref)
+        {
+          return Message(
+            message::channel::downstream{},
+            message::get_action(m),
+            ref.get()...
+          );
+        }
+      );
+    }
+
   } // detail
 
   // wrapper for safe overloading
@@ -134,37 +166,6 @@ namespace nbdl
       mpdef::make_pair(hana::type_c<downstream>, hana::type_c<DownstreamTypes>)
     );
 
-    template <typename Message, typename M, typename Path, typename Payload, typename IsFromRoot>
-    decltype(auto) to_downstream_helper_helper(
-      M const& m,
-      Path const& path,
-      Payload const& payload,
-      IsFromRoot
-    ) const
-    {
-      constexpr auto is_from_root = detail::make_is_from_root_fn<Message>{}(IsFromRoot{});
-      // truncate to length of Message
-      return hana::unpack(
-        hana::drop_back(
-          hana::make_tuple(
-            std::cref(path),
-            std::cref(message::get_maybe_uid(m)),
-            std::cref(is_from_root),
-            std::cref(payload)
-          ),
-          decltype(hana::size_c<6> - hana::length(std::declval<Message>())){}
-        ),
-        [&](auto ...ref)
-        {
-          return Message(
-            downstream{},
-            message::get_action(m),
-            ref.get()...
-          );
-        }
-      );
-    }
-
     template <typename M, typename Path, typename Payload, typename IsFromRoot>
     decltype(auto) to_downstream_helper(
       M&& m,
@@ -185,7 +186,7 @@ namespace nbdl
 
       // `canonicalize_path` idempotently sets the path key
       // to the uid if something isn't already specified.
-      return to_downstream_helper_helper<Message>(
+      return detail::to_downstream_helper_helper<Message>(
         std::forward<M>(m),
         detail::canonicalize_path_with_maybe_uid(
           std::forward<Path>(path),
@@ -275,21 +276,21 @@ namespace nbdl
 
     // Create - Upstream(Path, Payload, PrivatePayload)
     template <typename Path, typename ...T>
-    decltype(auto) make_upstream_create_message(Path&& p, T&& ...t) const
+    auto make_upstream_create_message(Path&& p, T&& ...t) const
     {
       return make_message(upstream{}, create{}, std::forward<Path>(p),
         std::forward<T>(t)...);
     }
 
     template <typename Path, typename ...T>
-    decltype(auto) make_downstream_create_message(Path&& p, T&& ...t) const
+    auto make_downstream_create_message(Path&& p, T&& ...t) const
     {
       return make_message(downstream{}, create{}, std::forward<Path>(p),
         false, std::forward<T>(t)...);
     }
 
     template <typename Path, typename ...T>
-    decltype(auto) make_downstream_create_message(nbdl::from_root r, Path&& p, T&& ...t) const
+    auto make_downstream_create_message(nbdl::from_root r, Path&& p, T&& ...t) const
     {
       return make_message(downstream{}, create{}, std::forward<Path>(p),
         r.is_from_root, std::forward<T>(t)...);
@@ -297,20 +298,20 @@ namespace nbdl
 
     // Read
     template <typename Path, typename ...T>
-    decltype(auto) make_upstream_read_message(Path&& p, T&& ...t) const
+    auto make_upstream_read_message(Path&& p, T&& ...t) const
     {
       return make_message(upstream{}, read{}, std::forward<Path>(p), std::forward<T>(t)...);
     }
 
     template <typename Path, typename ...T>
-    decltype(auto) make_downstream_read_message(Path&& p, T&& ...t) const
+    auto make_downstream_read_message(Path&& p, T&& ...t) const
     {
       return make_message(downstream{}, read{}, std::forward<Path>(p),
         false, std::forward<T>(t)...);
     }
 
     template <typename Path, typename ...T>
-    decltype(auto) make_downstream_read_message(nbdl::from_root r, Path&& p, T&& ...t)
+    auto make_downstream_read_message(nbdl::from_root r, Path&& p, T&& ...t)
     {
       return make_message(downstream{}, read{}, std::forward<Path>(p),
         r.is_from_root, std::forward<T>(t)...);
@@ -318,20 +319,20 @@ namespace nbdl
 
     // Update
     template <typename Path, typename ...T>
-    decltype(auto) make_upstream_update_message(Path&& p, T&& ...t) const
+    auto make_upstream_update_message(Path&& p, T&& ...t) const
     {
       return make_message(upstream{}, update{}, std::forward<Path>(p), std::forward<T>(t)...);
     }
 
     template <typename Path, typename ...T>
-    decltype(auto) make_downstream_update_message(Path&& p, T&& ...t) const
+    auto make_downstream_update_message(Path&& p, T&& ...t) const
     {
       return make_message(downstream{}, update{}, std::forward<Path>(p),
         false, std::forward<T>(t)...);
     }
 
     template <typename Path, typename ...T>
-    decltype(auto) make_downstream_update_message(nbdl::from_root r, Path&& p, T&& ...t) const
+    auto make_downstream_update_message(nbdl::from_root r, Path&& p, T&& ...t) const
     {
       return make_message(downstream{}, update{}, std::forward<Path>(p),
         r.is_from_root, std::forward<T>(t)...);
@@ -339,20 +340,20 @@ namespace nbdl
 
     // UpdateRaw
     template <typename Path, typename ...T>
-    decltype(auto) make_upstream_update_raw_message(Path&& p, T&& ...t) const
+    auto make_upstream_update_raw_message(Path&& p, T&& ...t) const
     {
       return make_message(upstream{}, update_raw{}, std::forward<Path>(p), std::forward<T>(t)...);
     }
 
     template <typename Path, typename ...T>
-    decltype(auto) make_downstream_update_raw_message(Path&& p, T&& ...t) const
+    auto make_downstream_update_raw_message(Path&& p, T&& ...t) const
     {
       return make_message(downstream{}, update_raw{}, std::forward<Path>(p),
         false, std::forward<T>(t)...);
     }
 
     template <typename Path, typename ...T>
-    decltype(auto) make_downstream_update_raw_message(nbdl::from_root r, Path&& p, T&& ...t) const
+    auto make_downstream_update_raw_message(nbdl::from_root r, Path&& p, T&& ...t) const
     {
       return make_message(downstream{}, update_raw{}, std::forward<Path>(p),
         r.is_from_root, std::forward<T>(t)...);
@@ -360,20 +361,20 @@ namespace nbdl
 
     // Delete
     template <typename Path, typename ...T>
-    decltype(auto) make_upstream_delete_message(Path&& p, T&& ...t) const
+    auto make_upstream_delete_message(Path&& p, T&& ...t) const
     {
       return make_message(upstream{}, delete_{}, std::forward<Path>(p), std::forward<T>(t)...);
     }
 
     template <typename Path, typename ...T>
-    decltype(auto) make_downstream_delete_message(Path&& p, T&& ...t) const
+    auto make_downstream_delete_message(Path&& p, T&& ...t) const
     {
       return make_message(downstream{}, delete_{}, std::forward<Path>(p),
         false, std::forward<T>(t)...);
     }
 
     template <typename Path, typename ...T>
-    decltype(auto) make_downstream_delete_message(nbdl::from_root r, Path&& p, T&& ...t) const
+    auto make_downstream_delete_message(nbdl::from_root r, Path&& p, T&& ...t) const
     {
       return make_message(downstream{}, delete_{}, std::forward<Path>(p),
         r.is_from_root, std::forward<T>(t)...);
@@ -382,7 +383,7 @@ namespace nbdl
     // Convert to Downstream
 
     template <typename Message>
-    decltype(auto) to_downstream(Message const& m) const
+    auto to_downstream(Message const& m) const
     {
       return to_downstream_helper(
         m,
@@ -393,7 +394,7 @@ namespace nbdl
     }
 
     template <typename Message, typename Payload>
-    decltype(auto) to_downstream(Message const& m, Payload&& p) const
+    auto to_downstream(Message const& m, Payload&& p) const
     {
       return to_downstream_helper(
         m,
@@ -407,7 +408,7 @@ namespace nbdl
     // If a message is coming from root, the caller must specify the value of the key.
     // (for create messages)
     template <typename Message>
-    decltype(auto) to_downstream_from_root(Message const& m) const
+    auto to_downstream_from_root(Message const& m) const
     {
       return to_downstream_helper(
         m,
@@ -418,7 +419,7 @@ namespace nbdl
     }
 
     template <typename Message, typename Key>
-    decltype(auto) to_downstream_from_root(Message const& m, Key&& k) const
+    auto to_downstream_from_root(Message const& m, Key&& k) const
     {
       return to_downstream_helper(
         m,
@@ -429,7 +430,7 @@ namespace nbdl
     }
 
     template <typename Message, typename Payload>
-    decltype(auto) to_downstream_from_root_with_payload(Message const& m, Payload&& p) const
+    auto to_downstream_from_root_with_payload(Message const& m, Payload&& p) const
     {
       return to_downstream_helper(
         m,
@@ -440,7 +441,7 @@ namespace nbdl
     }
 
     template <typename Message, typename Key, typename Payload>
-    decltype(auto) to_downstream_from_root_with_payload(Message const& m, Key&& k, Payload&& p) const
+    auto to_downstream_from_root_with_payload(Message const& m, Key&& k, Payload&& p) const
     {
       return to_downstream_helper(
         m,

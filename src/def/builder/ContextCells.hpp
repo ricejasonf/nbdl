@@ -68,16 +68,19 @@ struct context_cells_fn
       )),
       mpdef::make_map
     ));
-    constexpr auto ckeys = hana::unpack(ConsumerMap{}, mpdef::make_list ^on^ hana::first);
     constexpr auto cvals = hana::unpack(ConsumerMap{}, mpdef::make_list ^on^ hana::second);
+#if 0
+    // this stuff isn't used right now
+    constexpr auto ckeys = hana::unpack(ConsumerMap{}, mpdef::make_list ^on^ hana::first);
     constexpr auto clookup = hana::decltype_(hana::unpack(
       hana::make_range(hana::size_c<0>, hana::length(ckeys)),
       mpdef::make_map ^on^ make_consumer_lookup_pair_fn<decltype(ckeys)>{}
     ));
+#endif
 
     // the order should match the first three
     // template params of nbdl::Context
-    return mpdef::make_list(plookup, clookup, make_cell_tags_fn{}(pvals, cvals));
+    return mpdef::make_list(plookup, make_cell_tags_fn{}(pvals, cvals));
   }
 };
 constexpr context_cells_fn context_cells{};
