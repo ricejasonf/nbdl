@@ -5,13 +5,10 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include<def/builder/AccessPointMeta.hpp>
-#include<def/builder/EntityMeta.hpp>
-#include<def/builder/Path.hpp>
-#include<def/builder/Store.hpp>
-#include<def/directives.hpp>
+#include <def/builder/AccessPointMeta.hpp>
+#include <def/builder/EnumerateAccessPoints.hpp>
+#include <def/directives.hpp>
 #include <nbdl/entity_members.hpp>
-#include<Path.hpp>
 
 #include<boost/hana.hpp>
 
@@ -22,7 +19,7 @@ namespace builder = nbdl_def::builder;
   struct NAME##_t {}; constexpr auto NAME = hana::type_c<NAME##_t>;
 
 namespace names {
-  DEFINE_TYPE(Foo);
+  DEFINE_TYPE(Provider1);
   DEFINE_TYPE(E1);
 }//names
 
@@ -40,19 +37,64 @@ namespace nbdl {
 int main()
 {
   {
-    using builder::access_point_meta;
-    constexpr auto path_type = nbdl::path_type<int, entity::e1>;
-    constexpr auto access_point = builder::make_access_point_meta_with_map(
-      access_point_meta::name             = names::Foo,
-      access_point_meta::actions          = hana::make_tuple(nbdl_def::tag::Create),
-      access_point_meta::store            = nbdl::null_store{},
-      access_point_meta::entity_names     = hana::make_tuple(names::E1)
-    );
+    // The default store is `nbdl::null_store`
+    using namespace nbdl_def;
+    using nbdl_def::builder::access_point_meta;
 
-    BOOST_HANA_CONSTANT_ASSERT(
-      builder::store(path_type, access_point)
-        ==
-      hana::type_c<nbdl::null_store>
-    );
+    constexpr auto def =
+      Context(
+        Provider(
+          Name(names::Provider1),
+          AccessPoint(
+            Name(names::E1),
+            EntityName(names::E1),
+            Actions(Create())
+          )
+        )
+      );
+    constexpr auto result = hana::at_c<0>(nbdl_def::builder::enumerate_access_points(def));
+    BOOST_HANA_CONSTANT_ASSERT(access_point_meta::store(result) == hana::type_c<nbdl::null_store>);
+  }
+  {
+    // Specify the store in Provider
+    using namespace nbdl_def;
+    using nbdl_def::builder::access_point_meta;
+
+    struct test_store_tag { };
+    constexpr auto def =
+      Context(
+        Provider(
+          Store(hana::type_c<test_store_tag>),
+          Name(names::Provider1),
+          AccessPoint(
+            Name(names::E1),
+            EntityName(names::E1),
+            Actions(Create())
+          )
+        )
+      );
+    constexpr auto result = hana::at_c<0>(nbdl_def::builder::enumerate_access_points(def));
+    BOOST_HANA_CONSTANT_ASSERT(access_point_meta::store(result) == hana::type_c<test_store_tag>);
+  }
+  {
+    // Specify the store in AccessPoint
+    using namespace nbdl_def;
+    using nbdl_def::builder::access_point_meta;
+
+    struct test_store_tag { };
+    constexpr auto def =
+      Context(
+        Provider(
+          Name(names::Provider1),
+          AccessPoint(
+            Store(hana::type_c<test_store_tag>),
+            Name(names::E1),
+            EntityName(names::E1),
+            Actions(Create())
+          )
+        )
+      );
+    constexpr auto result = hana::at_c<0>(nbdl_def::builder::enumerate_access_points(def));
+    BOOST_HANA_CONSTANT_ASSERT(access_point_meta::store(result) == hana::type_c<test_store_tag>);
   }
 }

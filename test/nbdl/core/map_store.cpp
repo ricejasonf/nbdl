@@ -20,7 +20,8 @@ constexpr auto def = test_context_def::make(
   test_context::provider_tag{},
   test_context::provider_tag{},
   test_context::consumer_tag{},
-  test_context::consumer_tag{}
+  test_context::consumer_tag{},
+  nbdl::map_store_tag{}
 );
 namespace {
   auto context = nbdl::make_unique_context(def);

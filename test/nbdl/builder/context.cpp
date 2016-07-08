@@ -8,6 +8,7 @@
 #include <assets/TestContext.hpp>
 #include <def/builder/Context.hpp>
 #include <nbdl/make_context.hpp>
+#include <nbdl/null_store.hpp>
 
 #include <boost/hana.hpp>
 
@@ -22,7 +23,8 @@ int main()
       test_context::provider_tag{},
       test_context::provider_tag{},
       test_context::consumer_tag{},
-      test_context::consumer_tag{}
+      test_context::consumer_tag{},
+      nbdl::null_store{}
     );
     auto context_ptr = nbdl::make_unique_context(def);
   }
@@ -32,7 +34,8 @@ int main()
       test_context::provider_tag{},
       test_context::provider_tag{},
       test_context::consumer_tag{},
-      test_context::consumer_tag{}
+      test_context::consumer_tag{},
+      nbdl::null_store{}
     );
     // test single parameter construction
     auto context_ptr = nbdl::make_unique_context(

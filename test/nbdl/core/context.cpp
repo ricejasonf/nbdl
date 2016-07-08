@@ -8,6 +8,7 @@
 #include <assets/TestContext.hpp>
 #include <nbdl/make_context.hpp>
 #include <nbdl/message.hpp>
+#include <nbdl/null_store.hpp>
 
 #include <boost/hana/equal.hpp>
 #include <boost/hana/value.hpp>
@@ -23,7 +24,8 @@ constexpr auto def = test_context_def::make(
   test_context::provider_tag{},
   test_context::provider_tag{},
   test_context::consumer_tag{},
-  test_context::consumer_tag{}
+  test_context::consumer_tag{},
+  nbdl::null_store{}
 );
 auto context = nbdl::make_unique_context(def);
 

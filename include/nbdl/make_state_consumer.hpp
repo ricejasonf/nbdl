@@ -14,10 +14,9 @@
 namespace nbdl
 {
   template <typename T>
-  template <typename PushApi, typename MatchFn, typename ...Args>
+  template <typename PushApi, typename ...Args>
   constexpr decltype(auto) make_state_consumer_fn<T>::operator()(
     PushApi&& push,
-    MatchFn&& match,
     Args&& ...args
   ) const
   {
@@ -25,17 +24,15 @@ namespace nbdl
     using Impl = make_state_consumer_impl<Tag>;
     using Return = decltype(Impl::apply(
       std::forward<PushApi>(push),
-      std::forward<MatchFn>(match),
       std::forward<Args>(args)...
     ));
 
     static_assert(
-      nbdl::Consumer<Return>::value
+      nbdl::StateConsumer<Return>::value
       , "nbdl::make_state_consumer<T>(push, args...) must return a StateConsumer.");
 
     return Impl::apply(
       std::forward<PushApi>(push),
-      std::forward<MatchFn>(match),
       std::forward<Args>(args)...
     );
   };

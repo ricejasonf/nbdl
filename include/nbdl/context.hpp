@@ -209,14 +209,27 @@ namespace nbdl {
         else
         {
           // notify all consumers
-          hana::for_each(hana::make_range(hana::size_c<provider_count>, hana::length(cells)),
-            [&](auto i)
+          hana::for_each(cells, [&](auto& cell)
+          {
+            if constexpr(nbdl::Consumer<decltype(cell)>::value)
             {
-              nbdl::send_downstream_message(cells[i], m);
+              nbdl::send_downstream_message(cell, m);
             }
-          );
+          });
         }
       }
+    }
+
+    template <typename Path>
+    void notify_state_consumers(Path const& p)
+    {
+      hana::for_each(cells, [&](auto& cell)
+      {
+        if constexpr(nbdl::StateConsumer<decltype(cell)>::value)
+        {
+          nbdl::notify_state_change(cell, p);
+        }
+      });
     }
 
     // called inside push_downstream_api_state_consumer
@@ -283,10 +296,10 @@ namespace nbdl {
 #endif
       else
       {
-        if constexpr(!hana::equal(
+        if constexpr(!decltype(hana::equal(
           hana::type_c<decltype(nbdl::apply_action(store, m))>,
           hana::type_c<hana::false_>
-        ))
+        ))::value)
         {
           if (nbdl::apply_action(store, m))
           {
@@ -295,11 +308,12 @@ namespace nbdl {
             {
               propagate_downstream(m);
             }
+            notify_state_consumers(message::get_path(m));
           }
-          //notify_state_consumers(message::get_path(m));
         }
         propagate_message(m);
       }
+
       // apply the action to ALL OTHER stores
       hana::for_each(stores, [&](auto& pair)
       {
@@ -315,7 +329,7 @@ namespace nbdl {
                 )
               )::value
               , "Store can only mark its own path as modified.");
-            //notify_state_consumers(path);
+            notify_state_consumers(path);
           });
         }
       });

@@ -22,11 +22,14 @@ namespace details {
   {
 
     template<typename AccessPoint>
-    constexpr auto operator()(AccessPoint access_point)
+    constexpr auto operator()(AccessPoint a)
     {
-      auto path = builder::path(EntityMap{}, access_point);
-      return hana::make_pair(path, 
-        typename decltype(builder::store(path, access_point))::type{});
+      using StoreTag = typename decltype(access_point_meta::store(a))::type;
+      using PathType = decltype(builder::path(EntityMap{}, a));
+      return hana::make_pair(
+        PathType{},
+        nbdl::make_store<StoreTag>(PathType{})
+      );
     }
   };
   //could get rid of this because EntityMap **should** be default constructible

@@ -245,7 +245,7 @@ constexpr auto path_type = make_path_type_from_pairs(
  */
 namespace boost { namespace hana {
 
-template<>
+template <>
 struct unpack_impl<nbdl::path_tag>
 {
   template<typename Xs, typename F>
@@ -255,15 +255,20 @@ struct unpack_impl<nbdl::path_tag>
   }
 };
 
-template<>
+template <>
 struct equal_impl<nbdl::path_tag, nbdl::path_tag>
 {
-  template<typename X, typename Y>
-  static constexpr decltype(auto) apply(X&& x, Y&& y)
+  template <typename X, typename Y, typename = std::enable_if_t<std::is_same<
+    std::decay_t<X>,
+    std::decay_t<Y>
+    >::value>
+  >
+  static constexpr auto apply(X&& x, Y&& y)
   {
     return hana::equal(
-      static_cast<X&&>(x).storage,
-      static_cast<Y&&>(y).storage);
+      std::forward<X>(x).storage,
+      std::forward<Y>(y).storage
+    );
   }
 };
 
