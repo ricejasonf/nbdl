@@ -155,6 +155,7 @@ TEST_CASE("Apply action downstream read with not_found value in store.", "[map_s
     [](nbdl::not_found) { return true;  },
     [](auto&&)          { return false; }
   );
+  CHECK(result);
 }
 
 TEST_CASE("Apply action upstream update raw.", "[map_store][apply_action]")

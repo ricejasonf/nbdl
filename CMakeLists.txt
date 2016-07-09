@@ -48,6 +48,11 @@ add_definitions(-std=c++1z)
 #add_definitions(-ftemplate-backtrace-limit=0)
 add_definitions(-Wall)
 add_definitions(-Wextra)
+
+if (${NBDL_USE_CATCH})
+  add_definitions(-DNBDL_USE_CATCH)
+endif (${NBDL_USE_CATCH})
+
 if (${EMSCRIPTEN})
 	add_definitions(--bind)
 endif (${EMSCRIPTEN})
