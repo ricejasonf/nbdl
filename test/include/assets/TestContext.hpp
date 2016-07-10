@@ -310,7 +310,7 @@ namespace test_context {
 namespace
 {
   using test_context::path_variant;
-  path_variant                                         mock_store_result_apply_action{};
+  path_variant mock_store_result_apply_action{};
   hana::tuple<
     path_variant,             // path of store that is listening
     path_variant,             // path of message to listen for

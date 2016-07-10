@@ -63,8 +63,6 @@ namespace nbdl {
     class push_downstream_api
       : public MessageApi
     {
-      protected:
-
       context& ctx;
 
       public:
@@ -81,16 +79,26 @@ namespace nbdl {
     };
 
     class push_upstream_api_state_consumer
-      : public push_upstream_api
+      : public MessageApi
     {
+      context& ctx;
+
       public:
 
-      using push_upstream_api::push_upstream_api;
+      push_upstream_api_state_consumer(context& c) : ctx(c) { }
+
+      template <typename Message>
+      void push(Message&& m)
+      {
+        static_assert(nbdl::UpstreamMessage<Message>::value,
+          "nbdl::context::push_upstream_api_state_consumer requires an UpstreamMessage");
+         ctx.push_message(std::forward<Message>(m));
+      }
 
       template <typename Path, typename ...Fns>
       decltype(auto) match(Path&& path, Fns&& ...fns)
       {
-        return this->ctx.match(std::forward<Path>(path), std::forward<Fns&&>(fns)...);
+        return ctx.match(std::forward<Path>(path), std::forward<Fns&&>(fns)...);
       }
     };
 
@@ -203,10 +211,23 @@ namespace nbdl {
 
     // called inside push_downstream_api_state_consumer
     template <typename Path, typename ...Fns>
-    decltype(auto) match(Path&& path, Fns&& ...fns)
+    decltype(auto) match(Path&& p, Fns&& ...fns)
     {
-      constexpr auto path_type = decltype(hana::traits::decay(hana::decltype_(path))){};
-      return nbdl::match(stores[path_type], std::forward<Path>(path), std::forward<Fns>(fns)...);
+      constexpr auto path_type = decltype(hana::traits::decay(hana::decltype_(p))){};
+      return nbdl::match(stores[path_type], p,
+        [&](nbdl::uninitialized)
+        {
+          // Trigger upstrea read request.
+          // The store's value should be set to `nbdl::unresolved`
+          push_message(MessageApi{}.make_upstream_read_message(p));
+          return hana::overload_linearly(std::forward<Fns>(fns)...)(nbdl::unresolved{});
+        },
+        [&](auto const& value)
+        {
+          // Users should not be allowed to modify values directly.
+          return hana::overload_linearly(std::forward<Fns>(fns)...)(value);
+        }
+      );
     }
 
     // All actions MUST be applied to the

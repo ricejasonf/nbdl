@@ -45,7 +45,7 @@ endfunction()
 
 #todo find a cross platform way to set -Wall -Wextra
 add_definitions(-std=c++1z)
-#add_definitions(-ftemplate-backtrace-limit=0)
+add_definitions(-ftemplate-backtrace-limit=0)
 add_definitions(-Wall)
 add_definitions(-Wextra)
 

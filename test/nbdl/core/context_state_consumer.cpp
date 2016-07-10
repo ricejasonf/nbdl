@@ -63,7 +63,7 @@ TEST_CASE("A single notification is sent when state changes for a single, primar
   CHECK(result);
 }
 
-TEST_CASE("A notification is sent when a store is listening to actions from other paths.", "[context]") 
+TEST_CASE("Notifications are sent when a store is listening to actions from other paths.", "[context]") 
 {
   init_mock_stuff();
   hana::at_c<0>(mock_store_result_apply_foreign_action) = path<2>(2, 1); // path of store
@@ -86,5 +86,3 @@ TEST_CASE("A notification is sent when a store is listening to actions from othe
   CHECK(result1);
   CHECK(result2);
 }
-
-// TODO: test the multiple calls to apply_foreign_action
