@@ -235,7 +235,7 @@ namespace nbdl {
 
     // called inside PushUpstreamMessageFn and PushDownstreamMessageFn
     template <typename Message>
-    void push_message(Message&& m)
+    void push_message(Message const& m)
     {
       constexpr auto path_type = decltype(message::get_path_type(m)){};
       auto& store = stores[path_type];
