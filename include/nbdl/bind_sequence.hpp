@@ -10,6 +10,7 @@
 #include <nbdl/fwd/bind_sequence.hpp>
 
 #include <nbdl/concept/BindableSequence.hpp>
+#include <nbdl/concept/Entity.hpp>
 #include <nbdl/detail/filter_empties.hpp>
 #include <nbdl/entity_members.hpp>
 
@@ -23,7 +24,7 @@
 namespace nbdl
 {
   template<typename BindableSequence, typename BindFn>
-  constexpr void bind_sequence_fn::operator()(BindableSequence&& s, BindFn&& f) const
+  constexpr auto bind_sequence_fn::operator()(BindableSequence&& s, BindFn&& f) const
   {
     using Tag = hana::tag_of_t<BindableSequence>;
     using Impl = bind_sequence_impl<Tag>;
@@ -41,18 +42,18 @@ namespace nbdl
   struct bind_sequence_impl<Tag, hana::when<condition>>
     : hana::default_
   {
-    static constexpr bool apply(...) = delete;
+    static constexpr auto apply(...) = delete;
   };
 
   template<typename Tag>
   struct bind_sequence_impl<Tag, hana::when<nbdl::Entity<Tag>::value>>
   {
     template <typename Entity, typename BindFn>
-    static void apply(Entity&& e, BindFn&& f)
+    static auto apply(Entity&& e, BindFn&& f)
     {
-      hana::unpack(nbdl::entity_members<Entity>, [&](auto ...m)
+      return hana::unpack(nbdl::entity_members<Entity>, [&](auto ...m)
       {
-        f(nbdl::get_member<decltype(m)>>(e)...);
+        return f(nbdl::get_member<decltype(m)>(e)...);
       });
     }
   };
@@ -67,11 +68,11 @@ namespace nbdl
   >>
   {
     template <typename BindableSequence, typename BindFn>
-    static void apply(BindableSequence&& xs, BindFn&& f)
+    static auto apply(BindableSequence&& xs, BindFn&& f)
     {
-      hana::unpack(std::forward<BindableSequence>(xs), [&](auto&& ...x)
+      return hana::unpack(std::forward<BindableSequence>(xs), [&](auto&& ...x)
       {
-        f(std::forward<decltype(x)>(x)...);
+        return f(std::forward<decltype(x)>(x)...);
       });
     }
   };

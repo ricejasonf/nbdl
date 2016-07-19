@@ -19,7 +19,7 @@
 namespace nbdl
 {
   template<typename BindableVariant, typename BindFn>
-  constexpr void bind_variant_fn::operator()(int const type_id, BindableVariant&& v, BindFn&& f) const
+  constexpr auto bind_variant_fn::operator()(int const type_id, BindableVariant&& v, BindFn&& f) const
   {
     using Tag = hana::tag_of_t<BindableVariant>;
     using Impl = bind_variant_impl<Tag>;
@@ -35,7 +35,7 @@ namespace nbdl
   };
 
   template<typename BindableVariant, typename BindFn>
-  constexpr void bind_variant_fn::operator()(BindableVariant const& v, BindFn&& f) const
+  constexpr auto bind_variant_fn::operator()(BindableVariant const& v, BindFn&& f) const
   {
     using Tag = hana::tag_of_t<BindableVariant>;
     using Impl = bind_variant_impl<Tag>;
@@ -53,7 +53,7 @@ namespace nbdl
   struct bind_variant_impl<Tag, hana::when<condition>>
     : hana::default_
   {
-    static constexpr bool apply(...) = delete;
+    static constexpr auto apply(...) = delete;
   };
 } // nbdl
 

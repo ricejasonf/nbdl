@@ -17,13 +17,14 @@
 #include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/fwd/map.hpp>
 #include <boost/hana/fwd/string.hpp>
+#include <functional>
 #include <type_traits>
 #include <utility>
 
 namespace nbdl
 {
-  template <typename BindableMap, typename BindKeyValueFn>
-  constexpr void bind_map_fn::operator()(BindableMap&& s, BindKeyValueFn&& f) const
+  template <typename BindableMap, typename BindFn>
+  constexpr auto bind_map_fn::operator()(BindableMap&& s, BindFn&& f) const
   {
     using Tag = hana::tag_of_t<BindableMap>;
     using Impl = bind_map_impl<Tag>;
@@ -31,26 +32,30 @@ namespace nbdl
     static_assert(nbdl::BindableMap<BindableMap>::value,
       "nbdl::bind_map(map, fn) requires 'map' to be a BindableMap");
 
-    return Impl::apply(std::forward<BindableMap>(s), std::forward<BindKeyValueFn>(f));
+    return Impl::apply(std::forward<BindableMap>(s), std::forward<BindFn>(f));
   };
 
   template <typename Tag, bool condition>
   struct bind_map_impl<Tag, hana::when<condition>>
     : hana::default_
   {
-    static constexpr void apply(...) = delete;
+    static constexpr auto apply(...) = delete;
   };
 
   template <typename Tag>
   struct bind_map_impl<Tag, hana::when<nbdl::Entity<Tag>::value>>
   {
-    template <typename Entity, typename BindKeyValueFn>
-    static void apply(Entity&& e, BindKeyValueFn&& f)
+    template <typename Entity, typename BindFn>
+    static auto apply(Entity&& e, BindFn&& f)
     {
-      hana::for_each(nbdl::entity_members<Entity>, [&](auto m)
+      return hana::unpack(nbdl::entity_members<Entity>, [&](auto ...m)
       {
-        using Member = decltype(m);
-        f(nbdl::member_name<Member>, nbdl::get_member<Member>(e));
+        return f(
+          hana::make_pair(
+            nbdl::member_name<decltype(m)>,
+            std::ref(nbdl::get_member<decltype(m)>(e))
+          )...
+        );
       });
     }
   };
@@ -79,12 +84,15 @@ namespace nbdl
       }
     };
 
-    template <typename BindableMap, typename BindKeyValueFn>
-    static void apply(BindableMap&& map, BindKeyValueFn&& f)
+    template <typename BindableMap, typename BindFn>
+    static auto apply(BindableMap&& map, BindFn&& f)
     {
-      hana::for_each(map, [&](auto&& pair)
+      return hana::unpack(map, [&](auto&& ...pair)
       {
-        f(string_helper<decltype(hana::first(pair))>{}(), hana::second(pair));
+        return (f(hana::make_pair(
+          string_helper<std::decay_t<decltype(hana::first(pair))>>{},
+          std::ref(hana::second(pair))
+        )), ...);
       });
     }
   };

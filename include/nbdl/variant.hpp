@@ -240,6 +240,37 @@ namespace nbdl
   template <typename T>
   using optional = detail::variant<nothing, T>;
 
+  struct make_optional_fn
+  {
+    template <typename T>
+    auto operator()(T&& value) const
+    {
+      return nbdl::optional<std::decay_t<T>>(value);
+    }
+  };
+
+  constexpr make_optional_fn make_optional;
+
+  struct make_optional_if_fn
+  {
+    template <typename T>
+    auto operator()(bool cond, T&& value) const
+    {
+      using Optional = nbdl::optional<std::decay_t<T>>;
+
+      if (cond)
+      {
+        return Optional(value);
+      }
+      else
+      {
+        return Optional(nbdl::nothing{});
+      }
+    }
+  };
+
+  constexpr make_optional_if_fn make_optional_if;
+
   // BindableVariant
 
   template <>

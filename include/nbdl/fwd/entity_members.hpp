@@ -106,7 +106,7 @@ namespace nbdl
 #define NBDL_MEMBER_NAME(Owner, MemberName) \
 template <> \
 struct member_name_impl<NBDL_MEMBER(&Owner::MemberName)> \
-{ static constexpr const char *value = #MemberName; };
+{ static constexpr char const* const value = #MemberName; };
 
 #define NBDL_MEMBER_DEFAULT(mptr, val) template <> struct member_default<NBDL_MEMBER(mptr)> \
 { static constexpr decltype(val) value = val; }; \

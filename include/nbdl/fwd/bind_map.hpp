@@ -19,7 +19,7 @@ namespace nbdl
   struct bind_map_fn
   {
     template <typename BindableMap, typename BindKeyValueFn>
-    constexpr void operator()(BindableMap&& s, BindKeyValueFn&& f) const;
+    constexpr auto operator()(BindableMap&& s, BindKeyValueFn&& f) const;
   };
 
   constexpr bind_map_fn bind_map{};

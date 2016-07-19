@@ -181,9 +181,9 @@ namespace nbdl { namespace binder { namespace jsoncpp
       constexpr auto operator()(Binder&& binder, T&& t) const
         -> std::enable_if_t<nbdl::BindableMap<T>::value>
       {
-        nbdl::bind_map(std::forward<T>(t), [&](char const* name, auto&& m)
+        nbdl::bind_map(std::forward<T>(t), [&](auto&& ...pair)
         {
-          binder.bind_named_member(name, std::forward<decltype(m)>(m));
+          (binder.bind_named_member(hana::first(pair), hana::second(pair).get()), ...);
         });
       }
 

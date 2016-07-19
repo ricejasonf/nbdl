@@ -19,7 +19,7 @@ namespace nbdl
   struct bind_sequence_fn
   {
     template<typename BindableSequence, typename BindFn>
-    constexpr void operator()(BindableSequence&&, BindFn&&) const;
+    constexpr auto operator()(BindableSequence&&, BindFn&&) const;
   };
 
   constexpr bind_sequence_fn bind_sequence{};

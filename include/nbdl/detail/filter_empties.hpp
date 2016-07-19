@@ -33,9 +33,9 @@ namespace nbdl { namespace detail
   {
     F f;
     template <typename ...X>
-    void operator()(X&& ...x) const
+    decltype(auto) operator()(X&& ...x) const
     {
-      hana::unpack(
+      return hana::unpack(
         hana::filter(hana::make_tuple(std::ref(x)...), [](auto ref)
         {
           return hana::bool_c<!std::is_empty<typename decltype(ref)::type>::value>;

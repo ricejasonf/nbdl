@@ -24,7 +24,7 @@ namespace nbdl
   template <typename Entity>
   decltype(auto) get_member_fn<Member>::operator()(Entity&& e) const
   {
-    return e.*Member::ptr;
+    return std::forward<Entity>(e).*Member::ptr;
   };
 } // nbdl
 

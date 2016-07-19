@@ -21,10 +21,10 @@ namespace nbdl
     // A variant is just like a sequence
     // when we know the type_id.
     template<typename BindableVariant, typename BindFn>
-    constexpr void operator()(int const type_id, BindableVariant&&, BindFn&&) const;
+    constexpr auto operator()(int const type_id, BindableVariant&&, BindFn&&) const;
 
     template<typename BindableVariant, typename BindFn>
-    constexpr void operator()(BindableVariant const&, BindFn&&) const;
+    constexpr auto operator()(BindableVariant const&, BindFn&&) const;
   };
 
   constexpr bind_variant_fn bind_variant{};
