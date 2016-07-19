@@ -7,8 +7,8 @@
 #ifndef NBDL_MESSAGE_API_HPP
 #define NBDL_MESSAGE_API_HPP
 
-#include <mpdef/Map.hpp>
-#include <mpdef/Pair.hpp>
+#include <mpdef/map.hpp>
+#include <mpdef/pair.hpp>
 #include <nbdl/message.hpp>
 #include <Uid.hpp> // FIXME
 #include <nbdl/make_store.hpp> // nbdl::not_found

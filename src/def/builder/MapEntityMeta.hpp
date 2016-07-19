@@ -7,11 +7,11 @@
 #ifndef NBDL_DEF_MAP_ENTITY_META_HPP
 #define NBDL_DEF_MAP_ENTITY_META_HPP
 
-#include<def/builder/EntityMeta.hpp>
-#include<def/builder/EntityKeyMeta.hpp>
-#include<def/directives.hpp>
-#include<mpdef/Map.hpp>
-#include<mpdef/TreeNode.hpp>
+#include <def/builder/EntityMeta.hpp>
+#include <def/builder/EntityKeyMeta.hpp>
+#include <def/directives.hpp>
+#include <mpdef/map.hpp>
+#include <mpdef/tree_node.hpp>
 
 namespace nbdl_def {
 

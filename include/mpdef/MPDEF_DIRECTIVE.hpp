@@ -7,11 +7,11 @@
 #ifndef NBDL_MPDEF_DIRECTIVE_HPP
 #define NBDL_MPDEF_DIRECTIVE_HPP
 
-#include<mpdef/List.hpp>
-#include<mpdef/Map.hpp>
-#include<mpdef/TreeNode.hpp>
+#include <mpdef/list.hpp>
+#include <mpdef/map.hpp>
+#include <mpdef/tree_node.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 #define MPDEF_DIRECTIVE(NAME)                           \
 namespace tag {                                         \

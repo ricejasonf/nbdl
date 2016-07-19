@@ -8,12 +8,12 @@
 #define NBDL_DEF_BUILDER_ENUMERATE_ACCESS_POINTS_HPP
 
 #include <def/builder/AccessPointMeta.hpp>
-#include <mpdef/AppendIf.hpp>
-#include <mpdef/CollectSettings.hpp>
-#include <mpdef/ComposeCollectors.hpp>
-#include <mpdef/FindInTree.hpp>
-#include <mpdef/List.hpp>
-#include <mpdef/TreeNode.hpp>
+#include <mpdef/append_if.hpp>
+#include <mpdef/collect_settings.hpp>
+#include <mpdef/compose_collectors.hpp>
+#include <mpdef/find_in_tree.hpp>
+#include <mpdef/list.hpp>
+#include <mpdef/tree_node.hpp>
 #include <def/directives.hpp>
 #include <nbdl/null_store.hpp>
 

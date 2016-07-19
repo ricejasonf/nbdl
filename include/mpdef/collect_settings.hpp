@@ -7,10 +7,10 @@
 #ifndef NBDL_MPDEF_COLLECT_SETTINGS_HPP
 #define NBDL_MPDEF_COLLECT_SETTINGS_HPP
 
-#include<mpdef/Map.hpp>
-#include<mpdef/TreeNode.hpp>
+#include <mpdef/map.hpp>
+#include <mpdef/tree_node.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace mpdef {
 

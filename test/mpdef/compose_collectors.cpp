@@ -5,9 +5,9 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include<mpdef/ComposeCollectors.hpp>
+#include <mpdef/compose_collectors.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace hana = boost::hana;
 

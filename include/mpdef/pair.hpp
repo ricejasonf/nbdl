@@ -7,7 +7,7 @@
 #ifndef NBDL_MPDEF_PAIR_HPP
 #define NBDL_MPDEF_PAIR_HPP
 
-#include<mpdef/TreeNode.hpp>
+#include <mpdef/tree_node.hpp>
 
 namespace mpdef {
 

@@ -5,10 +5,10 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include<mpdef/Map.hpp>
-#include<mpdef/TreeNode.hpp>
+#include <mpdef/map.hpp>
+#include <mpdef/tree_node.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace hana = boost::hana;
 

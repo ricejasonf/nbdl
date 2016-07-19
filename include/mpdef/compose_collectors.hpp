@@ -7,10 +7,10 @@
 #ifndef NBDL_MPDEF_COMPOSE_COLLECTORS_HPP
 #define NBDL_MPDEF_COMPOSE_COLLECTORS_HPP
 
-#include<mpdef/List.hpp>
+#include <mpdef/list.hpp>
 
-#include<boost/hana.hpp>
-#include<utility>
+#include <boost/hana.hpp>
+#include <utility>
 
 namespace mpdef {
 

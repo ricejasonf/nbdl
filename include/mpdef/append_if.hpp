@@ -7,8 +7,8 @@
 #ifndef NBDL_MPDEF_APPEND_IF_HPP
 #define NBDL_MPDEF_APPEND_IF_HPP
 
-#include<boost/hana.hpp>
-#include<utility>
+#include <boost/hana.hpp>
+#include <utility>
 
 namespace mpdef {
 

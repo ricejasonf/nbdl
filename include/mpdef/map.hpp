@@ -7,10 +7,10 @@
 #ifndef NBDL_MPDEF_MAP_HPP
 #define NBDL_MPDEF_MAP_HPP
 
-#include<mpdef/List.hpp>
+#include <mpdef/list.hpp>
 
-#include<boost/hana.hpp>
-#include<type_traits>
+#include <boost/hana.hpp>
+#include <type_traits>
 
 namespace mpdef {
 

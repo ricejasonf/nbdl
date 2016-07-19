@@ -6,9 +6,9 @@
 //
 #ifndef MPDEF_METASTRUCT
 
-#include<mpdef/Metastruct.hpp>
-#include<mpdef/details/_MPDEF_METASTRUCT_KEYS.hpp>
-#include<mpdef/details/_MPDEF_METASTRUCT_SPEC_NAMES.hpp>
+#include <mpdef/metastruct.hpp>
+#include <mpdef/details/_MPDEF_METASTRUCT_KEYS.hpp>
+#include <mpdef/details/_MPDEF_METASTRUCT_SPEC_NAMES.hpp>
 
 #define MPDEF_METASTRUCT(NAME, ...) \
 struct NAME : ::mpdef::metastruct<NAME> {\

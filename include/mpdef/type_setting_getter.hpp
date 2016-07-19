@@ -7,7 +7,10 @@
 #ifndef NBDL_MPDEF_CREATE_TYPE_SETTING_GETTER_HPP
 #define NBDL_MPDEF_CREATE_TYPE_SETTING_GETTER_HPP
 
-#include<boost/hana.hpp>
+#if 0
+// this is apparently not used because it wasnt refactored
+
+#include <boost/hana.hpp>
 #include "../Make.hpp"
 #include "../def/meta.hpp" //FindSetting.hpp
 
@@ -39,3 +42,5 @@ struct TypeSettingGetter
 constexpr auto makeTypeSettingGetter = nbdl::Make<TypeSettingGetter>;
 
 }//nbdl_def_meta
+#endif
+#endif

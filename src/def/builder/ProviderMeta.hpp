@@ -7,10 +7,10 @@
 #ifndef NBDL_DEF_PROVIDER_META_HPP
 #define NBDL_DEF_PROVIDER_META_HPP
 
-#include<mpdef/List.hpp>
-#include<mpdef/MPDEF_METASTRUCT.hpp>
+#include <mpdef/list.hpp>
+#include <mpdef/MPDEF_METASTRUCT.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace nbdl_def {
 namespace builder {

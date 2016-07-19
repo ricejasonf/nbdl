@@ -6,7 +6,7 @@
 //
 #ifndef NBDL_ENTITY
 
-#include <mpdef/List.hpp>
+#include <mpdef/list.hpp>
 #include <nbdl/macros/NBDL_MEMBERS.hpp>
 #include <nbdl/macros/NBDL_MEMBER_NAMES.hpp>
 #include <nbdl/macros/NBDL_MEMBER_IDS.hpp>

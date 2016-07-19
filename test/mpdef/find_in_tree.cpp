@@ -4,12 +4,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<boost/hana.hpp>
-#include<mpdef/FindInTree.hpp>
-#include<mpdef/List.hpp>
-#include<mpdef/Map.hpp>
-#include<mpdef/MPDEF_DIRECTIVE.hpp>
-#include<mpdef/TreeNode.hpp>
+#include <boost/hana.hpp>
+#include <mpdef/find_in_tree.hpp>
+#include <mpdef/list.hpp>
+#include <mpdef/map.hpp>
+#include <mpdef/MPDEF_DIRECTIVE.hpp>
+#include <mpdef/tree_node.hpp>
 
 namespace hana = boost::hana;
 

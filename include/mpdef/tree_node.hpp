@@ -7,9 +7,9 @@
 #ifndef NBDL_MPDEF_TREE_NODE_HPP
 #define NBDL_MPDEF_TREE_NODE_HPP
 
-#include<boost/hana.hpp>
-#include<type_traits>
-#include<utility>
+#include <boost/hana.hpp>
+#include <type_traits>
+#include <utility>
 
 namespace mpdef {
 

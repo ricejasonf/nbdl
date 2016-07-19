@@ -7,8 +7,8 @@
 #ifndef NBDL_MPDEF_JUSTIFY_TYPE_HPP
 #define NBDL_MPDEF_JUSTIFY_TYPE_HPP
 
-#include<boost/hana/optional.hpp>
-#include<boost/hana/type.hpp>
+#include <boost/hana/optional.hpp>
+#include <boost/hana/type.hpp>
 
 namespace mpdef {
 

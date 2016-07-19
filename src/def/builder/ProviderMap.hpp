@@ -9,7 +9,7 @@
 
 #include <def/builder/Path.hpp>
 #include <def/builder/ProviderMeta.hpp>
-#include <mpdef/Pair.hpp>
+#include <mpdef/pair.hpp>
 
 #include <boost/hana.hpp>
 #include <utility>

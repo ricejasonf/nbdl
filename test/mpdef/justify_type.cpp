@@ -5,10 +5,10 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include<mpdef/JustifyType.hpp>
+#include <mpdef/justify_type.hpp>
 
-#include<boost/hana.hpp>
-#include<type_traits>
+#include <boost/hana.hpp>
+#include <type_traits>
 
 namespace hana = boost::hana;
 

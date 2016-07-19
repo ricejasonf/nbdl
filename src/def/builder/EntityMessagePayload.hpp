@@ -7,10 +7,10 @@
 #ifndef NBDL_DEF_BUILDER_ENTITY_MESSAGE_PAYLOAD_HPP
 #define NBDL_DEF_BUILDER_ENTITY_MESSAGE_PAYLOAD_HPP
 
-#include<mpdef/JustifyType.hpp>
-#include<nbdl/message.hpp>
+#include <mpdef/justify_type.hpp>
+#include <nbdl/message.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace nbdl_def {
 namespace builder {
