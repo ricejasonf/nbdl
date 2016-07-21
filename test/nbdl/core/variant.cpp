@@ -122,28 +122,28 @@ TEST_CASE("Catch should not be called if there is a valid match.", "[variant]")
 		}) == 76);
 }
 
-//todo perhaps a matchRef function could allow mutable values in variants
 TEST_CASE("Modify a struct's member in a variant", "[variant]")
 {
 	struct person {
 		std::string name_first;
 		std::string name_last;
 	};
-	using MyVar = nbdl::variant<person, int, std::string, some_tag>;
+	using MyVar = nbdl::variant<person, int, std::string, some_tag, std::vector<char>>;
 	
-	MyVar var = person { "Jason", "Rice" };
+	MyVar var = person{ "Jason", "Rice" };
+
 	var.match(
-		[&](person person) {
-			person.name_last = "Ricez";
-			var = person;
+		[&](person p) {
+			p.name_last = "Ricez";
+			var = p;
 		}, nbdl::noop);
-	bool proof = var.match(
-		[](person person) {
-			CHECK(person.name_last == "Ricez");
+	bool result = var.match(
+		[](person p) {
+			CHECK(p.name_last == "Ricez");
 			return true;
 		},
-		[](auto) {
+		[](auto const&) {
 			return false;
 		});
-	CHECK(proof);
+	CHECK(result);
 }

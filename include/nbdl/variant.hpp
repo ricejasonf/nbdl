@@ -47,7 +47,7 @@ namespace nbdl
       template <typename T>
       constexpr int type_id_from_type() const
       {
-        return *hana::find(type_ids(), hana::type_c<T>);
+        return *hana::find(type_ids(), hana::type_c<std::decay_t<T>>);
       }
 
       template <typename Fn>
@@ -68,18 +68,18 @@ namespace nbdl
           new (dest) T(*reinterpret_cast<const T*>(src));
         });
       }
-      void move(const int src_type_id, const void* src, void* dest)
+      void move(const int src_type_id, void* src, void* dest)
       {
         call_by_type(src_type_id, [&](auto matched) {
           using T = typename decltype(matched)::type;
-          new (dest) T(std::move(*reinterpret_cast<const T*>(src)));
+          new (dest) T(std::move(*reinterpret_cast<T*>(src)));
         });
       }
       void destroy(const int value_type_id, void* value)
       {
         call_by_type(value_type_id, [&](auto matched) {
           using T = typename decltype(matched)::type;
-          reinterpret_cast<const T*>(value)->~T();
+          reinterpret_cast<T*>(value)->~T();
         });
       }
 
@@ -122,51 +122,61 @@ namespace nbdl
 
       //provides a better compiler error that outputs 
       //the type in question should it be invalid
-      template <typename Type, typename TypeType>
-      auto convert_from_type(Type const& val, TypeType t)
-        -> std::enable_if_t<hana::contains(Types{}, t)>
+      template <typename Type>
+      auto convert_from_type(Type&& val)
+        -> std::enable_if_t<decltype(hana::contains(Types{}, hana::typeid_(val)))::value>
       {
         //it is critical that types are restricted to types supported by the Variant
         //this check is now redundant
-        static_assert(hana::contains(Types{}, hana::type_c<Type>),
+        static_assert(decltype(hana::contains(Types{}, hana::typeid_(val)))::value,
           "This variant does not support conversion to Type.");
 
-        type_id = 0; //in case shit goes horribly wrong
-        destroy(type_id, &value_);
-        new (&value_) Type(val);
-        type_id = type_id_from_type<Type>();
+        // Do not destroy because this should
+        // only be called from a constructor.
+        new (&value_) std::decay_t<Type>(val);
       }
 
       public:
 
       using hana_tag = nbdl::variant_tag;
 
-      variant() : type_id(0) {}
+      variant()
+        : type_id(0)
+      { }
+
       variant(const variant& old)
         : type_id(old.type_id)
       {
         copy(old.type_id, &old.value_, &value_);
       }
+
       variant(variant&& old)
         : type_id(old.type_id)
       {
         move(old.type_id, &old.value_, &value_);
       }
+
       ~variant()
       {
         destroy(type_id, &value_);
       }
-      variant& operator= (variant src)
+
+      variant& operator= (variant old)
       {
-        std::swap(type_id, src.type_id);
-        std::swap(value_, src.value_);
+        destroy(type_id, &value_);
+        move(old.type_id, &old.value_, &value_);
+        type_id = old.type_id;
         return *this;
       }
 
-      template <typename Type>
-      variant(Type const& val)
+      template <
+        typename Type,
+        typename = std::enable_if_t<!std::is_same<std::decay_t<Type>, variant>::value>
+      >
+      variant(Type&& val)
+        : type_id(type_id_from_type<Type>())
       {
-        convert_from_type(val, hana::type_c<Type>);
+        convert_from_type(std::forward<Type>(val));
       }
 
       //for serialization
