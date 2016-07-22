@@ -85,6 +85,17 @@ namespace nbdl { namespace message
         return hana::at(std::forward<M>(m), detail::fix_index<M, i>);
       }
     };
+
+    // get contents of maybe or fail at compile-time
+    template <int i>
+    struct get_just_fn
+    {
+      template <typename Message>
+      constexpr decltype(auto) operator()(Message&& m) const
+      {
+        return *get_maybe_fn<i>{}(std::forward<Message>(m));
+      }
+    };
   } // detail
 
   // The offsets of these properties should match the
@@ -96,6 +107,12 @@ namespace nbdl { namespace message
   constexpr detail::get_maybe_fn< 4 > get_maybe_is_from_root{};
   constexpr detail::get_maybe_fn< 5 > get_maybe_payload{};
   constexpr detail::get_maybe_fn< 6 > get_maybe_private_payload{};
+
+  // convenience functions for when it should be just
+  constexpr detail::get_just_fn< 3 > get_uid{};
+  constexpr detail::get_just_fn< 4 > get_is_from_root{};
+  constexpr detail::get_just_fn< 5 > get_payload{};
+  constexpr detail::get_just_fn< 6 > get_private_payload{};
 
   // The path type is used as a key in a few places.
   // If the last element is a hana type then extract

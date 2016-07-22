@@ -38,7 +38,8 @@ namespace detail
   };
 }
 
-struct path_tag {};
+struct path_tag { };
+struct no_key { };
 
 template<typename Spec>
 class path
@@ -136,7 +137,8 @@ class path
   {
     return hana::unpack(hana::drop_back(storage, hana::size_c<1>),
       [](auto... n) {
-        return Parent(n...);
+        //copy then move
+        return Parent(std::move(n)...);
       });
   }
 
@@ -190,8 +192,8 @@ class path
   template <typename Key>
   auto canonicalize_path(Key const& k) const
   {
-    return hana::unpack(
-      hana::drop_back(storage, hana::size_c<1>),
+    return hana::unpack(storage,
+      //hana::drop_back(storage, hana::size_c<1>),
       [&](auto&& ...xs)
       {
         return canonical_path(std::forward<decltype(xs)>(xs)..., k);

@@ -52,7 +52,7 @@ namespace nbdl {
       push_upstream_api(context& c) : ctx(c) { }
 
       template <typename Message>
-      void push(Message&& m)
+      void push(Message&& m) const
       {
         static_assert(nbdl::UpstreamMessage<Message>::value,
           "nbdl::context::push_upstream_api requires an UpstreamMessage");
@@ -70,7 +70,7 @@ namespace nbdl {
       push_downstream_api(context& c) : ctx(c) { }
 
       template <typename Message>
-      void push(Message&& m)
+      void push(Message&& m) const
       {
         static_assert(nbdl::DownstreamMessage<Message>::value,
           "nbdl::context::push_downstream_api requires a DownstreamMessage");
@@ -88,7 +88,7 @@ namespace nbdl {
       push_upstream_api_state_consumer(context& c) : ctx(c) { }
 
       template <typename Message>
-      void push(Message&& m)
+      void push(Message&& m) const
       {
         static_assert(nbdl::UpstreamMessage<Message>::value,
           "nbdl::context::push_upstream_api_state_consumer requires an UpstreamMessage");
@@ -96,7 +96,7 @@ namespace nbdl {
       }
 
       template <typename Path, typename ...Fns>
-      decltype(auto) match(Path&& path, Fns&& ...fns)
+      decltype(auto) match(Path&& path, Fns&& ...fns) const
       {
         return ctx.match(std::forward<Path>(path), std::forward<Fns&&>(fns)...);
       }

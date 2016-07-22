@@ -20,58 +20,61 @@ namespace message = nbdl::message;
 namespace channel = nbdl::message::channel;
 namespace action  = nbdl::message::action;
 
-constexpr auto def = test_context_def::make(
-  test_context::provider_tag{},
-  test_context::provider_tag{},
-  test_context::consumer_tag{},
-  test_context::consumer_tag{},
-  nbdl::null_store{}
-);
-auto context = nbdl::make_unique_context(def);
-
-auto& provider0 = context->cell<0>();
-auto& provider1 = context->cell<1>();
-auto& consumer2 = context->cell<2>();
-auto& consumer3 = context->cell<3>();
-
-void init_record_messages()
+namespace
 {
-  provider0.recorded_messages = {};
-  provider1.recorded_messages = {};
-  consumer2.recorded_messages = {};
-  consumer3.recorded_messages = {};
+  constexpr auto def = test_context_def::make(
+    test_context::provider_tag{},
+    test_context::provider_tag{},
+    test_context::consumer_tag{},
+    test_context::consumer_tag{},
+    nbdl::null_store{}
+  );
+  auto context = nbdl::make_unique_context(def);
+
+  auto& provider0 = context->cell<0>();
+  auto& provider1 = context->cell<1>();
+  auto& consumer2 = context->cell<2>();
+  auto& consumer3 = context->cell<3>();
+
+  void init_record_messages()
+  {
+    provider0.recorded_messages = {};
+    provider1.recorded_messages = {};
+    consumer2.recorded_messages = {};
+    consumer3.recorded_messages = {};
+  }
+
+  struct check_message_equal_fn
+  {
+    template <typename Message, typename Orig>
+    constexpr auto operator()(Message const& m, Orig const& o) const
+    {
+      return m.match(
+        [&](auto const& m)
+          -> std::enable_if_t<std::is_same<std::decay_t<decltype(m)>, std::decay_t<Orig>>::value, bool>
+        {
+          CHECK(hana::equal(
+            hana::decltype_(message::get_channel(m)),
+            hana::decltype_(message::get_channel(o))
+          ));
+          CHECK(hana::equal(
+            hana::decltype_(message::get_action(m)),
+            hana::decltype_(message::get_action(o))
+          ));
+          CHECK(hana::equal(message::get_path(m), message::get_path(o)));
+          CHECK(hana::equal(message::get_maybe_payload(m), message::get_maybe_payload(o)));
+          CHECK(hana::equal(message::get_maybe_private_payload(m), message::get_maybe_private_payload(o)));
+          CHECK(hana::equal(message::get_maybe_is_from_root(m), message::get_maybe_is_from_root(o)));
+          // TODO compare nbdl::uids
+          return true;
+        },
+        [](auto const&) { return false; }
+      );
+    }
+  };
 }
 
-struct check_message_equal_fn
-{
-  template <typename Message, typename Orig>
-  constexpr auto operator()(Message const& m, Orig const& o) const
-  {
-    return m.match(
-      [&](auto const& m)
-        -> std::enable_if_t<std::is_same<std::decay_t<decltype(m)>, std::decay_t<Orig>>::value, bool>
-      {
-        CHECK(hana::equal(
-          hana::decltype_(message::get_channel(m)),
-          hana::decltype_(message::get_channel(o))
-        ));
-        CHECK(hana::equal(
-          hana::decltype_(message::get_action(m)),
-          hana::decltype_(message::get_action(o))
-        ));
-        CHECK(hana::equal(message::get_path(m), message::get_path(o)));
-        CHECK(hana::equal(message::get_maybe_payload(m), message::get_maybe_payload(o)));
-        CHECK(hana::equal(message::get_maybe_private_payload(m), message::get_maybe_private_payload(o)));
-        CHECK(hana::equal(message::get_maybe_is_from_root(m), message::get_maybe_is_from_root(o)));
-        // TODO compare nbdl::uids
-        return true;
-      },
-      [](auto const&) { return false; }
-    );
-  }
-};
-
-constexpr struct check_message_equal_fn check_message_equal{};
+  constexpr struct check_message_equal_fn check_message_equal{};
 
 TEST_CASE("Dispatch Downstream Read Message", "[context]")
 {

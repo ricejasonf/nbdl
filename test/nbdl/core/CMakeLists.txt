@@ -10,6 +10,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   context_match.cpp
   context_state_consumer.cpp
   delta.cpp
+  echo_provider.cpp
   entity.cpp
   map_store.cpp
   message_api.cpp

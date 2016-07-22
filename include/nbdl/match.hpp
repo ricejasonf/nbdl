@@ -11,6 +11,7 @@
 #include <nbdl/fwd/match.hpp>
 #include <nbdl/get.hpp>
 
+#include <boost/hana/core/default.hpp>
 #include <boost/hana/functional/overload_linearly.hpp>
 #include <utility>
 

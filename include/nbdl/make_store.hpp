@@ -7,9 +7,13 @@
 #ifndef NBDL_MAKE_STORE_HPP
 #define NBDL_MAKE_STORE_HPP
 
-#include<nbdl/fwd/make_store.hpp>
+#include <nbdl/fwd/make_store.hpp>
 
-#include<nbdl/concept/Store.hpp>
+#include <nbdl/concept/Store.hpp>
+
+#include <boost/hana/core/tag_of.hpp>
+#include <boost/hana/core/default.hpp>
+#include <type_traits>
 
 namespace nbdl
 {

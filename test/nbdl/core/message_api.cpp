@@ -276,3 +276,31 @@ TEST_CASE("to_downstream_from_root (create)", "[message_api]")
   CHECK(*message::get_maybe_is_from_root(down1) == true);
   CHECK(*message::get_maybe_is_from_root(down2) == true);
 }
+
+TEST_CASE("to_downstream_from_root with nested path (create)", "[message_api]")
+{
+  using Path_ = typename decltype(nbdl::path_type<int, Payload<1>, Payload<2>>)::type;
+  using UpstreamCreateMessage = hana::tuple<upstream, create,
+    typename decltype(Path_::make_create_path_type())::type,
+    maybe_uid, MaybePayload<2>
+  >;
+  using DownstreamCreateMessage = hana::tuple<downstream, create,
+    Path_, maybe_uid, hana::optional<bool>, MaybePayload<2>
+  >;
+  constexpr nbdl::message_api<
+    hanax::types<UpstreamCreateMessage>,
+    hanax::types<DownstreamCreateMessage>
+  > msgs{};
+
+  auto m = msgs.make_upstream_create_message(Path_::make_create_path(1), Payload<2>{22});
+  auto down1 = msgs.to_downstream_from_root(m, 2);
+  auto down2 = msgs.to_downstream_from_root_with_payload(m, 2, Payload<2>{222}); // different payload
+  BOOST_HANA_CONSTANT_ASSERT(hana::typeid_(down1) == hana::type_c<DownstreamCreateMessage>);
+  BOOST_HANA_CONSTANT_ASSERT(hana::typeid_(down2) == hana::type_c<DownstreamCreateMessage>);
+  CHECK(hana::equal(message::get_path(down1), Path_(1, 2)));
+  CHECK(hana::equal(message::get_path(down2), Path_(1, 2)));
+  CHECK(hana::equal(message::get_payload(down1), Payload<2>{22}));
+  CHECK(hana::equal(message::get_payload(down2), Payload<2>{222}));
+  CHECK(message::get_is_from_root(down1) == true);
+  CHECK(message::get_is_from_root(down2) == true);
+}
