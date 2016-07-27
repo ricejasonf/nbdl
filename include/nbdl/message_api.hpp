@@ -198,12 +198,18 @@ namespace nbdl
     }
 
     template <typename Channel, typename Pred>
-    constexpr auto get_message_type_helper(Channel, Pred pred) const
+    constexpr auto find_message_type_helper(Channel, Pred pred) const
     {
       using Messages = typename decltype(
         hana::at_key(type_list_by_channel, hana::type_c<Channel>)
       )::type;
-      constexpr auto message_type = hana::find_if(Messages{}, pred);
+      return hana::find_if(Messages{}, pred);
+    }
+
+    template <typename Channel, typename Pred>
+    constexpr auto get_message_type_helper(Channel, Pred pred) const
+    {
+      constexpr auto message_type = decltype(find_message_type_helper(Channel{}, pred)){};
 
       static_assert(decltype(hana::is_just(message_type))::value
         , "This message API does not support the channel/action for this path.");
@@ -212,6 +218,13 @@ namespace nbdl
     }
 
     public:
+
+    template <typename Path>
+    constexpr auto has_upstream_read(Path) const
+    {
+      return hana::is_just(find_message_type_helper(upstream{},
+        detail::message_lookup_predicate_fn<upstream, read, Path>{}));
+    }
 
     // The fourth parameter would be the payload.
     template <typename Path>

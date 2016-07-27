@@ -217,10 +217,13 @@ namespace nbdl {
       return nbdl::match(stores[path_type], p,
         [&](nbdl::uninitialized)
         {
-          // Trigger upstrea read request.
-          // The store's value should be set to `nbdl::unresolved`
-          push_message(MessageApi{}.make_upstream_read_message(p));
-          return hana::overload_linearly(std::forward<Fns>(fns)...)(nbdl::unresolved{});
+          if constexpr(decltype(MessageApi{}.has_upstream_read(p))::value)
+          {
+            // Trigger upstream read request.
+            // The store's value should be set to `nbdl::unresolved`
+            push_message(MessageApi{}.make_upstream_read_message(p));
+            return hana::overload_linearly(std::forward<Fns>(fns)...)(nbdl::unresolved{});
+          }
         },
         [&](auto const& value)
         {

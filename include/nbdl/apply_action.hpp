@@ -31,7 +31,10 @@ namespace nbdl
   struct apply_action_impl<Tag, hana::when<condition>>
     : hana::default_
   {
-    static constexpr bool apply(...) = delete;
+    static constexpr auto apply(...)
+    {
+      return hana::false_c;
+    }
 
       // typical use case
       //

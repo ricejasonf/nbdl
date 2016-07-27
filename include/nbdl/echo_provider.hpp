@@ -10,6 +10,7 @@
 #include<nbdl/fwd/echo_provider.hpp>
 
 #include<nbdl/make_provider.hpp>
+#include<nbdl/message.hpp>
 
 namespace nbdl
 {
@@ -36,25 +37,25 @@ namespace nbdl
   }
 
   template <typename PushApi>
-  struct echo_provider
+  struct echo_provider_impl
   {
-    using hana_tag = echo_provider_tag;
+    using hana_tag = echo_provider;
 
     PushApi push_api;
   };
 
   template <>
-  struct make_provider_impl<echo_provider_tag>
+  struct make_provider_impl<echo_provider>
   {
     template <typename PushApi>
     static constexpr auto apply(PushApi&& p)
     {
-      return echo_provider<PushApi>{std::forward<PushApi>(p)};
+      return echo_provider_impl<PushApi>{std::forward<PushApi>(p)};
     }
   };
 
   template <>
-  struct send_upstream_message_impl<echo_provider_tag>
+  struct send_upstream_message_impl<echo_provider>
   {
     template <typename Provider, typename Message>
     static constexpr void apply(Provider const& p, Message const& m)

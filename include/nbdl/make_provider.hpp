@@ -7,8 +7,9 @@
 #ifndef NBDL_MAKE_PROVIDER_HPP
 #define NBDL_MAKE_PROVIDER_HPP
 
-#include<nbdl/concept/Provider.hpp>
 #include<nbdl/fwd/make_provider.hpp>
+
+#include<nbdl/concept/Provider.hpp>
 
 namespace nbdl
 {

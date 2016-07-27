@@ -26,8 +26,8 @@ namespace details {
     constexpr auto operator()(ProviderMeta)
     {
       constexpr ProviderMeta provider_meta{};
-      auto path_types = hana::transform(provider_meta::access_points(provider_meta),
-        hana::partial(builder::path, EntityMap{}));
+      auto path_types = hana::unique(hana::transform(provider_meta::access_points(provider_meta),
+        hana::partial(builder::path, EntityMap{})));
       return mpdef::make_pair(
         hana::append(path_types, provider_meta::name(provider_meta)),
         provider_meta::provider(provider_meta)

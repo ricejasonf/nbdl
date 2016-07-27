@@ -112,13 +112,13 @@ namespace test_context_def {
           Provider(
             Name(test_context::name::provider<1>),
             Type(p1),
-            Store(hana::type_c<Store_>),
             AccessPoint(
               Name(hana::type_c<void>),
               EntityName(hana::type_c<entity::root1>),
               AccessPoint(
                 Name(hana::type_c<void>),
                 EntityName(hana::type_c<entity::my_entity<1>>),
+                Store(hana::type_c<Store_>),
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             )
@@ -126,13 +126,13 @@ namespace test_context_def {
           Provider(
             Name(test_context::name::provider<2>),
             Type(p2),
-            Store(hana::type_c<Store_>),
             AccessPoint(
               Name(hana::type_c<void>),
               EntityName(hana::type_c<entity::root2>),
               AccessPoint(
                 Name(hana::type_c<void>),
                 EntityName(hana::type_c<entity::my_entity<1>>),
+                Store(hana::type_c<Store_>),
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             ),
@@ -142,6 +142,7 @@ namespace test_context_def {
               AccessPoint(
                 Name(hana::type_c<void>),
                 EntityName(hana::type_c<entity::my_entity<2>>),
+                Store(hana::type_c<Store_>),
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             ),
@@ -151,6 +152,7 @@ namespace test_context_def {
               AccessPoint(
                 Name(hana::type_c<void>),
                 EntityName(hana::type_c<entity::my_entity<3>>),
+                Store(hana::type_c<Store_>),
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             ),
@@ -160,6 +162,7 @@ namespace test_context_def {
               AccessPoint(
                 Name(hana::type_c<void>),
                 EntityName(hana::type_c<entity::my_entity<4>>),
+                Store(hana::type_c<Store_>),
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             )
@@ -372,7 +375,7 @@ namespace nbdl
     template <typename PushApi>
     static constexpr auto apply(PushApi&& p)
     {
-      return test_context::state_consumer<PushApi>(std::forward<PushApi>(p));
+      return test_context::state_consumer<std::decay_t<PushApi>>(std::forward<PushApi>(p));
     }
   };
 

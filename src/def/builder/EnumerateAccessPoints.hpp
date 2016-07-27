@@ -55,13 +55,25 @@ namespace enum_access_points_detail {
   constexpr auto matcher = mpdef::create_in_tree_finder(pred, collector);
   constexpr auto initial_summary = mpdef::make_list(settings, mpdef::make_list());
 
-  // called on result of FindInTree which is (node, summary)
-  constexpr auto has_actions = hana::compose(hana::demux(hana::maybe)
-  (
-    hana::always(hana::false_c),
-    hana::always(hana::compose(hana::reverse_partial(hana::greater, hana::size_c<0>), hana::length)),
-    hana::compose(hana::reverse_partial(hana::find, tag::Actions), hana::second)
-  ), hana::first);
+  struct has_actions_fn
+  {
+    // T is a product of (node, summary)
+    template <typename T>
+    constexpr auto operator()(T t) const
+    {
+      return hana::or_(
+        hana::greater(hana::maybe(
+          hana::size_c<0>,
+          hana::length,
+          hana::find(hana::second(hana::first(t)), tag::Actions)
+        ), hana::size_c<0>),
+        hana::not_(hana::equal(
+          hana::type_c<nbdl::null_store>,
+          hana::find(hana::second(hana::first(t)), tag::Store).value_or(hana::type_c<nbdl::null_store>)
+        ))
+      );
+    }
+  };
 
   struct helper_helper_fn
   {
@@ -72,6 +84,7 @@ namespace enum_access_points_detail {
         mpdef::make_list ^hana::on^ hana::partial(helper, hana::second(result)));
     }
   };
+
   constexpr helper_helper_fn helperhelper{};
 
   struct helper_fn
@@ -83,7 +96,7 @@ namespace enum_access_points_detail {
 
       auto results = matcher(std::forward<Summary>(summary), std::forward<Def>(def));
       return hana::concat(
-        hana::filter(results, has_actions),
+        hana::filter(results, has_actions_fn{}),
         hana::flatten(hana::flatten(hana::unpack(std::move(results),
           mpdef::make_list ^on^ hana::partial(helperhelper, *this)
         )))
@@ -103,7 +116,7 @@ namespace enum_access_points_detail {
       auto entity_names = hana::at(summary, hana::int_c<1>);
       return builder::make_access_point_meta(
         node_children[tag::Name],
-        node_children[tag::Actions],
+        hana::find(node_children, tag::Actions).value_or(mpdef::make_list()),
         settings[tag::Store].value_or(hana::type_c<nbdl::null_store>),
         entity_names
       );

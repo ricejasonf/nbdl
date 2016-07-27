@@ -16,7 +16,7 @@ namespace message = nbdl::message;
 namespace
 {
   constexpr auto def = test_context_def::make(
-    nbdl::echo_provider_tag{},
+    nbdl::echo_provider{},
     test_context::provider_tag{},
     test_context::consumer_tag{},
     test_context::consumer_tag{},

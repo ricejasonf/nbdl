@@ -8,5 +8,6 @@
 include_directories("../../../test/include")
 
 nbdl_catch_test_suite(build_targets "example.test.tiles"
+  context.cpp
   game_apply_move.cpp
 )
