@@ -29,3 +29,6 @@ nbdl_add_test("test.mpdef.append_if"
 nbdl_add_test("test.mpdef.justify_type"
   justify_type.cpp
 )
+nbdl_add_test("test.mpdef.string"
+  string.cpp
+)
