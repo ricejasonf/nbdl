@@ -1,0 +1,14 @@
+{
+  "name": "test_dom",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jason Rice",
+  "license": "Boost 1.0",
+  "dependencies": {
+    "jsdom": "^9.4.1"
+  }
+}

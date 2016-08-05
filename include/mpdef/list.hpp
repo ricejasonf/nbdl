@@ -111,11 +111,18 @@ namespace boost { namespace hana {
   template<>
   struct drop_front_impl<mpdef::list_tag>
   {
-    template<typename... T>
-    static constexpr auto apply(mpdef::list<T...>)
-      -> hana::bool_<sizeof...(T) == 0>
+    template <std::size_t offset, typename Xs, std::size_t ...i>
+    static constexpr auto helper(Xs, std::index_sequence<i...>)
+      -> mpdef::list<decltype(hana::at_c<i + offset>(Xs{}))...>
+    { return {}; }
+
+    template<typename Xs, typename Size>
+    static constexpr auto apply(Xs, Size)
     {
-      return {};
+      return helper<Size::value>(
+        Xs{},
+        std::make_index_sequence<decltype(hana::length(Xs{}))::value - Size::value>{}
+      );
     }
   };
 

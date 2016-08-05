@@ -25,6 +25,7 @@ int main()
         mpdef::make_tree_node(hana::int_c<1>, hana::int_c<-1>)
       )
     );
+    (void) xs;
     BOOST_HANA_CONSTANT_ASSERT(xs == hana::reverse(xs));
   }
   {
@@ -36,6 +37,7 @@ int main()
       hana::int_c<4>,
       hana::int_c<5>
     );
+    (void)xs;
     BOOST_HANA_CONSTANT_ASSERT(hana::at(xs, hana::int_c<3>) == hana::int_c<3>);
   }
   {
@@ -47,6 +49,7 @@ int main()
       hana::int_c<4>,
       hana::int_c<5>
     );
+    (void)xs;
     BOOST_HANA_CONSTANT_ASSERT(hana::unpack(xs, hana::make_tuple)
       == hana::make_tuple(
         hana::int_c<0>,
@@ -69,6 +72,7 @@ int main()
     );
 
     constexpr auto xs = mpdef::make_list(xs1, xs1, xs1);
+    (void)xs;
 
     BOOST_HANA_CONSTANT_ASSERT(hana::flatten(xs)
       == mpdef::make_list(

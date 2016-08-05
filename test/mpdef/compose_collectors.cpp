@@ -41,6 +41,8 @@ int main()
       hana::tuple_c<int, 0, 2, 4, 6, 8>,
       hana::tuple_c<int, 0, 3, 6, 9, 12>
     );
+    (void)result;
+    (void)expected;
 
     BOOST_HANA_CONSTANT_ASSERT(result == expected);
   }
@@ -67,6 +69,8 @@ int main()
       hana::int_c<15>,
       xs
     );
+    (void)result;
+    (void)expected;
     BOOST_HANA_CONSTANT_ASSERT(result == expected);
   }
 }

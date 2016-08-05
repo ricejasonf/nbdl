@@ -7,6 +7,7 @@
 
 if (EMSCRIPTEN)
   add_subdirectory(core)
+  add_subdirectory(webui)
   return()
 endif (EMSCRIPTEN)
 
