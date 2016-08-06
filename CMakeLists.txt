@@ -9,6 +9,10 @@ add_custom_target(check
   COMMENT "Running high level tests."
 )
 
+if (EMSCRIPTEN)
+  set(NBDL_TEST_COMMAND "node")
+endif(EMSCRIPTEN)
+
 function(nbdl_add_test name)
   add_executable("${name}" EXCLUDE_FROM_ALL ${ARGN})
   add_dependencies(check "${name}")
@@ -20,11 +24,12 @@ function(nbdl_add_test name)
   else()
     add_test(
       NAME ${name}
-      COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${name}
+      COMMAND ${NBDL_TEST_COMMAND} ./${name}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
   endif()
   add_custom_target(run.${name}
-    COMMAND ./${name}
+    COMMAND ${NBDL_TEST_COMMAND} ./${name}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Build and run test: ${name}"
   )

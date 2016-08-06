@@ -6,7 +6,7 @@
 #
 
 if (EMSCRIPTEN)
-  add_subdirectory(emscripten)
+  add_subdirectory(core)
   return()
 endif (EMSCRIPTEN)
 
