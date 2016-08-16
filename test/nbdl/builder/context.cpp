@@ -8,44 +8,50 @@
 #include <assets/TestContext.hpp>
 #include <def/builder/Context.hpp>
 #include <nbdl/make_context.hpp>
+#include <nbdl/make_def.hpp>
 #include <nbdl/null_store.hpp>
 
 #include <boost/hana.hpp>
 
 namespace hana = boost::hana;
 
+namespace
+{
+  struct builder_test_context { }; 
+}
+
+namespace nbdl
+{
+  template <>
+  struct make_def_impl<builder_test_context>
+  {
+    static constexpr auto apply()
+    {
+      return test_context_def::make(
+        test_context::provider_tag{},
+        test_context::provider_tag{},
+        test_context::consumer_tag{},
+        test_context::consumer_tag{},
+        nbdl::null_store{}
+      );
+    }
+  };
+}
+
 int main()
 {
   // these are just constructor smoke tests
   {
-    // test default construction
-    constexpr auto def = test_context_def::make(
-      test_context::provider_tag{},
-      test_context::provider_tag{},
-      test_context::consumer_tag{},
-      test_context::consumer_tag{},
-      nbdl::null_store{}
-    );
-    auto context_ptr = nbdl::make_unique_context(def);
+    auto context_ptr = nbdl::make_unique_context<builder_test_context>();
   }
   {
     using test_context::int_tag;
-    constexpr auto def = test_context_def::make(
-      test_context::provider_tag{},
-      test_context::provider_tag{},
-      test_context::consumer_tag{},
-      test_context::consumer_tag{},
-      nbdl::null_store{}
-    );
     // test single parameter construction
-    auto context_ptr = nbdl::make_unique_context(
-      def,
+    auto context_ptr = nbdl::make_unique_context<builder_test_context>(
       int_tag<1>{},
       int_tag<2>{},
       int_tag<3>{},
       int_tag<4>{}
     );
   }
-  // It would be nice to be able to
-  // construct a context with named params.
 }

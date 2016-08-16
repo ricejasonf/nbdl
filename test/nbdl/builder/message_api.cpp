@@ -13,6 +13,7 @@
 #include <def/directives.hpp>
 #include <nbdl/entity_members.hpp>
 #include <nbdl/message.hpp>
+#include <nbdl/message_api.hpp>
 #include <Path.hpp>
 #include <mpdef/list.hpp>
 
@@ -24,33 +25,44 @@ namespace builder = nbdl_def::builder;
 #define DEFINE_TYPE(NAME) \
   struct NAME##_t {}; constexpr auto NAME = hana::type_c<const NAME##_t>;
 
-namespace names {
+namespace names
+{
   DEFINE_TYPE(Foo);
   DEFINE_TYPE(Provider1);
   DEFINE_TYPE(Entity1);
 }//names
 
-struct my_system_message { };
-struct provider1 { };
-namespace entity {
+namespace
+{
+  struct my_system_message { };
+  struct provider1 { };
+}
+
+namespace entity
+{
   struct e1 { int x; };
 }
-namespace nbdl {
+
+namespace nbdl
+{
   NBDL_ENTITY(entity::e1, x);
 } // nbdl
 
-constexpr auto entity1_ = builder::make_entity_meta_with_map(
-  builder::entity_meta::key_meta =
-    builder::make_entity_key_meta_with_map(
-      builder::entity_key_meta::entity  = hana::type_c<entity::e1>,
-      builder::entity_key_meta::key     = hana::type_c<int>
-    ),
-  builder::entity_meta::members_meta = hana::type_c<void>
-);
+namespace
+{
+  constexpr auto entity1_ = builder::make_entity_meta_with_map(
+    builder::entity_meta::key_meta =
+      builder::make_entity_key_meta_with_map(
+        builder::entity_key_meta::entity  = hana::type_c<entity::e1>,
+        builder::entity_key_meta::key     = hana::type_c<int>
+      ),
+    builder::entity_meta::members_meta = hana::type_c<void>
+  );
 
-constexpr auto entity_map = mpdef::make_map(
-  mpdef::make_tree_node(names::Entity1, entity1_)
-);
+  constexpr auto entity_map = mpdef::make_map(
+    mpdef::make_tree_node(names::Entity1, entity1_)
+  );
+}
 
 int main()
 {
@@ -73,16 +85,22 @@ int main()
       provider_meta::access_points  = mpdef::make_list(access_point)
     );
 
-    constexpr auto api = typename decltype(
-      builder::make_message_api(entity_map, mpdef::make_list(provider_1))
-    )::type{};
+    struct context_mock
+    {
+      using message_api_meta = typename decltype(
+        builder::make_message_api(entity_map, mpdef::make_list(provider_1))
+      )::type;
+    };
+
+    constexpr nbdl::message_api<context_mock> api{};
+
     // use the variant functions to check that upstream
     // and downstream messages are partitioned properly
     constexpr auto upstream_type = hana::type_c<
-      decltype(api.make_upstream_variant<my_system_message>(nbdl::unresolved{}))
+      decltype(api.template make_upstream_variant<my_system_message>(nbdl::unresolved{}))
     >;
     constexpr auto downstream_type = hana::type_c<
-      decltype(api.make_downstream_variant<my_system_message>(nbdl::unresolved{}))
+      decltype(api.template make_downstream_variant<my_system_message>(nbdl::unresolved{}))
     >;
 
     // upstream message variant

@@ -11,6 +11,7 @@
 #include <def/builder/Context.hpp>
 #include <def/directives.hpp>
 #include <nbdl/entity.hpp>
+#include <nbdl/context.hpp>
 #include <nbdl/null_store.hpp>
 #include <Path.hpp>
 
@@ -217,7 +218,7 @@ namespace test_context {
 
     // If there are other providers the variants supplied by the PushApi
     // will probably not be sufficient.
-    using MessageVariant = typename decltype(std::declval<PushApi>()
+    using MessageVariant = typename decltype(std::declval<PushApi>().message_api()
       .template get_upstream_variant_type<null_system_message>())::type;
 
     PushApi push_api;
@@ -235,7 +236,7 @@ namespace test_context {
   {
     using hana_tag = test_context::consumer_tag;
 
-    using MessageVariant = typename decltype(std::declval<PushApi>()
+    using MessageVariant = typename decltype(std::declval<PushApi>().message_api()
       .template get_downstream_variant_type<null_system_message>())::type;
 
     PushApi push_api;
@@ -255,7 +256,7 @@ namespace test_context {
   {
     using hana_tag = test_context::consumer_tag;
 
-    using MessageVariant = typename decltype(std::declval<PushApi>()
+    using MessageVariant = typename decltype(std::declval<PushApi>().message_api()
       .template get_downstream_variant_type<null_system_message>())::type;
 
     PushApi push_api;

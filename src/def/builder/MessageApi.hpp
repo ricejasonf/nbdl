@@ -10,7 +10,6 @@
 #include <def/builder/EntityMessages.hpp>
 #include <def/builder/ProviderMeta.hpp>
 #include <nbdl/concept/UpstreamMessage.hpp>
-#include <nbdl/message_api.hpp>
 
 #include <boost/hana/functional/on.hpp>
 #include <boost/hana/functional/partial.hpp>
@@ -23,6 +22,16 @@ namespace nbdl_def { namespace builder
 {
 
   namespace hana = boost::hana;
+
+  template <
+    typename UpstreamMessageTypes,
+    typename DownstreamMessageTypes
+  >
+  struct message_api_meta
+  {
+    using upstream_types    = UpstreamMessageTypes;
+    using downstream_types  = DownstreamMessageTypes;
+  };
 
   struct make_message_api_fn
   {
@@ -42,7 +51,7 @@ namespace nbdl_def { namespace builder
           ),
           hana::trait<nbdl::UpstreamMessage>
         ),
-        hana::on(hana::template_<nbdl::message_api>, hana::decltype_)
+        hana::on(hana::template_<message_api_meta>, hana::decltype_)
       );
     }
   };

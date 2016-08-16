@@ -7,6 +7,7 @@
 #ifndef NBDL_CONTEXT_HPP
 #define NBDL_CONTEXT_HPP
 
+#include <def/builder/Context.hpp>
 #include <nbdl/concept/Consumer.hpp>
 #include <nbdl/concept/UpstreamMessage.hpp>
 #include <nbdl/concept/DownstreamMessage.hpp>
@@ -16,6 +17,7 @@
 #include <nbdl/apply_action.hpp>
 #include <nbdl/match.hpp>
 #include <nbdl/message.hpp>
+#include <nbdl/message_api.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>
 #include <nbdl/variant.hpp>
@@ -26,24 +28,30 @@
 #include <type_traits>
 #include <utility>
 
-namespace nbdl {
-
+namespace nbdl
+{
   namespace hana  = boost::hana;
   namespace hanax = boost::hana::experimental;
 
-  template <
-    typename ProviderLookup,
-    typename CellTagTypes,
-    typename StoreMap,
-    typename MessageApi,
-    typename ArgTypes >
+  template <typename Tag, typename ArgTypes>
   class context
   {
+    using ContextMeta     = nbdl_def::builder::make_context_meta_t<Tag, ArgTypes>;
+    using ProviderLookup  = typename ContextMeta::provider_lookup;
+    using CellTagTypes    = typename ContextMeta::cell_tag_types;
+    using StoreMap        = typename ContextMeta::store_map;
+    using MessageApi      = nbdl::message_api<context>;
+
+    public:
+
+    using message_api_meta = typename ContextMeta::message_api_meta;
+
+    private:
+
     // calling the push functions after
     // the context is destroyed will result
     // in undefined behaviour
     class push_upstream_api
-      : public MessageApi
     {
       context& ctx;
 
@@ -58,10 +66,11 @@ namespace nbdl {
           "nbdl::context::push_upstream_api requires an UpstreamMessage");
          ctx.push_message(std::forward<Message>(m));
       }
+
+      constexpr MessageApi message_api() const { return {}; }
     };
 
     class push_downstream_api
-      : public MessageApi
     {
       context& ctx;
 
@@ -76,10 +85,11 @@ namespace nbdl {
           "nbdl::context::push_downstream_api requires a DownstreamMessage");
          ctx.push_message(std::forward<Message>(m));
       }
+
+      constexpr MessageApi message_api() const { return {}; }
     };
 
     class push_upstream_api_state_consumer
-      : public MessageApi
     {
       context& ctx;
 
@@ -100,6 +110,8 @@ namespace nbdl {
       {
         return ctx.match(std::forward<Path>(path), std::forward<Fns&&>(fns)...);
       }
+
+      constexpr MessageApi message_api() const { return {}; }
     };
 
     static constexpr std::size_t cell_count = decltype(hana::size(CellTagTypes{}))::value;

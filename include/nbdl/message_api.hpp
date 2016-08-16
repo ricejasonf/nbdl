@@ -150,9 +150,12 @@ namespace nbdl
     bool is_from_root;
   };
 
-  template <typename UpstreamTypes, typename DownstreamTypes>
+  template <typename Context>
   class message_api
   {
+    using UpstreamTypes   = typename Context::message_api_meta::upstream_types;
+    using DownstreamTypes = typename Context::message_api_meta::downstream_types;
+
     using upstream    = message::channel::upstream;
     using downstream  = message::channel::downstream;
     using create      = message::action::create;

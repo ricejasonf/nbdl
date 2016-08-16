@@ -13,16 +13,33 @@
 #include <catch.hpp>
 
 namespace message = nbdl::message;
+
 namespace
 {
-  constexpr auto def = test_context_def::make(
-    nbdl::echo_provider{},
-    test_context::provider_tag{},
-    test_context::consumer_tag{},
-    test_context::consumer_tag{},
-    nbdl::null_store{}
-  );
-  auto context = nbdl::make_unique_context(def);
+  struct my_context { };
+}
+
+namespace nbdl
+{
+  template <>
+  struct make_def_impl<my_context>
+  {
+    static constexpr auto apply()
+    {
+      return test_context_def::make(
+        nbdl::echo_provider{},
+        test_context::provider_tag{},
+        test_context::consumer_tag{},
+        test_context::consumer_tag{},
+        nbdl::null_store{}
+      );
+    }
+  };
+}
+
+namespace
+{
+  auto context = nbdl::make_unique_context<my_context>();
   auto& provider0 = context->cell<0>();
   auto& consumer2 = context->cell<2>();
 }
@@ -32,7 +49,7 @@ TEST_CASE("Echo provider should echo messages to downstream.", "[echo_provider]"
   using Path = test_context::path<0>;
   using Entity = test_context::entity::my_entity<1>;
 
-  auto msg = consumer2.push_api.make_upstream_create_message(
+  auto msg = consumer2.push_api.message_api().make_upstream_create_message(
     Path::make_create_path(5),
     Entity{5, 5}
   );

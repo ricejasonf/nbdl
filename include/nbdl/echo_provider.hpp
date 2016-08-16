@@ -62,7 +62,7 @@ namespace nbdl
     {
       if constexpr(message::is_create<Message>)
       {
-        p.push_api.push(p.push_api.to_downstream_from_root(
+        p.push_api.push(p.push_api.message_api().to_downstream_from_root(
           m,
           echo_provider_detail::make_unique_key(m)
         ));

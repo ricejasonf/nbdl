@@ -117,39 +117,48 @@ namespace tiles
   void create_game_move(StateConsumer& c, Index i)
   {
     c.push_api.push(
-      c.push_api.make_upstream_create_message(game_move_path::make_create_path(), game_move{i})
+      c.push_api.message_api()
+        .make_upstream_create_message(game_move_path::make_create_path(), game_move{i})
     );
   }
+
+  template <typename ProviderTag, typename ConsumerTag>
+  struct context
+  {
+    static constexpr auto make_def()
+    {
+      using namespace nbdl_def; 
+      namespace hana = boost::hana;
+      return
+        Context(
+          Entities(
+            Entity(Type(hana::type_c<game>)),
+            Entity(Type(hana::type_c<game_move>))
+          ),
+          Provider(
+            Type(ProviderTag{}),
+            AccessPoint(
+              Name(hana::type_c<void>), // FIXME
+              EntityName(hana::type_c<game>),
+              Store(hana::type_c<game_store>),
+              Actions(),
+              AccessPoint(
+                Name(hana::type_c<void>), // FIXME
+                EntityName(hana::type_c<game_move>),
+                Actions(Create())
+              )
+            )
+          ),
+          Consumer(Type(ConsumerTag{}))
+        );
+      }
+  };
 
   template <typename ProviderTag, typename ConsumerTag, typename ...Args>
   auto make_context(Args&& ... args)
   {
-    using namespace nbdl_def; 
-    namespace hana = boost::hana;
-    return nbdl::make_unique_context(
-      Context(
-        Entities(
-          Entity(Type(hana::type_c<game>)),
-          Entity(Type(hana::type_c<game_move>))
-        ),
-        Provider(
-          Type(ProviderTag{}),
-          AccessPoint(
-            Name(hana::type_c<void>), // FIXME
-            EntityName(hana::type_c<game>),
-            Store(hana::type_c<game_store>),
-            Actions(),
-            AccessPoint(
-              Name(hana::type_c<void>), // FIXME
-              EntityName(hana::type_c<game_move>),
-              Actions(Create())
-            )
-          )
-        ),
-        Consumer(Type(ConsumerTag{}))
-      ),
-      std::forward<Args>(args)...
-    );
+    return nbdl::make_unique_context<tiles::context<ProviderTag, ConsumerTag>>
+      (std::forward<Args>(args)...);
   }
 }
 

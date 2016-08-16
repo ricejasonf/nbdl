@@ -7,8 +7,8 @@
 #ifndef NBDL_MAKE_CONSUMER_HPP
 #define NBDL_MAKE_CONSUMER_HPP
 
-#include<nbdl/concept/Consumer.hpp>
-#include<nbdl/fwd/make_consumer.hpp>
+#include <nbdl/concept/Consumer.hpp>
+#include <nbdl/fwd/make_consumer.hpp>
 
 namespace nbdl
 {

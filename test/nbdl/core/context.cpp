@@ -7,6 +7,7 @@
 
 #include <assets/TestContext.hpp>
 #include <nbdl/make_context.hpp>
+#include <nbdl/make_def.hpp>
 #include <nbdl/message.hpp>
 #include <nbdl/null_store.hpp>
 
@@ -22,14 +23,31 @@ namespace action  = nbdl::message::action;
 
 namespace
 {
-  constexpr auto def = test_context_def::make(
-    test_context::provider_tag{},
-    test_context::provider_tag{},
-    test_context::consumer_tag{},
-    test_context::consumer_tag{},
-    nbdl::null_store{}
-  );
-  auto context = nbdl::make_unique_context(def);
+  struct my_context { };
+}
+
+namespace nbdl
+{
+  template <>
+  struct make_def_impl<my_context>
+  {
+    static constexpr auto apply()
+    {
+      return test_context_def::make(
+        test_context::provider_tag{},
+        test_context::provider_tag{},
+        test_context::consumer_tag{},
+        test_context::consumer_tag{},
+        nbdl::null_store{}
+      );
+    }
+  };
+}
+
+
+namespace
+{
+  auto context = nbdl::make_unique_context<my_context>();
 
   auto& provider0 = context->cell<0>();
   auto& provider1 = context->cell<1>();
@@ -72,16 +90,16 @@ namespace
       );
     }
   };
-}
 
   constexpr struct check_message_equal_fn check_message_equal{};
+}
 
 TEST_CASE("Dispatch Downstream Read Message", "[context]")
 {
   init_record_messages();
 
   // Send downstream read to consumers.
-  auto msg = provider0.push_api.make_downstream_read_message(
+  auto msg = provider0.push_api.message_api().make_downstream_read_message(
       test_context::path1(1, 2),
       entity::my_entity<1>{2, 1}
   );
@@ -103,7 +121,7 @@ TEST_CASE("Dispatch Upstream Read Message", "[context]")
   init_record_messages();
 
   // Send upstream read to provider0.
-  auto msg = consumer2.push_api.make_upstream_read_message(test_context::path1(1, 2));
+  auto msg = consumer2.push_api.message_api().make_upstream_read_message(test_context::path1(1, 2));
   consumer2.push_api.push(msg);
 
   // provider1 should not receive the message.
@@ -131,7 +149,7 @@ TEST_CASE("Dispatch Downstream Create Message", "[context]")
     init_record_messages();
 
     // Send downstream create to consumers.
-    auto msg = provider0.push_api.make_downstream_create_message(
+    auto msg = provider0.push_api.message_api().make_downstream_create_message(
       Path(1, 2),
       Entity{2, 1}
     );
@@ -161,7 +179,7 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
     init_record_messages();
 
     // Send upstream create to provider0.
-    auto msg = consumer2.push_api.make_upstream_create_message(
+    auto msg = consumer2.push_api.message_api().make_upstream_create_message(
       Path::make_create_path(1),
       Entity{2, 1}
     );
@@ -190,7 +208,7 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
     init_record_messages();
 
     // Send upstream create to provider0.
-    auto msg = consumer2.push_api.make_upstream_create_message(
+    auto msg = consumer2.push_api.message_api().make_upstream_create_message(
       Path::make_create_path(1),
       Entity{2, 1}
     );
@@ -222,7 +240,7 @@ TEST_CASE("Dispatch Downstream Update Message", "[context]")
     init_record_messages();
 
     // Send downstream update to consumers.
-    auto msg = provider0.push_api.make_downstream_update_raw_message(
+    auto msg = provider0.push_api.message_api().make_downstream_update_raw_message(
       Path(1, 2),
       Entity{2, 1}
     );
@@ -252,7 +270,7 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
     init_record_messages();
 
     // Send upstream update to provider0.
-    auto msg = consumer2.push_api.make_upstream_update_raw_message(
+    auto msg = consumer2.push_api.message_api().make_upstream_update_raw_message(
       Path(1, 2),
       Entity{2, 1}
     );
@@ -281,7 +299,7 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
     init_record_messages();
 
     // Send upstream update to provider0.
-    auto msg = consumer2.push_api.make_upstream_update_raw_message(
+    auto msg = consumer2.push_api.message_api().make_upstream_update_raw_message(
       Path(1, 2),
       Entity{2, 1}
     );

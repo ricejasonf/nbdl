@@ -8,7 +8,6 @@
 #define NBDL_DEF_BUILDER_CONTEXT_HPP
 
 #include <mpdef/list.hpp>
-#include <nbdl/context.hpp>
 #include <def/directives.hpp>
 #include <def/builder/ConsumerMap.hpp>
 #include <def/builder/ContextCells.hpp>
@@ -20,6 +19,7 @@
 #include <def/builder/ProviderMap.hpp>
 #include <def/builder/ProviderMeta.hpp>
 #include <def/builder/StoreMap.hpp>
+#include <nbdl/make_def.hpp>
 
 #include <boost/hana/concat.hpp>
 #include <boost/hana/experimental/types.hpp>
@@ -37,11 +37,27 @@ namespace nbdl_def { namespace builder
   namespace hana  = boost::hana;
   namespace hanax = boost::hana::experimental;
 
+  template <
+    typename ProviderLookup,
+    typename CellTagTypes,
+    typename StoreMap,
+    typename MessageApiMeta
+  >
+  struct context_meta
+  {
+    using provider_lookup       = ProviderLookup;
+    using cell_tag_types        = CellTagTypes;
+    using store_map             = StoreMap;
+    using message_api_meta      = MessageApiMeta;
+  };
+
   struct context_fn
   {
-    template <typename Def, typename ArgTypes>
-    constexpr auto operator()(Def, ArgTypes) const
+    template <typename TagType, typename ArgTypes>
+    constexpr auto operator()(TagType, ArgTypes) const
     {
+      using Def = decltype(::nbdl::make_def(TagType{}));
+
       static_assert(hana::first(Def{}) == tag::Context, "");
       constexpr auto defs = hana::second(Def{});
 
@@ -60,23 +76,17 @@ namespace nbdl_def { namespace builder
       constexpr auto message_api      = builder::make_message_api(entity_meta_map, providers_meta);
       constexpr auto params = hana::concat(
         cell_info,
-        mpdef::make_list(store_map, message_api, hana::type_c<ArgTypes>)
+        mpdef::make_list(store_map, message_api)
       );
 
-      return hana::unpack(params, hana::template_<nbdl::context>);
+      return hana::unpack(params, hana::template_<context_meta>);
     }
   };
+
   constexpr context_fn context{};
 
-  template <typename ContextDef, typename ArgTypes>
-  using make_context_t = typename decltype(builder::context(ContextDef{}, ArgTypes{}))::type;
-
-  template <typename ContextDef, typename ...Args>
-  constexpr auto make_context_type(ContextDef const&, Args const& ...)
-  {
-    using Context = make_context_t<ContextDef, hanax::types<Args...>>;
-    return hana::type_c<Context>;
-  }
+  template <typename Tag, typename ArgTypes>
+  using make_context_meta_t = typename decltype(builder::context(hana::type_c<Tag>, ArgTypes{}))::type;
 }} // nbdl_def::builder
 
 #endif

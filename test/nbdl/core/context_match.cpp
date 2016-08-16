@@ -17,16 +17,35 @@ using test_context::path;
 using test_context::entity::my_entity;
 namespace message = nbdl::message;
 
-struct tcms_store_tag { };
-
-template <typename Path>
-struct tcms_store
+namespace
 {
-  using hana_tag = tcms_store_tag;
-};
+  struct tcms_store_tag { };
+  struct my_context { };
+
+  template <typename Path>
+  struct tcms_store
+  {
+    using hana_tag = tcms_store_tag;
+  };
+}
 
 namespace nbdl
 {
+  template <>
+  struct make_def_impl<my_context>
+  {
+    static constexpr auto apply()
+    {
+      return test_context_def::make(
+        test_context::provider_tag{},
+        test_context::provider_tag{},
+        test_context::state_consumer_tag{},
+        test_context::consumer_tag{},
+        tcms_store_tag{}
+      );
+    }
+  };
+
   template <>
   struct make_store_impl<tcms_store_tag>
   {
@@ -76,16 +95,9 @@ namespace nbdl
   };
 }
 
-constexpr auto def = test_context_def::make(
-  test_context::provider_tag{},
-  test_context::provider_tag{},
-  test_context::state_consumer_tag{},
-  test_context::consumer_tag{},
-  tcms_store_tag{}
-);
 namespace
 {
-  auto context = nbdl::make_unique_context(def);
+  auto context = nbdl::make_unique_context<my_context>();
   auto& provider0       = context->cell<0>();
   auto& provider1       = context->cell<1>();
   auto& state_consumer  = context->cell<2>();

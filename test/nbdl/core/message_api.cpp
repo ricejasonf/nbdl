@@ -57,56 +57,68 @@ namespace boost { namespace hana {
   };
 }} // boost::hana
 
-// TODO create a better way for making a message type for testing (ie named params)
-template <int i>
-using UpstreamCreate = hana::tuple<upstream, create,
-  typename decltype(Path<i>::make_create_path_type())::type,
-  maybe_uid, MaybePayload<i>>;
-template <int i>
-using UpstreamRead = hana::tuple<upstream, read, Path<i>, maybe_uid>;
-template <int i>
-using UpstreamUpdate = hana::tuple<upstream, update, Path<i>, maybe_uid, MaybePayload<i>>;
-template <int i>
-using UpstreamUpdateRaw = hana::tuple<upstream, update_raw, Path<i>, maybe_uid, MaybePayload<i>>;
-template <int i>
-using UpstreamDelete = hana::tuple<upstream, delete_, Path<i>, maybe_uid>;
-template <int i>
-using DownstreamCreate = hana::tuple<downstream, create, Path<i>, maybe_uid,
-  hana::optional<bool>, MaybePayload<i>>;
-template <int i>
-using DownstreamRead = hana::tuple<downstream, read, Path<i>, maybe_uid,
-  hana::optional<bool>, MaybePayload<i>>;
-template <int i>
-using DownstreamUpdate = hana::tuple<downstream, update, Path<i>, maybe_uid,
-  hana::optional<bool>, MaybePayload<i>>;
-template <int i>
-using DownstreamUpdateRaw = hana::tuple<downstream, update_raw, Path<i>, maybe_uid,
-  hana::optional<bool>, MaybePayload<i>>;
-template <int i>
-using DownstreamDelete = hana::tuple<downstream, delete_, Path<i>, maybe_uid, hana::optional<bool>>;
+namespace
+{
+  // TODO create a better way for making a message type for testing (ie named params)
+  template <int i>
+  using UpstreamCreate = hana::tuple<upstream, create,
+    typename decltype(Path<i>::make_create_path_type())::type,
+    maybe_uid, MaybePayload<i>>;
+  template <int i>
+  using UpstreamRead = hana::tuple<upstream, read, Path<i>, maybe_uid>;
+  template <int i>
+  using UpstreamUpdate = hana::tuple<upstream, update, Path<i>, maybe_uid, MaybePayload<i>>;
+  template <int i>
+  using UpstreamUpdateRaw = hana::tuple<upstream, update_raw, Path<i>, maybe_uid, MaybePayload<i>>;
+  template <int i>
+  using UpstreamDelete = hana::tuple<upstream, delete_, Path<i>, maybe_uid>;
+  template <int i>
+  using DownstreamCreate = hana::tuple<downstream, create, Path<i>, maybe_uid,
+    hana::optional<bool>, MaybePayload<i>>;
+  template <int i>
+  using DownstreamRead = hana::tuple<downstream, read, Path<i>, maybe_uid,
+    hana::optional<bool>, MaybePayload<i>>;
+  template <int i>
+  using DownstreamUpdate = hana::tuple<downstream, update, Path<i>, maybe_uid,
+    hana::optional<bool>, MaybePayload<i>>;
+  template <int i>
+  using DownstreamUpdateRaw = hana::tuple<downstream, update_raw, Path<i>, maybe_uid,
+    hana::optional<bool>, MaybePayload<i>>;
+  template <int i>
+  using DownstreamDelete = hana::tuple<downstream, delete_, Path<i>, maybe_uid, hana::optional<bool>>;
 
-using UpstreamMessages = hanax::types<
-    UpstreamCreate<1>
-  , UpstreamRead<1>
-  , UpstreamCreate<2>
-  , UpstreamUpdateRaw<2>
-  , UpstreamCreate<3>
-  , UpstreamRead<3>
-  , UpstreamUpdate<3>
-  , UpstreamDelete<3>
-  >;
-using DownstreamMessages = hanax::types<
-    DownstreamCreate<1>
-  , DownstreamRead<1>
-  , DownstreamCreate<2>
-  , DownstreamUpdateRaw<2>
-  , DownstreamCreate<3>
-  , DownstreamRead<3>
-  , DownstreamUpdate<3>
-  , DownstreamDelete<3>
-  >;
+  using UpstreamMessages = hanax::types<
+      UpstreamCreate<1>
+    , UpstreamRead<1>
+    , UpstreamCreate<2>
+    , UpstreamUpdateRaw<2>
+    , UpstreamCreate<3>
+    , UpstreamRead<3>
+    , UpstreamUpdate<3>
+    , UpstreamDelete<3>
+    >;
+  using DownstreamMessages = hanax::types<
+      DownstreamCreate<1>
+    , DownstreamRead<1>
+    , DownstreamCreate<2>
+    , DownstreamUpdateRaw<2>
+    , DownstreamCreate<3>
+    , DownstreamRead<3>
+    , DownstreamUpdate<3>
+    , DownstreamDelete<3>
+    >;
 
-constexpr nbdl::message_api<UpstreamMessages, DownstreamMessages> msgs{};
+  struct context_mock
+  {
+    struct message_api_meta
+    {
+      using upstream_types    = UpstreamMessages;
+      using downstream_types  = DownstreamMessages;
+    };
+  };
+
+  constexpr nbdl::message_api<context_mock> msgs{};
+}
 
 // Test the search for message types
 
@@ -287,10 +299,16 @@ TEST_CASE("to_downstream_from_root with nested path (create)", "[message_api]")
   using DownstreamCreateMessage = hana::tuple<downstream, create,
     Path_, maybe_uid, hana::optional<bool>, MaybePayload<2>
   >;
-  constexpr nbdl::message_api<
-    hanax::types<UpstreamCreateMessage>,
-    hanax::types<DownstreamCreateMessage>
-  > msgs{};
+  struct context_mock
+  {
+    struct message_api_meta
+    {
+      using upstream_types    = hanax::types<UpstreamCreateMessage>;
+      using downstream_types  = hanax::types<DownstreamCreateMessage>;
+    };
+  };
+
+  constexpr nbdl::message_api<context_mock> msgs{};
 
   auto m = msgs.make_upstream_create_message(Path_::make_create_path(1), Payload<2>{22});
   auto down1 = msgs.to_downstream_from_root(m, 2);

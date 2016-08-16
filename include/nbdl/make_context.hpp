@@ -7,39 +7,20 @@
 #ifndef NBDL_MAKE_CONTEXT_HPP
 #define NBDL_MAKE_CONTEXT_HPP
 
-#include <def/builder/Context.hpp>
+//#include <def/builder/Context.hpp>
+#include <nbdl/context.hpp>
 
 #include <memory>
 #include <utility>
 
 namespace nbdl
 {
-#if 0 // NOT USED NOT TESTED
-  template <typename ContextDef, typename ...Args>
-  auto* new_context(ContextDef const& def, Args&& ...args)
-  {
-    using Context = typename decltype(
-      nbdl_def::builder::make_context_type(def, std::forward<Args>(args)...)
-    )::type;
-    return new Context(std::forward<Args>(args)...);
-  }
+  namespace hanax = boost::hana::experimental;
 
-  template <typename ContextDef, typename ...Args>
-  constexpr decltype(auto) make_shared_context(ContextDef const& def, Args&& ...args)
+  template <typename Tag, typename ...Args>
+  constexpr decltype(auto) make_unique_context(Args&& ...args)
   {
-    using Context = typename decltype(
-      nbdl_def::builder::make_context_type(def, std::forward<Args>(args)...)
-    )::type;
-    return std::make_shared<Context>(std::forward<Args>(args)...);
-  }
-#endif // NOT USED NOT TESTED
-
-  template <typename ContextDef, typename ...Args>
-  constexpr decltype(auto) make_unique_context(ContextDef const& def, Args&& ...args)
-  {
-    using Context = typename decltype(
-      nbdl_def::builder::make_context_type(def, std::forward<Args>(args)...)
-    )::type;
+    using Context = nbdl::context<Tag, hanax::types<Args...>>;
     return std::make_unique<Context>(std::forward<Args>(args)...);
   }
 } // nbdl
