@@ -36,16 +36,19 @@ namespace tag = nbdl::webui::html::tag;
 
 TEST_CASE("begin element", "[webui][dom_manips]")
 {
+  using nbdl::webui::detail::begin;
   auto body = get_body();
-  auto node = nbdl::webui::detail::begin_fn<tag::element_t, div_tag>{}(body);
+  auto node = nbdl::webui::detail::action_fn<begin, tag::element_t, div_tag>{}(body);
   CHECK(node["parentNode"].strictlyEquals(body));
 }
 
 TEST_CASE("end element", "[webui][dom_manips]")
 {
+  using nbdl::webui::detail::begin;
+  using nbdl::webui::detail::end;
   auto body = get_body();
-  auto node1 = nbdl::webui::detail::begin_fn<tag::element_t, div_tag>{}(body);
-  auto node2 = nbdl::webui::detail::end_fn  <tag::element_t, div_tag>{}(node1);
+  auto node1 = nbdl::webui::detail::action_fn<begin,  tag::element_t, div_tag>{}(body);
+  auto node2 = nbdl::webui::detail::action_fn<end,    tag::element_t, div_tag>{}(node1);
   // end should return the parent
   CHECK( node2.strictlyEquals(body));
   CHECK(!node2.strictlyEquals(node1));

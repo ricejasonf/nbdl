@@ -14,20 +14,38 @@
 
 namespace nbdl::webui::detail
 {
-  template <typename Tag, typename Name = void>
-  struct begin_fn { };
+  // TODO maybe begin/end don't belong in this file
+  // begin/end tags for dispatch of begin_fn and end_fn
+  struct begin { };
+  struct end   { };
 
-  template <typename Tag, typename Name = void>
-  constexpr begin_fn<Tag, Name> begin{};
+  struct is_begin_fn
+  {
+    template <typename Types>
+    constexpr auto operator()(Types)
+    {
+      return hana::equal(hana::at_c<0>(Types{}), hana::type_c<begin>);
+    }
+  };
+  
+  constexpr is_begin_fn is_begin{};
 
-  template <typename Tag, typename Name = void>
-  struct end_fn { };
+  struct is_end_fn
+  {
+    template <typename Types>
+    constexpr auto operator()(Types)
+    {
+      return hana::equal(hana::at_c<0>(Types{}), hana::type_c<end>);
+    }
+  };
 
-  template <typename Tag, typename Name = void>
-  constexpr end_fn<Tag, Name> end{};
+  constexpr is_end_fn is_end{};
+
+  template <typename ...>
+  struct action_fn;
 
   template <typename HtmlTagName>
-  struct begin_fn<html::tag::element_t, HtmlTagName>
+  struct action_fn<begin, html::tag::element_t, HtmlTagName>
   {
     template <typename ParentElement>
     emscripten::val operator()(ParentElement&& p) const
@@ -41,7 +59,7 @@ namespace nbdl::webui::detail
   };
 
   template <typename HtmlTagName>
-  struct end_fn<html::tag::element_t, HtmlTagName>
+  struct action_fn<end, html::tag::element_t, HtmlTagName>
   {
     template <typename ParentElement>
     emscripten::val operator()(ParentElement&& p) const

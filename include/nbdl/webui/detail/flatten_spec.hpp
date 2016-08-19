@@ -10,6 +10,7 @@
 #include <nbdl/webui/detail/dom_manips.hpp>
 #include <nbdl/webui/html.hpp>
 
+#include <boost/hana/experimental/types.hpp>
 #include <boost/hana/flatten.hpp>
 #include <boost/hana/functional/compose.hpp>
 #include <boost/hana/unpack.hpp>
@@ -17,6 +18,9 @@
 
 namespace nbdl::webui::detail
 {
+  namespace hana  = boost::hana;
+  namespace hanax = boost::hana::experimental;
+
   struct flatten_spec_fn;
 
   template <typename FlattenSpecFn>
@@ -27,11 +31,11 @@ namespace nbdl::webui::detail
     {
       using Name = decltype(hana::at_c<0>(ChildNodes{}));
       return hana::flatten(mpdef::make_list(
-        mpdef::make_list(mpdef::make_list(begin<typename Tag::type, Name>)),
+        mpdef::make_list(mpdef::make_list(hanax::types<begin, typename Tag::type, Name>{})),
         hana::unpack(
           hana::drop_front(ChildNodes{}), mpdef::make_list ^hana::on^ FlattenSpecFn{}
         ),
-        mpdef::make_list(mpdef::make_list(end<typename Tag::type, Name>))
+        mpdef::make_list(mpdef::make_list(hanax::types<end, typename Tag::type, Name>{}))
       ));
     }
   };
@@ -43,9 +47,9 @@ namespace nbdl::webui::detail
     constexpr auto operator()(Tag, ChildNodes) const
     {
       return hana::flatten(mpdef::make_list(
-        mpdef::make_list(mpdef::make_list(begin<typename Tag::type>)),
-        hana::unpack( ChildNodes{}, mpdef::make_list ^hana::on^ FlattenSpecFn{}),
-        mpdef::make_list(mpdef::make_list(end<typename Tag::type>))
+        mpdef::make_list(mpdef::make_list(hanax::types<begin, typename Tag::type>{})),
+        hana::unpack(ChildNodes{}, mpdef::make_list ^hana::on^ FlattenSpecFn{}),
+        mpdef::make_list(mpdef::make_list(hanax::types<end, typename Tag::type>{}))
       ));
     }
   };

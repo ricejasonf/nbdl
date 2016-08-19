@@ -29,6 +29,16 @@ namespace nbdl
     template <typename PushApi, typename RenderImpl, typename RenderSpec>
     class renderer_impl
     {
+      using RenderFns = decltype(detail::flatten_spec(nbdl::make_def(hana::type_c<RenderSpec>)));
+      // State is the return value of each element in RenderFns
+      using State = decltype(
+        hana::remove_if(hana::transform(RenderActions{}, hana::typeid_), hana::traits::is_empty)
+      );
+      // TODO create a map of paths to indices to call the render fn
+      // It should get a run of functions up to the corresponding 'end'
+      // function.
+      // Really need traits for begin/end
+
       PushApi push_api;
 
       void render()

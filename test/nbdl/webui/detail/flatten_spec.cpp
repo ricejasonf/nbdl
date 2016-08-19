@@ -11,15 +11,22 @@
 
 #include <boost/hana.hpp>
 
-namespace hana = boost::hana;
+namespace hana  = boost::hana;
+namespace hanax = boost::hana::experimental;
 
 int main()
 {
   using namespace nbdl::webui::html;
   constexpr auto div_tag    = hana::type_c<hana::string<'d', 'i', 'v'>>;
   constexpr auto class_tag  = hana::type_c<hana::string<'c', 'l', 'a', 's', 's'>>;
-  constexpr auto begin      = hana::template_<nbdl::webui::detail::begin_fn>;
-  constexpr auto end        = hana::template_<nbdl::webui::detail::end_fn>;
+  constexpr auto begin      = hana::partial(
+    hana::template_<hanax::types>,
+    hana::type_c<nbdl::webui::detail::begin>
+  );
+  constexpr auto end        = hana::partial(
+    hana::template_<hanax::types>,
+    hana::type_c<nbdl::webui::detail::end>
+  );
   constexpr auto make_list  = hana::template_<mpdef::list>;
 
   {
