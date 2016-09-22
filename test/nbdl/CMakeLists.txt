@@ -12,6 +12,7 @@ if (EMSCRIPTEN)
 endif (EMSCRIPTEN)
 
 add_subdirectory(core)
+add_subdirectory(util)
 add_subdirectory(websocket)
 add_subdirectory(binders/jsoncpp)
 add_subdirectory(builder)
