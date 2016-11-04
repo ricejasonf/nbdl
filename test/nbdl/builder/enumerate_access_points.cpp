@@ -5,7 +5,6 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <store/HashMap.hpp>
 #include <def/builder/AccessPointMeta.hpp>
 #include <def/builder/EnumerateAccessPoints.hpp>
 #include <def/directives.hpp>
