@@ -106,7 +106,6 @@ if (${EMSCRIPTEN})
 	add_definitions(--bind)
 endif (${EMSCRIPTEN})
 
-find_package(OpenSSL)
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED OFF)
 set(Boost_USE_STATIC_RUNTIME OFF)
