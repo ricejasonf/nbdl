@@ -6,7 +6,7 @@
 //
 //
 
-#include <nbdl/echo_provider.hpp>
+#include <nbdl.hpp>
 #include <nbdl_test/test_state_consumer.hpp>
 #include "../game.hpp"
 

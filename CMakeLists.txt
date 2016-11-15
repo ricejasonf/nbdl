@@ -121,3 +121,7 @@ include_directories(${nbdl_project_SOURCE_DIR}/include)
 add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(example/tiles)
+
+install(FILES include/nbdl.hpp  DESTINATION include)
+install(DIRECTORY include/nbdl  DESTINATION include)
+install(DIRECTORY include/mpdef DESTINATION include)
