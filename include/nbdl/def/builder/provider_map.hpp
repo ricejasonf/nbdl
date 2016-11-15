@@ -7,8 +7,8 @@
 #ifndef NBDL_DEF_BUILDER_PROVIDER_MAP_HPP
 #define NBDL_DEF_BUILDER_PROVIDER_MAP_HPP
 
-#include <def/builder/Path.hpp>
-#include <def/builder/ProviderMeta.hpp>
+#include <nbdl/def/builder/path.hpp>
+#include <nbdl/def/builder/provider_meta.hpp>
 #include <mpdef/pair.hpp>
 
 #include <boost/hana.hpp>

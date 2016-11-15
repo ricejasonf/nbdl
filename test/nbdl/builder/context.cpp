@@ -6,7 +6,7 @@
 //
 
 #include <assets/TestContext.hpp>
-#include <def/builder/Context.hpp>
+#include <nbdl/def/builder/context.hpp>
 #include <nbdl/make_context.hpp>
 #include <nbdl/make_def.hpp>
 #include <nbdl/null_store.hpp>

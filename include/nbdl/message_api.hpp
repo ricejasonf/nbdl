@@ -10,8 +10,8 @@
 #include <mpdef/map.hpp>
 #include <mpdef/pair.hpp>
 #include <nbdl/message.hpp>
-#include <Uid.hpp> // FIXME
 #include <nbdl/make_store.hpp> // nbdl::not_found
+#include <nbdl/uid.hpp>
 #include <nbdl/variant.hpp>
 
 #include <boost/hana/type.hpp>

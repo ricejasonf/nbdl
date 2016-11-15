@@ -10,7 +10,7 @@
 #include <functional>
 
 namespace nbdl {
-namespace details {
+namespace detail {
 
 // sort of excerpted from boost with the same license 
 // and the following copyright
@@ -22,7 +22,7 @@ void hash_combine(std::size_t& seed, T const& v)
 	seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
 }
 
-}//details
-}//nbdl
+} //detail
+} //nbdl
 
 #endif

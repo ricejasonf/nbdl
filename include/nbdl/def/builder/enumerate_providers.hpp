@@ -7,11 +7,11 @@
 #ifndef NBDL_DEF_BUILDER_ENUMERATE_PROVIDERS_HPP
 #define NBDL_DEF_BUILDER_ENUMERATE_PROVIDERS_HPP
 
-#include <def/builder/EnumerateAccessPoints.hpp>
-#include <def/builder/ProviderMeta.hpp>
-#include <def/directives.hpp>
 #include <mpdef/list.hpp>
 #include <mpdef/tree_node.hpp>
+#include <nbdl/def/builder/enumerate_access_points.hpp>
+#include <nbdl/def/builder/provider_meta.hpp>
+#include <nbdl/def/directives.hpp>
 
 namespace nbdl_def {
 namespace builder {

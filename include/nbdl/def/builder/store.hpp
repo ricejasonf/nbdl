@@ -7,8 +7,7 @@
 #ifndef NBDL_DEF_BUILDER_STORE_HPP
 #define NBDL_DEF_BUILDER_STORE_HPP
 
-#include <def/builder/AccessPointMeta.hpp>
-//#include<Store.hpp>
+#include <nbdl/def/builder/access_point_meta.hpp>
 #include <nbdl/make_store.hpp>
 #include <nbdl/null_store.hpp>
 

@@ -7,14 +7,19 @@
 #ifndef NBDL_APPLY_ACTION_HPP
 #define NBDL_APPLY_ACTION_HPP
 
-#include<nbdl/fwd/apply_action.hpp>
+#include <nbdl/fwd/apply_action.hpp>
 
-#include<nbdl/concept/Store.hpp>
+#include <nbdl/concept/Store.hpp>
 
-#include<utility>
+#include <boost/hana/core/default.hpp>
+#include <boost/hana/core/when.hpp>
+#include <boost/hana/core/tag_of.hpp>
+#include <boost/hana/integral_constant.hpp>
+#include <utility>
 
 namespace nbdl
 {
+  namespace hana = boost::hana;
   template<typename Store, typename Message>
   constexpr auto apply_action_fn::operator()(Store&& s, Message&& m) const
   {

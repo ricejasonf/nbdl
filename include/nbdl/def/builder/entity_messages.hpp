@@ -7,16 +7,16 @@
 #ifndef NBDL_DEF_BUILDER_ENTITY_MESSAGES_HPP
 #define NBDL_DEF_BUILDER_ENTITY_MESSAGES_HPP
 
-#include <def/directives.hpp>
-#include <def/builder/AccessPointMeta.hpp>
-#include <def/builder/EntityMessageIsFromRoot.hpp>
-#include <def/builder/EntityMessageMeta.hpp>
-#include <def/builder/EntityMessagePayload.hpp>
-#include <def/builder/EntityMessagePrivatePayload.hpp>
-#include <def/builder/EntityMessageUid.hpp>
-#include <def/builder/Path.hpp>
 #include <mpdef/pair.hpp>
 #include <mpdef/map.hpp>
+#include <nbdl/def/directives.hpp>
+#include <nbdl/def/builder/access_point_meta.hpp>
+#include <nbdl/def/builder/entity_message_is_from_root.hpp>
+#include <nbdl/def/builder/entity_message_meta.hpp>
+#include <nbdl/def/builder/entity_message_payload.hpp>
+#include <nbdl/def/builder/entity_message_private_payload.hpp>
+#include <nbdl/def/builder/entity_message_uid.hpp>
+#include <nbdl/def/builder/path.hpp>
 #include <nbdl/make_store.hpp> // nbdl::not_found
 #include <nbdl/message.hpp>
 

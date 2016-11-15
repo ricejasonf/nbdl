@@ -8,12 +8,12 @@
 #define NBDL_PATH_HPP
 
 #include <nbdl/concept/Entity.hpp>
+#include <nbdl/detail/hash_combine.hpp>
 
 #include <utility>
 #include <type_traits>
 #include <boost/hana.hpp>
 
-#include "details/Hash.hpp"
 
 namespace nbdl {
 
@@ -208,7 +208,7 @@ class path
       std::size_t digest = 0;
       hana::for_each(path.storage,
         [&](const auto& x) {
-          nbdl::details::hash_combine(digest, x);
+          nbdl::detail::hash_combine(digest, x);
         });
       return digest;
     }

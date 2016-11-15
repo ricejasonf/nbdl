@@ -7,12 +7,12 @@
 #ifndef NBDL_DEF_BUILDER_PATH_HPP
 #define NBDL_DEF_BUILDER_PATH_HPP
 
-#include<def/builder/AccessPointMeta.hpp>
-#include<def/builder/EntityMeta.hpp>
-#include<def/builder/EntityKeyMeta.hpp>
-#include<Path.hpp>
+#include <nbdl/def/builder/access_point_meta.hpp>
+#include <nbdl/def/builder/entity_meta.hpp>
+#include <nbdl/def/builder/entity_key_meta.hpp>
+#include <nbdl/path.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace nbdl_def {
 namespace builder {

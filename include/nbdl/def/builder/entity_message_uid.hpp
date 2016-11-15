@@ -7,12 +7,12 @@
 #ifndef NBDL_DEF_BUILDER_ENTITY_MESSAGE_UID_HPP
 #define NBDL_DEF_BUILDER_ENTITY_MESSAGE_UID_HPP
 
-#include<def/directives.hpp>
-#include<nbdl/message.hpp>
-#include<Uid.hpp>
+#include <nbdl/def/directives.hpp>
+#include <nbdl/message.hpp>
+#include <nbdl/uid.hpp>
 
-#include<boost/hana.hpp>
-#include<utility>
+#include <boost/hana.hpp>
+#include <utility>
 
 namespace nbdl_def {
 namespace builder {
@@ -49,7 +49,7 @@ namespace detail {
     return hana::type_c<decltype(
       hana::if_(
         hana::find(access_point, tag::FireAndForget).value_or(hana::false_c),
-        hana::just(std::declval<nbdl::Uid>()),
+        hana::just(std::declval<nbdl::uid>()),
         hana::nothing
       )
     )>;

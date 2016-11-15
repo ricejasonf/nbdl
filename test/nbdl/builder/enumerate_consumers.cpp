@@ -6,8 +6,8 @@
 //
 
 #include <mpdef/list.hpp>
-#include <def/builder/ConsumerMeta.hpp>
-#include <def/builder/EnumerateConsumers.hpp>
+#include <nbdl/def/builder/consumer_meta.hpp>
+#include <nbdl/def/builder/enumerate_consumers.hpp>
 
 #include <boost/hana.hpp>
 

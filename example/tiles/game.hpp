@@ -7,12 +7,12 @@
 #ifndef NBDL_EXAMPLE_TILES_GAME_HPP
 #define NBDL_EXAMPLE_TILES_GAME_HPP
 
-#include <def/builder/Context.hpp>
-#include <def/directives.hpp>
 #include <nbdl/apply_foreign_action.hpp>
+#include <nbdl/def/builder/context.hpp>
+#include <nbdl/def/directives.hpp>
 #include <nbdl/make_context.hpp>
 #include <nbdl/message.hpp>
-#include <Path.hpp>
+#include <nbdl/path.hpp>
 
 #include <array>
 #include <boost/hana/type.hpp>

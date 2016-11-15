@@ -7,10 +7,9 @@
 //
 
 #include <nbdl/entity_members.hpp>
-#include<Path.hpp>
+#include <nbdl/path.hpp>
 
 #include <catch.hpp>
-#include <unordered_set> //for unique check
 
 struct client
 {

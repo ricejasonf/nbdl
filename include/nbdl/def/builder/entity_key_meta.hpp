@@ -7,7 +7,7 @@
 #ifndef NBDL_DEF_ENTITY_KEY_META_HPP
 #define NBDL_DEF_ENTITY_KEY_META_HPP
 
-#include<mpdef/MPDEF_METASTRUCT.hpp>
+#include <mpdef/MPDEF_METASTRUCT.hpp>
 
 namespace nbdl_def {
 namespace builder {

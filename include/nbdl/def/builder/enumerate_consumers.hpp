@@ -7,10 +7,10 @@
 #ifndef NBDL_DEF_BUILDER_ENUMERATE_CONSUMERS_HPP
 #define NBDL_DEF_BUILDER_ENUMERATE_CONSUMERS_HPP
 
-#include <def/builder/ConsumerMeta.hpp>
-#include <def/directives.hpp>
 #include <mpdef/list.hpp>
 #include <mpdef/pair.hpp>
+#include <nbdl/def/builder/consumer_meta.hpp>
+#include <nbdl/def/directives.hpp>
 
 #include <boost/hana.hpp>
 

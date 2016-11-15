@@ -8,12 +8,12 @@
 #ifndef NBDL_TEST_ASSETS_TEST_CONTEXT_HPP
 #define NBDL_TEST_ASSETS_TEST_CONTEXT_HPP
 
-#include <def/builder/Context.hpp>
-#include <def/directives.hpp>
-#include <nbdl/entity.hpp>
 #include <nbdl/context.hpp>
+#include <nbdl/def/builder/context.hpp>
+#include <nbdl/def/directives.hpp>
+#include <nbdl/entity.hpp>
 #include <nbdl/null_store.hpp>
-#include <Path.hpp>
+#include <nbdl/path.hpp>
 
 #include <boost/hana.hpp>
 #include <utility>

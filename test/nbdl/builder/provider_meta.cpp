@@ -5,9 +5,9 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include<def/builder/ProviderMeta.hpp>
+#include <nbdl/def/builder/provider_meta.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace hana = boost::hana;
 

@@ -5,10 +5,10 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include<def/builder/EntityMeta.hpp>
-#include<def/builder/EntityKeyMeta.hpp>
+#include <nbdl/def/builder/entity_meta.hpp>
+#include <nbdl/def/builder/entity_key_meta.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace hana = boost::hana;
 

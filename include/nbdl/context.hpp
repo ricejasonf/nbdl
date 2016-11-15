@@ -7,7 +7,7 @@
 #ifndef NBDL_CONTEXT_HPP
 #define NBDL_CONTEXT_HPP
 
-#include <def/builder/Context.hpp>
+#include <nbdl/def/builder/context.hpp>
 #include <nbdl/concept/Consumer.hpp>
 #include <nbdl/concept/UpstreamMessage.hpp>
 #include <nbdl/concept/DownstreamMessage.hpp>

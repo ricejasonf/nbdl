@@ -8,7 +8,7 @@
 #define NBDL_DEF_BUILDER_ENTITY_MESSAGE_PRIVATE_PAYLOAD_HPP
 
 #include <mpdef/justify_type.hpp>
-#include <def/builder/EntityMessageMeta.hpp>
+#include <nbdl/def/builder/entity_message_meta.hpp>
 #include <nbdl/message.hpp>
 
 #include <boost/hana.hpp>

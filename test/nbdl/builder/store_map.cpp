@@ -5,15 +5,15 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include<def/builder/AccessPointMeta.hpp>
-#include<def/builder/EntityMeta.hpp>
-#include<def/builder/EntityKeyMeta.hpp>
-#include<def/builder/StoreMap.hpp>
-#include<def/directives.hpp>
+#include <nbdl/def/builder/access_point_meta.hpp>
+#include <nbdl/def/builder/entity_meta.hpp>
+#include <nbdl/def/builder/entity_key_meta.hpp>
+#include <nbdl/def/builder/store_map.hpp>
+#include <nbdl/def/directives.hpp>
 #include <nbdl/entity_members.hpp>
-#include<Path.hpp>
+#include <nbdl/path.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace hana = boost::hana;
 namespace builder = nbdl_def::builder;

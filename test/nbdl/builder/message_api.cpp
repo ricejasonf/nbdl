@@ -5,17 +5,17 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <def/builder/AccessPointMeta.hpp>
-#include <def/builder/EntityMeta.hpp>
-#include <def/builder/EntityKeyMeta.hpp>
-#include <def/builder/MessageApi.hpp>
-#include <def/builder/ProviderMeta.hpp>
-#include <def/directives.hpp>
+#include <mpdef/list.hpp>
+#include <nbdl/def/builder/access_point_meta.hpp>
+#include <nbdl/def/builder/entity_meta.hpp>
+#include <nbdl/def/builder/entity_key_meta.hpp>
+#include <nbdl/def/builder/message_api.hpp>
+#include <nbdl/def/builder/provider_meta.hpp>
+#include <nbdl/def/directives.hpp>
 #include <nbdl/entity_members.hpp>
 #include <nbdl/message.hpp>
 #include <nbdl/message_api.hpp>
-#include <Path.hpp>
-#include <mpdef/list.hpp>
+#include <nbdl/path.hpp>
 
 #include <boost/hana.hpp>
 

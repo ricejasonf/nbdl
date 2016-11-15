@@ -7,7 +7,7 @@
 #ifndef NBDL_DEF_BUILDER_CONSUMER_MAP_HPP
 #define NBDL_DEF_BUILDER_CONSUMER_MAP_HPP
 
-#include <def/builder/ConsumerMeta.hpp>
+#include <nbdl/def/builder/consumer_meta.hpp>
 #include <mpdef/pair.hpp>
 
 #include <boost/hana.hpp>

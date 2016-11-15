@@ -8,17 +8,17 @@
 #define NBDL_DEF_BUILDER_CONTEXT_HPP
 
 #include <mpdef/list.hpp>
-#include <def/directives.hpp>
-#include <def/builder/ConsumerMap.hpp>
-#include <def/builder/ContextCells.hpp>
-#include <def/builder/EnumerateProviders.hpp>
-#include <def/builder/EnumerateConsumers.hpp>
-#include <def/builder/MapEntityMeta.hpp>
-#include <def/builder/MessageApi.hpp>
-#include <def/builder/Path.hpp>
-#include <def/builder/ProviderMap.hpp>
-#include <def/builder/ProviderMeta.hpp>
-#include <def/builder/StoreMap.hpp>
+#include <nbdl/def/directives.hpp>
+#include <nbdl/def/builder/consumer_map.hpp>
+#include <nbdl/def/builder/context_cells.hpp>
+#include <nbdl/def/builder/enumerate_providers.hpp>
+#include <nbdl/def/builder/enumerate_consumers.hpp>
+#include <nbdl/def/builder/map_entity_meta.hpp>
+#include <nbdl/def/builder/message_api.hpp>
+#include <nbdl/def/builder/path.hpp>
+#include <nbdl/def/builder/provider_map.hpp>
+#include <nbdl/def/builder/provider_meta.hpp>
+#include <nbdl/def/builder/store_map.hpp>
 #include <nbdl/make_def.hpp>
 
 #include <boost/hana/concat.hpp>

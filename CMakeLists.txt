@@ -106,10 +106,6 @@ if (${EMSCRIPTEN})
 	add_definitions(--bind)
 endif (${EMSCRIPTEN})
 
-set(Boost_USE_STATIC_LIBS OFF)
-set(Boost_USE_MULTITHREADED OFF)
-set(Boost_USE_STATIC_RUNTIME OFF)
-#where did find boost go?
 if (NBDL_AMAGLAMATED_JSONCPP_DIR)
   set(JsonCpp "${NBDL_AMAGLAMATED_JSONCPP_DIR}/dist/jsoncpp.cpp")
 else (NBDL_AMAGLAMATED_JSONCPP_DIR)
@@ -120,7 +116,6 @@ if (BOOST_HANA_INCLUDE_DIR)
   include_directories(BOOST_HANA_INCLUDE_DIR)
 endif(BOOST_HANA_INCLUDE_DIR)
 
-include_directories(${nbdl_project_SOURCE_DIR}/src)
 include_directories(${nbdl_project_SOURCE_DIR}/include)
 
 add_subdirectory(src)

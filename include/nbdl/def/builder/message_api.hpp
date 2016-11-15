@@ -7,9 +7,9 @@
 #ifndef NBDL_DEF_BUILDER_MAKE_MESSAGE_API_HPP
 #define NBDL_DEF_BUILDER_MAKE_MESSAGE_API_HPP
 
-#include <def/builder/EntityMessages.hpp>
-#include <def/builder/ProviderMeta.hpp>
 #include <nbdl/concept/UpstreamMessage.hpp>
+#include <nbdl/def/builder/entity_messages.hpp>
+#include <nbdl/def/builder/provider_meta.hpp>
 
 #include <boost/hana/functional/on.hpp>
 #include <boost/hana/functional/partial.hpp>

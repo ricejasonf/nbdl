@@ -5,12 +5,12 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <def/builder/AccessPointMeta.hpp>
-#include <def/builder/EnumerateAccessPoints.hpp>
-#include <def/directives.hpp>
+#include <nbdl/def/builder/access_point_meta.hpp>
+#include <nbdl/def/builder/enumerate_access_points.hpp>
+#include <nbdl/def/directives.hpp>
 #include <nbdl/entity_members.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace hana = boost::hana;
 namespace builder = nbdl_def::builder;

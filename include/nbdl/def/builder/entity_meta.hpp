@@ -4,18 +4,18 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_DEF_CONSUMER_META_HPP
-#define NBDL_DEF_CONSUMER_META_HPP
+#ifndef NBDL_DEF_ENTITY_META_HPP
+#define NBDL_DEF_ENTITY_META_HPP
 
-#include<mpdef/MPDEF_METASTRUCT.hpp>
+#include <mpdef/MPDEF_METASTRUCT.hpp>
 
 namespace nbdl_def {
 namespace builder {
 
 MPDEF_METASTRUCT(
-  consumer_meta
-  , consumer
-  , name
+  entity_meta
+  , key_meta
+  , members_meta
 );
 
 }//builder

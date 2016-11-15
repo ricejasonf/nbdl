@@ -4,18 +4,21 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_DEF_ENTITY_META_HPP
-#define NBDL_DEF_ENTITY_META_HPP
+#ifndef NBDL_DEF_MESSAGE_PAYLOAD_META_HPP
+#define NBDL_DEF_MESSAGE_PAYLOAD_META_HPP
 
-#include<mpdef/MPDEF_METASTRUCT.hpp>
+#include <mpdef/MPDEF_METASTRUCT.hpp>
 
 namespace nbdl_def {
 namespace builder {
 
 MPDEF_METASTRUCT(
-  entity_meta
-  , key_meta
-  , members_meta
+  entity_message_meta
+  , path
+  , entity_type 
+  , private_payload
+  , action
+  , channel
 );
 
 }//builder

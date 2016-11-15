@@ -7,7 +7,7 @@
 #ifndef NBDL_VARIANT_HPP
 #define NBDL_VARIANT_HPP
 
-#include <details/CommonType.hpp>
+#include <nbdl/detail/common_type.hpp>
 #include <nbdl/fwd/bind_variant.hpp>
 
 #include <type_traits>

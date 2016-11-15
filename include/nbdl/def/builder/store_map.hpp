@@ -7,10 +7,10 @@
 #ifndef NBDL_DEF_BUILDER_STORE_MAP_HPP
 #define NBDL_DEF_BUILDER_STORE_MAP_HPP
 
-#include<def/builder/Path.hpp>
-#include<def/builder/Store.hpp>
+#include <nbdl/def/builder/path.hpp>
+#include <nbdl/def/builder/store.hpp>
 
-#include<boost/hana.hpp>
+#include <boost/hana.hpp>
 
 namespace nbdl_def {
 namespace builder {

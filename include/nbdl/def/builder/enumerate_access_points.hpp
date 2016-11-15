@@ -7,14 +7,14 @@
 #ifndef NBDL_DEF_BUILDER_ENUMERATE_ACCESS_POINTS_HPP
 #define NBDL_DEF_BUILDER_ENUMERATE_ACCESS_POINTS_HPP
 
-#include <def/builder/AccessPointMeta.hpp>
 #include <mpdef/append_if.hpp>
 #include <mpdef/collect_settings.hpp>
 #include <mpdef/compose_collectors.hpp>
 #include <mpdef/find_in_tree.hpp>
 #include <mpdef/list.hpp>
 #include <mpdef/tree_node.hpp>
-#include <def/directives.hpp>
+#include <nbdl/def/builder/access_point_meta.hpp>
+#include <nbdl/def/directives.hpp>
 #include <nbdl/null_store.hpp>
 
 #include <boost/hana.hpp>

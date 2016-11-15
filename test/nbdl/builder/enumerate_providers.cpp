@@ -5,10 +5,10 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <def/builder/EnumerateProviders.hpp>
-#include <def/builder/EnumerateAccessPoints.hpp>
-#include <def/builder/ProviderMeta.hpp>
 #include <mpdef/list.hpp>
+#include <nbdl/def/builder/enumerate_providers.hpp>
+#include <nbdl/def/builder/enumerate_access_points.hpp>
+#include <nbdl/def/builder/provider_meta.hpp>
 
 #include <boost/hana.hpp>
 

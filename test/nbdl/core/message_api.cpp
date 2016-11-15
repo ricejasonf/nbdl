@@ -6,8 +6,8 @@
 //
 
 #include <nbdl/message_api.hpp>
-#include <Path.hpp>// FIXME
-#include <Uid.hpp> // FIXME
+#include <nbdl/path.hpp>
+#include <nbdl/uid.hpp>
 
 #include <boost/hana/experimental/types.hpp>
 #include <boost/hana/tuple.hpp>

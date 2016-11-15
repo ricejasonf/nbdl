@@ -7,12 +7,12 @@
 
 #include <mpdef/map.hpp>
 #include <mpdef/tree_node.hpp>
-#include <def/builder/AccessPointMeta.hpp>
-#include <def/builder/EntityMeta.hpp>
-#include <def/builder/EntityKeyMeta.hpp>
-#include <def/builder/Path.hpp>
-#include <def/directives.hpp>
-#include <Path.hpp>
+#include <nbdl/def/builder/access_point_meta.hpp>
+#include <nbdl/def/builder/entity_meta.hpp>
+#include <nbdl/def/builder/entity_key_meta.hpp>
+#include <nbdl/def/builder/path.hpp>
+#include <nbdl/def/directives.hpp>
+#include <nbdl/path.hpp>
 
 #include <boost/hana.hpp>
 
