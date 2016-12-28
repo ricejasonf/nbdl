@@ -60,10 +60,6 @@ namespace
 
 TEST_CASE("Pipe asynchronous events", "[pipe]")
 {
-  // Note that check_1 and check_2 have state so they are passed in
-  // as references but this is not a best practice when dealing with
-  // asynchronous operations.
-
   auto check_1 = make_check(
     [](auto const& state) { CHECK(hana::equal(state, hana::make_tuple(42, 1))); }
   );

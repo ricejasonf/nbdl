@@ -67,7 +67,8 @@ namespace nbdl
     struct string_helper;
 
     template <typename T>
-    struct string_helper<T, hana::when<std::is_same<decltype(T::value), char const*>::value>>
+    struct string_helper<T,
+      std::enable_if_t<std::is_same<decltype(T::value), char const*>::value>>
     {
       constexpr char const* operator()()
       {
@@ -76,7 +77,8 @@ namespace nbdl
     };
 
     template <typename T>
-    struct string_helper<T, hana::when<hana::is_a<hana::string_tag, T>>>
+    struct string_helper<T,
+      std::enable_if_t<hana::is_a<hana::string_tag, T>>>
     {
       constexpr char const* operator()()
       {
@@ -90,7 +92,7 @@ namespace nbdl
       return hana::unpack(map, [&](auto&& ...pair)
       {
         return (f(hana::make_pair(
-          string_helper<std::decay_t<decltype(hana::first(pair))>>{},
+          string_helper<std::decay_t<decltype(hana::first(pair))>>{}(),
           std::ref(hana::second(pair))
         )), ...);
       });

@@ -14,6 +14,7 @@
 #include <nbdl/bind_sequence.hpp>
 #include <nbdl/bind_variant.hpp>
 #include <nbdl/binder/jsoncpp.hpp>
+#include <nbdl/catch.hpp>
 #include <nbdl/concept/BindableMap.hpp>
 #include <nbdl/concept/BindableSequence.hpp>
 #include <nbdl/concept/BindableVariant.hpp>
@@ -46,6 +47,8 @@
 #include <nbdl/notify_state_change.hpp>
 #include <nbdl/null_store.hpp>
 #include <nbdl/path.hpp>
+#include <nbdl/pipe.hpp>
+#include <nbdl/promise.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>
 #include <nbdl/uid.hpp>

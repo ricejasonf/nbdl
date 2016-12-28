@@ -15,6 +15,8 @@
 #include <boost/hana/fold_right.hpp>
 #include <boost/hana/functional/overload_linearly.hpp>
 #include <boost/hana/tuple.hpp>
+#include <functional>
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -45,7 +47,17 @@ namespace nbdl
           return nbdl::promise(
             [fn](auto&& resolve, auto&& /* reject */, auto&&... args)
             {
-              resolve(fn(std::forward<decltype(args)>(args)...));
+              using Return = decltype(fn(std::forward<decltype(args)>(args)...));
+              // handle void edge case
+              if constexpr(std::is_void<Return>::value)
+              {
+                fn(std::forward<decltype(args)>(args)...);
+                resolve();
+              }
+              else
+              {
+                resolve(fn(std::forward<decltype(args)>(args)...));
+              }
             }
           );
         }
@@ -66,61 +78,72 @@ namespace nbdl
     template <typename Handlers>
     struct pipe_t
     {
-      Handlers handlers;
+      std::shared_ptr<Handlers> handlers;
 
       using hana_tag = pipe_tag;
 
       pipe_t(Handlers&& h)
-        : handlers(std::move(h))
+        : handlers(std::make_shared<Handlers>(std::move(h)))
       { }
-
 
       template <typename EndPipeFn, typename ...InvokeArgs>
       decltype(auto) invoke_impl(EndPipeFn&& end_pipe, InvokeArgs&& ...invoke_args)
       {
-        hana::fold_right(handlers, std::forward<EndPipeFn>(end_pipe), [](auto& x, auto&& resolve_)
-        {
-          return [resolve = std::move(resolve_), &x](auto&& ...results)
+        hana::fold_right(
+          *handlers,
+          [=, keep_alive = handlers](auto&& ...a)
           {
-            if constexpr(!is_pipe_rejection<std::decay_t<decltype(results)>...>::value)
+            end_pipe(std::forward<decltype(a)>(a)...);
+          },
+          [](auto& x, auto&& resolve_)
+          {
+            return [resolve = std::move(resolve_), &x](auto&& ...results)
             {
-              // nested pipe
-              if constexpr(hana::is_a<pipe_tag, decltype(x)>())
+              if constexpr(!is_pipe_rejection<std::decay_t<decltype(results)>...>::value)
               {
-                x.invoke_impl(
-                  [&](auto&& ...a) { resolve(std::forward<decltype(a)>(a)...); },
-                  std::forward<decltype(results)>(results)...
-                );
+                // nested pipe
+                if constexpr(hana::is_a<pipe_tag, decltype(x)>())
+                {
+                  x.invoke_impl(
+                    std::move(resolve),
+                    std::forward<decltype(results)>(results)...
+                  );
+                }
+                else if constexpr(hana::is_a<promise_tag, decltype(x)>())
+                {
+                  // promise
+                  x(
+                    resolve,
+                    [resolve](auto&& ...args)
+                    {
+                      resolve(pipe_rejection{}, std::forward<decltype(args)>(args)...);
+                    },
+                    std::forward<decltype(results)>(results)...
+                  );
+                }
               }
-              else if constexpr(hana::is_a<promise_tag, decltype(x)>())
+              // handle pipe rejections
+              else if constexpr(hana::is_a<catch_tag, decltype(x)>())
               {
-                // promise
-                x(
-                  resolve,
-                  [&](auto&& ...args)
-                  {
-                    resolve(pipe_rejection{}, std::forward<decltype(args)>(args)...);
-                  },
-                  std::forward<decltype(results)>(results)...
-                );
+                // try this catch or move on the the next one
+                hana::overload_linearly(std::ref(x), std::move(resolve))(std::forward<decltype(results)>(results)...);
               }
-            }
-            // handle pipe rejections
-            else if constexpr(hana::is_a<catch_tag, decltype(x)>())
-            {
-              // try this catch or move on the the next one
-              hana::overload_linearly(x, resolve)(std::forward<decltype(results)>(results)...);
-            }
-            else
-            {
-              // not a catch so move  to the next one
-              resolve(std::forward<decltype(results)>(results)...);
-            }
-          };
-        })(std::forward<InvokeArgs>(invoke_args)...);
+              else
+              {
+                // not a catch so move to the next one
+                std::move(resolve)(std::forward<decltype(results)>(results)...);
+              }
+            };
+          })(std::forward<InvokeArgs>(invoke_args)...);
 
         return *this;
       }
+
+      // Note that if the pipe is copied or moved
+      // while it is pending resolution then there
+      // will be undefined behaviour. :(
+      // The only way out I see is to make every
+      // pipe a shared_ptr :(
 
       template <typename ...Args>
       decltype(auto) operator()(Args&& ...args)

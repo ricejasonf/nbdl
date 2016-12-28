@@ -92,8 +92,8 @@ function(nbdl_catch_dom_test_suite out suite_name)
   set(${out} ${_build_targets} PARENT_SCOPE)
 endfunction()
 
-#todo find a cross platform way to set -Wall -Wextra
 add_definitions(-std=c++1z)
+add_definitions(-DBOOST_HANA_CONFIG_ENABLE_STRING_UDL)
 add_definitions(-ftemplate-backtrace-limit=0)
 add_definitions(-Wall)
 add_definitions(-Wextra)
@@ -105,6 +105,8 @@ endif (${NBDL_USE_CATCH})
 if (${EMSCRIPTEN})
 	add_definitions(--bind)
 endif (${EMSCRIPTEN})
+
+find_package(Threads)
 
 if (NBDL_AMAGLAMATED_JSONCPP_DIR)
   set(JsonCpp "${NBDL_AMAGLAMATED_JSONCPP_DIR}/dist/jsoncpp.cpp")
@@ -121,6 +123,7 @@ include_directories(${nbdl_project_SOURCE_DIR}/include)
 add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(example/tiles)
+add_subdirectory(example/pipes)
 
 install(FILES include/nbdl.hpp  DESTINATION include)
 install(DIRECTORY include/nbdl  DESTINATION include)

@@ -242,27 +242,37 @@ namespace nbdl { namespace binder { namespace jsoncpp
   // temporary until functions for reading
   // and writing data are defined
 
-  template<typename T>
-  void from_string(std::string const& json, T&& t)
+  struct from_string_fn
   {
-    Json::Reader reader;
-    Json::Value root;
-    if (!reader.parse(json, root, false))
-      throw std::runtime_error("JSON parse error");
-    detail::reader<detail::bind_jsoncpp_fn> r(root);
-    detail::bind_jsoncpp(r, std::forward<T>(t));
-  }
+    template<typename T>
+    void operator()(std::string const& json, T&& t) const
+    {
+      Json::Reader reader;
+      Json::Value root;
+      if (!reader.parse(json, root, false))
+        throw std::runtime_error("JSON parse error");
+      detail::reader<detail::bind_jsoncpp_fn> r(root);
+      detail::bind_jsoncpp(r, std::forward<T>(t));
+    }
+  };
 
-  template<typename T>
-  std::string to_string(T&& t)
+  constexpr from_string_fn from_string{};
+
+  struct to_string_fn
   {
-    Json::StyledWriter writer;
-    Json::Value root;
-    detail::writer<detail::bind_jsoncpp_fn> r(root);
+    template<typename T>
+    std::string operator()(T&& t) const
+    {
+      Json::StyledWriter writer;
+      Json::Value root;
+      detail::writer<detail::bind_jsoncpp_fn> r(root);
 
-    detail::bind_jsoncpp(r, std::forward<T>(t));
-    return writer.write(root);
-  }
-}}} // nbdl::binder::jsoncpp
+      detail::bind_jsoncpp(r, std::forward<T>(t));
+      return writer.write(root);
+    }
+  };
+
+  constexpr to_string_fn to_string{};
+}}}
 
 #endif
