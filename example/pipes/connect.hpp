@@ -40,10 +40,10 @@ namespace example
       , attempts_failed(0)
     { }
 
-    template <typename Resolve, typename Reject, typename ...Args>
-    void operator()(Resolve&& resolve, Reject&& reject, Args&& ...)
+    template <typename Resolve, typename ...Args>
+    void operator()(Resolve&& resolve, Args&& ...)
     {
-      socket.async_connect(endpoint, [&, resolve, reject](asio::error_code error)
+      socket.async_connect(endpoint, [&, resolve](asio::error_code error)
       {
         if (!error)
         {
@@ -51,12 +51,12 @@ namespace example
         }
         else if (attempts_failed++ >= attempts_.value)
         {
-          reject(attempts_);
+          resolve.reject(attempts_);
         }
         else
         {
           // try again
-          operator()(resolve, reject);
+          operator()(resolve);
         }
       });
     }

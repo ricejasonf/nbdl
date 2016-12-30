@@ -26,12 +26,12 @@ namespace example
       : action(std::move(action))
     { }
 
-    template <typename Resolve, typename Reject>
-    void operator()(Resolve&& resolve, Reject&& reject, tcp::socket& socket)
+    template <typename Resolve>
+    void operator()(Resolve&& resolve, tcp::socket& socket)
     {
       nbdl::pipe(
         read_raw_message(socket)
-      , [&, resolve, reject](std::string&& msg_json)
+      , [&, resolve](std::string&& msg_json)
         {
           std::cout << "RAW MESSAGE: " << msg_json << '\n';
           Message message;
@@ -47,15 +47,11 @@ namespace example
             [&](Terminate) { socket.close(); resolve(message); }
           , [&](auto&&)
             {
-              operator()(
-                resolve
-              , reject
-              , socket
-              );
+              operator()(resolve, socket);
             }
           );
         }
-      , nbdl::catch_([&](auto&& error) { reject(error); })
+      , nbdl::catch_([resolve](auto&& error) { resolve.reject(error); })
       )();
     }
   };

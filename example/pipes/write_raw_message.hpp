@@ -23,8 +23,8 @@ namespace example
       : socket(socket)
     { }
 
-    template <typename Resolve, typename Reject, typename Body>
-    void operator()(Resolve&& resolve, Reject&& reject, Body body_)
+    template <typename Resolve, typename Body>
+    void operator()(Resolve&& resolve, Body body_)
     {
       const uint32_t length = body_.size();
       const unsigned char length_as_bytes[4] = {
@@ -36,15 +36,15 @@ namespace example
 
       body = std::move(body_).insert(0, reinterpret_cast<char const*>(length_as_bytes), 4);
       asio::async_write(socket, asio::buffer(body, body.size()),
-        [resolve, reject](std::error_code ec, std::size_t)
+        [resolve](std::error_code error, std::size_t)
         {
-          if (ec)
+          if (!error)
           {
-            reject(ec);
+            resolve();
           }
           else
           {
-            resolve();
+            resolve.reject(error);
           }
         });
     }

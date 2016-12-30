@@ -28,6 +28,34 @@ namespace nbdl
   {
     struct pipe_tag {};
 
+    template <typename ResolveFn>
+    struct resolver
+    {
+      ResolveFn resolve;
+
+      resolver(ResolveFn r)
+        : resolve(r)
+      { }
+
+      template <typename ...Args>
+      void operator()(Args&& ... args) const
+      {
+        resolve(std::forward<Args>(args)...);
+      }
+
+      template <typename ...Args>
+      void reject(Args ... args) const
+      {
+        resolve(detail::pipe_rejection{}, std::forward<Args>(args)...);
+      }
+    };
+
+    template <typename ResolveFn>
+    auto make_resolver(ResolveFn resolve)
+    {
+      return resolver<ResolveFn>(resolve);
+    }
+
     // Implicity wraps functions
     // with the promise interface.
     struct wrap_promise_fn
@@ -45,7 +73,7 @@ namespace nbdl
         else
         {
           return nbdl::promise(
-            [fn](auto&& resolve, auto&& /* reject */, auto&&... args)
+            [fn](auto&& resolve, auto&&... args)
             {
               using Return = decltype(fn(std::forward<decltype(args)>(args)...));
               // handle void edge case
@@ -95,9 +123,9 @@ namespace nbdl
           {
             end_pipe(std::forward<decltype(a)>(a)...);
           },
-          [](auto& x, auto&& resolve_)
+          [](auto& x, auto&& state)
           {
-            return [resolve = std::move(resolve_), &x](auto&& ...results)
+            return [resolve = detail::make_resolver(state), &x](auto&& ...results)
             {
               if constexpr(!is_pipe_rejection<std::decay_t<decltype(results)>...>::value)
               {
@@ -105,7 +133,7 @@ namespace nbdl
                 if constexpr(hana::is_a<pipe_tag, decltype(x)>())
                 {
                   x.invoke_impl(
-                    std::move(resolve),
+                    resolve,
                     std::forward<decltype(results)>(results)...
                   );
                 }
@@ -114,10 +142,6 @@ namespace nbdl
                   // promise
                   x(
                     resolve,
-                    [resolve](auto&& ...args)
-                    {
-                      resolve(pipe_rejection{}, std::forward<decltype(args)>(args)...);
-                    },
                     std::forward<decltype(results)>(results)...
                   );
                 }
@@ -126,24 +150,18 @@ namespace nbdl
               else if constexpr(hana::is_a<catch_tag, decltype(x)>())
               {
                 // try this catch or move on the the next one
-                hana::overload_linearly(std::ref(x), std::move(resolve))(std::forward<decltype(results)>(results)...);
+                hana::overload_linearly(std::ref(x), resolve)(std::forward<decltype(results)>(results)...);
               }
               else
               {
                 // not a catch so move to the next one
-                std::move(resolve)(std::forward<decltype(results)>(results)...);
+                resolve(std::forward<decltype(results)>(results)...);
               }
             };
           })(std::forward<InvokeArgs>(invoke_args)...);
 
         return *this;
       }
-
-      // Note that if the pipe is copied or moved
-      // while it is pending resolution then there
-      // will be undefined behaviour. :(
-      // The only way out I see is to make every
-      // pipe a shared_ptr :(
 
       template <typename ...Args>
       decltype(auto) operator()(Args&& ...args)

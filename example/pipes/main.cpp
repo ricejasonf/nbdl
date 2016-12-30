@@ -10,7 +10,7 @@
 #include <nbdl.hpp>
 auto tap = [](auto fn)
 {
-  return nbdl::promise([fn_ = std::move(fn)](auto&& resolve, auto&&, auto&& ...args)
+  return nbdl::promise([fn_ = std::move(fn)](auto&& resolve, auto&& ...args)
   {
     fn_(args...);
     resolve(std::forward<decltype(args)>(args)...);

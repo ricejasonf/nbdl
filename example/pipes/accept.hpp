@@ -27,10 +27,10 @@ namespace example
       , socket(io)
     { }
 
-    template <typename Resolve, typename Reject, typename ...Args>
-    void operator()(Resolve&& resolve, Reject&& reject, Args&& ...)
+    template <typename Resolve, typename ...Args>
+    void operator()(Resolve&& resolve, Args&& ...)
     {
-      acceptor.async_accept(socket, [&, resolve, reject](std::error_code error)
+      acceptor.async_accept(socket, [&, resolve](std::error_code error)
       {
         if (!error)
         {
@@ -38,7 +38,7 @@ namespace example
         }
         else
         {
-          reject(error);
+          resolve.reject(error);
         }
       });
     }

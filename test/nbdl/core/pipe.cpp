@@ -18,7 +18,7 @@ namespace
   template <int i>
   auto make_op()
   {
-    return nbdl::promise([](auto&& resolve, auto&& /* reject */, auto&& state)
+    return nbdl::promise([](auto&& resolve, auto&& state)
     {
       resolve(hana::append(state, i));
     });
@@ -29,7 +29,7 @@ namespace
 
   auto tap = [](auto fn)
   {
-    return nbdl::promise([fn_ = std::move(fn)](auto&& resolve, auto&&, auto&& state)
+    return nbdl::promise([fn_ = std::move(fn)](auto&& resolve, auto&& state)
     {
       using State = decltype(state);
       fn_(state);
@@ -113,7 +113,7 @@ TEST_CASE("Pipe with a rejection", "[pipe]")
 
   auto pipe = nbdl::pipe(
     op< 1 >
-  , nbdl::promise([](auto&&, auto&& reject, auto&&) { reject(hana::int_c<1>); })
+  , nbdl::promise([](auto&& resolve, auto&&) { resolve.reject(hana::int_c<1>); })
   , tap([](auto const&) { CHECK(false); })
   , op< 3 >
   , tap([](auto const&) { CHECK(false); })
@@ -132,7 +132,7 @@ TEST_CASE("Pipe with a rejection with a skipped catch", "[pipe]")
 
   auto pipe = nbdl::pipe(
     op< 1 >
-  , nbdl::promise([](auto&&, auto&& reject, auto&&) { reject(hana::int_c<2>); })
+  , nbdl::promise([](auto&& resolve, auto&&) { resolve.reject(hana::int_c<2>); })
   , tap([](auto const&) { CHECK(false); })
   , op< 3 >
   , tap([](auto const&) { CHECK(false); })
