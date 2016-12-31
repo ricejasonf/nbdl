@@ -134,7 +134,8 @@ int main()
     example::connect(client_socket, example::port{1234})
   , tap([](){ std::cout << "connected to server\n"; })
   , hana::unpack(std::move(messages), nbdl::pipe ^hana::on^ send_message)
-  , nbdl::catch_([](auto&&) { std::cout << "Something went wrong with the client.\n"; })
+  , nbdl::catch_([](example::attempts) { std::cout << "Client failed with too many attempts.\n"; })
+  , nbdl::catch_([](auto error) { std::cout << "CLIENT ERROR: " << error.message() <<'\n'; })
   );
 
   // promise to accept a connection and print messages
@@ -146,7 +147,7 @@ int main()
     , hana::type_c<terminate>
     , print
     )
-  , nbdl::catch_([](auto&&) { std::cout << "Something went wrong with the server.\n"; })
+  , nbdl::catch_([](auto error) { std::cout << "SERVER ERROR: " << error.message() <<'\n'; })
   );
 
   receive_messages();

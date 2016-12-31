@@ -56,6 +56,7 @@ namespace example
         else
         {
           // try again
+          std::cout << "Connection failed! trying again...\n";
           operator()(resolve);
         }
       });

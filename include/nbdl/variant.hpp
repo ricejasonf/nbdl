@@ -30,6 +30,7 @@ namespace nbdl
       using Storage = typename std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>::type;
 
       using Types = hana::experimental::types<DefaultType, Tn...>;
+
       static auto type_ids()
       {
         return hana::unpack(hana::range_c<int, 1, sizeof...(Tn)+1>, [](auto ...i) {
@@ -39,6 +40,7 @@ namespace nbdl
           );
         });
       }
+
       using LastTypeId = hana::int_<sizeof...(Tn)>;
 
       int type_id;
@@ -110,14 +112,19 @@ namespace nbdl
       }
 
       template <typename Fn1>
-      auto match_overload(Fn1 fn1) const
+      decltype(auto) match_overload(Fn1&& fn1) const
       {
-        return fn1;
+        return std::forward<Fn1>(fn1);
       }
+
       template <typename Fn1, typename Fn2, typename... Fns>
-      auto match_overload(Fn1 fn1, Fn2 fn2, Fns... fns) const
+      auto match_overload(Fn1&& fn1, Fn2&& fn2, Fns&&... fns) const
       {
-        return hana::overload_linearly(fn1, fn2, fns...);
+        return hana::overload_linearly(
+          std::forward<Fn1>(fn1),
+          std::forward<Fn2>(fn2),
+          std::forward<Fns>(fns)...
+        );
       }
 
       //provides a better compiler error that outputs 
@@ -133,7 +140,7 @@ namespace nbdl
 
         // Do not destroy because this should
         // only be called from a constructor.
-        new (&value_) std::decay_t<Type>(val);
+        new (&value_) std::decay_t<Type>(std::forward<Type>(val));
       }
 
       public:
@@ -204,9 +211,9 @@ namespace nbdl
       //calls overload function with type type
       //used for serialization
       template <typename... Fns>
-      auto match_by_type(const int type_id_x, Fns... fns) const
+      auto match_by_type(const int type_id_x, Fns&&... fns) const
       {
-        auto overload_ = match_overload(fns...);
+        auto overload_ = match_overload(std::forward<Fns>(fns)...);
 
         //if type_id_x is invalid it will call with the default, empty type
         return match_by_type_helper(
@@ -223,9 +230,9 @@ namespace nbdl
       }
 
       template <typename... Fns>
-      auto match(Fns... fns) const
+      auto match(Fns&&... fns) const
       {
-        auto overload_ = match_overload(fns...);
+        auto overload_ = match_overload(std::forward<Fns>(fns)...);
 
         return match_by_type_helper(hana::int_c<0>, type_id, [&](auto type) {
             using T = typename decltype(type)::type;

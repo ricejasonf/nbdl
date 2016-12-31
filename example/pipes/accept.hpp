@@ -19,18 +19,21 @@ namespace example
   struct accept_fn
   {
     using tcp = asio::ip::tcp;
-    tcp::acceptor acceptor;
+    tcp::endpoint endpoint;
     tcp::socket socket;
+    nbdl::optional<tcp::acceptor> acceptor;
 
     accept_fn(asio::io_service& io, port port_)
-      : acceptor(io, tcp::endpoint(tcp::v4(), port_.value))
+      : endpoint(tcp::v4(), port_.value)
       , socket(io)
     { }
 
     template <typename Resolve, typename ...Args>
     void operator()(Resolve&& resolve, Args&& ...)
     {
-      acceptor.async_accept(socket, [&, resolve](std::error_code error)
+      tcp::acceptor acceptor_(socket.get_io_service(), endpoint);
+
+      acceptor_.async_accept(socket, [&, resolve](std::error_code error)
       {
         if (!error)
         {
@@ -41,6 +44,8 @@ namespace example
           resolve.reject(error);
         }
       });
+
+      acceptor = std::move(acceptor_);
     }
   };
 
