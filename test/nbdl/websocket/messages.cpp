@@ -4,11 +4,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<array>
 
-#include<servers/ws/MessageParser.hpp>
-#include<servers/ws/MessageGenerator.hpp>
-#include<catch.hpp>
+#include <servers/ws/MessageParser.hpp>
+#include <servers/ws/MessageGenerator.hpp>
+
+#include <array>
+#include <catch.hpp>
+#include <string>
 
 TEST_CASE("Create/Parse message in a single, short, unmasked data frame.", "[websocket]") 
 {

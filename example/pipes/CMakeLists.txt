@@ -15,3 +15,10 @@ target_link_libraries("example.pipes"
   ${JsonCpp}
   ${CMAKE_THREAD_LIBS_INIT}
 )
+
+add_custom_target(run.example.pipes
+  COMMAND ./example.pipes
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  COMMENT "Build and run: example.pipes"
+)
+add_dependencies(run.example.pipes example.pipes)
