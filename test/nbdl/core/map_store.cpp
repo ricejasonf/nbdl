@@ -14,7 +14,7 @@
 // All of the tests will use messages
 // for test_context::path_type<1> root2/my_entity1
 
-namespace
+namespace test_map_store
 {
   struct my_context { };
 
@@ -25,7 +25,7 @@ namespace
 namespace nbdl
 {
   template <>
-  struct make_def_impl<my_context>
+  struct make_def_impl<test_map_store::my_context>
   {
     static constexpr auto apply()
     {
@@ -40,12 +40,6 @@ namespace nbdl
   };
 }
 
-namespace
-{
-  auto context = nbdl::make_unique_context<my_context>();
-  auto push_api = context->cell<0>().push_api;
-}
-
 template <typename Variant, typename T>
 bool test_variant_equal(Variant const& v, T const& t)
 {
@@ -57,7 +51,10 @@ bool test_variant_equal(Variant const& v, T const& t)
 
 TEST_CASE("Apply action upstream create.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_upstream_create_message(
       test_context::path<1>::make_create_path(1),
@@ -70,7 +67,10 @@ TEST_CASE("Apply action upstream create.", "[map_store][apply_action]")
 
 TEST_CASE("Apply action downstream create.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_downstream_create_message(
       test_context::path<1>(1, 2),
@@ -87,7 +87,10 @@ TEST_CASE("Apply action downstream create.", "[map_store][apply_action]")
 
 TEST_CASE("Apply action upstream read.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_upstream_read_message(test_context::path<1>(1, 2))
   );
@@ -106,7 +109,10 @@ TEST_CASE("Apply action upstream read.", "[map_store][apply_action]")
 
 TEST_CASE("Apply action downstream read with no value in store.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_downstream_read_message(
       test_context::path<1>(1, 2),
@@ -123,7 +129,10 @@ TEST_CASE("Apply action downstream read with no value in store.", "[map_store][a
 
 TEST_CASE("Apply action downstream read with unresolved value in store.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   store.map[test_context::path<1>(1, 2)] = nbdl::unresolved{};
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_downstream_read_message(
@@ -141,7 +150,10 @@ TEST_CASE("Apply action downstream read with unresolved value in store.", "[map_
 
 TEST_CASE("Apply action downstream read with resolved value in store.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   store.map[test_context::path<1>(1, 2)] = test_context::entity::my_entity<1>{2, 1};
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_downstream_read_message(
@@ -159,7 +171,10 @@ TEST_CASE("Apply action downstream read with resolved value in store.", "[map_st
 
 TEST_CASE("Apply action downstream read with not_found value in store.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   store.map[test_context::path<1>(1, 2)] = nbdl::not_found{};
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_downstream_read_message(
@@ -178,7 +193,10 @@ TEST_CASE("Apply action downstream read with not_found value in store.", "[map_s
 
 TEST_CASE("Apply action upstream update raw.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_upstream_update_raw_message(
       test_context::path<1>(1, 2),
@@ -191,8 +209,11 @@ TEST_CASE("Apply action upstream update raw.", "[map_store][apply_action]")
 
 TEST_CASE("Apply action downstream update raw with no value.", "[map_store][apply_action]")
 {
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
   // update_raw always overwrites
-  auto store = make_test_store();
+  auto store = test_map_store::make_test_store();
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_downstream_update_raw_message(
       test_context::path<1>(1, 2),
@@ -209,8 +230,11 @@ TEST_CASE("Apply action downstream update raw with no value.", "[map_store][appl
 
 TEST_CASE("Apply action downstream update raw with value.", "[map_store][apply_action]")
 {
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
   // update_raw always overwrites
-  auto store = make_test_store();
+  auto store = test_map_store::make_test_store();
   store.map[test_context::path<1>(1, 2)] = test_context::entity::my_entity<1>{0, 0};
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_downstream_update_raw_message(
@@ -228,7 +252,10 @@ TEST_CASE("Apply action downstream update raw with value.", "[map_store][apply_a
 
 TEST_CASE("Apply action upstream delete.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_upstream_delete_message(
       test_context::path<1>(1, 2)
@@ -240,7 +267,10 @@ TEST_CASE("Apply action upstream delete.", "[map_store][apply_action]")
 
 TEST_CASE("Apply action downstream delete.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   store.map[test_context::path<1>(1, 2)] = test_context::entity::my_entity<1>{0, 0};
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_downstream_delete_message(
@@ -253,7 +283,10 @@ TEST_CASE("Apply action downstream delete.", "[map_store][apply_action]")
 
 TEST_CASE("Apply action downstream delete with value present.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   store.map[test_context::path<1>(1, 2)] = test_context::entity::my_entity<1>{0, 0};
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_downstream_delete_message(
@@ -266,7 +299,10 @@ TEST_CASE("Apply action downstream delete with value present.", "[map_store][app
 
 TEST_CASE("Apply action with foreign path.", "[map_store][apply_action]")
 {
-  auto store = make_test_store();
+  auto context = nbdl::make_unique_context<test_map_store::my_context>();
+  auto push_api = context->cell<0>().push_api;
+
+  auto store = test_map_store::make_test_store();
   bool did_state_change = false;
   nbdl::apply_foreign_action(store,
     push_api.message_api().make_downstream_create_message(

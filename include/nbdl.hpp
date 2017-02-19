@@ -13,7 +13,6 @@
 #include <nbdl/bind_map.hpp>
 #include <nbdl/bind_sequence.hpp>
 #include <nbdl/bind_variant.hpp>
-#include <nbdl/binder/jsoncpp.hpp>
 #include <nbdl/catch.hpp>
 #include <nbdl/concept/BindableMap.hpp>
 #include <nbdl/concept/BindableSequence.hpp>

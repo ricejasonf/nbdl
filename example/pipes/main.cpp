@@ -7,8 +7,9 @@
 
 
 #include <iostream>
-// todo make nbdl::tap or something
 #include <nbdl.hpp>
+#include <nbdl/binder/jsoncpp.hpp>
+
 auto tap = [](auto fn)
 {
   return nbdl::promise([fn_ = std::move(fn)](auto&& resolve, auto&& ...args)
@@ -77,7 +78,7 @@ auto print = hana::overload_linearly(
   }
 , [](terminate) 
   {
-    std::cout << "Received terminate object. Good bye!\n";
+    std::cout << "Received terminate object. Good bye!\n\n";
   }
 , [](auto const& x)
     -> std::enable_if_t<hanax::Printable<decltype(x)>::value>

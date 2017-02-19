@@ -5,7 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <assets/TestContext.hpp>
+#include <assets/mock_store.hpp>
 #include <nbdl/make_context.hpp>
 #include <nbdl/map_store.hpp>
 
@@ -15,14 +15,15 @@ namespace hana = boost::hana;
 using test_context::path;
 using test_context::entity::my_entity;
 
-namespace
+namespace test_context_state_consumer
 {
   struct my_context { };
 }
+
 namespace nbdl
 {
   template <>
-  struct make_def_impl<my_context>
+  struct make_def_impl<test_context_state_consumer::my_context>
   {
     static constexpr auto apply()
     {
@@ -39,7 +40,7 @@ namespace nbdl
 
 namespace
 {
-  auto context = nbdl::make_unique_context<my_context>();
+  auto context = nbdl::make_unique_context<test_context_state_consumer::my_context>();
   auto& provider0       = context->cell<0>();
   auto& state_consumer  = context->cell<2>();
   auto& notifications   = state_consumer.recorded_notifications;

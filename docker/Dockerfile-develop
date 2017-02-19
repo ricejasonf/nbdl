@@ -1,4 +1,4 @@
-FROM ricejasonf/clang
+FROM ricejasonf/emscripten
 WORKDIR /usr/local/src
 
 # JsonCpp

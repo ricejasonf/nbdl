@@ -140,7 +140,7 @@ serialized to json and unserialized on the other end of a tcp socket or whatever
 
 ### Playing with the Examples
 
-Currently Nbdl's dependencies are not trivial to deal with, but if you have Docker installed it is easy to get started. As a convenience a, GNU Makefile in the root directory simplifies the use of docker further.
+Currently Nbdl's dependencies are not trivial to deal with, but if you have Docker installed it is easy to get started. As a convenience, a GNU Makefile in the root directory simplifies the use of docker further.
 
 
 ```

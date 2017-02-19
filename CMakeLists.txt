@@ -104,9 +104,9 @@ endif (${NBDL_USE_CATCH})
 
 if (${EMSCRIPTEN})
 	add_definitions(--bind)
+else (${EMSCRIPTEN})
+  find_package(Threads)
 endif (${EMSCRIPTEN})
-
-find_package(Threads)
 
 if (NBDL_AMAGLAMATED_JSONCPP_DIR)
   set(JsonCpp "${NBDL_AMAGLAMATED_JSONCPP_DIR}/dist/jsoncpp.cpp")

@@ -1,0 +1,18 @@
+FROM ricejasonf/emscripten
+WORKDIR /usr/local/src
+
+# Boost.Hana (workaround branch)
+RUN git clone -b bugfix/constexpr_arrays https://github.com/ricejasonf/hana.git \
+  && cp -r hana/include/* /usr/local/src/emscripten/system/include \
+  && rm -rf hana
+
+# Debug just doesn't work with emscripten right now
+ARG BUILD_TYPE=Release
+ENV BUILD_TYPE ${BUILD_TYPE}
+
+WORKDIR /opt/build
+CMD /usr/local/src/emscripten/emconfigure cmake \
+  -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+  /opt/src \
+  && echo '. /usr/share/bash-completion/bash_completion && set -o vi' >> /root/.bashrc \
+  && /bin/bash

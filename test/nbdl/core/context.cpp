@@ -21,7 +21,7 @@ namespace message = nbdl::message;
 namespace channel = nbdl::message::channel;
 namespace action  = nbdl::message::action;
 
-namespace
+namespace test_context_
 {
   struct my_context { };
 }
@@ -29,7 +29,7 @@ namespace
 namespace nbdl
 {
   template <>
-  struct make_def_impl<my_context>
+  struct make_def_impl<test_context_::my_context>
   {
     static constexpr auto apply()
     {
@@ -44,24 +44,8 @@ namespace nbdl
   };
 }
 
-
 namespace
 {
-  auto context = nbdl::make_unique_context<my_context>();
-
-  auto& provider0 = context->cell<0>();
-  auto& provider1 = context->cell<1>();
-  auto& consumer2 = context->cell<2>();
-  auto& consumer3 = context->cell<3>();
-
-  void init_record_messages()
-  {
-    provider0.recorded_messages = {};
-    provider1.recorded_messages = {};
-    consumer2.recorded_messages = {};
-    consumer3.recorded_messages = {};
-  }
-
   struct check_message_equal_fn
   {
     template <typename Message, typename Orig>
@@ -96,7 +80,12 @@ namespace
 
 TEST_CASE("Dispatch Downstream Read Message", "[context]")
 {
-  init_record_messages();
+  auto context = nbdl::make_unique_context<test_context_::my_context>();
+
+  auto& provider0 = context->cell<0>();
+  auto& provider1 = context->cell<1>();
+  auto& consumer2 = context->cell<2>();
+  auto& consumer3 = context->cell<3>();
 
   // Send downstream read to consumers.
   auto msg = provider0.push_api.message_api().make_downstream_read_message(
@@ -118,7 +107,12 @@ TEST_CASE("Dispatch Downstream Read Message", "[context]")
 
 TEST_CASE("Dispatch Upstream Read Message", "[context]")
 {
-  init_record_messages();
+  auto context = nbdl::make_unique_context<test_context_::my_context>();
+
+  auto& provider0 = context->cell<0>();
+  auto& provider1 = context->cell<1>();
+  auto& consumer2 = context->cell<2>();
+  auto& consumer3 = context->cell<3>();
 
   // Send upstream read to provider0.
   auto msg = consumer2.push_api.message_api().make_upstream_read_message(test_context::path1(1, 2));
@@ -146,7 +140,13 @@ TEST_CASE("Dispatch Downstream Create Message", "[context]")
   {
     using Path = typename decltype(+hana::first(types))::type;
     using Entity = typename decltype(+hana::second(types))::type;
-    init_record_messages();
+
+    auto context = nbdl::make_unique_context<test_context_::my_context>();
+
+    auto& provider0 = context->cell<0>();
+    auto& provider1 = context->cell<1>();
+    auto& consumer2 = context->cell<2>();
+    auto& consumer3 = context->cell<3>();
 
     // Send downstream create to consumers.
     auto msg = provider0.push_api.message_api().make_downstream_create_message(
@@ -176,7 +176,13 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
   {
     using Path = typename decltype(+hana::first(types))::type;
     using Entity = typename decltype(+hana::second(types))::type;
-    init_record_messages();
+
+    auto context = nbdl::make_unique_context<test_context_::my_context>();
+
+    auto& provider0 = context->cell<0>();
+    auto& provider1 = context->cell<1>();
+    auto& consumer2 = context->cell<2>();
+    auto& consumer3 = context->cell<3>();
 
     // Send upstream create to provider0.
     auto msg = consumer2.push_api.message_api().make_upstream_create_message(
@@ -205,7 +211,13 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
   {
     using Path = typename decltype(+hana::first(types))::type;
     using Entity = typename decltype(+hana::second(types))::type;
-    init_record_messages();
+
+    auto context = nbdl::make_unique_context<test_context_::my_context>();
+
+    auto& provider0 = context->cell<0>();
+    auto& provider1 = context->cell<1>();
+    auto& consumer2 = context->cell<2>();
+    auto& consumer3 = context->cell<3>();
 
     // Send upstream create to provider0.
     auto msg = consumer2.push_api.message_api().make_upstream_create_message(
@@ -237,7 +249,13 @@ TEST_CASE("Dispatch Downstream Update Message", "[context]")
   {
     using Path = typename decltype(+hana::first(types))::type;
     using Entity = typename decltype(+hana::second(types))::type;
-    init_record_messages();
+
+    auto context = nbdl::make_unique_context<test_context_::my_context>();
+
+    auto& provider0 = context->cell<0>();
+    auto& provider1 = context->cell<1>();
+    auto& consumer2 = context->cell<2>();
+    auto& consumer3 = context->cell<3>();
 
     // Send downstream update to consumers.
     auto msg = provider0.push_api.message_api().make_downstream_update_raw_message(
@@ -267,7 +285,13 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
   {
     using Path = typename decltype(+hana::first(types))::type;
     using Entity = typename decltype(+hana::second(types))::type;
-    init_record_messages();
+
+    auto context = nbdl::make_unique_context<test_context_::my_context>();
+
+    auto& provider0 = context->cell<0>();
+    auto& provider1 = context->cell<1>();
+    auto& consumer2 = context->cell<2>();
+    auto& consumer3 = context->cell<3>();
 
     // Send upstream update to provider0.
     auto msg = consumer2.push_api.message_api().make_upstream_update_raw_message(
@@ -296,7 +320,13 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
   {
     using Path = typename decltype(+hana::first(types))::type;
     using Entity = typename decltype(+hana::second(types))::type;
-    init_record_messages();
+
+    auto context = nbdl::make_unique_context<test_context_::my_context>();
+
+    auto& provider0 = context->cell<0>();
+    auto& provider1 = context->cell<1>();
+    auto& consumer2 = context->cell<2>();
+    auto& consumer3 = context->cell<3>();
 
     // Send upstream update to provider0.
     auto msg = consumer2.push_api.message_api().make_upstream_update_raw_message(

@@ -14,7 +14,7 @@
 
 namespace message = nbdl::message;
 
-namespace
+namespace test_echo_provider
 {
   struct my_context { };
 }
@@ -22,7 +22,7 @@ namespace
 namespace nbdl
 {
   template <>
-  struct make_def_impl<my_context>
+  struct make_def_impl<test_echo_provider::my_context>
   {
     static constexpr auto apply()
     {
@@ -37,15 +37,11 @@ namespace nbdl
   };
 }
 
-namespace
-{
-  auto context = nbdl::make_unique_context<my_context>();
-  auto& provider0 = context->cell<0>();
-  auto& consumer2 = context->cell<2>();
-}
-
 TEST_CASE("Echo provider should echo messages to downstream.", "[echo_provider]")
 {
+  auto context = nbdl::make_unique_context<test_echo_provider::my_context>();
+  auto& consumer2 = context->cell<2>();
+
   using Path = test_context::path<0>;
   using Entity = test_context::entity::my_entity<1>;
 

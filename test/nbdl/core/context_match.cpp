@@ -17,7 +17,7 @@ using test_context::path;
 using test_context::entity::my_entity;
 namespace message = nbdl::message;
 
-namespace
+namespace test_context_match
 {
   struct tcms_store_tag { };
   struct my_context { };
@@ -32,7 +32,7 @@ namespace
 namespace nbdl
 {
   template <>
-  struct make_def_impl<my_context>
+  struct make_def_impl<test_context_match::my_context>
   {
     static constexpr auto apply()
     {
@@ -41,22 +41,22 @@ namespace nbdl
         test_context::provider_tag{},
         test_context::state_consumer_tag{},
         test_context::consumer_tag{},
-        tcms_store_tag{}
+        test_context_match::tcms_store_tag{}
       );
     }
   };
 
   template <>
-  struct make_store_impl<tcms_store_tag>
+  struct make_store_impl<test_context_match::tcms_store_tag>
   {
     template <typename PathType>
     static constexpr auto apply(PathType)
-      -> tcms_store<typename PathType::type>
+      -> test_context_match::tcms_store<typename PathType::type>
     { return {}; }
   };
 
   template <>
-  struct match_impl<tcms_store_tag>
+  struct match_impl<test_context_match::tcms_store_tag>
   {
     template <typename Store, typename Path, typename ...Fns>
     static constexpr decltype(auto) apply(Store&&, Path&& p, Fns&& ...fns)
@@ -85,7 +85,7 @@ namespace nbdl
   };
 
   template <>
-  struct apply_action_impl<tcms_store_tag>
+  struct apply_action_impl<test_context_match::tcms_store_tag>
   {
     template <typename Store, typename Message>
     static constexpr auto apply(Store&&, Message&&)
@@ -95,16 +95,11 @@ namespace nbdl
   };
 }
 
-namespace
-{
-  auto context = nbdl::make_unique_context<my_context>();
-  auto& provider0       = context->cell<0>();
-  auto& provider1       = context->cell<1>();
-  auto& state_consumer  = context->cell<2>();
-}
-
 TEST_CASE("Match a value in the stores.", "[context]")
 {
+  auto context = nbdl::make_unique_context<test_context_match::my_context>();
+  auto& state_consumer  = context->cell<2>();
+
   bool result = state_consumer.push_api.match(path<1>(1, 49),
     [](my_entity<1> const& e)
     {
@@ -117,6 +112,10 @@ TEST_CASE("Match a value in the stores.", "[context]")
 
 TEST_CASE("Matching nbdl::uninitialized triggers upstream read message.", "[context]")
 {
+  auto context = nbdl::make_unique_context<test_context_match::my_context>();
+  auto& provider1       = context->cell<1>();
+  auto& state_consumer  = context->cell<2>();
+
   bool result = state_consumer.push_api.match(path<1>(1, 13),
     [](nbdl::unresolved)  { return true; },
     [](auto const&)       { return false; }
