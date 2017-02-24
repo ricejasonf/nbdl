@@ -13,12 +13,12 @@
 
 namespace hana  = boost::hana;
 namespace hanax = boost::hana::experimental;
+using namespace hana::literals;
 
 int main()
 {
   using namespace nbdl::webui::html;
   constexpr auto div_tag    = hana::type_c<hana::string<'d', 'i', 'v'>>;
-  constexpr auto class_tag  = hana::type_c<hana::string<'c', 'l', 'a', 's', 's'>>;
   constexpr auto begin      = hana::partial(
     hana::template_<hanax::types>,
     hana::type_c<nbdl::webui::detail::begin>
@@ -40,7 +40,7 @@ int main()
     (void)result;
     (void)expected;
 
-    BOOST_HANA_CONSTANT_ASSERT(hana::equal(result, expected));
+    BOOST_HANA_CONSTANT_CHECK(hana::equal(result, expected));
   }
   {
     constexpr auto spec = div(div(), div());
@@ -57,28 +57,30 @@ int main()
     (void)result;
     (void)expected;
 
-    BOOST_HANA_CONSTANT_ASSERT(hana::equal(result, expected));
+    BOOST_HANA_CONSTANT_CHECK(hana::equal(result, expected));
   }
   {
-    constexpr hana::string<'f', 'o', 'o'> foo_str{};
     constexpr auto spec = div(
-      attr_class(foo_str),
-      div()
+      attr_class("foo"_s),
+      div(
+        text_content("Hello World!"_s)
+      )
     );
 
     constexpr auto result = hana::typeid_(nbdl::webui::detail::flatten_spec(spec));
     constexpr auto expected = make_list(
       begin(tag::element, div_tag),
-        begin(tag::attribute, class_tag),
-        hana::typeid_(foo_str),
-        end  (tag::attribute, class_tag),
+        hana::type<hanax::types<tag::attribute_t, decltype("class"_s), decltype("foo"_s)>>{},
         begin(tag::element, div_tag),
+          hana::typeid_(hanax::types<tag::text_content_t, decltype("Hello World!"_s)>{}),
         end  (tag::element, div_tag),
       end(tag::element, div_tag)
     );
     (void)result;
     (void)expected;
 
-    BOOST_HANA_CONSTANT_ASSERT(hana::equal(result, expected));
+    //using foo = typename decltype(result)::foo;
+
+    BOOST_HANA_CONSTANT_CHECK(hana::equal(result, expected));
   }
 }

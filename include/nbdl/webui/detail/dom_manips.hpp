@@ -67,5 +67,36 @@ namespace nbdl::webui::detail
       return std::forward<ParentElement>(p)["parentNode"];
     }
   };
+
+  template <typename AttributeName, typename Strings>
+  struct action_fn<html::tag::attribute_t, AttributeName, Strings>
+  {
+    // Right now Strings is just a single compile-time string
+    template <typename ParentElement>
+    auto operator()(ParentElement&& p) const
+    {
+      auto el = p.template call<emscripten::val>(
+        "setAttribute"
+      , emscripten::val(hana::to<char const*>(AttributeName{}))
+      , emscripten::val(hana::to<char const*>(Strings{}))
+      );
+      return std::forward<ParentElement>(p);
+    }
+  };
+
+  template <typename Strings>
+  struct action_fn<html::tag::text_content_t, Strings>
+  {
+    // Right now Strings is just a single compile-time string
+    template <typename ParentElement>
+    auto operator()(ParentElement&& p) const
+    {
+      p.template set(
+        "textContent"
+      , emscripten::val(hana::to<char const*>(Strings{}))
+      );
+      return std::forward<ParentElement>(p);
+    }
+  };
 }
 #endif

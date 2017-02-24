@@ -40,6 +40,7 @@ namespace nbdl::webui::detail
     }
   };
 
+#if 0 // Not Currently used.
   template <typename FlattenSpecFn>
   struct flatten_node_fn
   {
@@ -53,6 +54,7 @@ namespace nbdl::webui::detail
       ));
     }
   };
+#endif
 
   struct flatten_spec_fn
   {
@@ -71,9 +73,20 @@ namespace nbdl::webui::detail
         }
         else if constexpr(decltype(hana::equal(current_tag, html::tag::attribute))::value)
         {
-          return hana::flatten(flatten_named_node_fn<flatten_spec_fn>{}(current_tag, child_nodes));
+          return mpdef::make_list(hanax::types<
+            typename decltype(current_tag)::type,
+            decltype(hana::at_c<0>(child_nodes)),
+            decltype(hana::at_c<1>(child_nodes))
+          >{});
         }
-        // else if some control thingy
+        else if constexpr(decltype(hana::equal(current_tag, html::tag::text_content))::value)
+        {
+          // TODO wrap "child_nodes" into some kind of monoid for different representions of string
+          return mpdef::make_list(hanax::types<
+            typename decltype(current_tag)::type
+          , decltype(hana::at_c<0>(child_nodes))
+          >{});
+        }
       }
       else
       {
