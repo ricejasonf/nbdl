@@ -6,7 +6,6 @@
 //
 
 #include <nbdl/message_api.hpp>
-#include <nbdl/path.hpp>
 #include <nbdl/uid.hpp>
 
 #include <boost/hana/experimental/types.hpp>
@@ -18,35 +17,47 @@ namespace hana = boost::hana;
 namespace hanax = boost::hana::experimental;
 namespace message = nbdl::message;
 
-using nbdl::message::channel::upstream;
-using nbdl::message::channel::downstream;
-using nbdl::message::action::create;
-using nbdl::message::action::read;
-using nbdl::message::action::update;
-using nbdl::message::action::update_raw;
-using nbdl::message::action::delete_;
-using maybe_uid = hana::optional<nbdl::uid>;
-
-template <typename T>
-constexpr auto decay_c(T)
+namespace
 {
-  return hana::type_c<std::decay_t<T>>;
+  using nbdl::message::channel::upstream;
+  using nbdl::message::channel::downstream;
+  using nbdl::message::action::create;
+  using nbdl::message::action::read;
+  using nbdl::message::action::update;
+  using nbdl::message::action::update_raw;
+  using nbdl::message::action::delete_;
+  using maybe_uid = hana::optional<nbdl::uid>;
+
+  template <typename T>
+  constexpr auto decay_c(T)
+  {
+    return hana::type_c<std::decay_t<T>>;
+  }
+
+  template <int i>
+  struct PathKey
+  {
+    int value;
+
+    PathKey(int v)
+      : value(v)
+    { }
+  };
+
+  template <int i> struct Payload { int value; };
+  template <int i> using Path = hana::tuple<PathKey<i>>;
+  template <int i> using CreatePath = hana::tuple<hana::type<PathKey<i>>>;
+  template <int i> using MaybePayload = hana::optional<Payload<i>>;
 }
 
-template <int i> struct Payload { int value; };
-template <int i> using Path = typename decltype(nbdl::path_type<int, Payload<i>>)::type;
-template <int i> using MaybePayload = hana::optional<Payload<i>>;
-
 namespace boost { namespace hana {
-#if 0
   template <int i>
-  struct equal_impl<Path<i>, Path<i>>
+  struct equal_impl<PathKey<i>, PathKey<i>>
   {
     template <typename T1, typename T2>
     static constexpr auto apply(T1 const& t1, T2 const& t2)
-    { return t1.id == t2.id; }
+    { return t1.value == t2.value; }
   };
-#endif
 
   template <int i>
   struct equal_impl<Payload<i>, Payload<i>>
@@ -62,7 +73,7 @@ namespace
   // TODO create a better way for making a message type for testing (ie named params)
   template <int i>
   using UpstreamCreate = hana::tuple<upstream, create,
-    typename decltype(Path<i>::make_create_path_type())::type,
+    CreatePath<i>,
     maybe_uid, MaybePayload<i>>;
   template <int i>
   using UpstreamRead = hana::tuple<upstream, read, Path<i>, maybe_uid>;
@@ -123,7 +134,7 @@ namespace
 // Test the search for message types
 
 BOOST_HANA_CONSTANT_ASSERT(
-  msgs.get_message_type(upstream{}, create{}, Path<1>::make_create_path()) == hana::type_c<UpstreamCreate<1>>
+  msgs.get_message_type(upstream{}, create{}, CreatePath<1>{}) == hana::type_c<UpstreamCreate<1>>
 );
 BOOST_HANA_CONSTANT_ASSERT(
   msgs.get_message_type(upstream{}, read{}, Path<1>{1}) == hana::type_c<UpstreamRead<1>>
@@ -143,10 +154,10 @@ BOOST_HANA_CONSTANT_ASSERT(
 
 TEST_CASE("make_upstream_create_message", "[message_api]")
 {
-  auto m = msgs.make_upstream_create_message(Path<1>::make_create_path(), Payload<1>{11});
+  auto m = msgs.make_upstream_create_message(CreatePath<1>{}, Payload<1>{11});
   BOOST_HANA_CONSTANT_ASSERT(decay_c(message::get_channel(m)) == hana::type_c<upstream>);
   BOOST_HANA_CONSTANT_ASSERT(decay_c(message::get_action(m)) == hana::type_c<create>);
-  CHECK(hana::equal(message::get_path(m), Path<1>::make_create_path()));
+  CHECK(hana::equal(message::get_path(m), CreatePath<1>{}));
   CHECK(hana::equal(*message::get_maybe_payload(m), Payload<1>{11}));
 }
 
@@ -230,7 +241,7 @@ TEST_CASE("make_downstream_delete_message", "[message_api]")
 // that a value is provided for the key.
 TEST_CASE("to_downstream (create)", "[message_api]")
 {
-  auto m = msgs.make_upstream_create_message(Path<1>::make_create_path(), Payload<1>{11});
+  auto m = msgs.make_upstream_create_message(CreatePath<1>{}, Payload<1>{11});
   auto down1 = msgs.to_downstream(m);
   auto down2 = msgs.to_downstream(m, Payload<1>{111}); // different payload
   BOOST_HANA_CONSTANT_ASSERT(hana::decltype_(down1) == hana::type_c<DownstreamCreate<1>>);
@@ -276,7 +287,7 @@ TEST_CASE("to_downstream (delete)", "[message_api]")
 
 TEST_CASE("to_downstream_from_root (create)", "[message_api]")
 {
-  auto m = msgs.make_upstream_create_message(Path<1>::make_create_path(), Payload<1>{11});
+  auto m = msgs.make_upstream_create_message(CreatePath<1>{}, Payload<1>{11});
   auto down1 = msgs.to_downstream_from_root(m, 1);
   auto down2 = msgs.to_downstream_from_root_with_payload(m, 1, Payload<1>{111}); // different payload
   BOOST_HANA_CONSTANT_ASSERT(hana::decltype_(down1) == hana::type_c<DownstreamCreate<1>>);
@@ -291,10 +302,14 @@ TEST_CASE("to_downstream_from_root (create)", "[message_api]")
 
 TEST_CASE("to_downstream_from_root with nested path (create)", "[message_api]")
 {
-  using Path_ = typename decltype(nbdl::path_type<int, Payload<1>, Payload<2>>)::type;
-  using UpstreamCreateMessage = hana::tuple<upstream, create,
-    typename decltype(Path_::make_create_path_type())::type,
-    maybe_uid, MaybePayload<2>
+  using Path_ = hana::tuple<PathKey<1>, PathKey<2>>;
+  using CreatePath_ = hana::tuple<PathKey<1>, hana::type<PathKey<2>>>;
+  using UpstreamCreateMessage = hana::tuple<
+    upstream,
+    create,
+    CreatePath_,
+    maybe_uid,
+    MaybePayload<2>
   >;
   using DownstreamCreateMessage = hana::tuple<downstream, create,
     Path_, maybe_uid, hana::optional<bool>, MaybePayload<2>
@@ -310,13 +325,20 @@ TEST_CASE("to_downstream_from_root with nested path (create)", "[message_api]")
 
   constexpr nbdl::message_api<context_mock> msgs{};
 
-  auto m = msgs.make_upstream_create_message(Path_::make_create_path(1), Payload<2>{22});
-  auto down1 = msgs.to_downstream_from_root(m, 2);
-  auto down2 = msgs.to_downstream_from_root_with_payload(m, 2, Payload<2>{222}); // different payload
+  auto m = msgs.make_upstream_create_message(
+    CreatePath_(PathKey<1>{1}, hana::type_c<PathKey<2>>),
+    Payload<2>{22}
+  );
+  auto down1 = msgs.to_downstream_from_root(m, PathKey<2>{2});
+  auto down2 = msgs.to_downstream_from_root_with_payload(
+    m,
+    PathKey<2>{2},
+    Payload<2>{222} // different payload
+  );
   BOOST_HANA_CONSTANT_ASSERT(hana::typeid_(down1) == hana::type_c<DownstreamCreateMessage>);
   BOOST_HANA_CONSTANT_ASSERT(hana::typeid_(down2) == hana::type_c<DownstreamCreateMessage>);
-  CHECK(hana::equal(message::get_path(down1), Path_(1, 2)));
-  CHECK(hana::equal(message::get_path(down2), Path_(1, 2)));
+  CHECK(hana::equal(message::get_path(down1), Path_(PathKey<1>{1}, PathKey<2>{2})));
+  CHECK(hana::equal(message::get_path(down2), Path_(PathKey<1>{1}, PathKey<2>{2})));
   CHECK(hana::equal(message::get_payload(down1), Payload<2>{22}));
   CHECK(hana::equal(message::get_payload(down2), Payload<2>{222}));
   CHECK(message::get_is_from_root(down1) == true);

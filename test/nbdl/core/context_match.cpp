@@ -49,8 +49,8 @@ namespace nbdl
   template <>
   struct make_store_impl<test_context_match::tcms_store_tag>
   {
-    template <typename PathType>
-    static constexpr auto apply(PathType)
+    template <typename PathType, typename EntityType>
+    static constexpr auto apply(PathType, EntityType)
       -> test_context_match::tcms_store<typename PathType::type>
     { return {}; }
   };

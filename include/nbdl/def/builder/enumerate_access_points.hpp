@@ -14,6 +14,7 @@
 #include <mpdef/list.hpp>
 #include <mpdef/tree_node.hpp>
 #include <nbdl/def/builder/access_point_meta.hpp>
+#include <nbdl/def/builder/access_point_path_key.hpp>
 #include <nbdl/def/directives.hpp>
 #include <nbdl/null_store.hpp>
 
@@ -26,34 +27,74 @@ namespace builder {
 namespace hana = boost::hana;
 
 namespace enum_access_points_detail {
+  // TODO Refactor point-free code here. It is hard to read
+  // and compiles slow.
+  struct is_access_point_def_fn
+  {
+    template <typename X>
+    constexpr auto operator()(X x) const
+    {
+      // nested ifs for lazy evaluation
+      if constexpr(mpdef::is_tree_node(x))
+      {
+        if constexpr(hana::equal(tag::AccessPoint, hana::first(x)))
+        {
+          return hana::true_c;
+        }
+        else
+        {
+          return hana::false_c;;
+        }
+      }
+      else
+      {
+        return hana::false_c;
+      }
+    }
+  };
+
+  template <typename TransformFn>
+  struct collect_list_fn
+  {
+    template <typename State, typename X>
+    constexpr auto operator()(State state, X x) const
+    {
+      // nested ifs for lazy evaluation
+      if constexpr(mpdef::is_tree_node(x))
+      {
+        if constexpr(hana::equal(tag::AccessPoint, hana::first(x)))
+        {
+          return hana::append(state, TransformFn{}(hana::second(x)));
+        }
+        else
+        {
+          return state;
+        }
+      }
+      else
+      {
+        return state;
+      }
+    }
+  };
+
+  constexpr auto collect_entities = collect_list_fn<decltype(
+    hana::reverse_partial(hana::at_key, tag::Entity)
+  )>{};
+  constexpr auto collect_path_nodes = collect_list_fn<access_point_path_key_fn>{};
 
   constexpr auto settings = mpdef::with_settings(tag::Store);
-  constexpr auto pred = hana::demux(hana::eval_if)
-  (
-    mpdef::is_tree_node,
-    hana::make_lazy(hana::compose(hana::equal.to(tag::AccessPoint), hana::first)),
-    hana::always(hana::make_lazy(hana::false_c))
-  );
   constexpr auto collector = mpdef::compose_collectors(
     mpdef::collect_settings,
-    hana::demux(hana::eval_if)
-    (
-      hana::demux(pred)(hana::arg<2>),
-      hana::make_lazy(
-        hana::demux(hana::append)
-        (
-          hana::arg<1>,
-          hana::demux(hana::reverse_partial(hana::at_key, tag::EntityName))
-          (
-            hana::demux(hana::second)(hana::arg<2>)
-          )
-        )
-      ),
-      hana::make_lazy(hana::arg<1>)
-    )
+    collect_entities,
+    collect_path_nodes
   );
-  constexpr auto matcher = mpdef::create_in_tree_finder(pred, collector);
-  constexpr auto initial_summary = mpdef::make_list(settings, mpdef::make_list());
+  constexpr auto matcher = mpdef::create_in_tree_finder(is_access_point_def_fn{}, collector);
+  constexpr auto initial_summary = mpdef::make_list(
+    settings,
+    mpdef::make_list(),
+    mpdef::make_list()
+  );
 
   struct has_actions_fn
   {
@@ -111,14 +152,16 @@ namespace enum_access_points_detail {
     constexpr auto operator()(Result&& result)
     {
       auto node_children = hana::second(hana::first(result));
-      auto summary = hana::second(result);
-      auto settings = hana::at(summary, hana::int_c<0>);
-      auto entity_names = hana::at(summary, hana::int_c<1>);
+      auto summary       = hana::second(result);
+      auto settings      = hana::at(summary, hana::int_c<0>);
+      auto entities      = hana::at(summary, hana::int_c<1>);
+      auto path_nodes    = hana::at(summary, hana::int_c<2>);
       return builder::make_access_point_meta(
         node_children[tag::Name],
         hana::find(node_children, tag::Actions).value_or(mpdef::make_list()),
         settings[tag::Store].value_or(hana::type_c<nbdl::null_store>),
-        entity_names
+        entities,
+        hana::typeid_(hana::unpack(path_nodes, hana::template_<hana::tuple>))
       );
     }
   };

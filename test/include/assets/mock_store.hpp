@@ -18,12 +18,12 @@ namespace test_context
 {
   struct mock_store_tag { };
 
-  template <typename Path>
+  template <typename Path, typename Entity>
   struct mock_store
   {
     using hana_tag = mock_store_tag;
     using path = Path;
-    using entity = typename Path::entity;
+    using entity = Entity;
   };
 }
 
@@ -45,9 +45,9 @@ namespace nbdl
   template <>
   struct make_store_impl<test_context::mock_store_tag>
   {
-    template <typename PathType>
-    static constexpr auto apply(PathType)
-      -> test_context::mock_store<typename PathType::type>
+    template <typename PathType, typename EntityType>
+    static constexpr auto apply(PathType, EntityType)
+      -> test_context::mock_store<typename PathType::type, typename EntityType::type>
     { return {}; }
   };
 
@@ -55,8 +55,8 @@ namespace nbdl
   struct get_impl<test_context::mock_store_tag>
   {
     template <typename Store, typename Path>
-    static constexpr auto apply(Store&&, Path const&)
-      -> typename test_context::mock_store<Path>::entity
+    static constexpr auto apply(Store const&, Path const&)
+      -> typename Store::entity
     { return {}; }
   };
 

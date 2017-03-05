@@ -7,7 +7,7 @@
 #ifndef NBDL_DEF_BUILDER_PROVIDER_MAP_HPP
 #define NBDL_DEF_BUILDER_PROVIDER_MAP_HPP
 
-#include <nbdl/def/builder/path.hpp>
+#include <nbdl/def/builder/access_point_meta.hpp>
 #include <nbdl/def/builder/provider_meta.hpp>
 #include <mpdef/pair.hpp>
 
@@ -19,7 +19,6 @@ namespace builder {
 
 namespace details {
 
-  template<typename EntityMap>
   struct build_provider_pair_fn
   {
     template<typename ProviderMeta>
@@ -27,7 +26,7 @@ namespace details {
     {
       constexpr ProviderMeta provider_meta{};
       auto path_types = hana::unique(hana::transform(provider_meta::access_points(provider_meta),
-        hana::partial(builder::path, EntityMap{})));
+        access_point_meta::path));
       return mpdef::make_pair(
         hana::append(path_types, provider_meta::name(provider_meta)),
         provider_meta::provider(provider_meta)
@@ -39,13 +38,13 @@ namespace details {
 
 struct provider_map_fn
 {
-  template<typename EntityMap, typename Providers>
-  constexpr auto operator()(EntityMap, Providers providers) const
+  template<typename Providers>
+  constexpr auto operator()(Providers providers) const
   {
     return hana::unpack(providers,
       hana::on(
         mpdef::make_map,
-        details::build_provider_pair_fn<EntityMap>{}
+        details::build_provider_pair_fn{}
       )
     );
   }

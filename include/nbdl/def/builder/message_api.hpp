@@ -18,7 +18,7 @@
 #include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
 
-namespace nbdl_def { namespace builder
+namespace nbdl_def::builder
 {
 
   namespace hana = boost::hana;
@@ -37,16 +37,18 @@ namespace nbdl_def { namespace builder
   {
     // aggregate all entity messages
     // and partition by upstream/downstream
-    template<typename EntityMap, typename ProvidersMeta>
-    constexpr auto operator()(EntityMap entity_map, ProvidersMeta providers) const
+    template<typename ProvidersMeta>
+    constexpr auto operator()(ProvidersMeta providers) const
     {
       return hana::unpack(
         hana::partition(
           hana::flatten(
             hana::transform(
-              hana::flatten(hana::unpack(providers,
-                mpdef::make_list ^hana::on^ provider_meta::access_points)),
-              hana::partial(builder::entity_messages, entity_map)
+              hana::flatten(
+                hana::unpack(providers,
+                mpdef::make_list ^hana::on^ provider_meta::access_points)
+              ),
+              builder::entity_messages
             )
           ),
           hana::trait<nbdl::UpstreamMessage>
@@ -57,6 +59,6 @@ namespace nbdl_def { namespace builder
   };
   constexpr make_message_api_fn make_message_api{};
 
-}} // nbdl_def::builder
+}
 
 #endif

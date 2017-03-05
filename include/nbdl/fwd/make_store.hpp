@@ -22,8 +22,8 @@ namespace nbdl
   template <typename T>
   struct make_store_fn
   {
-    template <typename PathType>
-    constexpr auto operator()(PathType const&) const;
+    template <typename PathType, typename EntityType>
+    constexpr auto operator()(PathType const&, EntityType const&) const;
   };
 
   template <typename T>

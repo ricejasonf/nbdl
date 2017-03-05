@@ -9,8 +9,9 @@
 
 #include <mpdef/map.hpp>
 #include <mpdef/pair.hpp>
-#include <nbdl/message.hpp>
+#include <nbdl/detail/normalize_path_type.hpp>
 #include <nbdl/make_store.hpp> // nbdl::not_found
+#include <nbdl/message.hpp>
 #include <nbdl/uid.hpp>
 #include <nbdl/variant.hpp>
 
@@ -25,17 +26,41 @@ namespace nbdl
 
   namespace detail
   {
+    // Converts the path to not "create path" and assigns it the provided key
+    template <typename Path, typename Key>
+    auto canonicalize_path(Path&& p, Key&& k)
+    {
+      constexpr auto path_type = decltype(normalize_path_type(hana::typeid_(p))){};
+      using CanonicalPath = typename decltype(path_type)::type;
+
+      return hana::unpack(
+        hana::drop_back(std::forward<Path>(p), hana::size_c<1>),
+        [&](auto&& ...xs)
+        {
+          return CanonicalPath(
+            std::forward<decltype(xs)>(xs)...,
+            std::forward<Key>(k)
+          );
+        }
+      );
+    }
+
     template <typename P, typename MaybeUid>
     decltype(auto) canonicalize_path_with_maybe_uid(P&& p, MaybeUid&& k)
     {
-      using Path = std::decay_t<P>;
+      constexpr auto path_type = decltype(normalize_path_type(hana::typeid_(p))){};
+
+      // If the path is a "create path" use the uid as the key if present.
       if constexpr(
-              decltype(hana::is_just(k))::value
-          &&  !std::is_same<Path, typename Path::canonical_path>::value
+            decltype(hana::is_just(k))::value
+        &&  decltype(path_type != hana::typeid_(p))::value
       )
       {
         // The value_or is used to make it dependent.
-        return std::forward<P>(p).canonicalize_path(k.value_or(p));
+        return canonicalize_path(
+          std::forward<P>(p),
+          std::forward<MaybeUid>(k).value_or(p)
+        );
       }
       else
       {
@@ -439,7 +464,7 @@ namespace nbdl
     {
       return to_downstream_helper(
         m,
-        message::get_path(m).canonicalize_path(std::forward<Key>(k)),
+        detail::canonicalize_path(message::get_path(m), std::forward<Key>(k)),
         message::get_maybe_payload(m),
         hana::true_c
       );
@@ -461,7 +486,7 @@ namespace nbdl
     {
       return to_downstream_helper(
         m,
-        message::get_path(m).canonicalize_path(std::forward<Key>(k)),
+        detail::canonicalize_path(message::get_path(m), std::forward<Key>(k)),
         std::forward<Payload>(p),
         hana::true_c
       );

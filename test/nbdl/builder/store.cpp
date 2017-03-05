@@ -16,7 +16,8 @@ namespace hana = boost::hana;
 namespace builder = nbdl_def::builder;
 
 #define DEFINE_TYPE(NAME) \
-  struct NAME##_t {}; constexpr auto NAME = hana::type_c<NAME##_t>;
+  struct NAME##_t {}; constexpr auto NAME = hana::type_c<NAME##_t>; \
+  struct NAME##_key {};
 
 namespace names {
   DEFINE_TYPE(Provider1);
@@ -47,7 +48,8 @@ int main()
           Name(names::Provider1),
           AccessPoint(
             Name(names::E1),
-            EntityName(names::E1),
+            Entity<names::E1_t>,
+            PathKey<names::E1_key>,
             Actions(Create())
           )
         )
@@ -68,7 +70,8 @@ int main()
           Name(names::Provider1),
           AccessPoint(
             Name(names::E1),
-            EntityName(names::E1),
+            Entity<names::E1_t>,
+            PathKey<names::E1_key>,
             Actions(Create())
           )
         )
@@ -89,7 +92,8 @@ int main()
           AccessPoint(
             Store(hana::type_c<test_store_tag>),
             Name(names::E1),
-            EntityName(names::E1),
+            Entity<names::E1_t>,
+            PathKey<names::E1_key>,
             Actions(Create())
           )
         )

@@ -15,7 +15,8 @@
 namespace hana = boost::hana;
 
 #define DEFINE_NAME(NAME) \
-  struct NAME##_t {}; constexpr auto NAME = hana::type_c<NAME##_t>;
+  struct NAME##_t {}; constexpr auto NAME = hana::type_c<NAME##_t>; \
+  struct NAME##_key {};
 
 namespace names {
 
@@ -41,16 +42,19 @@ int main()
       AccessPoints(
         AccessPoint(
           Name(names::Nested1),
-          EntityName(names::Nested1),
+          Entity<names::Nested1_t>,
+          PathKey<names::Nested1_key>,
           Actions(Create(), Read(), Update(), Delete())
         ),
         AccessPoint(
           Name(names::Nested2),
-          EntityName(names::Nested2),
+          Entity<names::Nested2_t>,
+          PathKey<names::Nested2_key>,
           AccessPoints(
             AccessPoint(
               Name(names::Nested3),
-              EntityName(names::Nested3),
+              Entity<names::Nested3_t>,
+              PathKey<names::Nested3_key>,
               Actions(Create())
             )
           )
@@ -59,21 +63,21 @@ int main()
 
     constexpr auto def =
       Context(
-        PrimaryKey(Type(hana::type_c<unsigned>)),
         Store(hana::type_c<nbdl::null_store>),
         Providers(
           Provider(
             Name(names::Provider1),
-            EntityName(names::Provider1),
             AccessPoints(
               AccessPoint(
                 Name(names::Root1),
-                EntityName(names::Root1),
+                Entity<names::Root1_t>,
+                PathKey<names::Root1_key>,
                 nested_accesspoints
               ),
               AccessPoint(
                 Name(names::Root2),
-                EntityName(names::Root2),
+                Entity<names::Root2_t>,
+                PathKey<names::Root2_key>,
                 Actions(
                   Create(),
                   Read(),
@@ -86,10 +90,10 @@ int main()
           ),
           Provider(
             Name(names::Provider2),
-            EntityName(names::Provider2),
             AccessPoint(
               Name(names::Root3),
-              EntityName(names::Root3),
+              Entity<names::Root3_t>,
+              PathKey<names::Root3_key>,
               Actions(
                 Create()
               ),
@@ -113,7 +117,8 @@ int main()
         ),
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
-        access_point_meta::entity_names = mpdef::make_list(names::Root2)
+        access_point_meta::entities = mpdef::make_list(names::Root2),
+        access_point_meta::path = hana::type_c<hana::tuple<names::Root2_key>>
       ),
       // Root3
       builder::make_access_point_meta_with_map(
@@ -121,9 +126,9 @@ int main()
         access_point_meta::actions = mpdef::make_map(
           mpdef::make_tree_node(tag::Create,  mpdef::make_map())
         ),
-        access_point_meta::store =
-          hana::type_c<nbdl::null_store>,
-        access_point_meta::entity_names = mpdef::make_list(names::Root3)
+        access_point_meta::store = hana::type_c<nbdl::null_store>,
+        access_point_meta::entities = mpdef::make_list(names::Root3),
+        access_point_meta::path = hana::type_c<hana::tuple<names::Root3_key>>
       ),
       // Root1/Nested1
       builder::make_access_point_meta_with_map(
@@ -136,7 +141,8 @@ int main()
         ),
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
-        access_point_meta::entity_names = mpdef::make_list(names::Root1, names::Nested1)
+        access_point_meta::entities = mpdef::make_list(names::Root1, names::Nested1),
+        access_point_meta::path = hana::type_c<hana::tuple<names::Root1_key, names::Nested1_key>>
       ),
       // Root1/Nested2/Nested3
       builder::make_access_point_meta_with_map(
@@ -146,11 +152,16 @@ int main()
         ),
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
-        access_point_meta::entity_names = mpdef::make_list(
+        access_point_meta::entities = mpdef::make_list(
           names::Root1,
           names::Nested2,
           names::Nested3
-        )
+        ),
+        access_point_meta::path = hana::type_c<hana::tuple<
+          names::Root1_key,
+          names::Nested2_key,
+          names::Nested3_key
+        >>
       ),
       // Root2/Nested1
       builder::make_access_point_meta_with_map(
@@ -163,10 +174,14 @@ int main()
         ),
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
-        access_point_meta::entity_names = mpdef::make_list(
+        access_point_meta::entities = mpdef::make_list(
           names::Root2,
           names::Nested1
-        )
+        ),
+        access_point_meta::path = hana::type_c<hana::tuple<
+          names::Root2_key,
+          names::Nested1_key
+        >>
       ),
       // Root2/Nested2/Nested3
       builder::make_access_point_meta_with_map(
@@ -176,11 +191,16 @@ int main()
         ),
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
-        access_point_meta::entity_names = mpdef::make_list(
+        access_point_meta::entities = mpdef::make_list(
           names::Root2,
           names::Nested2,
           names::Nested3
-        )
+        ),
+        access_point_meta::path = hana::type_c<hana::tuple<
+          names::Root2_key,
+          names::Nested2_key,
+          names::Nested3_key
+        >>
       ),
       // Root3/Nested1
       builder::make_access_point_meta_with_map(
@@ -193,10 +213,14 @@ int main()
         ),
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
-        access_point_meta::entity_names = mpdef::make_list(
+        access_point_meta::entities = mpdef::make_list(
           names::Root3,
           names::Nested1
-        )
+        ),
+        access_point_meta::path = hana::type_c<hana::tuple<
+          names::Root3_key,
+          names::Nested1_key
+        >>
       ),
       // Root3/Nested2/Nested3
       builder::make_access_point_meta_with_map(
@@ -206,14 +230,20 @@ int main()
         ),
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
-        access_point_meta::entity_names = mpdef::make_list(
+        access_point_meta::entities = mpdef::make_list(
           names::Root3,
           names::Nested2,
           names::Nested3
-        )
+        ),
+        access_point_meta::path = hana::type_c<hana::tuple<
+          names::Root3_key,
+          names::Nested2_key,
+          names::Nested3_key
+        >>
       )
     );
 
+    //using foo = typename decltype(result)::foo;
     BOOST_HANA_CONSTANT_ASSERT(result == expected);
 
     BOOST_HANA_CONSTANT_ASSERT(access_point_meta::name(hana::at(result, hana::int_c<0>)) == names::Root2);
@@ -231,9 +261,14 @@ int main()
       hana::type_c<nbdl::null_store>
     );
     BOOST_HANA_CONSTANT_ASSERT(
-      access_point_meta::entity_names(hana::at(result, hana::int_c<0>))
+      access_point_meta::entities(hana::at(result, hana::int_c<0>))
         ==
       mpdef::make_list(names::Root2)
+    );
+    BOOST_HANA_CONSTANT_ASSERT(
+      access_point_meta::path(hana::at(result, hana::int_c<0>))
+        ==
+      hana::type_c<hana::tuple<names::Root2_key>>
     );
   }
 }

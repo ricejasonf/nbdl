@@ -9,16 +9,8 @@ nbdl_add_test("test.nbdl.builder.enumerate_access_points"
   enumerate_access_points.cpp
 )
 
-nbdl_add_test("test.nbdl.builder.entity_meta"
-  entity_meta.cpp
-)
-
 nbdl_add_test("test.nbdl.builder.access_point_meta"
   access_point_meta.cpp
-)
-
-nbdl_add_test("test.nbdl.builder.path"
-  path.cpp
 )
 
 nbdl_add_test("test.nbdl.builder.store"
@@ -43,10 +35,6 @@ nbdl_add_test("test.nbdl.builder.enumerate_providers"
 
 nbdl_add_test("test.nbdl.builder.enumerate_consumers"
   enumerate_consumers.cpp
-)
-
-nbdl_add_test("test.nbdl.builder.map_entity_meta"
-  map_entity_meta.cpp
 )
 
 nbdl_add_test("test.nbdl.builder.entity_messages"

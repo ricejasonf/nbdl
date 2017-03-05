@@ -9,7 +9,7 @@
 
 namespace nbdl
 {
-  template <typename Path>
+  template <typename Path, typename Entity>
   struct map_store;
 
   struct map_store_tag { };

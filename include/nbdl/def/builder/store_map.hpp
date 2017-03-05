@@ -7,48 +7,44 @@
 #ifndef NBDL_DEF_BUILDER_STORE_MAP_HPP
 #define NBDL_DEF_BUILDER_STORE_MAP_HPP
 
-#include <nbdl/def/builder/path.hpp>
-#include <nbdl/def/builder/store.hpp>
+#include <nbdl/def/builder/access_point_meta.hpp>
+#include <nbdl/make_store.hpp>
 
 #include <boost/hana.hpp>
 
-namespace nbdl_def {
-namespace builder {
+namespace nbdl_def::builder
+{
+  namespace hana = boost::hana;
 
-namespace details {
-
-  template<typename EntityMap>
-  struct build_store_pair_fn
+  namespace details
   {
 
-    template<typename AccessPoint>
-    constexpr auto operator()(AccessPoint a)
+    struct build_store_pair_fn
     {
-      using StoreTag = typename decltype(access_point_meta::store(a))::type;
-      using PathType = decltype(builder::path(EntityMap{}, a));
-      return hana::make_pair(
-        PathType{},
-        nbdl::make_store<StoreTag>(PathType{})
-      );
+
+      template<typename AccessPoint>
+      constexpr auto operator()(AccessPoint a)
+      {
+        using StoreTag = typename decltype(access_point_meta::store(a))::type;
+        using PathType = decltype(access_point_meta::path(a));
+        using EntityType = decltype(hana::back(access_point_meta::entities(a)));
+        return hana::make_pair(
+          PathType{},
+          nbdl::make_store<StoreTag>(PathType{}, EntityType{})
+        );
+      }
+    };
+  }//details
+
+  struct store_map_fn
+  {
+    template<typename AccessPoints>
+    constexpr auto operator()(AccessPoints access_points) const
+    {
+      return decltype(hana::decltype_(hana::unpack(access_points,
+        hana::make_map ^hana::on^ details::build_store_pair_fn{}))){};
     }
   };
-  //could get rid of this because EntityMap **should** be default constructible
-  template<typename EntityMap>
-  constexpr build_store_pair_fn<EntityMap> build_store_pair{};
-
-}//details
-
-struct store_map_fn
-{
-  template<typename EntityMap, typename AccessPoints>
-  constexpr auto operator()(EntityMap, AccessPoints access_points) const
-  {
-    return decltype(hana::decltype_(hana::unpack(access_points,
-      hana::make_map ^hana::on^ details::build_store_pair<EntityMap>))){};
-  }
-};
-constexpr store_map_fn store_map{};
-
-}//builder
-}//nbdl_def
+  constexpr store_map_fn store_map{};
+}
 #endif

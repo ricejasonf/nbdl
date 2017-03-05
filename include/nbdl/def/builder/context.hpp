@@ -13,9 +13,7 @@
 #include <nbdl/def/builder/context_cells.hpp>
 #include <nbdl/def/builder/enumerate_providers.hpp>
 #include <nbdl/def/builder/enumerate_consumers.hpp>
-#include <nbdl/def/builder/map_entity_meta.hpp>
 #include <nbdl/def/builder/message_api.hpp>
-#include <nbdl/def/builder/path.hpp>
 #include <nbdl/def/builder/provider_map.hpp>
 #include <nbdl/def/builder/provider_meta.hpp>
 #include <nbdl/def/builder/store_map.hpp>
@@ -59,21 +57,19 @@ namespace nbdl_def { namespace builder
       using Def = decltype(::nbdl::make_def(TagType{}));
 
       static_assert(hana::first(Def{}) == tag::Context, "");
-      constexpr auto defs = hana::second(Def{});
 
-      constexpr auto entity_meta_map  = builder::map_entity_meta(defs[tag::Entities]);
       constexpr auto providers_meta   = builder::enumerate_providers(Def{});
       constexpr auto consumers_meta   = builder::enumerate_consumers(Def{});
-      constexpr auto provider_map     = builder::provider_map(entity_meta_map, providers_meta);
+      constexpr auto provider_map     = builder::provider_map(providers_meta);
       constexpr auto consumer_map     = builder::consumer_map(consumers_meta);
       constexpr auto cell_info        = builder::context_cells(provider_map, consumer_map);
-      constexpr auto store_map        = builder::store_map(entity_meta_map,
+      constexpr auto store_map        = builder::store_map(
                                           hana::flatten(
                                             hana::unpack(providers_meta,
                                             mpdef::make_list ^hana::on^ provider_meta::access_points)
                                           )
                                         );
-      constexpr auto message_api      = builder::make_message_api(entity_meta_map, providers_meta);
+      constexpr auto message_api      = builder::make_message_api(providers_meta);
       constexpr auto params = hana::concat(
         cell_info,
         mpdef::make_list(store_map, message_api)

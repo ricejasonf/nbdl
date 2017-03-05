@@ -25,8 +25,8 @@ namespace nbdl
   template <>
   struct make_store_impl<null_store>
   {
-    template <typename PathType>
-    static constexpr auto apply(PathType)
+    template <typename PathType, typename EntityType>
+    static constexpr auto apply(PathType, EntityType)
       -> nbdl::null_store
     { return {}; }
   };

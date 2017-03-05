@@ -18,7 +18,8 @@ MPDEF_METASTRUCT(
   , name
   , actions
   , store
-  , entity_names
+  , entities
+  , path
 );
 
 #if 0

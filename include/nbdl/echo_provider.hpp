@@ -9,6 +9,7 @@
 
 #include<nbdl/fwd/echo_provider.hpp>
 
+#include<nbdl/entity.hpp>
 #include<nbdl/make_provider.hpp>
 #include<nbdl/message.hpp>
 
@@ -21,17 +22,24 @@ namespace nbdl
     template <typename Message>
     auto make_unique_key(Message const& m)
     {
-      using Key = typename std::decay_t<decltype(message::get_path(m))>::canonical_key;
+      using Path = typename decltype(message::get_path_type(m))::type;
+      using Key = std::decay_t<decltype(hana::back(std::declval<Path>()))>;
 
-      if constexpr(std::is_integral<Key>::value)
+      if constexpr(std::is_empty<Key>::value)
+      {
+        return Key{};
+      }
+      else if constexpr(std::is_integral<Key>::value)
       {
         static Key key = 0;
         return ++key;
       }
       else
       {
-        static_assert(std::is_empty<Key>::value);
-        return Key{};
+        // Only supports keys that wrap an integral named "value"
+        using Integral = typename NBDL_MEMBER(&Key::value)::member_type;
+        static Integral key = 0;
+        return Key{++key};
       }
     }
   }

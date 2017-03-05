@@ -16,11 +16,12 @@
 #include <nbdl/def/builder/entity_message_payload.hpp>
 #include <nbdl/def/builder/entity_message_private_payload.hpp>
 #include <nbdl/def/builder/entity_message_uid.hpp>
-#include <nbdl/def/builder/path.hpp>
+#include <nbdl/detail/make_create_path_type.hpp>
 #include <nbdl/make_store.hpp> // nbdl::not_found
 #include <nbdl/message.hpp>
 
 #include <boost/hana.hpp>
+#include <utility>
 
 namespace nbdl_def {
 namespace builder {
@@ -97,23 +98,25 @@ struct entity_message_fn
   template<typename EntityMessageMeta>
   constexpr auto operator()(EntityMessageMeta e) const
   {
-
     using Channel = decltype(entity_message_meta::channel(e));
     using Action = decltype(entity_message_meta::action(e));
-    using Path_ = typename decltype(entity_message_meta::path(e))::type;
+    using PathType = decltype(entity_message_meta::path(e));
+
     using Path = typename decltype(hana::if_(
       hana::and_(
         std::is_same<Channel, nbdl::message::channel::upstream>{},
         std::is_same<Action, nbdl::message::action::create>{}
       ),
-      Path_::make_create_path_type(), hana::type_c<Path_>
+      nbdl::detail::make_create_path_type(PathType{}),
+      PathType{}
     ))::type;
-    using Comps = 
-      hana::tuple<
-        Channel,
-        Action,
-        Path
-      >;
+
+    using Comps = hana::tuple<
+      Channel,
+      Action,
+      Path
+    >;
+
     using Maybes = typename entity_messages_detail::get_maybes<AccessPoint, EntityMessageMeta>::type;
     using Tuple = decltype(hana::concat(std::declval<Comps>(), std::declval<Maybes>()));
 
@@ -141,11 +144,13 @@ struct entity_not_found_message_fn
 // generate all messages for a given AccessPoint
 struct entity_messages_fn
 {
-  template<typename EntityMap, typename AccessPoint>
-  constexpr auto operator()(EntityMap entity_map, AccessPoint access_point) const
+  template<typename AccessPoint>
+  constexpr auto operator()(AccessPoint access_point) const
   {
-    const auto path = builder::path(entity_map, access_point);
-    const auto entity_type = hana::type_c<typename decltype(path)::type::Entity>;
+    const auto path = access_point_meta::path(access_point);
+    const auto entity_type = hana::back(
+      access_point_meta::entities(access_point)
+    );
   #if 0
     // TODO move definition of PrivatePayload into AccessPoint
     // and add that to AccessPointMeta

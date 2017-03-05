@@ -34,7 +34,6 @@ int main()
 
     constexpr auto def =
       Context(
-        PrimaryKey(Type(hana::type_c<unsigned>)),
         Consumers(
           Consumer(
             Name(names::Consumer1Name),
@@ -67,7 +66,6 @@ int main()
   {
     constexpr auto def =
       Context(
-        PrimaryKey(Type(hana::type_c<unsigned>)),
         Consumer(
           Name(names::Consumer1Name),
           Type(names::Consumer1)

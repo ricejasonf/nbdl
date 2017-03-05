@@ -10,11 +10,13 @@
 #include <nbdl.hpp>
 
 #include <array>
-#include <boost/hana/type.hpp>
+#include <boost/hana.hpp>
 #include <utility>
 
 namespace tiles
 {
+  namespace hana = boost::hana;
+
   namespace detail
   {
     // Returns the index to swap with.
@@ -103,17 +105,16 @@ namespace tiles
   };
 
   // need a better way to get path types
-  using game_path = typename decltype(nbdl::path_type<int, tiles::game>)::type;
-  using game_move_path = typename decltype(nbdl::path_type<int,
-    tiles::game, tiles::game_move
-  >)::type;
+  using game_path = hana::tuple<int>;
+  using game_move_path = hana::tuple<int, int>;
+  using game_move_create_path = hana::tuple<int, hana::type<int>>;
 
   template <typename StateConsumer, typename Index>
   void create_game_move(StateConsumer& c, Index i)
   {
     c.push_api.push(
       c.push_api.message_api()
-        .make_upstream_create_message(game_move_path::make_create_path(), game_move{i})
+        .make_upstream_create_message(game_move_create_path{}, game_move{i})
     );
   }
 
@@ -126,20 +127,18 @@ namespace tiles
       namespace hana = boost::hana;
       return
         Context(
-          Entities(
-            Entity(Type(hana::type_c<game>)),
-            Entity(Type(hana::type_c<game_move>))
-          ),
           Provider(
             Type(ProviderTag{}),
             AccessPoint(
               Name(hana::type_c<void>), // FIXME
-              EntityName(hana::type_c<game>),
+              Entity<game>,
+              PathKey<int>,
               Store(hana::type_c<game_store>),
               Actions(),
               AccessPoint(
                 Name(hana::type_c<void>), // FIXME
-                EntityName(hana::type_c<game_move>),
+                Entity<game_move>,
+                PathKey<int>,
                 Actions(Create())
               )
             )
@@ -174,8 +173,8 @@ namespace nbdl
   template <>
   struct make_store_impl<tiles::game_store>
   {
-    template <typename PathType>
-    static constexpr auto apply(PathType)
+    template <typename PathType, typename ValueType>
+    static constexpr auto apply(PathType, ValueType)
     {
       return tiles::game_store_impl<typename PathType::type>();
     }
@@ -203,7 +202,7 @@ namespace nbdl
         hana::typeid_(message::get_path_type(m)) == hana::type_c<tiles::game_move_path>
       ))::value)
       {
-        auto parent_path = message::get_path(m).parent();
+        auto parent_path = hana::drop_back(message::get_path(m), hana::int_c<1>);
         if (std::forward<Store>(s).apply_move(
           parent_path,
           message::get_payload(std::forward<Message>(m)))

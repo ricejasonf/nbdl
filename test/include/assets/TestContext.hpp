@@ -8,12 +8,12 @@
 #ifndef NBDL_TEST_ASSETS_TEST_CONTEXT_HPP
 #define NBDL_TEST_ASSETS_TEST_CONTEXT_HPP
 
+#include <mpdef/list.hpp>
 #include <nbdl/context.hpp>
 #include <nbdl/def/builder/context.hpp>
 #include <nbdl/def/directives.hpp>
 #include <nbdl/entity.hpp>
 #include <nbdl/null_store.hpp>
-#include <nbdl/path.hpp>
 
 #include <boost/hana.hpp>
 #include <utility>
@@ -21,8 +21,10 @@
 
 namespace hana = boost::hana;
 
-namespace test_context {
-  namespace name {
+namespace test_context
+{
+  namespace name
+  {
     template<int i> struct provider_t { };
     template<int i>
     constexpr auto provider = boost::hana::type_c<provider_t<i>>;
@@ -32,7 +34,8 @@ namespace test_context {
     constexpr auto consumer = boost::hana::type_c<consumer_t<i>>;
   } // name
 
-  namespace entity {
+  namespace entity
+  {
     struct root1
     {
       int id;
@@ -48,9 +51,31 @@ namespace test_context {
       int root_id;
     };
   } // entity
+
+  template <typename Entity>
+  struct key
+  {
+    int value;
+
+    key(int v)
+      : value(v)
+    { }
+  };
 } // test_context
 
-namespace nbdl {
+namespace boost::hana
+{
+  template <typename Entity>
+  struct equal_impl<test_context::key<Entity>, test_context::key<Entity>>
+  {
+    template <typename T1, typename T2>
+    static constexpr auto apply(T1 const& t1, T2 const& t2)
+    { return t1.value == t2.value; }
+  };
+}
+
+namespace nbdl
+{
   NBDL_ENTITY(
     test_context::entity::root1,
       id);
@@ -73,6 +98,12 @@ namespace nbdl {
     test_context::entity::my_entity<4>,
       id,
       root_id );
+
+  template <typename Entity>
+  struct entity_members_impl<test_context::key<Entity>>
+  { 
+    using type = mpdef::list<NBDL_MEMBER(&test_context::key<Entity>::value)>;
+  };
 } // nbdl
 
 namespace test_context_def {
@@ -97,28 +128,18 @@ namespace test_context_def {
   ) {
     return
       Context(
-        Entities(
-          Entity(
-            Type(hana::type_c<entity::root1>)
-          ),
-          Entity(
-            Type(hana::type_c<entity::root2>)
-          ),
-          Entity(Type(hana::type_c<entity::my_entity<1>>)),
-          Entity(Type(hana::type_c<entity::my_entity<2>>)),
-          Entity(Type(hana::type_c<entity::my_entity<3>>)),
-          Entity(Type(hana::type_c<entity::my_entity<4>>))
-        ),
         Providers(
           Provider(
             Name(test_context::name::provider<1>),
             Type(p1),
             AccessPoint(
               Name(hana::type_c<void>),
-              EntityName(hana::type_c<entity::root1>),
+              Entity<entity::root1>,
+              PathKey<test_context::key<entity::root1>>,
               AccessPoint(
                 Name(hana::type_c<void>),
-                EntityName(hana::type_c<entity::my_entity<1>>),
+                Entity<entity::my_entity<1>>,
+                PathKey<test_context::key<entity::my_entity<1>>>,
                 Store(hana::type_c<Store_>),
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
@@ -129,40 +150,48 @@ namespace test_context_def {
             Type(p2),
             AccessPoint(
               Name(hana::type_c<void>),
-              EntityName(hana::type_c<entity::root2>),
+              Entity<entity::root2>,
+              PathKey<test_context::key<entity::root2>>,
               AccessPoint(
                 Name(hana::type_c<void>),
-                EntityName(hana::type_c<entity::my_entity<1>>),
+                Entity<entity::my_entity<1>>,
+                PathKey<test_context::key<entity::my_entity<1>>>,
                 Store(hana::type_c<Store_>),
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             ),
             AccessPoint(
               Name(hana::type_c<void>),
-              EntityName(hana::type_c<entity::root2>),
+              Entity<entity::root2>,
+              PathKey<test_context::key<entity::root2>>,
               AccessPoint(
                 Name(hana::type_c<void>),
-                EntityName(hana::type_c<entity::my_entity<2>>),
+                Entity<entity::my_entity<2>>,
+                PathKey<test_context::key<entity::my_entity<2>>>,
                 Store(hana::type_c<Store_>),
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             ),
             AccessPoint(
               Name(hana::type_c<void>),
-              EntityName(hana::type_c<entity::root2>),
+              Entity<entity::root2>,
+              PathKey<test_context::key<entity::root2>>,
               AccessPoint(
                 Name(hana::type_c<void>),
-                EntityName(hana::type_c<entity::my_entity<3>>),
+                Entity<entity::my_entity<3>>,
+                PathKey<test_context::key<entity::my_entity<3>>>,
                 Store(hana::type_c<Store_>),
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             ),
             AccessPoint(
               Name(hana::type_c<void>),
-              EntityName(hana::type_c<entity::root2>),
+              Entity<entity::root2>,
+              PathKey<test_context::key<entity::root2>>,
               AccessPoint(
                 Name(hana::type_c<void>),
-                EntityName(hana::type_c<entity::my_entity<4>>),
+                Entity<entity::my_entity<4>>,
+                PathKey<test_context::key<entity::my_entity<4>>>,
                 Store(hana::type_c<Store_>),
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
@@ -269,19 +298,14 @@ namespace test_context {
     { }
   };
 
-  using path1 = typename decltype(
-    nbdl::path_type<int, entity::root1, entity::my_entity<1>>
-  )::type;
+  using path1 = hana::tuple<key<entity::root1>, key<entity::my_entity<1>>>;
 
   template <int i>
-  using path = typename decltype(
-    nbdl::path_type<
-      int,
-      decltype(hana::if_(hana::bool_c<i == 0>, entity::root1{}, entity::root2{})),
-      decltype(hana::if_(hana::bool_c<i == 0>, entity::my_entity<1>{}, entity::my_entity<i>{}))
-    >
-  )::type;
-    
+  using path = hana::tuple<
+    key<decltype(hana::if_(hana::bool_c<i == 0>, entity::root1{}, entity::root2{}))>,
+    key<decltype(hana::if_(hana::bool_c<i == 0>, entity::my_entity<1>{}, entity::my_entity<i>{}))>
+  >;
+
   using path_variant = nbdl::variant<path<0>, path<1>, path<2>, path<3>, path<4>>;
 
   template <typename PushApi>

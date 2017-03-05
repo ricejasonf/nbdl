@@ -14,6 +14,7 @@
 #include <nbdl/concept/Provider.hpp>
 #include <nbdl/concept/StateConsumer.hpp>
 #include <nbdl/detail/concept_pred.hpp>
+#include <nbdl/detail/normalize_path_type.hpp>
 #include <nbdl/apply_action.hpp>
 #include <nbdl/match.hpp>
 #include <nbdl/message.hpp>
@@ -190,9 +191,12 @@ namespace nbdl
     template <typename Message>
     void propagate_upstream(Message&& m)
     {
-      using Path = std::decay_t<decltype(message::get_path(m))>;
-      using Index = decltype(hana::at_key(ProviderLookup{}, 
-        hana::type_c<typename Path::canonical_path>));
+      using Index = decltype(
+        hana::at_key(
+          ProviderLookup{}, 
+          message::get_path_type(m)
+        )
+      );
       nbdl::send_upstream_message(cells[Index{}], std::forward<Message>(m));
     }
 

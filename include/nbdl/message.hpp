@@ -11,6 +11,7 @@
 
 #include <nbdl/concept/DownstreamMessage.hpp>
 #include <nbdl/concept/UpstreamMessage.hpp>
+#include <nbdl/detail/normalize_path_type.hpp>
 
 #include <boost/hana/at.hpp>
 #include <boost/hana/core/when.hpp>
@@ -118,13 +119,12 @@ namespace nbdl { namespace message
   // If the last element is a hana type then extract
   // that type. (It is used as a placeholder for create
   // messages)
-  // TODO: Rename as `get_canonical_path_type`... maybe
   struct get_path_type_fn
   {
     template <typename Message>
     constexpr auto operator()(Message const& m) const
     {
-      return hana::type_c<typename std::decay_t<decltype(message::get_path(m))>::canonical_path>;
+      return nbdl::detail::normalize_path_type(hana::typeid_(message::get_path(m)));
     }
   };
 

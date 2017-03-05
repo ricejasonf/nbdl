@@ -6,6 +6,7 @@
 //
 
 #include <assets/TestContext.hpp>
+#include <nbdl/detail/make_create_path_type.hpp>
 #include <nbdl/make_context.hpp>
 #include <nbdl/make_def.hpp>
 #include <nbdl/message.hpp>
@@ -89,8 +90,8 @@ TEST_CASE("Dispatch Downstream Read Message", "[context]")
 
   // Send downstream read to consumers.
   auto msg = provider0.push_api.message_api().make_downstream_read_message(
-      test_context::path1(1, 2),
-      entity::my_entity<1>{2, 1}
+    test_context::path1(1, 2),
+    entity::my_entity<1>{2, 1}
   );
   provider0.push_api.push(msg);
 
@@ -175,6 +176,7 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
   ), [](auto types)
   {
     using Path = typename decltype(+hana::first(types))::type;
+    using CreatePath = typename decltype(nbdl::detail::make_create_path_type(hana::type_c<Path>))::type;
     using Entity = typename decltype(+hana::second(types))::type;
 
     auto context = nbdl::make_unique_context<test_context_::my_context>();
@@ -186,7 +188,7 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
 
     // Send upstream create to provider0.
     auto msg = consumer2.push_api.message_api().make_upstream_create_message(
-      Path::make_create_path(1),
+      CreatePath(1, decltype(hana::back(std::declval<CreatePath>())){}),
       Entity{2, 1}
     );
     consumer2.push_api.push(msg);
@@ -210,6 +212,7 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
   ), [](auto types)
   {
     using Path = typename decltype(+hana::first(types))::type;
+    using CreatePath = typename decltype(nbdl::detail::make_create_path_type(hana::type_c<Path>))::type;
     using Entity = typename decltype(+hana::second(types))::type;
 
     auto context = nbdl::make_unique_context<test_context_::my_context>();
@@ -221,7 +224,7 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
 
     // Send upstream create to provider0.
     auto msg = consumer2.push_api.message_api().make_upstream_create_message(
-      Path::make_create_path(1),
+      CreatePath(1, decltype(hana::back(std::declval<CreatePath>())){}),
       Entity{2, 1}
     );
     consumer2.push_api.push(msg);

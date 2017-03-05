@@ -18,7 +18,7 @@ namespace test_map_store
 {
   struct my_context { };
 
-  nbdl::map_store<test_context::path<1>> make_test_store()
+  nbdl::map_store<test_context::path<1>, test_context::entity::my_entity<1>> make_test_store()
   { return {}; }
 }
 
@@ -53,11 +53,13 @@ TEST_CASE("Apply action upstream create.", "[map_store][apply_action]")
 {
   auto context = nbdl::make_unique_context<test_map_store::my_context>();
   auto push_api = context->cell<0>().push_api;
+  using Path = test_context::path<1>;
+  using CreatePath = typename nbdl::detail::make_create_path<Path>::type;
 
   auto store = test_map_store::make_test_store();
   bool did_state_change = nbdl::apply_action(store,
     push_api.message_api().make_upstream_create_message(
-      test_context::path<1>::make_create_path(1),
+      CreatePath(1, hana::type_c<test_context::key<test_context::entity::my_entity<1>>>),
       test_context::entity::my_entity<1>{2, 1}
     )
   );

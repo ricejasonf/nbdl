@@ -43,10 +43,11 @@ TEST_CASE("Echo provider should echo messages to downstream.", "[echo_provider]"
   auto& consumer2 = context->cell<2>();
 
   using Path = test_context::path<0>;
+  using CreatePath = typename nbdl::detail::make_create_path<test_context::path<0>>::type;
   using Entity = test_context::entity::my_entity<1>;
 
   auto msg = consumer2.push_api.message_api().make_upstream_create_message(
-    Path::make_create_path(5),
+    CreatePath(5, decltype(hana::back(std::declval<CreatePath>())){}),
     Entity{5, 5}
   );
   consumer2.push_api.push(msg);

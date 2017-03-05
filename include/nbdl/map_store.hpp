@@ -9,9 +9,10 @@
 
 #include <nbdl/fwd/map_store.hpp>
 
-#include <nbdl/make_store.hpp>
 #include <nbdl/apply_action.hpp>
+#include <nbdl/binder/hash.hpp>
 #include <nbdl/get.hpp>
+#include <nbdl/make_store.hpp>
 #include <nbdl/variant.hpp>
 
 #include <unordered_map>
@@ -75,14 +76,14 @@ namespace nbdl
     };
   } // detail
 
-  template <typename Path>
+  template <typename Path, typename Entity>
   struct map_store
   {
     private:
 
-    using Variant = nbdl::variant<typename Path::Entity, nbdl::not_found>;
-    using HashFn = typename Path::hash_fn;
-    using PredFn = typename Path::pred_fn;
+    using Variant = nbdl::variant<Entity, nbdl::not_found>;
+    using HashFn = nbdl::binder::hash_fn;
+    using PredFn = hana::equal_t;
     using Container = std::unordered_map<Path, Variant, HashFn, PredFn>;
 
     public:
@@ -101,9 +102,9 @@ namespace nbdl
   template <>
   struct make_store_impl<map_store_tag>
   {
-    template <typename PathType>
-    static constexpr auto apply(PathType)
-      -> nbdl::map_store<typename PathType::type>
+    template <typename PathType, typename EntityType>
+    static constexpr auto apply(PathType, EntityType)
+      -> nbdl::map_store<typename PathType::type, typename EntityType::type>
     { return {}; }
   };
 
@@ -113,10 +114,6 @@ namespace nbdl
     template <typename Store, typename Message>
     static constexpr auto apply(Store&& s, Message&& m)
     {
-      using Path = typename std::decay_t<Store>::path;
-      static_assert(
-        decltype(hana::type_c<typename Path::canonical_path> == message::get_path_type(m))::value
-      );
       return handle_map_store_action(std::forward<Message>(m), std::forward<Store>(s).map);
     }
   };

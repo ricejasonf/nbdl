@@ -15,7 +15,8 @@
 namespace hana = boost::hana;
 
 #define DEFINE_NAME(NAME) \
-  struct NAME##_t {}; constexpr auto NAME = hana::type_c<NAME##_t>;
+  struct NAME##_t {}; constexpr auto NAME = hana::type_c<NAME##_t>; \
+  struct NAME##_key {};
 
 namespace names {
 
@@ -39,7 +40,8 @@ int main()
     constexpr auto access_points_def_1 = AccessPoints(
       AccessPoint(
         Name(names::Root1),
-        EntityName(names::Root1),
+        Entity<names::Root1_t>,
+        PathKey<names::Root1_key>,
         Actions(Create())
       )
     );
@@ -47,14 +49,14 @@ int main()
     constexpr auto access_points_def_2 = AccessPoints(
       AccessPoint(
         Name(names::Root2),
-        EntityName(names::Root2),
+        Entity<names::Root2_t>,
+        PathKey<names::Root2_key>,
         Actions(Create())
       )
     );
 
     constexpr auto def =
       Context(
-        PrimaryKey(Type(hana::type_c<unsigned>)),
         Providers(
           Provider(
             Name(names::Provider1Name),
@@ -91,14 +93,14 @@ int main()
     constexpr auto access_points_def_1 = AccessPoints(
       AccessPoint(
         Name(names::Root1),
-        EntityName(names::Root1),
+        Entity<names::Root1_t>,
+        PathKey<names::Root1_key>,
         Actions(Create())
       )
     );
 
     constexpr auto def =
       Context(
-        PrimaryKey(Type(hana::type_c<unsigned>)),
         Provider(
           Name(names::Provider1Name),
           Type(names::Provider1),

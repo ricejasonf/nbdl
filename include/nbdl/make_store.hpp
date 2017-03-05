@@ -18,17 +18,18 @@
 namespace nbdl
 {
   template <typename T>
-  template <typename PathType>
-  constexpr auto make_store_fn<T>::operator()(PathType const&) const
+  template <typename PathType, typename EntityType>
+  constexpr auto make_store_fn<T>::operator()(PathType const&, EntityType const&) const
   {
     using Tag = hana::tag_of_t<T>;
     using Impl = make_store_impl<Tag>;
-    using Return = decltype(Impl::apply(PathType{}));
+    using Return = decltype(Impl::apply(PathType{}, EntityType{}));
 
     static_assert(
       nbdl::Store<Return>::value
       && std::is_default_constructible<Return>::value
-      , "nbdl::make_store<T>(path_type) must return a Store (default constructible)");
+    , "nbdl::make_store<T>(path_type, value_type) must return a Store (default constructible)"
+    );
     return Return{};
   };
 
