@@ -11,8 +11,9 @@
 
 #include <nbdl/concept/Store.hpp>
 
-#include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/core/default.hpp>
+#include <boost/hana/core/make.hpp>
+#include <boost/hana/core/tag_of.hpp>
 #include <type_traits>
 
 namespace nbdl
@@ -28,7 +29,7 @@ namespace nbdl
     static_assert(
       nbdl::Store<Return>::value
       && std::is_default_constructible<Return>::value
-    , "nbdl::make_store<T>(path_type, value_type) must return a Store (default constructible)"
+    , "nbdl::make_store<T>(path_type, entity_type) must return default constructible Store."
     );
     return Return{};
   };
@@ -37,7 +38,10 @@ namespace nbdl
   struct make_store_impl<Tag, hana::when<condition>>
     : hana::default_
   {
-    static constexpr auto apply(...) = delete;
+    static constexpr auto apply(...)
+    {
+      return hana::make<Tag>();
+    }
   };
 } // nbdl
 

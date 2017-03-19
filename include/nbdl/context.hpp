@@ -34,6 +34,11 @@ namespace nbdl
   namespace hana  = boost::hana;
   namespace hanax = boost::hana::experimental;
 
+  namespace detail
+  {
+    struct context_store_tag { };
+  }
+
   template <typename Tag, typename ArgTypes>
   class context
   {
@@ -107,12 +112,41 @@ namespace nbdl
       }
 
       template <typename Path, typename ...Fns>
-      decltype(auto) match(Path&& path, Fns&& ...fns) const
+      void match(Path&& path, Fns&& ...fns) const
       {
-        return ctx.match(std::forward<Path>(path), std::forward<Fns&&>(fns)...);
+        ctx.match(std::forward<Path>(path), std::forward<Fns&&>(fns)...);
       }
 
       constexpr MessageApi message_api() const { return {}; }
+
+      template <typename PathSpec, typename ...Payloads>
+      void create(PathSpec, Payloads&& ...ps)
+      {
+        MessageApi{}.make_upstream_create_message(
+          nbdl::detail::resolve_path<PathSpec>(*this)
+        , std::forward<Payloads>(ps)...
+        );
+      }
+
+      template <typename PathSpec, typename Payload>
+      void update(PathSpec, Payload&& p)
+      {
+        MessageApi{}.make_upstream_update_raw_message(
+          nbdl::detail::resolve_path<PathSpec>(*this)
+        , std::forward<Payload>(p)
+        );
+      }
+
+      template <typename PathSpec>
+      void delete_(PathSpec)
+      {
+        MessageApi{}.make_upstream_delete_message(
+          nbdl::detail::resolve_path<PathSpec>(*this)
+        , std::forward<Payload>(p)
+        );
+      }
+
+      using hana_tag = detail::context_store_tag;
     };
 
     static constexpr std::size_t cell_count = decltype(hana::size(CellTagTypes{}))::value;
@@ -254,7 +288,7 @@ namespace nbdl
 
     // called inside PushUpstreamMessageFn and PushDownstreamMessageFn
     template <typename Message>
-    void push_message(Message const& m)
+    auto push_message(Message const& m)
     {
       constexpr auto path_type = decltype(message::get_path_type(m)){};
       auto& store = stores[path_type];
@@ -402,6 +436,29 @@ namespace nbdl
     auto& cell()
     {
       return hana::at_c<i>(cells);
+    }
+  };
+
+  // As a Store for StateConsumers
+
+  template <>
+  struct apply_action_impl<detail::context_store_tag>
+  {
+    template <typename Store, typename Message>
+    static constexpr auto apply(Store& s, Message&& m)
+    {
+      s.push(std::forward<Message>(m));
+      return hana::true_c;
+    }
+  };
+
+  template <>
+  struct match_impl<detail::context_store_tag>
+  {
+    template <typename Store, typename Path, typename ...Fn>
+    static constexpr auto apply(Store&& s, Path&& p, Fn&&... fn)
+    {
+      s.match(std::forward<Path>(p), std::forward<Fn>(fn)...);
     }
   };
 }//nbdl

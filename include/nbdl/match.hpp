@@ -18,7 +18,7 @@
 namespace nbdl
 {
   template<typename Store, typename Path, typename ...Fn>
-  constexpr decltype(auto) match_fn::operator()(Store&& s, Path&& p, Fn&&... fn) const
+  constexpr void match_fn::operator()(Store&& s, Path&& p, Fn&&... fn) const
   {
     using Tag = hana::tag_of_t<Store>;
     using Impl = match_impl<Tag>;
@@ -26,7 +26,7 @@ namespace nbdl
     static_assert(nbdl::Store<Store>::value,
       "nbdl::match(store, path) requires 'store' to be a Store");
 
-    return Impl::apply(std::forward<Store>(s), std::forward<Path>(p), std::forward<Fn>(fn)...);
+    Impl::apply(std::forward<Store>(s), std::forward<Path>(p), std::forward<Fn>(fn)...);
   };
 
   template<typename Tag, bool condition>
@@ -41,9 +41,9 @@ namespace nbdl
   struct match_impl<Tag, hana::when<!hana::is_default<nbdl::get_impl<Tag>>::value>>
   {
     template <typename Store, typename Path, typename ...Fn>
-    static constexpr decltype(auto) apply(Store&& s, Path&& p, Fn&&... fn)
+    static constexpr void apply(Store&& s, Path&& p, Fn&&... fn)
     {
-      return hana::overload_linearly(std::forward<Fn>(fn)...)(
+      hana::overload_linearly(std::forward<Fn>(fn)...)(
         nbdl::get(std::forward<Store>(s), std::forward<Path>(p))
       );
     }

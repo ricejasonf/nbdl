@@ -19,7 +19,7 @@ namespace nbdl
   struct match_fn
   {
     template<typename Store, typename Path, typename ...Fn>
-    constexpr decltype(auto) operator()(Store&&, Path&&, Fn&&...) const;
+    constexpr void operator()(Store&&, Path&&, Fn&&...) const;
   };
 
   constexpr match_fn match{};

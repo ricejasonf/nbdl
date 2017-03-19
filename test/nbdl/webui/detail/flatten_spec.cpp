@@ -79,8 +79,6 @@ int main()
     (void)result;
     (void)expected;
 
-    //using foo = typename decltype(result)::foo;
-
     BOOST_HANA_CONSTANT_CHECK(hana::equal(result, expected));
   }
 }

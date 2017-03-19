@@ -9,7 +9,6 @@
 
 #include<nbdl/fwd/null_store.hpp>
 
-#include<nbdl/make_store.hpp>
 #include<nbdl/apply_action.hpp>
 #include<nbdl/get.hpp>
 
@@ -20,15 +19,6 @@ namespace nbdl
   struct null_store
   {
     // stores nothing
-  };
-
-  template <>
-  struct make_store_impl<null_store>
-  {
-    template <typename PathType, typename EntityType>
-    static constexpr auto apply(PathType, EntityType)
-      -> nbdl::null_store
-    { return {}; }
   };
 
   template <>

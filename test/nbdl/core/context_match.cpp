@@ -100,13 +100,16 @@ TEST_CASE("Match a value in the stores.", "[context]")
   auto context = nbdl::make_unique_context<test_context_match::my_context>();
   auto& state_consumer  = context->cell<2>();
 
-  bool result = state_consumer.push_api.match(path<1>(1, 49),
-    [](my_entity<1> const& e)
+  bool result = false;
+
+  state_consumer.push_api.match(path<1>(1, 49),
+    [&](my_entity<1> const& e)
     {
-      return hana::equal(e, my_entity<1>{1, 49});
+      result = hana::equal(e, my_entity<1>{1, 49});
     },
-    [](auto const&) { return false; }
+    [&](auto const&) { }
   );
+
   CHECK(result);
 }
 
@@ -116,10 +119,13 @@ TEST_CASE("Matching nbdl::uninitialized triggers upstream read message.", "[cont
   auto& provider1       = context->cell<1>();
   auto& state_consumer  = context->cell<2>();
 
-  bool result = state_consumer.push_api.match(path<1>(1, 13),
-    [](nbdl::unresolved)  { return true; },
-    [](auto const&)       { return false; }
+  bool result = false;
+
+  state_consumer.push_api.match(path<1>(1, 13),
+    [&](nbdl::unresolved)  { result = true; },
+    [&](auto const&)       { result = false; }
   );
+
   CHECK(result);
 
   // provider1 should record an upstream read message.

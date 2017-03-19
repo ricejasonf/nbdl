@@ -26,8 +26,7 @@ namespace nbdl
   {
     using Tag = typename hana::tag_of<T>::type;
     static constexpr bool value =
-              !hana::is_default<nbdl::make_store_impl             <Tag>>::value
-      && (
+         (
               !hana::is_default<nbdl::apply_action_impl           <Tag>>::value
           ||  !hana::is_default<nbdl::apply_foreign_action_impl   <Tag>>::value
          )
