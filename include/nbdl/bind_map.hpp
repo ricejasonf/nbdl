@@ -63,36 +63,20 @@ namespace nbdl
   template <>
   struct bind_map_impl<hana::map_tag>
   {
-    template <typename T, typename = void>
-    struct string_helper;
-
-    template <typename T>
-    struct string_helper<T,
-      std::enable_if_t<std::is_same<decltype(T::value), char const*>::value>>
-    {
-      constexpr char const* operator()()
-      {
-        return T::value;
-      }
-    };
-
-    template <typename T>
-    struct string_helper<T,
-      std::enable_if_t<hana::is_a<hana::string_tag, T>>>
-    {
-      constexpr char const* operator()()
-      {
-        return hana::to<char const*>(T{});
-      }
-    };
-
     template <typename BindableMap, typename BindFn>
     static auto apply(BindableMap&& map, BindFn&& f)
     {
       return hana::unpack(map, [&](auto&& ...pair)
       {
+        static_assert(
+          hana::all(mpdef::make_list(
+            hana::is_convertible<hana::tag_of_t<decltype(hana::first(pair))>, char const*>{}...
+          ))
+        , "BindableMap keys must be convertible to char const*"
+        );
+
         return (f(hana::make_pair(
-          string_helper<std::decay_t<decltype(hana::first(pair))>>{}(),
+          hana::first(pair),
           std::ref(hana::second(pair))
         )), ...);
       });

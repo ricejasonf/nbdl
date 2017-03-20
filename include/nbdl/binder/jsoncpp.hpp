@@ -183,7 +183,13 @@ namespace nbdl { namespace binder { namespace jsoncpp
       {
         nbdl::bind_map(std::forward<T>(t), [&](auto&& ...pair)
         {
-          (binder.bind_named_member(hana::first(pair), hana::second(pair).get()), ...);
+          (
+            binder.bind_named_member(
+              hana::to<char const*>(hana::first(pair))
+            , hana::second(pair).get()
+            )
+          , ...
+          );
         });
       }
 
