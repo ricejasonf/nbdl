@@ -7,8 +7,12 @@
 #ifndef NBDL_PATH_HPP
 #define NBDL_PATH_HPP
 
+#include <boost/hana/core/tag_of.hpp>
+
 namespace nbdl
 {
+  struct path_tag { };
+
   template <typename ...Xs>
   struct path_t
   { };
@@ -33,6 +37,11 @@ namespace nbdl
 
   constexpr path_fn path{};
 
+  /*
+   * Everything that is not a "path_node" is a leaf.
+   */
+  struct path_node_tag { };
+
   template <typename Key, typename PathToValue>
   struct path_node_t
   { };
@@ -48,6 +57,15 @@ namespace nbdl
 
   template <typename Key>
   constexpr path_node_fn<Key> path_node{};
+}
+
+namespace boost::hana
+{
+  template<typename ...T>
+  struct tag_of<nbdl::path_t<T...>> { using type = nbdl::path_tag; };
+
+  template<typename T, typename U>
+  struct tag_of<nbdl::path_node_t<T, U>> { using type = nbdl::path_node_tag; };
 }
 
 #endif

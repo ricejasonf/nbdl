@@ -41,23 +41,23 @@ namespace example
     { }
 
     template <typename Resolve, typename ...Args>
-    void operator()(Resolve&& resolve, Args&& ...)
+    void operator()(Resolve&& resolver, Args&& ...)
     {
-      socket.async_connect(endpoint, [&, resolve](asio::error_code error)
+      socket.async_connect(endpoint, [&](asio::error_code error)
       {
         if (!error)
         {
-          resolve(); 
+          resolver.resolve(); 
         }
         else if (attempts_failed++ >= attempts_.value)
         {
-          resolve.reject(attempts_);
+          resolver.reject(attempts_);
         }
         else
         {
           // try again
           std::cout << "Connection failed! trying again...\n";
-          operator()(resolve);
+          operator()(resolver);
         }
       });
     }

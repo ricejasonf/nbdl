@@ -25,15 +25,15 @@ namespace example
         : socket(socket)
       { }
 
-      template <typename Resolve, typename ...Args>
-      void operator()(Resolve&& resolve, Args&&...)
+      template <typename Resolver, typename ...Args>
+      void operator()(Resolver&& resolver, Args&&...)
       {
         asio::async_read(socket, asio::buffer(buffer, 4),
-          [&, resolve](std::error_code ec, std::size_t)
+          [&](std::error_code ec, std::size_t)
           {
             if (ec)
             {
-              resolve.reject(ec);
+              resolver.reject(ec);
             }
             else
             {
@@ -43,7 +43,7 @@ namespace example
                 | buffer[2] << 8
                 | buffer[3]
                 ;
-              resolve(length);
+              resolver.resolve(length);
             }
           });
       }
@@ -59,22 +59,22 @@ namespace example
         : socket(socket)
       { }
 
-      template <typename Resolve>
-      void operator()(Resolve&& resolve, uint32_t length)
+      template <typename Resolver>
+      void operator()(Resolver&& resolver, uint32_t length)
       {
         body = std::string{};
         body.resize(length);
 
         asio::async_read(socket, asio::buffer(body, length),
-          [&, resolve](std::error_code error, std::size_t)
+          [&](std::error_code error, std::size_t)
           {
             if (!error)
             {
-              resolve(std::move(body));
+              resolver.resolve(std::move(body));
             }
             else
             {
-              resolve.reject(error);
+              resolver.reject(error);
             }
           });
       }

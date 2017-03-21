@@ -7,8 +7,10 @@
 #ifndef NBDL_CATCH_HPP
 #define NBDL_CATCH_HPP
 
-#include <nbdl/detail/pipe_rejection.hpp>
+#include <nbdl/concept/Resolver.hpp>
 
+#include <boost/hana/functional/overload_linearly.hpp>
+#include <boost/hana/integral_constant.hpp>
 #include <boost/hana/type.hpp>
 #include <utility>
 
@@ -16,36 +18,63 @@ namespace nbdl
 {
   namespace hana = boost::hana;
 
-  namespace detail
+  struct catch_tag { };
+
+  template <typename RejectionHandler>
+  struct catch_t
   {
-    struct catch_tag { };
+    using hana_tag = catch_tag;
 
-    template <typename RejectionHandler>
-    struct catch_t
+    RejectionHandler fn;
+
+    template <typename Resolver, typename ...Args>
+    void resolve(Resolver&& r, Args&&... args) noexcept
     {
-      using hana_tag = catch_tag;
+      // just propagate resolved value
+      std::forward<Resolver>(r).resolve(std::forward<Args>(args)...);
+    };
 
-      RejectionHandler fn;
-
-      template <typename ...Args>
-      auto operator()(pipe_rejection, Args&& ...args)
-        -> decltype(fn(std::forward<Args>(args)...))
+    template <typename Resolver, typename ...Args>
+    void reject(Resolver& r, Args&&... args) noexcept
+    {
+      // uses libc++ impl details FIXME
+      if constexpr(std::__invokable<RejectionHandler, Args...>::value)
       {
         fn(std::forward<Args>(args)...);
+        r.terminate();
       }
-    };
-  }
+      else
+      {
+        r.reject(std::forward<Args>(args)...);
+      }
+#if 0
+      // try fn or propagate rejection
+      hana::overload_linearly(
+        fn // doesn't call terminate :(
+      , [&](auto&& ...xs)
+        {
+          r.reject(std::forward<decltype(xs)>(xs)...);
+        }
+      )(std::forward<Args>(args)...);
+#endif
+    }
+  };
 
   struct catch_fn
   {
     template <typename RejectionHandler>
     auto operator()(RejectionHandler&& fn) const
     {
-      return detail::catch_t<RejectionHandler>{std::forward<RejectionHandler>(fn)};
+      return catch_t<RejectionHandler>{std::forward<RejectionHandler>(fn)};
     }
   };
 
   constexpr catch_fn catch_;
+
+  template <>
+  struct Resolver<catch_tag>
+    : hana::true_
+  { };
 }
 
 #endif

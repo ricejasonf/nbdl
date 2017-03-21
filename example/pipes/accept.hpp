@@ -4,8 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_EXAMPLE_ACCEPT_HPP
-#define NBDL_EXAMPLE_ACCEPT_HPP
+#ifndef NBDL_EXAMPLE_PIPES_ACCEPT_HPP
+#define NBDL_EXAMPLE_PIPES_ACCEPT_HPP
 
 #include <asio.hpp>
 #include <nbdl.hpp>
@@ -14,7 +14,6 @@
 
 namespace example
 {
-
   // accepts a single connection
   struct accept_fn
   {
@@ -28,20 +27,19 @@ namespace example
       , socket(io)
     { }
 
-    template <typename Resolve, typename ...Args>
-    void operator()(Resolve&& resolve, Args&& ...)
+    template <typename Resolver, typename ...Args>
+    void operator()(Resolver&& resolver, Args&& ...)
     {
       tcp::acceptor acceptor_(socket.get_io_service(), endpoint);
-
-      acceptor_.async_accept(socket, [&, resolve](std::error_code error)
+      acceptor_.async_accept(socket, [&](std::error_code error)
       {
         if (!error)
         {
-          resolve(socket);
+          resolver.resolve(socket);
         }
         else
         {
-          resolve.reject(error);
+          resolver.reject(error);
         }
       });
 

@@ -12,10 +12,10 @@
 
 auto tap = [](auto fn)
 {
-  return nbdl::promise([fn_ = std::move(fn)](auto&& resolve, auto&& ...args)
+  return nbdl::promise([fn_ = std::move(fn)](auto&& resolver, auto&& ...args)
   {
     fn_(args...);
-    resolve(std::forward<decltype(args)>(args)...);
+    resolver.resolve(std::forward<decltype(args)>(args)...);
   });
 };
 
@@ -31,6 +31,7 @@ auto tap = [](auto fn)
 #include <iostream>
 #include <nbdl.hpp>
 #include <nbdl/binder/jsoncpp.hpp>
+
 
 namespace hana = boost::hana;
 namespace hanax = boost::hana::experimental;
@@ -138,6 +139,7 @@ int main()
   , tap([](){ std::cout << "connected to server\n"; })
   , hana::unpack(std::move(messages), nbdl::pipe ^hana::on^ send_message)
   , nbdl::catch_([](example::attempts) { std::cout << "Client failed with too many attempts.\n"; })
+  , nbdl::catch_([](std::exception const& e) { std::cout << "CLIENT ERROR: " << e.what() <<'\n'; })
   , nbdl::catch_([](auto error) { std::cout << "CLIENT ERROR: " << error.message() <<'\n'; })
   );
 
@@ -150,11 +152,12 @@ int main()
     , hana::type_c<terminate>
     , print
     )
+  , nbdl::catch_([](std::exception const& e) { std::cout << "CLIENT ERROR: " << e.what() <<'\n'; })
   , nbdl::catch_([](auto error) { std::cout << "SERVER ERROR: " << error.message() <<'\n'; })
   );
 
-  receive_messages();
-  send_messages();
+  nbdl::run_async(std::move(receive_messages));
+  nbdl::run_async(std::move(send_messages));
 
   // When the messages are sent and the server gets
   // the terminate message io.run() will run out of events,

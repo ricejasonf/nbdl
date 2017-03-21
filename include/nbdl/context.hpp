@@ -119,6 +119,7 @@ namespace nbdl
 
       constexpr MessageApi message_api() const { return {}; }
 
+#if 0
       template <typename PathSpec, typename ...Payloads>
       void create(PathSpec, Payloads&& ...ps)
       {
@@ -145,6 +146,7 @@ namespace nbdl
         , std::forward<Payload>(p)
         );
       }
+#endif
 
       using hana_tag = detail::context_store_tag;
     };

@@ -7,50 +7,51 @@
 #ifndef NBDL_PROMISE_HPP
 #define NBDL_PROMISE_HPP
 
-#include <boost/hana/core/is_a.hpp>
+#include <boost/hana/integral_constant.hpp>
 #include <utility>
 
 namespace nbdl
 {
   namespace hana = boost::hana;
 
-  namespace detail
+  struct promise_tag { };
+
+  template <typename Fn>
+  struct promise_t
   {
-    struct promise_tag { };
+    using hana_tag = promise_tag;
 
-    template <typename Fn>
-    struct promise_t
+    Fn fn;
+
+    template <typename ...Args>
+    void resolve(Args&&... args) noexcept
     {
-      using hana_tag = promise_tag;
+      fn(std::forward<Args>(args)...);
+    }
 
-      Fn fn;
-
-      template <typename ...Args>
-      void operator()(Args&& ...args)
-      {
-        fn(std::forward<Args>(args)...);
-      }
-    };
-  }
+    template <typename Resolver, typename ...Args>
+    void reject(Resolver&& resolver, Args&&... args) noexcept
+    {
+      // propagate rejection
+      std::forward<Resolver>(resolver).reject(std::forward<Args>(args)...);
+    }
+  };
 
   struct promise_fn
   {
     template <typename Fn>
     auto operator()(Fn&& fn) const
     {
-      if constexpr(hana::is_a<detail::promise_tag, std::decay_t<Fn>>())
-      {
-        // idempotent
-        return std::forward<Fn>(fn);
-      }
-      else
-      {
-        return detail::promise_t<Fn>{std::forward<Fn>(fn)};
-      }
+      return promise_t<std::decay_t<Fn>>{std::forward<Fn>(fn)};
     }
   };
 
   constexpr promise_fn promise;
+
+  template <>
+  struct Resolver<promise_tag>
+    : hana::true_
+  { };
 }
 
 #endif
