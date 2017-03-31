@@ -27,11 +27,11 @@ namespace example
     { }
 
     template <typename Resolver>
-    void operator()(Resolver&& resolver, tcp::socket& socket)
+    void operator()(Resolver& resolver, tcp::socket& socket)
     {
       nbdl::run_async(nbdl::pipe(
         read_raw_message(socket)
-      , [&](std::string&& msg_json)
+      , nbdl::throwable_transform([&](std::string&& msg_json)
         {
           std::cout << "RAW MESSAGE: " << msg_json << '\n';
           Message message;
@@ -50,7 +50,7 @@ namespace example
               operator()(resolver, socket);
             }
           );
-        }
+        })
       , nbdl::catch_([&](auto&& error) { resolver.reject(error); })
       ));
     }

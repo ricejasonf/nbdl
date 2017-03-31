@@ -22,7 +22,6 @@
 #include <nbdl/concept/DownstreamMessage.hpp>
 #include <nbdl/concept/Entity.hpp>
 #include <nbdl/concept/Provider.hpp>
-#include <nbdl/concept/Resolver.hpp>
 #include <nbdl/concept/StateConsumer.hpp>
 #include <nbdl/concept/Store.hpp>
 #include <nbdl/concept/UpstreamMessage.hpp>
@@ -41,6 +40,7 @@
 #include <nbdl/make_state_consumer.hpp>
 #include <nbdl/make_store.hpp>
 #include <nbdl/map_store.hpp>
+#include <nbdl/throwable_transform.hpp>
 #include <nbdl/match.hpp>
 #include <nbdl/message.hpp>
 #include <nbdl/message_api.hpp>

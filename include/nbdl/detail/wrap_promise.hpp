@@ -9,10 +9,10 @@
 
 #include <nbdl/fwd/detail/wrap_promise.hpp>
 
-#include <nbdl/concept/Resolver.hpp>
 #include <nbdl/promise.hpp>
 #include <nbdl/fwd/detail/promise_join.hpp>
 
+#include <boost/hana/core/is_a.hpp>
 #include <stdexcept>
 #include <utility>
 
@@ -26,7 +26,7 @@ namespace nbdl::detail
   template <typename X>
   auto wrap_promise_fn::operator()(X&& x) const
   {
-    if constexpr(nbdl::Resolver<X>())
+    if constexpr(hana::is_a<promise_tag, X>())
     {
       return std::forward<X>(x);
     }
@@ -36,38 +36,15 @@ namespace nbdl::detail
       return nbdl::promise([fn = std::move(temp)](auto&& resolver, auto&& ...args)
       {
         using Return = decltype(fn(std::forward<decltype(args)>(args)...));
-        if constexpr(noexcept(fn(std::forward<decltype(args)>(args)...)))
+        // handle void edge case
+        if constexpr(std::is_void<Return>::value)
         {
-          // handle void edge case
-          if constexpr(std::is_void<Return>::value)
-          {
-            fn(std::forward<decltype(args)>(args)...);
-            resolver.resolve();
-          }
-          else
-          {
-            resolver.resolve(fn(std::forward<decltype(args)>(args)...));
-          }
+          fn(std::forward<decltype(args)>(args)...);
+          resolver.resolve();
         }
         else
         {
-          try
-          {
-            // handle void edge case
-            if constexpr(std::is_void<Return>::value)
-            {
-              fn(std::forward<decltype(args)>(args)...);
-              resolver.resolve();
-            }
-            else
-            {
-              resolver.resolve(fn(std::forward<decltype(args)>(args)...));
-            }
-          }
-          catch (std::exception const& e)
-          { resolver.reject(e); }
-          catch (...)
-          { resolver.reject(std::runtime_error("Unknown exception")); }
+          resolver.resolve(fn(std::forward<decltype(args)>(args)...));
         }
       });
     }

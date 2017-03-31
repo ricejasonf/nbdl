@@ -73,11 +73,11 @@ TEST_CASE("Pipe asynchronous events", "[pipe]")
   nbdl::run_async(
     nbdl::pipe(
       op< 1 >
-    , [&](auto const& state) noexcept { check_1(state); return state; }
+    , std::ref(check_1)
     , op< 2 >
     , op< 3 >
     , op< 4 >
-    , [&](auto const& state) noexcept { check_2(state); return state; }
+    , std::ref(check_2)
     )
   , hana::make_tuple(42)
   );
@@ -107,14 +107,8 @@ TEST_CASE("Pipes are nestable and allow synchronous transformations", "[pipe]")
       , op< 6 >
       , op< 7 >
       )
-    , [](auto&& xs) noexcept
-      {
-        return hana::transform(
-          std::forward<decltype(xs)>(xs)
-        , [](auto x) { return x * x; }
-        );
-      }
-    , [&](auto const& state) noexcept { check_1(state); return state; }
+    , hana::reverse_partial(hana::transform, [](auto x) { return x * x; })
+    , std::ref(check_1)
     )
   , hana::make_tuple()
   );

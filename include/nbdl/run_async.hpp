@@ -9,6 +9,7 @@
 
 #include <nbdl/detail/promise_join.hpp>
 #include <nbdl/detail/wrap_promise.hpp>
+#include <nbdl/fwd/promise.hpp>
 
 #include <type_traits>
 #include <utility>
@@ -20,6 +21,8 @@ namespace nbdl
     template <typename End>
     struct promise_end
     {
+      using hana_tag = promise_tag;
+
       End* end;
 
       promise_end(End* e)

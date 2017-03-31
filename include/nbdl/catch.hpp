@@ -7,7 +7,7 @@
 #ifndef NBDL_CATCH_HPP
 #define NBDL_CATCH_HPP
 
-#include <nbdl/concept/Resolver.hpp>
+#include <nbdl/fwd/promise.hpp>
 
 #include <boost/hana/functional/overload_linearly.hpp>
 #include <boost/hana/integral_constant.hpp>
@@ -18,12 +18,10 @@ namespace nbdl
 {
   namespace hana = boost::hana;
 
-  struct catch_tag { };
-
   template <typename RejectionHandler>
   struct catch_t
   {
-    using hana_tag = catch_tag;
+    using hana_tag = promise_tag;
 
     RejectionHandler fn;
 
@@ -70,11 +68,6 @@ namespace nbdl
   };
 
   constexpr catch_fn catch_;
-
-  template <>
-  struct Resolver<catch_tag>
-    : hana::true_
-  { };
 }
 
 #endif

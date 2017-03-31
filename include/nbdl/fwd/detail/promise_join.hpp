@@ -7,13 +7,13 @@
 #ifndef NBDL_FWD_DETAIL_PROMISE_JOIN_HPP
 #define NBDL_FWD_DETAIL_PROMISE_JOIN_HPP
 
+#include <nbdl/fwd/promise.hpp>
+
 namespace nbdl::detail
 {
-  struct promise_join_nested_tag { };
-
   struct promise_zero_t
   {
-    using hana_tag = promise_join_nested_tag;
+    using hana_tag = promise_tag;
 
     template <typename Resolver, typename ...Args>
     void resolve(Resolver& r, Args&& ...args)
@@ -31,7 +31,7 @@ namespace nbdl::detail
   template <typename Current, typename Next>
   struct promise_join_nested_t
   {
-    using hana_tag = promise_join_nested_tag;
+    using hana_tag = promise_tag;
 
     Current current;
     Next next;
@@ -63,12 +63,10 @@ namespace nbdl::detail
     }
   };
 
-  struct promise_join_tag { };
-
   template <typename Current, typename Next>
   struct promise_join_t
   {
-    using hana_tag = promise_join_tag;
+    using hana_tag = promise_tag;
 
     Current current;
     Next next;

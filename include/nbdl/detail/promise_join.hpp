@@ -9,12 +9,10 @@
 
 #include <nbdl/fwd/detail/promise_join.hpp>
 
-#include <nbdl/concept/Resolver.hpp>
 #include <nbdl/detail/wrap_promise.hpp>
 
 #include <boost/hana/concept/foldable.hpp>
 #include <boost/hana/fold_right.hpp>
-#include <boost/hana/functional/id.hpp>
 #include <boost/hana/integral_constant.hpp>
 #include <utility>
 
@@ -41,21 +39,6 @@ namespace nbdl::detail
       );
     }
   }
-}
-
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
-  template <>
-  struct Resolver<detail::promise_join_tag>
-    : hana::true_
-  { };
-
-  template <>
-  struct Resolver<detail::promise_join_nested_tag>
-    : hana::true_
-  { };
 }
 
 #endif

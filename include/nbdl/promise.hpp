@@ -7,15 +7,12 @@
 #ifndef NBDL_PROMISE_HPP
 #define NBDL_PROMISE_HPP
 
-#include <boost/hana/integral_constant.hpp>
+#include <nbdl/fwd/promise.hpp>
+
 #include <utility>
 
 namespace nbdl
 {
-  namespace hana = boost::hana;
-
-  struct promise_tag { };
-
   template <typename Fn>
   struct promise_t
   {
@@ -37,21 +34,11 @@ namespace nbdl
     }
   };
 
-  struct promise_fn
+  template <typename Fn>
+  auto promise_fn::operator()(Fn&& fn) const
   {
-    template <typename Fn>
-    auto operator()(Fn&& fn) const
-    {
-      return promise_t<std::decay_t<Fn>>{std::forward<Fn>(fn)};
-    }
-  };
-
-  constexpr promise_fn promise;
-
-  template <>
-  struct Resolver<promise_tag>
-    : hana::true_
-  { };
+    return promise_t<std::decay_t<Fn>>{std::forward<Fn>(fn)};
+  }
 }
 
 #endif

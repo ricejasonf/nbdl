@@ -128,7 +128,7 @@ int main()
   auto send_message = [&](auto&& message) {
     return nbdl::pipe(
       hana::always(message_variant(std::forward<decltype(message)>(message)))
-    , nbdl::binder::jsoncpp::to_string
+    , nbdl::throwable_transform(nbdl::binder::jsoncpp::to_string)
     , example::write_raw_message(client_socket)
     );
   };
