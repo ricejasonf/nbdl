@@ -11,7 +11,7 @@
 
 struct some_tag {};
 
-TEST_CASE("Unitialized variant should match Unresolved.", "[variant]") 
+TEST_CASE("Unitialized variant should match Unresolved.", "[variant]")
 {
 	using Number = nbdl::variant<int, std::string, some_tag>;
 	Number number;
@@ -30,7 +30,7 @@ TEST_CASE("Unitialized variant should match Unresolved.", "[variant]")
 		}) == 56);
 }
 
-TEST_CASE("Assign a value to a variant and use the callback interface to retrieve it.", "[variant]") 
+TEST_CASE("Assign a value to a variant and use the callback interface to retrieve it.", "[variant]")
 {
 	using Number = nbdl::variant<int, std::string, some_tag>;
 	
@@ -146,4 +146,38 @@ TEST_CASE("Modify a struct's member in a variant", "[variant]")
 			return false;
 		});
 	CHECK(result);
+}
+
+TEST_CASE("variant as a nbdl::Store", "[variant][Store]")
+{
+  struct some_path { };
+  using optional_string = nbdl::optional<std::string>;
+  using very_optional_string = nbdl::optional<optional_string>;
+
+  {
+    optional_string x = std::string("Hello Worldz!");
+    very_optional_string y = x;
+
+    std::string result{};
+
+    nbdl::match(y, some_path{}
+    , [&](std::string const& value) { result = value; }
+    , [&](auto&&) { result = std::string("not this"); }
+    );
+
+    CHECK(result == std::string("Hello Worldz!"));
+  }
+  {
+    optional_string x{};
+    very_optional_string y = x;
+
+    std::string result{};
+
+    nbdl::match(y, some_path{}
+    , [&](std::string const&) { result = std::string("not this"); }
+    , [&](auto&&) { result = std::string("should match this"); }
+    );
+
+    CHECK(result == std::string("should match this"));
+  }
 }

@@ -9,6 +9,7 @@
 
 #include <nbdl/detail/common_type.hpp>
 #include <nbdl/fwd/bind_variant.hpp>
+#include <nbdl/concept/Store.hpp>
 
 #include <type_traits>
 #include <boost/hana.hpp>
@@ -315,6 +316,42 @@ namespace nbdl
     }
   };
 
+  // Store
+
+  template<>
+  struct match_impl<variant_tag>
+  {
+    template <typename Store, typename Path, typename ...Fn>
+    static constexpr void apply(Store&& s, Path&& p, Fn&&... fn)
+    {
+      std::forward<Store>(s).match([&](auto const& value)
+      {
+        if constexpr(nbdl::Store<decltype(value)>::value)
+        {
+          match(
+            value
+          , std::forward<Path>(p)
+          , std::forward<Fn>(fn)...
+          );
+        }
+        else
+        {
+          hana::overload_linearly(std::forward<Fn>(fn)...)(value);
+        }
+      });
+    }
+  };
+
+  template<>
+  struct apply_action_impl<variant_tag>
+  {
+    static constexpr auto apply(...)
+    {
+      // TODO Perhaps actions would be useful for updating elements.
+      return hana::false_c;
+    }
+  };
+  
 }//nbdl
 
 #endif
