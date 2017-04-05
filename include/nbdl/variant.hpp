@@ -321,22 +321,22 @@ namespace nbdl
   template<>
   struct match_impl<variant_tag>
   {
-    template <typename Store, typename Path, typename ...Fn>
-    static constexpr void apply(Store&& s, Path&& p, Fn&&... fn)
+    template <typename Store, typename Key, typename Fn>
+    static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
     {
-      std::forward<Store>(s).match([&](auto const& value)
+      std::forward<Store>(s).match([&](auto&& value)
       {
         if constexpr(nbdl::Store<decltype(value)>::value)
         {
-          match(
-            value
-          , std::forward<Path>(p)
-          , std::forward<Fn>(fn)...
+          nbdl::match(
+            std::forward<decltype(value)>(value)
+          , std::forward<Key>(k)
+          , std::forward<Fn>(fn)
           );
         }
         else
         {
-          hana::overload_linearly(std::forward<Fn>(fn)...)(value);
+          std::forward<Fn>(fn)(std::forward<decltype(value)>(value));
         }
       });
     }

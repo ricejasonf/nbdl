@@ -9,7 +9,6 @@
 
 #include<nbdl/fwd/concept/Store.hpp>
 
-#include<nbdl/make_store.hpp>
 #include<nbdl/apply_action.hpp>
 #include<nbdl/apply_foreign_action.hpp>
 #include<nbdl/match.hpp>

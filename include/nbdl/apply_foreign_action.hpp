@@ -7,11 +7,13 @@
 #ifndef NBDL_APPLY_FOREIGN_ACTION_HPP
 #define NBDL_APPLY_FOREIGN_ACTION_HPP
 
-#include<nbdl/fwd/apply_foreign_action.hpp>
+#include <nbdl/fwd/apply_foreign_action.hpp>
 
-#include<nbdl/concept/Store.hpp>
+#include <nbdl/concept/Store.hpp>
 
-#include<utility>
+#include <boost/hana/core/tag_of.hpp>
+#include <boost/hana/core/default.hpp>
+#include <utility>
 
 namespace nbdl
 {

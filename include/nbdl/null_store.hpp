@@ -7,6 +7,7 @@
 #ifndef NBDL_NULL_STORE_HPP
 #define NBDL_NULL_STORE_HPP
 
+#include<nbdl/fwd/make_store.hpp>
 #include<nbdl/fwd/null_store.hpp>
 
 #include<nbdl/apply_action.hpp>
@@ -35,8 +36,8 @@ namespace nbdl
   template <>
   struct get_impl<null_store>
   {
-    template <typename Store, typename Path>
-    static constexpr auto apply(Store&&, Path&&)
+    template <typename Store, typename Key>
+    static constexpr auto apply(Store&&, Key&&)
       -> nbdl::uninitialized
     { return {}; }
   };

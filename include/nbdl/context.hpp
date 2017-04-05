@@ -261,7 +261,7 @@ namespace nbdl
       });
     }
 
-    // called inside push_downstream_api_state_consumer
+    // called inside push_upstream_api_state_consumer
     template <typename Path, typename ...Fns>
     decltype(auto) match(Path&& p, Fns&& ...fns)
     {
@@ -457,10 +457,10 @@ namespace nbdl
   template <>
   struct match_impl<detail::context_store_tag>
   {
-    template <typename Store, typename Path, typename ...Fn>
-    static constexpr auto apply(Store&& s, Path&& p, Fn&&... fn)
+    template <typename Store, typename Key, typename Fn>
+    static constexpr auto apply(Store&& s, Key&& k, Fn&& fn)
     {
-      s.match(std::forward<Path>(p), std::forward<Fn>(fn)...);
+      s.match(std::forward<Key>(k), std::forward<Fn>(fn));
     }
   };
 }//nbdl

@@ -8,6 +8,7 @@
 #include <nbdl/bind_map.hpp>
 #include <nbdl/bind_sequence.hpp>
 #include <nbdl/entity.hpp>
+#include <nbdl/match_path.hpp>
 
 #include <boost/hana/equal.hpp>
 #include <boost/hana/string.hpp>
@@ -136,13 +137,13 @@ TEST_CASE("Entity as a Store.", "[entity][Store]")
   std::string result1;
   std::string result2;
 
-  nbdl::match(
+  nbdl::match_path(
     account, path1
   , [&](std::string const& name) { result1 = name; }
   , [](auto&&) { }
   );
 
-  nbdl::match(
+  nbdl::match_path(
     account, path2
   , [&](std::string const& name) { result2 = name; }
   , [](auto&&) { }

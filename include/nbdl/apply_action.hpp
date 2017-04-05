@@ -11,6 +11,7 @@
 
 #include <nbdl/concept/Store.hpp>
 
+#include <boost/hana/concept/searchable.hpp>
 #include <boost/hana/core/default.hpp>
 #include <boost/hana/core/when.hpp>
 #include <boost/hana/core/tag_of.hpp>
@@ -20,6 +21,7 @@
 namespace nbdl
 {
   namespace hana = boost::hana;
+
   template<typename Store, typename Message>
   constexpr auto apply_action_fn::operator()(Store&& s, Message&& m) const
   {
@@ -56,6 +58,16 @@ namespace nbdl
       // when a client app is waiting on a read it should queue changes
       // to that resource and squash the whole thing before telling the
       // consumer. this should probably be handled internally
+  };
+
+  template<typename Tag>
+  struct apply_action_impl<Tag, hana::when<hana::Searchable<Tag>::value>>
+  {
+    static constexpr auto apply(...)
+    {
+      // TODO Perhaps actions would be useful for updating elements.
+      return hana::false_c;
+    }
   };
 } // nbdl
 

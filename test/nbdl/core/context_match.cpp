@@ -58,29 +58,26 @@ namespace nbdl
   template <>
   struct match_impl<test_context_match::tcms_store_tag>
   {
-    template <typename Store, typename Path, typename ...Fns>
-    static constexpr decltype(auto) apply(Store&&, Path&& p, Fns&& ...fns)
+    template <typename Store, typename Key, typename Fn>
+    static constexpr void apply(Store&&, Key&& k, Fn&& fn)
     {
-      return hana::overload_linearly(
-        [&](test_context::path<1> const& p)
+      if constexpr(decltype(hana::type_c<test_context::path<1>> == hana::typeid_(k)){})
+      {
+        if (hana::equal(k, test_context::path<1>(1, 49)))
         {
-          if (hana::equal(p, test_context::path<1>(1, 49)))
-          {
-            return hana::overload_linearly(std::forward<Fns>(fns)...)
-              (test_context::entity::my_entity<1>{1, 49});
-          }
-          else
-          {
-            return hana::overload_linearly(std::forward<Fns>(fns)...)
-              (nbdl::uninitialized{});
-          }
-        },
-        [&](auto const&)
-        {
-          return hana::overload_linearly(std::forward<Fns>(fns)...)
-            (nbdl::uninitialized{});
+          std::forward<Fn>(fn)(
+            test_context::entity::my_entity<1>{1, 49}
+          );
         }
-      )(std::forward<Path>(p));
+        else
+        {
+          std::forward<Fn>(fn)(nbdl::uninitialized{});
+        }
+      }
+      else
+      {
+        std::forward<Fn>(fn)(nbdl::uninitialized{});
+      }
     }
   };
 

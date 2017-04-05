@@ -13,6 +13,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   echo_provider.cpp
   entity.cpp
   map_store.cpp
+  match_path.cpp
   message_api.cpp
   path.cpp
   pipe.cpp

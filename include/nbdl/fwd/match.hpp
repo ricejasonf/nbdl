@@ -7,7 +7,7 @@
 #ifndef NBDL_FWD_MATCH_HPP
 #define NBDL_FWD_MATCH_HPP
 
-#include<boost/hana/core/when.hpp>
+#include <boost/hana/core/when.hpp>
 
 namespace nbdl
 {
@@ -18,8 +18,8 @@ namespace nbdl
 
   struct match_fn
   {
-    template<typename Store, typename Path, typename ...Fn>
-    constexpr void operator()(Store&&, Path&&, Fn&&...) const;
+    template<typename Store, typename Key, typename ...Fn>
+    constexpr void operator()(Store&&, Key&&, Fn&&...) const;
   };
 
   constexpr match_fn match{};

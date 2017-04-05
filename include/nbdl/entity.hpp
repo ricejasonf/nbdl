@@ -22,25 +22,12 @@ namespace nbdl
   // Store
 
   template<typename Tag>
-  struct match_impl<Tag, hana::when<nbdl::Entity<Tag>::value>>
+  struct get_impl<Tag, hana::when<nbdl::Entity<Tag>::value>>
   {
-    template <typename Store, typename Path, typename ...Fn>
-    static constexpr void apply(Store&& s, Path&& p, Fn&&... fn)
+    template <typename Store, typename Key>
+    static constexpr decltype(auto) apply(Store&& s, Key&&)
     {
-      using Key = typename decltype(hana::typeid_(hana::front(p)))::type;
-      auto const& value = get_member<Key>(std::forward<Store>(s));
-      if constexpr(nbdl::Store<decltype(value)>::value)
-      {
-        match(
-          value
-        , hana::drop_front(std::forward<Path>(p))
-        , std::forward<Fn>(fn)...
-        );
-      }
-      else
-      {
-        hana::overload_linearly(std::forward<Fn>(fn)...)(value);
-      }
+      return get_member<std::decay_t<Key>>(std::forward<Store>(s));
     }
   };
 

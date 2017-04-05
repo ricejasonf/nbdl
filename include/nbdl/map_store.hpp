@@ -121,21 +121,21 @@ namespace nbdl
   template <>
   struct match_impl<map_store_tag>
   {
-    template <typename Store, typename Path, typename ...Fn>
-    static constexpr auto apply(Store&& s, Path&& p, Fn&&... fn)
+    template <typename Store, typename Key, typename Fn>
+    static constexpr auto apply(Store&& s, Key&& k, Fn&& fn)
       ->  nbdl::detail::common_type_t<
-            decltype((*(s.map.find(std::forward<Path>(p)))).match(std::forward<Fn>(fn)...)),
-            decltype(hana::overload_linearly(std::forward<Fn>(fn)...)(nbdl::uninitialized{}))
+            decltype((*(s.map.find(std::forward<Key>(k)))).match(std::forward<Fn>(fn))),
+            decltype(std::forward<Fn>(fn)(nbdl::uninitialized{}))
           >
     {
-      auto node = s.map.find(std::forward<Path>(p));
+      auto node = s.map.find(std::forward<Key>(k));
       if (node != s.map.end())
       {
-        return (*node).match(std::forward<Fn>(fn)...);
+        return (*node).match(std::forward<Fn>(fn));
       }
       else
       {
-        return hana::overload_linearly(std::forward<Fn>(fn)...)(nbdl::uninitialized{});
+        return std::forward<Fn>(fn)(nbdl::uninitialized{});
       }
     }
   };

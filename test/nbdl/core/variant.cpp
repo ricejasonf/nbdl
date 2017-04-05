@@ -6,8 +6,11 @@
 //
 #include <nbdl/variant.hpp>
 
+#include <boost/hana/tuple.hpp>
 #include <catch.hpp>
 #include <string>
+
+namespace hana = boost::hana;
 
 struct some_tag {};
 
@@ -150,17 +153,19 @@ TEST_CASE("Modify a struct's member in a variant", "[variant]")
 
 TEST_CASE("variant as a nbdl::Store", "[variant][Store]")
 {
-  struct some_path { };
+  struct some_key { };
   using optional_string = nbdl::optional<std::string>;
   using very_optional_string = nbdl::optional<optional_string>;
 
+  // nbdl::variant just proxies the match call to its contained
+  // value so it works recursively on nested nbdl::variants
   {
     optional_string x = std::string("Hello Worldz!");
     very_optional_string y = x;
 
     std::string result{};
 
-    nbdl::match(y, some_path{}
+    nbdl::match(y, some_key{}
     , [&](std::string const& value) { result = value; }
     , [&](auto&&) { result = std::string("not this"); }
     );
@@ -173,7 +178,7 @@ TEST_CASE("variant as a nbdl::Store", "[variant][Store]")
 
     std::string result{};
 
-    nbdl::match(y, some_path{}
+    nbdl::match(y, some_key{}
     , [&](std::string const&) { result = std::string("not this"); }
     , [&](auto&&) { result = std::string("should match this"); }
     );
