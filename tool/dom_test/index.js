@@ -44,6 +44,9 @@ function initDomEquality(expected)
 function checkDomEquals()
 {
   var s = global.test_sections;
-  // console.log(jsdom.serializeDocument(global.document))
-  return s[0].isEqualNode(s[1]);
+
+  return s[0].outerHTML == s[1].outerHTML;
+
+  // Note that `isEqualNode` was returning false in the case of multiple textNodes
+  //return s[0].isEqualNode(s[1]);
 }

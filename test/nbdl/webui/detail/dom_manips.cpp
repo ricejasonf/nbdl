@@ -70,20 +70,30 @@ TEST_CASE("class attribute and text content", "[webui][dom_manips]")
   auto target = make_dom_test_equality(
     "<div class=\"foo\" >"
     "<div class=\"bar\" >"
-    "I'm some text content."
+    "I'm some static text content."
+    " Here is some updated dynamic text."
+    " More dynamic text."
+    " More static text."
     "</div>"
     "</div>"
   );
 
+  action_fn<tag::text_node_t> dynamic_text_node{};
+
   // weird backwards nesting
   action_fn<end, tag::element_t, div_tag>{}(
   action_fn<end, tag::element_t, div_tag>{}(
-  action_fn<tag::text_content_t, decltype("I'm some text content."_s)>{}(
+  action_fn<tag::text_node_t, decltype(" More static text."_s)>{}(
+  action_fn<tag::text_node_t>{}(std::string(" More dynamic text."),
+  dynamic_text_node(std::string("UPDATE ME"),
+  action_fn<tag::text_node_t, decltype("I'm some static text content."_s)>{}(
   action_fn<tag::attribute_t, decltype("class"_s), decltype("bar"_s)>{}(
   action_fn<begin, tag::element_t, div_tag>{}(
   action_fn<tag::attribute_t, decltype("class"_s), decltype("foo"_s)>{}(
   action_fn<begin, tag::element_t, div_tag>{}(target)
-  ))))));
+  )))))))));
+
+  dynamic_text_node.update(std::string(" Here is some updated dynamic text."));
 
   CHECK(check_dom_equals());
 }

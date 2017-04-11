@@ -29,10 +29,20 @@ namespace nbdl
 
   struct path_fn
   {
+    constexpr auto operator()() const
+      -> path_t<>
+    { return {}; }
+
     template <typename ...Xs, typename ...Ys>
     constexpr auto operator()(path_t<Xs...>, Ys...) const
       -> path_t<Xs..., Ys...>
     { return {}; }
+#if 0
+    template <typename ...Xs, typename ...Ys>
+    constexpr auto operator()(matched_t<Xs...>, Ys...) const
+      -> path_t<matched_t<Xs...>, Ys...>
+    { return {}; }
+#endif
   };
 
   constexpr path_fn path{};

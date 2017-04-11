@@ -79,7 +79,7 @@ namespace nbdl::webui::detail
             decltype(hana::at_c<1>(child_nodes))
           >{});
         }
-        else if constexpr(decltype(hana::equal(current_tag, html::tag::text_content))::value)
+        else if constexpr(decltype(hana::equal(current_tag, html::tag::text_node))::value)
         {
           // TODO wrap "child_nodes" into some kind of monoid for different representions of string
           return mpdef::make_list(hanax::types<

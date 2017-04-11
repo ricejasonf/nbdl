@@ -84,18 +84,48 @@ namespace nbdl::webui::detail
     }
   };
 
-  template <typename Strings>
-  struct action_fn<html::tag::text_content_t, Strings>
+  template <typename String>
+  struct action_fn<html::tag::text_node_t, String>
   {
-    // Right now Strings is just a single compile-time string
     template <typename ParentElement>
     auto operator()(ParentElement&& p) const
     {
-      p.template set(
-        "textContent"
-      , emscripten::val(hana::to<char const*>(Strings{}))
-      );
+      auto el = emscripten::val::global("document").template
+        call<emscripten::val>("createTextNode", emscripten::val(hana::to<char const*>(String{})));
+      p.template call<void>("appendChild", el);
       return std::forward<ParentElement>(p);
+    }
+  };
+
+  template <>
+  struct action_fn<html::tag::text_node_t>
+  {
+    emscripten::val el;
+    emscripten::val parent_el;
+
+    action_fn()
+      : el(emscripten::val::undefined())
+      , parent_el(emscripten::val::undefined())
+    { }
+
+    template <typename Value, typename ParentElement>
+    auto operator()(Value&& value, ParentElement&& p)
+    {
+      el = emscripten::val::global("document").template
+        call<emscripten::val>("createTextNode", emscripten::val(std::forward<Value>(value)));
+      p.template call<void>("appendChild", el);
+      parent_el = p;
+      return std::forward<ParentElement>(p);
+    }
+
+    template <typename Value>
+    auto update(Value&& value)
+    {
+      auto new_el = emscripten::val::global("document").template
+        call<emscripten::val>("createTextNode", emscripten::val(std::forward<Value>(value)));
+      parent_el.template call<void>("replaceChild", new_el, el);
+      el = new_el;
+      return parent_el;
     }
   };
 }

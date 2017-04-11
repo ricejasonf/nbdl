@@ -17,7 +17,7 @@ namespace nbdl::webui
   {
     MPDEF_DIRECTIVE_LIST(element)
     MPDEF_DIRECTIVE_LIST(attribute)
-    MPDEF_DIRECTIVE_LIST(text_content)
+    MPDEF_DIRECTIVE_LIST(text_node)
 
     template <typename ...Args>
     constexpr auto div(Args ...args)

@@ -63,7 +63,7 @@ int main()
     constexpr auto spec = div(
       attr_class("foo"_s),
       div(
-        text_content("Hello World!"_s)
+        text_node("Hello World!"_s)
       )
     );
 
@@ -72,7 +72,7 @@ int main()
       begin(tag::element, div_tag),
         hana::type<hanax::types<tag::attribute_t, decltype("class"_s), decltype("foo"_s)>>{},
         begin(tag::element, div_tag),
-          hana::typeid_(hanax::types<tag::text_content_t, decltype("Hello World!"_s)>{}),
+          hana::typeid_(hanax::types<tag::text_node_t, decltype("Hello World!"_s)>{}),
         end  (tag::element, div_tag),
       end(tag::element, div_tag)
     );
