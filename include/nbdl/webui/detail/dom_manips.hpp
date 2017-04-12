@@ -119,14 +119,45 @@ namespace nbdl::webui::detail
     }
 
     template <typename Value>
-    auto update(Value&& value)
+    void update(Value&& value)
     {
       auto new_el = emscripten::val::global("document").template
         call<emscripten::val>("createTextNode", emscripten::val(std::forward<Value>(value)));
       parent_el.template call<void>("replaceChild", new_el, el);
       el = new_el;
-      return parent_el;
     }
   };
+
+  template <typename PathSpec, typename Fn>
+  struct action_fn<path_spec::tag::match_t, PathSpec, Fn>
+  {
+    emscripten::val el;
+    emscripten::val parent_el;
+
+    action_fn()
+      : el(emscripten::val::undefined())
+      , parent_el(emscripten::val::undefined())
+    { }
+
+    template <typename Store, typename ParentElement>
+    decltype(auto) operator()(Store&& store, ParentElement&& p)
+    {
+      parent_el = p;
+      nbdl::run_sync(nbdl::pipe(
+          nbdl::detail::path_resolve(store)
+        , nbdl::match(store, _, Fn{}(p))
+        , nbdl::catch_(nbdl::noop)
+        )
+      , PathSpec{});
+      return std::forward<ParentElement>(p);
+    }
+
+    template <typename Value>
+    void update(Value&& value)
+    {
+      Fn{}(std::forward<Value>(value));
+    }
+  };
+
 }
 #endif

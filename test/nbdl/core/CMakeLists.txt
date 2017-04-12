@@ -15,7 +15,6 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   map_store.cpp
   match_path.cpp
   message_api.cpp
-  path.cpp
   pipe.cpp
   variant.cpp
 )
@@ -23,5 +22,8 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
 # compile-time tests
 nbdl_add_test("test.nbdl.core.detail.concept_pred"
   detail/concept_pred.cpp
+)
+nbdl_add_test("test.nbdl.core.ui_spec"
+  ui_spec.cpp
 )
 

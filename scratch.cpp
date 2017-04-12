@@ -40,7 +40,8 @@ auto campaign = [](auto path_to_campaign)
     ) 
   , div(
       attr_class("status"_s)
-    , match(path(path_to_campaign, "status"_s)
+    , match(
+        get(path_to_campaign, "status"_s)
       , when<campaign_status::pending>(text_node("pending"_s))
       , when<campaign_status::active>(text_node("active"_s))
       , when<campaign_status::finished>(text_node("finished"_s))
@@ -55,11 +56,7 @@ auto default_page = div(
 , text_node("Welcome to the default page."_s)
 );
 
-auto main_page = match(/* root_store, */ path("nav_location"_s)
+auto main_page = match(root_path("nav_location"_s)
 , when<campaign_page_path>(page<my_app::campaign>(campaign))
 , when<>(default_page)
 );
-
-/*
- * match inputs: path_spec, when...
- */
