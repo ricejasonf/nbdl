@@ -12,7 +12,7 @@
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/concept/searchable.hpp>
-#include <boost/hana/detail/index_if.hpp> // FIXME
+#include <boost/hana/index_if.hpp>
 #include <boost/hana/equal.hpp>
 #include <boost/hana/functional/compose.hpp>
 #include <utility>
@@ -48,12 +48,9 @@ namespace nbdl
     {
       if constexpr(hana::Sequence<Store>::value)
       {
-        // FIXME using hana::detail
         using Pred = decltype(hana::compose(hana::equal.to(hana::typeid_(k)), hana::typeid_));
-        using Pack = typename hana::detail::make_pack<Store>::type;
-        return hana::at_c<hana::detail::index_if<Pred, Pack>::value>(
-          std::forward<Store>(s)
-        );
+        using Index = decltype(hana::index_if(s, Pred{}).value());
+        return hana::at(std::forward<Store>(s), Index{});
       }
       else
       {
