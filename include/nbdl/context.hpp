@@ -266,7 +266,7 @@ namespace nbdl
     decltype(auto) match(Path&& p, Fns&& ...fns)
     {
       constexpr auto path_type = decltype(hana::traits::decay(hana::decltype_(p))){};
-      return nbdl::match(stores[path_type], p,
+      return nbdl::match(stores[path_type], p, hana::overload_linearly(
         [&](nbdl::uninitialized)
         {
           if constexpr(decltype(MessageApi{}.has_upstream_read(p))::value)
@@ -282,7 +282,7 @@ namespace nbdl
           // Users should not be allowed to modify values directly.
           return hana::overload_linearly(std::forward<Fns>(fns)...)(value);
         }
-      );
+      ));
     }
 
     // All actions MUST be applied to the
@@ -298,7 +298,7 @@ namespace nbdl
       {
         nbdl::apply_action(store, m);
         // send response message
-        nbdl::match(store, message::get_path(m),
+        nbdl::match(store, message::get_path(m), hana::overload_linearly(
           [&](nbdl::uninitialized)
           {
             // The Store should create an 'unresolved'
@@ -323,7 +323,7 @@ namespace nbdl
               MessageApi{}.to_downstream(m, std::forward<decltype(value)>(value))
             );
           }
-        );
+        ));
       }
 #if 0
       else if constexpr(message::is_downstream<Message> && message::is_update<Message>)

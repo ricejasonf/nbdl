@@ -321,6 +321,25 @@ namespace nbdl
   template<>
   struct match_impl<variant_tag>
   {
+    template <typename Store, typename Fn>
+    static constexpr void apply(Store&& s, Fn&& fn)
+    {
+      std::forward<Store>(s).match([&](auto&& value)
+      {
+        if constexpr(nbdl::Store<decltype(value)>::value)
+        {
+          nbdl::match(
+            std::forward<decltype(value)>(value)
+          , std::forward<Fn>(fn)
+          );
+        }
+        else
+        {
+          std::forward<Fn>(fn)(std::forward<decltype(value)>(value));
+        }
+      });
+    }
+
     template <typename Store, typename Key, typename Fn>
     static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
     {

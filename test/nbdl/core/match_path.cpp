@@ -36,7 +36,7 @@ namespace
   };
 
 
-  // psuedo compile-time string literals
+  // pseudo compile-time string literals
 
   MAKE_STRING(person);
   MAKE_STRING(name);

@@ -165,10 +165,10 @@ TEST_CASE("variant as a nbdl::Store", "[variant][Store]")
 
     std::string result{};
 
-    nbdl::match(y, some_key{}
-    , [&](std::string const& value) { result = value; }
+    nbdl::match(y, some_key{}, hana::overload_linearly(
+      [&](std::string const& value) { result = value; }
     , [&](auto&&) { result = std::string("not this"); }
-    );
+    ));
 
     CHECK(result == std::string("Hello Worldz!"));
   }
@@ -178,10 +178,10 @@ TEST_CASE("variant as a nbdl::Store", "[variant][Store]")
 
     std::string result{};
 
-    nbdl::match(y, some_key{}
-    , [&](std::string const&) { result = std::string("not this"); }
+    nbdl::match(y, some_key{}, hana::overload_linearly(
+      [&](std::string const&) { result = std::string("not this"); }
     , [&](auto&&) { result = std::string("should match this"); }
-    );
+    ));
 
     CHECK(result == std::string("should match this"));
   }

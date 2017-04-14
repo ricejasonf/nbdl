@@ -18,8 +18,11 @@ namespace nbdl
 
   struct match_fn
   {
-    template<typename Store, typename Key, typename ...Fn>
-    constexpr void operator()(Store&&, Key&&, Fn&&...) const;
+    template<typename Store, typename Key, typename Fn>
+    constexpr void operator()(Store&&, Key&&, Fn&&) const;
+
+    template<typename Store, typename Fn>
+    constexpr void operator()(Store&&, Fn&&) const;
   };
 
   constexpr match_fn match{};

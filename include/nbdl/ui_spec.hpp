@@ -8,12 +8,14 @@
 #define NBDL_UI_SPEC_HPP
 
 #include <mpdef/list.hpp>
-#include <nbdl/promise.hpp>
 #include <nbdl/match_path.hpp>
+#include <nbdl/pipe.hpp>
+#include <nbdl/promise.hpp>
 
 #include <boost/hana/functional/always.hpp>
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
+#include <boost/hana/unpack.hpp>
 
 /*
  * nbdl::ui_spec - tools for impls like webui to manipulate paths for Store access
@@ -139,34 +141,6 @@ namespace nbdl::ui_spec
   };
 
   constexpr match_fn match{};
-
-  /*
-   * promise_match - used to resolve a single node in a path_t spec
-   */
-
-  template <typename ...>
-  int promise_match;
-
-  template <typename T, typename ...P>
-  auto promise_match<match_type<T, P...>> = nbdl::promise([](auto& resolver, auto const& store)
-  {
-    nbdl::match_path(store, mpdef::list<P...>{}, [&](auto const& result)
-    {
-      if constexpr(decltype(hana::type_c<T> == hana::typeid_(result)){})
-        resolver.resolve(result);
-      else
-        resolver.reject(result);
-    });
-  });
-
-  template <typename ...P>
-  auto promise_match<get_t<P...>> = nbdl::promise([](auto& resolver, auto const& store)
-  {
-    nbdl::match_path(store, mpdef::list<P...>{}, [&](auto const& result)
-    {
-      resolver.resolve(result);
-    });
-  });
 }
 
 #endif

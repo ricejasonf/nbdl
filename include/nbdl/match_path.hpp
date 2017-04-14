@@ -53,24 +53,31 @@ namespace nbdl
 
     static_assert(
       hana::Sequence<Path>::value
-    , "nbdl::match(store, path, fns...) requires path must be a hana::Sequence"
+    , "nbdl::match_path(store, path, fns...) requires path must be a hana::Sequence"
     );
 
     // When path is empty match behaves like an identity operation
     // and does not require the `s` to be a Store
-    if constexpr(!decltype(hana::is_empty(p)){} && nbdl::Store<Store>::value)
+    if constexpr(!nbdl::Store<Store>::value)
     {
-      auto helper = detail::match_path_helper_fn<Path, decltype(fn)>{p, fn};
+      fn(std::forward<Store>(s));
+    }
+    else if constexpr(!decltype(hana::is_empty(p)){})
+    {
+      auto helper = detail::match_path_helper_fn<Path, decltype(fn)>{p, std::move(fn)};
 
       nbdl::match(
         std::forward<Store>(s)
       , hana::front(std::forward<Path>(p))
-      , helper
+      , std::move(helper)
       );
     }
-    else
+    else if (nbdl::Store<Store>::value)
     {
-      fn(std::forward<Store>(s));
+      nbdl::match(
+        std::forward<Store>(s)
+      , std::move(fn)
+      );
     }
   };
 } // nbdl
