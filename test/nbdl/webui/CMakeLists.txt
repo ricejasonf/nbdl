@@ -6,6 +6,7 @@
 #
 
 nbdl_catch_dom_test_suite(build_targets "test.nbdl.webui"
+  renderer.cpp
   detail/dom_manips.cpp
 )
 

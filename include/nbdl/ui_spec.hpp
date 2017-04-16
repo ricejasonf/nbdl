@@ -12,10 +12,12 @@
 #include <nbdl/pipe.hpp>
 #include <nbdl/promise.hpp>
 
+#include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/functional/always.hpp>
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
+#include <mpdef/pair.hpp>
 
 /*
  * nbdl::ui_spec - tools for impls like webui to manipulate paths for Store access
@@ -92,7 +94,7 @@ namespace nbdl::ui_spec
 
   namespace detail
   {
-    struct when_lift_spec_fn
+    struct make_when_pair_fn
     {
       template <typename T, typename Spec, typename Path>
       constexpr auto operator()(when_t<T, Spec>, Path) const
@@ -100,11 +102,11 @@ namespace nbdl::ui_spec
         using MatchedPath = typename make_path_match_type<T, Path>::type;
         if constexpr(std::__invokable<Spec, MatchedPath>::value)
         {
-          return when_t<T, Spec>{};
+          return mpdef::pair<T, decltype(std::declval<Spec>()(MatchedPath{}))>{};
         }
         else
         {
-          return when_t<T, decltype(hana::always(Spec{}))>{};
+          return mpdef::pair<T, Spec>{};
         }
       }
     };
@@ -126,6 +128,8 @@ namespace nbdl::ui_spec
    * match
    */
 
+  struct match_tag { };
+
   template <typename ...> 
   struct match_t { };
 
@@ -135,12 +139,23 @@ namespace nbdl::ui_spec
     constexpr auto operator()(path_t<Xs...>, Whens...) const
       -> match_t<
         path_t<Xs...>
-      , decltype(detail::when_lift_spec_fn{}(std::declval<Whens>(), path_t<Xs...>{}))...
+      , mpdef::list<
+          decltype(detail::make_when_pair_fn{}(std::declval<Whens>(), path_t<Xs...>{}))...
+        >
       >
     { return {}; }
   };
 
   constexpr match_fn match{};
+}
+
+namespace boost::hana
+{
+  template <typename ...T>
+  struct tag_of<nbdl::ui_spec::match_t<T...>>
+  {
+    using type = nbdl::ui_spec::match_tag;
+  };
 }
 
 #endif

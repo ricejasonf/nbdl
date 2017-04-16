@@ -12,52 +12,60 @@
 #include <boost/hana.hpp>
 
 namespace hana  = boost::hana;
-namespace hanax = boost::hana::experimental;
 using namespace hana::literals;
+
+#define CHECK_TYPE_EQUAL(RESULT, EXPECTED) BOOST_HANA_CONSTANT_CHECK(hana::equal( \
+  hana::typeid_(RESULT), hana::typeid_(EXPECTED) \
+));
 
 int main()
 {
+  using namespace nbdl::ui_spec;
   using namespace nbdl::webui::html;
-  constexpr auto div_tag    = hana::type_c<hana::string<'d', 'i', 'v'>>;
-  constexpr auto begin      = hana::partial(
-    hana::template_<hanax::types>,
-    hana::type_c<nbdl::webui::detail::begin>
-  );
-  constexpr auto end        = hana::partial(
-    hana::template_<hanax::types>,
-    hana::type_c<nbdl::webui::detail::end>
-  );
-  constexpr auto make_list  = hana::template_<mpdef::list>;
+  using nbdl::webui::detail::action_fn;
+
+  auto begin = [](auto ...xs)
+  {
+    return action_fn<nbdl::webui::detail::begin, decltype(xs)...>{};
+  };
+
+  auto end = [](auto ...xs)
+  {
+    return action_fn<nbdl::webui::detail::end, decltype(xs)...>{};
+  };
+
+  constexpr hana::string<'d', 'i', 'v'> div_s{};
 
   {
     constexpr auto spec = div();
 
-    constexpr auto result = hana::typeid_(nbdl::webui::detail::flatten_spec(spec));
-    constexpr auto expected = make_list(
-      begin(tag::element, div_tag),
-      end  (tag::element, div_tag)
+    constexpr auto result = nbdl::webui::detail::flatten_spec(spec);
+    constexpr auto expected = mpdef::make_list(
+      begin(tag::element_t{}, div_s),
+      end(tag::element_t{}, div_s)
     );
     (void)result;
     (void)expected;
 
-    BOOST_HANA_CONSTANT_CHECK(hana::equal(result, expected));
+    CHECK_TYPE_EQUAL(result, expected);
   }
   {
     constexpr auto spec = div(div(), div());
 
-    constexpr auto result = hana::typeid_(nbdl::webui::detail::flatten_spec(spec));
-    constexpr auto expected = make_list(
-      begin(tag::element, div_tag),
-        begin(tag::element, div_tag),
-        end  (tag::element, div_tag),
-        begin(tag::element, div_tag),
-        end  (tag::element, div_tag),
-      end  (tag::element, div_tag)
+    constexpr auto result = nbdl::webui::detail::flatten_spec(spec);
+    constexpr auto expected = mpdef::make_list(
+      begin(tag::element_t{}, div_s),
+        begin(tag::element_t{}, div_s),
+        end  (tag::element_t{}, div_s),
+        begin(tag::element_t{}, div_s),
+        end  (tag::element_t{}, div_s),
+      end  (tag::element_t{}, div_s)
     );
+
     (void)result;
     (void)expected;
 
-    BOOST_HANA_CONSTANT_CHECK(hana::equal(result, expected));
+    CHECK_TYPE_EQUAL(result, expected);
   }
   {
     constexpr auto spec = div(
@@ -67,18 +75,53 @@ int main()
       )
     );
 
-    constexpr auto result = hana::typeid_(nbdl::webui::detail::flatten_spec(spec));
-    constexpr auto expected = make_list(
-      begin(tag::element, div_tag),
-        hana::type<hanax::types<tag::attribute_t, decltype("class"_s), decltype("foo"_s)>>{},
-        begin(tag::element, div_tag),
-          hana::typeid_(hanax::types<tag::text_node_t, decltype("Hello World!"_s)>{}),
-        end  (tag::element, div_tag),
-      end(tag::element, div_tag)
+    constexpr auto result = nbdl::webui::detail::flatten_spec(spec);
+    constexpr auto expected = mpdef::make_list(
+      begin(tag::element_t{}, div_s),
+        action_fn<tag::attribute_t, decltype("class"_s), decltype("foo"_s)>{},
+        begin(tag::element_t{}, div_s),
+          action_fn<tag::text_node_t, decltype("Hello World!"_s)>{},
+        end  (tag::element_t{}, div_s),
+      end(tag::element_t{}, div_s)
     );
+
     (void)result;
     (void)expected;
 
-    BOOST_HANA_CONSTANT_CHECK(hana::equal(result, expected));
+    CHECK_TYPE_EQUAL(result, expected);
+  }
+
+  // Flatten match spec
+  {
+    constexpr auto spec = div(
+      attr_class("foo"_s),
+      match(
+        get("key"_s)
+      , when<int>(text_node("Hello, int!"_s))
+      , when<>(text_node("Hello, everything else!"_s))
+      )
+    );
+
+    constexpr auto result = hana::type_c<decltype(nbdl::webui::detail::flatten_spec(spec))>;
+    constexpr auto expected = hana::type_c<decltype(mpdef::make_list(
+      begin(tag::element_t{}, div_s),
+        action_fn<tag::attribute_t, decltype("class"_s), decltype("foo"_s)>{}
+      , action_fn<match_tag, path_t<get_t<decltype("key"_s)>>
+        , mpdef::list<
+            mpdef::pair<hana::type<int>, mpdef::list<
+              action_fn<tag::text_node_t, decltype("Hello, int!"_s)>
+            >>
+          , mpdef::pair<hana::type<void>, mpdef::list<
+              action_fn<tag::text_node_t, decltype("Hello, everything else!"_s)>
+            >>
+          >
+        >{}
+    , end(tag::element_t{}, div_s)
+    ))>;
+
+    (void)result;
+    (void)expected;
+
+    CHECK_TYPE_EQUAL(result, expected);
   }
 }

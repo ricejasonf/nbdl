@@ -10,6 +10,7 @@
 #include <nbdl/match_path.hpp>
 #include <nbdl/pipe.hpp>
 #include <nbdl/promise.hpp>
+#include <nbdl/run_sync.hpp>
 #include <nbdl/ui_spec.hpp>
 
 #include <boost/hana/type.hpp>
@@ -40,12 +41,13 @@ namespace nbdl
   });
 
   template <typename ...P>
-  auto promise_match<ui_spec::get_t<P...>> = nbdl::promise([](auto& resolver, auto const& store)
+  auto promise_match<ui_spec::get_t<P...>> = nbdl::promise([](auto& resolve, auto const& store)
   {
-    nbdl::match_path(store, mpdef::list<P...>{}, [&](auto const& result)
-    {
-      resolver.resolve(result);
-    });
+    nbdl::match_path(
+      store
+    , mpdef::list<P...>{} 
+    , [&](auto const& value) { resolve(value); }
+    );
   });
 
   struct path_promise_fn
@@ -62,6 +64,35 @@ namespace nbdl
   };
 
   constexpr path_promise_fn path_promise{};
+
+#if 0
+  struct value_promise_fn
+  {
+    template <typename PathSpec>
+    auto operator()(PathSpec) const
+    {
+      return nbdl::promise([](auto& resolve, auto const& store)
+      {
+        nbdl::run_sync(
+          nbdl::pipe(
+            path_promise(PathSpec{})
+          , [&](auto&& path)
+            {
+              nbdl::match_path(
+                store
+                , std::forward<decltype(path)>(path) 
+                , [&](auto const& value) { resolve(value); }
+              );
+            }
+          )
+        , store
+        );
+      });
+    };
+  };
+
+  constexpr value_promise_fn value_promise{};
+#endif
 }
 
 #endif

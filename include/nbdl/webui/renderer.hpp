@@ -8,67 +8,119 @@
 #define NBDL_WEBUI_RENDERER_HPP
 
 #include <nbdl/fwd/webui/renderer.hpp>
-#include <emscripten/val.h>
+#include <nbdl/make_state_consumer.hpp>
+#include <nbdl/promise.hpp>
+#include <nbdl/notify_state_change.hpp>
+#include <nbdl/webui/detail/dom_manips.hpp>
+#include <nbdl/webui/detail/flatten_spec.hpp>
 
-#include<utility>
+#include <emscripten/val.h>
+#include <utility>
 
 namespace nbdl
 {
-  template <typename RenderImpl, typename RenderSpec>
-  struct make_state_consumer_impl<webui::renderer<RenderImpl, RenderSpec>>
-  {
-    template <typename PushApi>
-    static constexpr auto apply(PushApi&& p)
-    {
-      return webui::renderer_impl<PushApi, RenderSpec>(std::forward<PushApi>(p));
-    }
-  };
-
   namespace webui
   {
-    template <typename PushApi, typename RenderImpl, typename RenderSpec>
-    class renderer_impl
+    namespace detail
     {
-      using RenderFns = decltype(detail::flatten_spec(nbdl::make_def(hana::type_c<RenderSpec>)));
-      // State is the return value of each element in RenderFns
-      using State = decltype(
-        hana::remove_if(hana::transform(RenderActions{}, hana::typeid_), hana::traits::is_empty)
-      );
-      // TODO create a map of paths to indices to call the render fn
-      // It should get a run of functions up to the corresponding 'end'
-      // function.
-      // Really need traits for begin/end
+      template <typename RenderAction>
+      struct can_update : std::false_type { };
 
-      PushApi push_api;
+      template <typename ...Params>
+      struct can_update<mut_action_fn<Params...>&>
+        : std::true_type
+      { };
 
-      void render()
+
+      template <typename ...>
+      struct construct_render_node;
+
+      template <typename Tag, typename ...Params>
+      struct construct_render_node<action_fn<Tag, Params...>>
       {
-        // nodes are always pairs (tag, stuff)
-        hana::unpack(RenderSpec{}, [](auto const& node)
+        template <typename Store>
+        static auto apply(Store& store)
         {
-          if constexpr(decltype(hana::equal(hana::first(node), tag::element))::value)
+          if constexpr(std::is_default_constructible<action_fn<Tag, Params...>>::value)
           {
-            constexpr auto child_nodes = hana::second(node);
-            hana::flatten(
-              mpdef::make_list(detail::start_element(hana::at_c<0>(child_nodes))),
-              hana::unpack(
-                hana::filter(child_nodes, hana::compose(hana::equal.to(tag::attribute), hana::first)),
-                mpdef::make_list ^hana::on^ hana::attribute
-              ),
-              hana::unpack(mpdef::find_by_tag(node, tag::children), this_function)
-            );
+            return action_fn<Tag, Params...>{};
+          }
+          else
+          {
+            return mut_action_fn<Tag, Store, Params...>(store);
+          }
+        }
+      };
+    }
+
+    template <typename RenderSpec>
+    struct renderer { };
+
+    template <typename ...>
+    struct renderer_impl;
+
+    template <typename Store, typename ...Node>
+    struct renderer_impl<Store, mpdef::list<Node...>>
+    {
+      using RenderPipe = decltype(
+        nbdl::pipe(detail::construct_render_node<Node>::apply(std::declval<Store&>())...)
+      );
+
+      RenderPipe render_pipe;
+
+      renderer_impl(Store& store)
+        : render_pipe(nbdl::pipe(detail::construct_render_node<Node>::apply(store)...))
+      { }
+
+      template <typename Parent>
+      void render(Parent&& parent)
+      {
+        nbdl::run_sync(
+          hana::transform(render_pipe, [](auto& x) { return nbdl::promise(std::ref(x)); })
+        , std::forward<Parent>(parent)
+        );
+      }
+
+      void update()
+      {
+        hana::for_each(render_pipe, [&](auto& x)
+        {
+          if constexpr(detail::can_update<decltype(x)>::value)
+          {
+            x.update();
           }
         });
       }
+    };
 
-      public:
-
-      renderer_impl(PushApi p)
-        : push_api(std::move(p))
-      {
-        render();
-      }
-    }; 
+    template <typename Store, typename RenderSpec>
+    auto make_renderer(Store& store, RenderSpec)
+    {
+      using FnList = decltype(webui::detail::flatten_spec(RenderSpec{}));
+      return webui::renderer_impl<Store, FnList>(store);
+    }
   }
+
+  template <typename RenderSpec>
+  struct make_state_consumer_impl<webui::renderer<RenderSpec>>
+  {
+    template <typename Store>
+    static constexpr auto apply(Store&& store)
+    {
+      auto r = webui::make_renderer<RenderSpec>();
+      r.render(std::forward<Store>(store));
+      return std::move(r);
+    }
+  };
+
+  template <typename RenderSpec>
+  struct notify_state_change_impl<webui::renderer<RenderSpec>>
+  {
+    template <typename Consumer, typename Path>
+    static constexpr auto apply(Consumer&, Path&&)
+    {
+      // TODO something!
+    }
+  };
 }
 #endif

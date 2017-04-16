@@ -24,11 +24,15 @@ namespace nbdl
       using hana_tag = promise_tag;
 
       template <typename ...Args>
-      void resolve(Args&&...)
+      void operator()(Args&&...) const
+      { }
+
+      template <typename ...Args>
+      void resolve(Args&&...) const
       { }
 
       template <typename Arg1, typename ...Args>
-      void reject(Arg1&&, Args&&...)
+      void reject(Arg1&&, Args&&...) const
       {
         static_assert(
           std::is_void<Arg1>::value
@@ -37,7 +41,7 @@ namespace nbdl
       }
 
       template <typename ...Args>
-      void terminate(Args&&...)
+      void terminate(Args&&...) const
       { }
     };
   }

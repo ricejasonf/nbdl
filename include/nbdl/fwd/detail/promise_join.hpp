@@ -15,6 +15,12 @@ namespace nbdl::detail
   {
     using hana_tag = promise_tag;
 
+    template <typename ...Args>
+    void operator()(Args&& ...args)
+    {
+      resolve(std::forward<Args>(args)...);
+    }
+
     template <typename Resolver, typename ...Args>
     void resolve(Resolver& r, Args&& ...args)
     {
@@ -76,6 +82,12 @@ namespace nbdl::detail
       : current(std::forward<T>(c))
       , next(std::forward<U>(n))
     { }
+
+    template <typename ...Args>
+    void operator()(Args&& ...args)
+    {
+      resolve(std::forward<Args>(args)...);
+    }
 
     template <typename ...Args>
     void resolve(Args&& ...args)

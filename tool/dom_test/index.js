@@ -45,7 +45,16 @@ function checkDomEquals()
 {
   var s = global.test_sections;
 
-  return s[0].outerHTML == s[1].outerHTML;
+  if (s[0].outerHTML != s[1].outerHTML)
+  {
+    console.error('EXPECTED: ', s[0].outerHTML);
+    console.error('RESULT:   ', s[1].outerHTML);
+    return false;
+  }
+  else
+  {
+    return true;
+  }
 
   // Note that `isEqualNode` was returning false in the case of multiple textNodes
   //return s[0].isEqualNode(s[1]);

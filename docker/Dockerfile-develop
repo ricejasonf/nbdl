@@ -22,7 +22,7 @@ RUN git clone https://github.com/chriskohlhoff/asio.git \
   && rm -rf asio
 
 # Boost.Hana (workaround branch)
-RUN git clone -b workaround/constexpr_array https://github.com/ricejasonf/hana.git \
+RUN git clone -b bugfix/constexpr_arrays https://github.com/ricejasonf/hana.git \
   && cp -r hana/include/* /usr/local/include \
   && rm -rf hana
 
