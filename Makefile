@@ -14,3 +14,11 @@ image_web_develop:
 
 web_develop: 
 	docker run --rm -it -v ${shell pwd}:/opt/src:ro nbdl:web_develop
+
+image_tvossimulator_develop:
+	docker pull ricejasonf/emscripten \
+	&& docker build --no-cache=true -f ./docker/Dockerfile-tvossimulator_develop \
+		-t nbdl:tvossimulator_develop .
+
+tvossimulator_develop: 
+	docker run --rm -it -v ${shell pwd}:/opt/src:ro nbdl:tvossimulator_develop

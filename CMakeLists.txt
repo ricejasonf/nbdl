@@ -108,16 +108,6 @@ else (${EMSCRIPTEN})
   find_package(Threads)
 endif (${EMSCRIPTEN})
 
-if (NBDL_AMAGLAMATED_JSONCPP_DIR)
-  set(JsonCpp "${NBDL_AMAGLAMATED_JSONCPP_DIR}/dist/jsoncpp.cpp")
-else (NBDL_AMAGLAMATED_JSONCPP_DIR)
-  find_library(JsonCpp jsoncpp)
-endif (NBDL_AMAGLAMATED_JSONCPP_DIR)
-
-if (BOOST_HANA_INCLUDE_DIR)
-  include_directories(BOOST_HANA_INCLUDE_DIR)
-endif(BOOST_HANA_INCLUDE_DIR)
-
 include_directories(${nbdl_project_SOURCE_DIR}/include)
 
 add_subdirectory(src)
