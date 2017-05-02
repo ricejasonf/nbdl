@@ -1,17 +1,33 @@
-FROM ricejasonf/emscripten
+#FROM ricejasonf/emscripten
+FROM tvossimulator_sysroot
 WORKDIR /usr/local/src
+
+# cctools (linker for darwin targets)
+RUN git clone https://github.com/tpoechtrager/cctools-port.git \
+  && cd cctools-port/cctools \
+  && ./configure \
+  #   --prefix=/home/user/cctools \
+  #   --with-libtapi=/home/user/cctools \
+  #   --target=<target> \
+  #   --with-llvm-config=... \
+  && make \
+  && make install
+
+COPY docker/tvossimulator.toolchain.cmake /opt/toolchain.cmake
 
 # JsonCpp
 RUN git clone https://github.com/open-source-parsers/jsoncpp.git \
   && cd jsoncpp && mkdir build && cd build \
   && cmake \
+    -DCMAKE_TOOLCHAIN_FILE=/opt/toolchain.cmake \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_FLAGS=" -stdlib=libc++" \
-    -DCMAKE_EXE_LINKER_FLAGS=" -lc++abi" \
-    -DCMAKE_CXX_COMPILER_TARGET="x86_64-apple-tvossimulator" \
+    -DCMAKE_EXE_LINKER_FLAGS=" -mtvos-version-min=9.2" \
+    -DJSONCPP_WITH_TESTS=OFF \
+    -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
     .. \
-  && make install \
+  && VERBOSE=1 make install \
   && mkdir /usr/local/include/jsoncpp \
   && cp -r /usr/local/include/json /usr/local/include/jsoncpp/ \
   && rm -rf jsoncpp
@@ -27,8 +43,6 @@ RUN git clone -b bugfix/constexpr_arrays https://github.com/ricejasonf/hana.git 
   && cp -r hana/include/* /usr/local/include \
   && rm -rf hana
 
-COPY uikit_headers/* /usr/local/include
-
 ARG BUILD_TYPE=Debug
 ENV BUILD_TYPE ${BUILD_TYPE}
 
@@ -36,9 +50,10 @@ RUN apt-get -yq update && apt-get install -yq vim
 
 WORKDIR /opt/build
 CMD cmake \
+  -DCMAKE_TOOLCHAIN_FILE=/opt/toolchain.cmake \
   -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
   -DCMAKE_CXX_FLAGS=" -stdlib=libc++ -DASIO_STANDALONE -DASIO_NO_TYPEID" \
-  -DCMAKE_EXE_LINKER_FLAGS=" -lc++abi" \
+  -DCMAKE_EXE_LINKER_FLAGS=" -mtvossimulator-version-min=9.0 -lc++abi" \
   -DCMAKE_CXX_COMPILER_TARGET="x86_64-apple-tvossimulator" \
   /opt/src \
   && echo '. /usr/share/bash-completion/bash_completion && set -o vi' >> /root/.bashrc \
