@@ -26,6 +26,8 @@ namespace nbdl::ui_spec
 {
   namespace hana = boost::hana;
 
+  struct path_tag { };
+
   template <typename ...>
   struct path_t
   { };
@@ -147,6 +149,73 @@ namespace nbdl::ui_spec
   };
 
   constexpr match_fn match{};
+
+#if 0 //not used yet
+  /*
+   * bind 
+   *  - Takes a function and parameters
+   *    which can be path_specs
+   *  - not sure about the name here
+   */
+
+  template <typename Fn, typename ...Params>
+  struct bind_impl<Fn, Params...>
+  {
+    template <typename Resolver, typename Element>
+    void operator()(Resolver& resolve, Element&& el) const
+    {
+      Fn{}(el, Params{}...);
+      resolve(std::forward<Element>(el));
+    }
+  };
+
+  template <typename Store, typename Fn, typename ...Params>
+  struct mut_bind_impl<Store, Fn, Params...>
+  {
+    Store const& store;
+    Fn fn;
+
+    mut_bind_impl(Store const& s)
+      : store(s)
+      , fn()
+    { }
+
+    template <typename Resolver, typename Element>
+    void operator()(Resolver& resolve, Element&& el)
+    {
+      nbdl::run_sync(
+        nbdl::pipe(
+          nbdl::params_promise(Params{})
+        , hana::fuse([](auto const& ...params) { fn(el, params...); })
+        )
+      , store
+      );
+      resolve(std::forward<Element>(el));
+    }
+
+    void update()
+    {
+      nbdl::run_sync(
+        nbdl::pipe(
+          nbdl::params_promise(Params{})
+        , hana::fuse([](auto const& ...params) { fn.update(params...); })
+        )
+      , store
+      );
+    }
+  };
+
+  struct bind_fn
+  {
+    template <typename Fn, typename ...Params>
+    constexpr auto operator()(Fn, Params...) const
+    {
+      return bind_impl<Fn, Params...>{};
+    }
+  };
+
+  constexpr bind_fn bind{};
+#endif
 }
 
 namespace boost::hana
@@ -155,6 +224,12 @@ namespace boost::hana
   struct tag_of<nbdl::ui_spec::match_t<T...>>
   {
     using type = nbdl::ui_spec::match_tag;
+  };
+
+  template <typename ...T>
+  struct tag_of<nbdl::ui_spec::path_t<T...>>
+  {
+    using type = nbdl::ui_spec::path_tag;
   };
 }
 

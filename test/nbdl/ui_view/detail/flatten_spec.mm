@@ -35,13 +35,17 @@ int main()
   };
 
   {
-    constexpr auto spec = ui_view();
+    constexpr auto spec = ui_view(init_with_frame<0, 0, 1920, 1080>);
 
     constexpr auto result = nbdl::ui_view::detail::flatten_spec(spec);
-    constexpr auto expected = mpdef::make_list(
-      begin(tag::view_t{}, hana::type<UIView>),
-      end(tag::view_t{}, hana::type<UIView>)
-    );
+    constexpr auto expected = decltype(mpdef::make_list(
+      begin(
+        tag::view_t{}
+      , hana::type_c<UIView>
+      , init_with_frame_fn<0, 0, 1920, 1080>{}
+      )
+    , end(tag::view_t{}, hana::type_c<UIView>)
+    )){};
     (void)result;
     (void)expected;
 

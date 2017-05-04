@@ -9,11 +9,12 @@
 
 #include <nbdl/fwd/ui_view/renderer.hpp>
 #include <nbdl/make_state_consumer.hpp>
-#include <nbdl/promise.hpp>
 #include <nbdl/notify_state_change.hpp>
-#include <nbdl/ui_view/detail/dom_manips.hpp>
+#include <nbdl/promise.hpp>
 #include <nbdl/ui_view/detail/flatten_spec.hpp>
+#include <nbdl/ui_view/detail/manips.hpp>
 
+#include <functional>
 #include <utility>
 
 namespace nbdl

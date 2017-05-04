@@ -6,10 +6,6 @@ WORKDIR /usr/local/src
 RUN git clone https://github.com/tpoechtrager/cctools-port.git \
   && cd cctools-port/cctools \
   && ./configure \
-  #   --prefix=/home/user/cctools \
-  #   --with-libtapi=/home/user/cctools \
-  #   --target=<target> \
-  #   --with-llvm-config=... \
   && make \
   && make install
 
@@ -20,27 +16,27 @@ RUN git clone https://github.com/open-source-parsers/jsoncpp.git \
   && cd jsoncpp && mkdir build && cd build \
   && cmake \
     -DCMAKE_TOOLCHAIN_FILE=/opt/toolchain.cmake \
-    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DCMAKE_INSTALL_PREFIX=/opt/sysroot/usr/local \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_FLAGS=" -stdlib=libc++" \
-    -DCMAKE_EXE_LINKER_FLAGS=" -mtvos-version-min=9.2" \
     -DJSONCPP_WITH_TESTS=OFF \
     -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
     .. \
-  && VERBOSE=1 make install \
-  && mkdir /usr/local/include/jsoncpp \
-  && cp -r /usr/local/include/json /usr/local/include/jsoncpp/ \
+  && make install \
+  && mkdir /opt/sysroot/usr/local/include/jsoncpp \
+  && cp -r /opt/sysroot/usr/local/include/json \
+   /opt/sysroot/usr/local/include/jsoncpp/ \
   && rm -rf jsoncpp
 
 # Asio
 RUN git clone https://github.com/chriskohlhoff/asio.git \
-  && cp asio/asio/include/asio.hpp /usr/local/include \
-  && cp -r asio/asio/include/asio /usr/local/include \
+  && cp asio/asio/include/asio.hpp /opt/sysroot/usr/local/include \
+  && cp -r asio/asio/include/asio /opt/sysroot/usr/local/include \
   && rm -rf asio
 
 # Boost.Hana (workaround branch)
 RUN git clone -b bugfix/constexpr_arrays https://github.com/ricejasonf/hana.git \
-  && cp -r hana/include/* /usr/local/include \
+  && cp -r hana/include/* /opt/sysroot/usr/local/include \
   && rm -rf hana
 
 ARG BUILD_TYPE=Debug
@@ -53,8 +49,7 @@ CMD cmake \
   -DCMAKE_TOOLCHAIN_FILE=/opt/toolchain.cmake \
   -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
   -DCMAKE_CXX_FLAGS=" -stdlib=libc++ -DASIO_STANDALONE -DASIO_NO_TYPEID" \
-  -DCMAKE_EXE_LINKER_FLAGS=" -mtvossimulator-version-min=9.0 -lc++abi" \
-  -DCMAKE_CXX_COMPILER_TARGET="x86_64-apple-tvossimulator" \
+  -DNBDL_HAS_UIKIT=1 \
   /opt/src \
   && echo '. /usr/share/bash-completion/bash_completion && set -o vi' >> /root/.bashrc \
   && /bin/bash

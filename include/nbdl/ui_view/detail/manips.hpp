@@ -14,7 +14,7 @@ static_assert(false, "UIView manipulations require an Objective-C++ compiler");
 #import <UIKit/UIKit.h>
 
 #include <nbdl/catch.hpp>
-#include <nbdl/fwd/ui_view/detail/dom_manips.hpp>
+#include <nbdl/fwd/ui_view/detail/manips.hpp>
 #include <nbdl/path_promise.hpp>
 #include <nbdl/promise.hpp>
 #include <nbdl/run_sync.hpp>
@@ -27,8 +27,8 @@ static_assert(false, "UIView manipulations require an Objective-C++ compiler");
 
 namespace nbdl::ui_view::detail
 {
-  template <typename View>
-  struct action_fn<begin, spec::tag::view, View>
+  template <typename View, typename InitFn>
+  struct action_fn<begin, spec::tag::view_t, View, InitFn>
   {
     View* view;
 
@@ -36,12 +36,13 @@ namespace nbdl::ui_view::detail
       : view(nil)
     { }
 
-    template <typename Resolver, typename SuperView>
-    void operator()(Resolver& resolve, SuperView* super_view) const
+    template <typename Resolver, typename Superview>
+    void operator()(Resolver& resolve, Superview* super_view) const
     {
       if (view == nil)
       {
-        View* view = [[View alloc] initWithFrame: CGRectMake(0, 0, 100, 100)];
+        View* view = [View alloc];
+        InitFn{}(view);
       }
 
       [super_view addSubview: view];
@@ -50,7 +51,7 @@ namespace nbdl::ui_view::detail
   };
 
   template <typename View>
-  struct action_fn<end, View>
+  struct action_fn<end, spec::tag::view_t, View>
   {
     template <typename Resolver>
     void operator()(Resolver& resolve, View* view) const
@@ -137,7 +138,7 @@ namespace nbdl::ui_view::detail
             // Something changed! :D
             for (UIView* view in [container_el subviews])
             {
-              [view removeFromSuperView];
+              [view removeFromSuperview];
             }
             branch_id = hana::value(index);
             renderers[index].render(container_el);
@@ -147,8 +148,8 @@ namespace nbdl::ui_view::detail
       ), store);
     }
 
-    template <typename Resolver, typename SuperView>
-    void operator()(Resolver& resolve, SuperView* p)
+    template <typename Resolver, typename Superview>
+    void operator()(Resolver& resolve, Superview* p)
     {
       update();
       [p addSubView: container_el];

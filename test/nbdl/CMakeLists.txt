@@ -11,6 +11,11 @@ if (EMSCRIPTEN)
   return()
 endif (EMSCRIPTEN)
 
+if (NBDL_HAS_UIKIT)
+  add_subdirectory(ui_view)
+  return()
+endif (NBDL_HAS_UIKIT)
+
 add_subdirectory(core)
 add_subdirectory(util)
 add_subdirectory(websocket)

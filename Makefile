@@ -20,10 +20,11 @@ web_develop:
 
 image_tvossimulator_sysroot:
 	$(eval SYSROOT ?= /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk)
-	tar -cf - ./docker/Dockerfile-sysroot \
-		-C / ./usr/include ./usr/lib \
-		-C ${SYSROOT} ./usr \
-	| docker build -f ./docker/Dockerfile-sysroot -t tvossimulator_sysroot -
+	bsdtar -cf - \
+		-s ',^,foo/,' \
+		./docker/Dockerfile-sysroot /usr/include /usr/lib \
+		-C ${SYSROOT}/ ./usr ./System/Library/Frameworks \
+	| docker build -f ./foo/docker/Dockerfile-sysroot -t tvossimulator_sysroot -
 
 image_tvossimulator_develop:
 	docker build -f ./docker/Dockerfile-tvossimulator_develop \

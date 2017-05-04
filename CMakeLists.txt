@@ -108,6 +108,14 @@ else (${EMSCRIPTEN})
   find_package(Threads)
 endif (${EMSCRIPTEN})
 
+if (${NBDL_HAS_UIKIT})
+  #add_definitions(-fmodules)
+  include_directories(
+    /opt/sysroot/System/Library/Frameworks/UIKit.framework/Headers
+    /opt/sysroot/System/Library/Frameworks
+  )
+endif (${NBDL_HAS_UIKIT})
+
 include_directories(${nbdl_project_SOURCE_DIR}/include)
 
 add_subdirectory(src)

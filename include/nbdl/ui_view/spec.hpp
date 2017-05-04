@@ -15,6 +15,10 @@ static_assert(false, "UIView manipulations require an Objective-C++ compiler");
 
 #include <mpdef/MPDEF_DIRECTIVE.hpp>
 
+#define NBDL_OBJC_SELECTOR(NAME) struct NAME##_t { \
+  SEL operator()() const { return @selector(NAME); } }; \
+  constexpr NAME##_t NAME{};
+
 namespace nbdl::ui_view
 {
   namespace hana  = boost::hana;
@@ -23,9 +27,31 @@ namespace nbdl::ui_view
   {
     MPDEF_DIRECTIVE_LIST(view)
 
+    namespace selector
+    {
+      NBDL_OBJC_SELECTOR(setAttributedText);
+      NBDL_OBJC_SELECTOR(setCenter);
+      NBDL_OBJC_SELECTOR(sizeToFit);
+    }
+
     template <typename ...Args>
     constexpr auto ui_view(Args ...args)
     { return view(hana::type_c<UIView>, args...); }
+
+    template <int x, int y, int w, int h>
+    struct init_with_frame_fn
+    {
+      template <typename View>
+      auto operator()(View* view) const
+      {
+        [view initWithFrame: CGRectMake(x, y, w, h)];
+        [view setBackgroundColor: [UIColor clearColor]];
+      }
+    };
+
+    template <int x, int y, int w, int h>
+    constexpr init_with_frame_fn<x, y, w, h> init_with_frame{};
+
   }
 }
 

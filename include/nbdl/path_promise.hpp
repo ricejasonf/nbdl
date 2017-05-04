@@ -64,35 +64,6 @@ namespace nbdl
   };
 
   constexpr path_promise_fn path_promise{};
-
-#if 0
-  struct value_promise_fn
-  {
-    template <typename PathSpec>
-    auto operator()(PathSpec) const
-    {
-      return nbdl::promise([](auto& resolve, auto const& store)
-      {
-        nbdl::run_sync(
-          nbdl::pipe(
-            path_promise(PathSpec{})
-          , [&](auto&& path)
-            {
-              nbdl::match_path(
-                store
-                , std::forward<decltype(path)>(path) 
-                , [&](auto const& value) { resolve(value); }
-              );
-            }
-          )
-        , store
-        );
-      });
-    };
-  };
-
-  constexpr value_promise_fn value_promise{};
-#endif
 }
 
 #endif

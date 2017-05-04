@@ -51,6 +51,25 @@ namespace nbdl
           }
         }
       };
+
+      template <typename Fn, typename ...Params>
+      struct construct_render_node<bind_impl<Fn, Params...>>
+      {
+        template <typename Store>
+        static auto apply(Store& store)
+        {
+          if constexpr(hana::is_nothing(
+            hana::index_if(mpdef::make_list(Params{}...), hana::is_a<path_tag>)
+          ))
+          {
+            return bind_impl<Fn, Params...>{};
+          }
+          else
+          {
+            return mut_bind_impl<Fn, Params...>(store);
+          }
+        }
+      };
     }
 
     template <typename RenderSpec>
