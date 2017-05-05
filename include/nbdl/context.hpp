@@ -181,17 +181,18 @@ namespace nbdl
     template <std::size_t i>
     using PushApi = typename decltype(get_push_api_type<i>())::type;
 
-    template <std::size_t i>
+    template <std::size_t i, typename Arg = hana::type<void>>
     static constexpr auto make_cell_type()
     {
-      return hana::type_c<decltype(cell_factory<i>()(std::declval<PushApi<i>>()))>;
-    }
-    
-    template <std::size_t i, typename ArgType>
-    static constexpr auto make_cell_type(ArgType arg_type)
-    {
-      return hana::type_c<decltype(cell_factory<i>()(std::declval<PushApi<i>>(),
-         hana::traits::declval(arg_type)))>;
+      if constexpr(decltype(hana::equal(hana::typeid_(std::declval<Arg>()), hana::type_c<void>)){})
+      {
+        return hana::type_c<decltype(cell_factory<i>()(std::declval<PushApi<i>>()))>;
+      }
+      else
+      {
+        return hana::type_c<decltype(cell_factory<i>()(std::declval<PushApi<i>>(),
+           std::declval<Arg>()))>;
+      }
     }
 
     // For default construction.
@@ -208,8 +209,8 @@ namespace nbdl
     static constexpr auto make_storage_helper(std::index_sequence<i1, i...>, hanax::types<Arg1, Args...>)
     {
       return hana::type_c<decltype(hana::make_tuple(
-        hana::traits::declval(make_cell_type<i1>(hana::type_c<Arg1>)),
-        hana::traits::declval(make_cell_type<i>(hana::type_c<Args>))...
+        hana::traits::declval(make_cell_type<i1, Arg1>()),
+        hana::traits::declval(make_cell_type<i, Args>())...
       ))>;
     }
 
@@ -218,10 +219,23 @@ namespace nbdl
     Cells cells;
     StoreMap stores;
 
-    template <std::size_t i, typename... Args>
-    decltype(auto) make_cell(Args&& ...args)
+    template <std::size_t i>
+    decltype(auto) make_cell()
     {
-      return cell_factory<i>()(PushApi<i>(*this), std::forward<Args>(args)...);
+      return cell_factory<i>()(PushApi<i>(*this));
+    }
+
+    template <std::size_t i, typename Arg>
+    decltype(auto) make_cell(Arg&& arg)
+    {
+      if constexpr(decltype(hana::equal(hana::typeid_(arg), hana::type_c<void>)){})
+      {
+        return cell_factory<i>()(PushApi<i>(*this));
+      }
+      else
+      {
+        return cell_factory<i>()(PushApi<i>(*this), std::forward<Arg>(arg));
+      }
     }
 
     template <typename Message>

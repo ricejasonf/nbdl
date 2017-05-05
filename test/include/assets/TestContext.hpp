@@ -334,6 +334,10 @@ namespace nbdl
     template <typename ...Args>
     static constexpr auto apply(Args&& ...args)
     {
+      static_assert(
+        !decltype(hana::contains(hana::make_tuple(hana::typeid_(args)...), hana::type_c<void>)){}
+      , "Type void should not be passed as parameter to context element"
+      );
       return test_context::provider<std::decay_t<Args>...>(std::forward<Args>(args)...);
     }
   };
@@ -356,6 +360,10 @@ namespace nbdl
     template <typename ...Args>
     static constexpr auto apply(Args&& ...args)
     {
+      static_assert(
+        !decltype(hana::contains(hana::make_tuple(hana::typeid_(args)...), hana::type_c<void>)){}
+      , "Type void should not be passed as parameter to context element"
+      );
       return test_context::consumer<std::decay_t<Args>...>(std::forward<Args>(args)...);
     }
   };

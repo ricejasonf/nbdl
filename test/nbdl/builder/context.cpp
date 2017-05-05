@@ -54,4 +54,14 @@ int main()
       int_tag<4>{}
     );
   }
+  {
+    using test_context::int_tag;
+    // test single parameter construction
+    auto context_ptr = nbdl::make_unique_context<builder_test_context>(
+      int_tag<1>{},
+      hana::type_c<void>,
+      int_tag<3>{},
+      int_tag<4>{}
+    );
+  }
 }

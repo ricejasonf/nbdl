@@ -51,32 +51,7 @@ namespace nbdl
           }
         }
       };
-
-      template <typename Fn, typename ...Params>
-      struct construct_render_node<bind_impl<Fn, Params...>>
-      {
-        template <typename Store>
-        static auto apply(Store& store)
-        {
-          if constexpr(hana::is_nothing(
-            hana::index_if(mpdef::make_list(Params{}...), hana::is_a<path_tag>)
-          ))
-          {
-            return bind_impl<Fn, Params...>{};
-          }
-          else
-          {
-            return mut_bind_impl<Fn, Params...>(store);
-          }
-        }
-      };
     }
-
-    template <typename RenderSpec>
-    struct renderer { };
-
-    template <typename ...>
-    struct renderer_impl;
 
     template <typename Store, typename ...Node>
     struct renderer_impl<Store, mpdef::list<Node...>>
@@ -123,11 +98,11 @@ namespace nbdl
   template <typename RenderSpec>
   struct make_state_consumer_impl<webui::renderer<RenderSpec>>
   {
-    template <typename Store>
-    static constexpr auto apply(Store&& store)
+    template <typename Store, typename RootElement>
+    static constexpr auto apply(Store&& store, RootElement&& root)
     {
-      auto r = webui::make_renderer<RenderSpec>();
-      r.render(std::forward<Store>(store));
+      auto r = webui::make_renderer(std::forward<Store>(store), RenderSpec{});
+      r.render(std::forward<RootElement>(root));
       return std::move(r);
     }
   };
@@ -136,9 +111,9 @@ namespace nbdl
   struct notify_state_change_impl<webui::renderer<RenderSpec>>
   {
     template <typename Consumer, typename Path>
-    static constexpr auto apply(Consumer&, Path&&)
+    static constexpr auto apply(Consumer& c, Path&&)
     {
-      // TODO something!
+      c.update();
     }
   };
 }
