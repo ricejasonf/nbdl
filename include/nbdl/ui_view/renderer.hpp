@@ -67,10 +67,12 @@ namespace nbdl
         nbdl::pipe(detail::construct_render_node<Node>::apply(std::declval<Store&>())...)
       );
 
+      Store store;
       RenderPipe render_pipe;
 
-      renderer_impl(Store& store)
-        : render_pipe(nbdl::pipe(detail::construct_render_node<Node>::apply(store)...))
+      renderer_impl(Store s)
+        : store(std::move(s))
+        , render_pipe(nbdl::pipe(detail::construct_render_node<Node>::apply(store)...))
       { }
 
       template <typename Parent>
@@ -95,10 +97,10 @@ namespace nbdl
     };
 
     template <typename Store, typename RenderSpec>
-    auto make_renderer(Store& store, RenderSpec)
+    auto make_renderer(Store&& store, RenderSpec)
     {
       using FnList = decltype(ui_view::detail::flatten_spec(RenderSpec{}));
-      return ui_view::renderer_impl<Store, FnList>(store);
+      return ui_view::renderer_impl<Store, FnList>(std::forward<Store>(store));
     }
   }
 

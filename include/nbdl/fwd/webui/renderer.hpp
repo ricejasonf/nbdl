@@ -12,7 +12,7 @@ namespace nbdl::webui
   template <typename RenderSpec>
   struct renderer { };
 
-  template <typename PushApi, typename RenderSpec>
+  template <typename Store, typename RenderSpec, typename IsSpecFlat>
   struct renderer_impl;
 }
 #endif

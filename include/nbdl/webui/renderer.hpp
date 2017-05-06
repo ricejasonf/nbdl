@@ -38,32 +38,68 @@ namespace nbdl
       template <typename Tag, typename ...Params>
       struct construct_render_node<action_fn<Tag, Params...>>
       {
-        template <typename Store>
-        static auto apply(Store& store)
+        template <typename StoreRef>
+        static auto apply(StoreRef store_ref)
         {
+          using Store = typename StoreRef::type;
+
           if constexpr(std::is_default_constructible<action_fn<Tag, Params...>>::value)
           {
             return action_fn<Tag, Params...>{};
           }
           else
           {
-            return mut_action_fn<Tag, Store, Params...>(store);
+            return mut_action_fn<Tag, Store, Params...>(store_ref.get());
           }
+        }
+      };
+
+      template <typename StoreRef>
+      struct construct_pipe_helper_fn
+      {
+        StoreRef store_ref;
+
+        template <typename ...Node>
+        auto operator()(Node ...) const
+        {
+          return nbdl::pipe(detail::construct_render_node<Node>::apply(store_ref)...);
         }
       };
     }
 
-    template <typename Store, typename ...Node>
-    struct renderer_impl<Store, mpdef::list<Node...>>
+
+    template <typename Store, typename Spec, typename IsSpecFlat = hana::false_>
+    struct renderer_impl
     {
-      using RenderPipe = decltype(
-        nbdl::pipe(detail::construct_render_node<Node>::apply(std::declval<Store&>())...)
-      );
+      static constexpr auto get_fn_list()
+      {
+        if constexpr(IsSpecFlat{})
+        {
+          return Spec{};
+        }
+        else
+        {
+          return webui::detail::flatten_spec(Spec{});
+        }
+      }
+
+      Store store;
+
+      using StoreRef = decltype(std::ref(store));
+      using FnList = decltype(get_fn_list());
+      using RenderPipe = decltype(hana::unpack(
+        FnList{}
+      , detail::construct_pipe_helper_fn<StoreRef>{std::ref(store)}
+      ));
 
       RenderPipe render_pipe;
 
-      renderer_impl(Store& store)
-        : render_pipe(nbdl::pipe(detail::construct_render_node<Node>::apply(store)...))
+      renderer_impl(Store s)
+        : store(std::move(s))
+        , render_pipe(hana::unpack(
+            FnList{}
+          , detail::construct_pipe_helper_fn<StoreRef>{std::ref(store)}
+          ))
       { }
 
       template <typename Parent>
@@ -86,13 +122,6 @@ namespace nbdl
         });
       }
     };
-
-    template <typename Store, typename RenderSpec>
-    auto make_renderer(Store& store, RenderSpec)
-    {
-      using FnList = decltype(webui::detail::flatten_spec(RenderSpec{}));
-      return webui::renderer_impl<Store, FnList>(store);
-    }
   }
 
   template <typename RenderSpec>
@@ -101,7 +130,7 @@ namespace nbdl
     template <typename Store, typename RootElement>
     static constexpr auto apply(Store&& store, RootElement&& root)
     {
-      auto r = webui::make_renderer(std::forward<Store>(store), RenderSpec{});
+      auto r = webui::renderer_impl<std::decay_t<Store>, RenderSpec>(std::forward<Store>(store));
       r.render(std::forward<RootElement>(root));
       return std::move(r);
     }
@@ -115,6 +144,15 @@ namespace nbdl
     {
       c.update();
     }
+  };
+}
+
+namespace boost::hana
+{
+  template <typename Store, typename Spec>
+  struct tag_of<nbdl::webui::renderer_impl<Store, Spec>>
+  {
+    using type = nbdl::webui::renderer<Spec>;
   };
 }
 #endif

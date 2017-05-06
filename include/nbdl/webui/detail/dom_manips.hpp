@@ -22,6 +22,16 @@
 
 namespace nbdl::webui::detail
 {
+  template <typename Store>
+  struct make_nested_renderer_impl_type_from_pair_fn
+  {
+    template <typename Key, typename FnList>
+    constexpr auto operator()(mpdef::pair<Key, FnList>) const
+    {
+      return hana::type_c<renderer_impl<std::reference_wrapper<Store>, FnList, hana::true_>>;
+    }
+  };
+
   template <typename HtmlTagName>
   struct action_fn<begin, html::tag::element_t, HtmlTagName>
   {
@@ -170,11 +180,7 @@ namespace nbdl::webui::detail
       hana::unpack(
         hana::transform(
           Branches{}
-        , hana::compose(
-            hana::partial(hana::template_<renderer_impl>, hana::type_c<Store>)
-          , hana::typeid_
-          , hana::second
-          )
+        , make_nested_renderer_impl_type_from_pair_fn<Store>{}
         )
       , hana::template_<hana::tuple>
       )

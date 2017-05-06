@@ -70,14 +70,13 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
       )
     );
 
-  // renderer owns a reference to my_store
-  auto renderer = nbdl::webui::make_renderer(my_store, spec);
-  renderer.render(target);
+  using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
+  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
 
   my_store["key_1"_s] = std::string(" Here is some updated dynamic text.");
   my_store["key_3"_s] = std::string(" Here is some optional text.");
 
-  renderer.update();
+  nbdl::notify_state_change(renderer, hana::type_c<void>);
 
   CHECK(check_dom_equals());
 }
