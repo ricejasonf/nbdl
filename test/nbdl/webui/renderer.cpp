@@ -80,3 +80,26 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
 
   CHECK(check_dom_equals());
 }
+
+TEST_CASE("Unsafely set innerHTML", "[webui][renderer]")
+{
+  using namespace nbdl::webui::html;
+
+  auto target = make_dom_test_equality(
+    "<pre>"
+    "<span class=\"foo\">&amp;owner::member</span>"
+    "</pre>"
+  );
+
+  auto my_store = hana::make_map();
+
+  constexpr auto spec =
+    pre(
+      unsafe_set_inner_html("<span class=\"foo\">&amp;owner::member</span>"_s)
+    );
+
+  using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
+  nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+
+  CHECK(check_dom_equals());
+}

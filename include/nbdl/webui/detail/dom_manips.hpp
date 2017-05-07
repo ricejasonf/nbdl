@@ -237,5 +237,16 @@ namespace nbdl::webui::detail
       resolve(std::forward<ParentElement>(p));
     }
   };
+
+  template <typename String>
+  struct action_fn<html::tag::unsafe_set_inner_html_t, String>
+  {
+    template <typename Resolver, typename ParentElement>
+    void operator()(Resolver& resolve, ParentElement&& p) const
+    {
+      p.set("innerHTML", emscripten::val(hana::to<char const*>(String{})));
+      resolve(std::forward<ParentElement>(p));
+    }
+  };
 }
 #endif

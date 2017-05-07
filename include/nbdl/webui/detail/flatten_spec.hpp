@@ -16,6 +16,7 @@
 #include <boost/hana/unpack.hpp>
 #include <mpdef/list.hpp>
 #include <mpdef/pair.hpp>
+#include <type_traits>
 #include <utility>
 
 namespace nbdl::webui::detail
@@ -100,11 +101,18 @@ namespace nbdl::webui::detail
         , decltype(hana::at_c<1>(child_nodes))
         >{});
       }
-      else if constexpr(decltype(hana::equal(current_tag, html::tag::text_node))::value)
+      else if constexpr(decltype(hana::or_(
+        hana::equal(current_tag, html::tag::text_node)
+      , hana::equal(current_tag, html::tag::unsafe_set_inner_html)
+      ))::value)
       {
+        static_assert(
+          hana::not_(hana::is_a<char const*>(child_nodes))
+        , "Raw string literals cannot be used at compile-time"
+        );
         return mpdef::make_list(action_fn<
           typename decltype(current_tag)::type
-        , decltype(hana::at_c<0>(child_nodes))
+        , std::decay_t<decltype(child_nodes)>
         >{});
       }
     }
