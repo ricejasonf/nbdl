@@ -113,9 +113,9 @@ TEST_CASE("class attribute and text content", "[webui][dom_manips]")
   nbdl::run_sync(
     nbdl::pipe(
       nbdl::promise(action_fn<begin, tag::element_t, div_tag>{})
-    , nbdl::promise(action_fn<tag::attribute_t, decltype("class"_s), decltype("foo"_s)>{})
+    , nbdl::promise(action_fn<tag::attribute_t, decltype("class"_s), mpdef::list<decltype("foo"_s)>>{})
     , nbdl::promise(action_fn<begin, tag::element_t, div_tag>{})
-    , nbdl::promise(action_fn<tag::attribute_t, decltype("class"_s), decltype("bar"_s)>{})
+    , nbdl::promise(action_fn<tag::attribute_t, decltype("class"_s), mpdef::list<decltype("bar"_s)>>{})
     , nbdl::promise(action_fn<tag::text_node_t, decltype("I'm some static text content."_s)>{})
     , nbdl::promise(mut_action_fn<tag::text_node_t, MyStore, decltype(get("key_1"_s))>(my_store))
     , nbdl::promise(mut_action_fn<tag::text_node_t, MyStore, decltype(get("key_2"_s))>(my_store))

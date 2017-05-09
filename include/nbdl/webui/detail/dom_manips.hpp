@@ -8,9 +8,10 @@
 #define NBDL_WEBUI_DETAIL_DOM_MANIPS_HPP
 
 #include <nbdl/catch.hpp>
+#include <nbdl/detail/string_concat.hpp>
 #include <nbdl/fwd/webui/detail/dom_manips.hpp>
+#include <nbdl/params_promise.hpp>
 #include <nbdl/path_promise.hpp>
-#include <nbdl/promise.hpp>
 #include <nbdl/run_sync.hpp>
 #include <nbdl/tap.hpp>
 #include <nbdl/ui_spec.hpp>
@@ -56,18 +57,57 @@ namespace nbdl::webui::detail
     }
   };
 
-  template <typename AttributeName, typename String>
-  struct action_fn<html::tag::attribute_t, AttributeName, String>
+  // For one string constant
+  template <typename AttributeName, char ...Cs>
+  struct action_fn<html::tag::attribute_t, AttributeName, mpdef::list<hana::string<Cs...>>>
   {
     template <typename Resolver, typename ParentElement>
     void operator()(Resolver& resolve, ParentElement&& p) const
     {
-      auto el = p.template call<emscripten::val>(
+      p.template call<void>(
         "setAttribute"
       , emscripten::val(hana::to<char const*>(AttributeName{}))
-      , emscripten::val(hana::to<char const*>(String{}))
+      , emscripten::val(hana::to<char const*>(hana::string<Cs...>{}))
       );
       resolve(std::forward<ParentElement>(p));
+    }
+  };
+
+  template <typename AttributeName, typename StringParams>
+  struct action_fn<html::tag::attribute_t, AttributeName, StringParams>
+  {
+    action_fn() = delete;
+  };
+
+  template <typename Store, typename AttributeName, typename StringParams>
+  struct mut_action_fn<html::tag::attribute_t, Store, AttributeName, StringParams>
+  {
+    Store const& store;
+    emscripten::val el;
+
+    mut_action_fn(Store const& s)
+      : store(s)
+      , el(emscripten::val::undefined())
+    { }
+
+    template <typename Resolver, typename ParentElement>
+    void operator()(Resolver& resolve, ParentElement&& p) const
+    {
+      nbdl::run_sync(
+        nbdl::pipe(
+          nbdl::params_promise(StringParams{})
+        , nbdl::detail::string_concat
+        , [&](auto const& text_value)
+          {
+            p.template call<void>(
+              "setAttribute"
+            , emscripten::val(hana::to<char const*>(AttributeName{}))
+            , emscripten::val(text_value)
+            );
+            resolve(std::forward<ParentElement>(p));
+          }
+        )
+      , store);
     }
   };
 

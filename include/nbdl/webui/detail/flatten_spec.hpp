@@ -8,11 +8,13 @@
 #define NBDL_WEBUI_DETAIL_FLATTEN_SPEC_HPP
 
 #include <nbdl/fwd/webui/detail/flatten_spec.hpp>
+#include <nbdl/ui_helper.hpp>
 #include <nbdl/ui_spec.hpp>
 #include <nbdl/webui/detail/dom_manips.hpp>
 #include <nbdl/webui/html.hpp>
 
 #include <boost/hana/flatten.hpp>
+#include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
 #include <mpdef/list.hpp>
 #include <mpdef/pair.hpp>
@@ -55,30 +57,6 @@ namespace nbdl::webui::detail
     }
   };
 #endif
-  template <typename FlattenSpecFn>
-  struct flatten_match_node_helper_fn
-  {
-    template <typename T, typename Spec>
-    constexpr auto operator()(mpdef::pair<T, Spec>) const
-    {
-      using Flattened = decltype(FlattenSpecFn{}(Spec{}));
-      return mpdef::pair<hana::type<T>, Flattened>{};
-    }
-  };
-
-  template <typename FlattenSpecFn>
-  struct flatten_match_node_fn
-  {
-    template <typename Path, typename Map>
-    constexpr auto operator()(ui_spec::match_t<Path, Map>) const
-    {
-      return mpdef::list<action_fn<
-        ui_spec::match_tag
-      , Path
-      , decltype(hana::transform(Map{}, flatten_match_node_helper_fn<FlattenSpecFn>{}))
-      >>{};
-    }
-  };
 
   template <typename Node>
   constexpr auto flatten_spec_fn::operator()(Node node) const
@@ -98,7 +76,7 @@ namespace nbdl::webui::detail
         return mpdef::make_list(action_fn<
           typename decltype(current_tag)::type
         , decltype(hana::at_c<0>(child_nodes))
-        , decltype(hana::at_c<1>(child_nodes))
+        , decltype(ui_helper::flatten_param_node(hana::at_c<1>(child_nodes)))
         >{});
       }
       else if constexpr(decltype(hana::or_(
@@ -118,7 +96,11 @@ namespace nbdl::webui::detail
     }
     else if constexpr(hana::is_a<ui_spec::match_tag, Node>())
     {
-      return flatten_match_node_fn<flatten_spec_fn>{}(Node{});
+      return ui_helper::flatten_match_node(
+        hana::template_<action_fn>
+      , flatten_spec_fn{}
+      , Node{}
+      );
     }
     else
     {

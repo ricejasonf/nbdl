@@ -6,10 +6,11 @@
 #
 
 nbdl_catch_test_suite(build_targets "test.nbdl.core"
-  context_match.cpp
   context.cpp
+  context_match.cpp
   context_state_consumer.cpp
   delta.cpp
+  detail/string_concat.cpp
   echo_provider.cpp
   entity.cpp
   map_store.cpp
@@ -28,4 +29,3 @@ nbdl_add_test("test.nbdl.core.detail.concept_pred"
 nbdl_add_test("test.nbdl.core.ui_spec"
   ui_spec.cpp
 )
-

@@ -7,6 +7,7 @@
 #ifndef NBDL_UI_SPEC_HPP
 #define NBDL_UI_SPEC_HPP
 
+#include <mpdef/MPDEF_DIRECTIVE.hpp>
 #include <mpdef/list.hpp>
 #include <nbdl/match_path.hpp>
 #include <nbdl/pipe.hpp>
@@ -25,6 +26,8 @@
 namespace nbdl::ui_spec
 {
   namespace hana = boost::hana;
+
+  MPDEF_DIRECTIVE_LIST(concat);
 
   struct path_tag { };
 
@@ -216,6 +219,7 @@ namespace nbdl::ui_spec
 
   constexpr bind_fn bind{};
 #endif
+
 }
 
 namespace boost::hana

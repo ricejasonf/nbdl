@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <nbdl/variant.hpp>
 #include <nbdl/webui/detail/dom_manips.hpp>
 #include <nbdl/webui/html.hpp>
 
@@ -100,6 +101,43 @@ TEST_CASE("Unsafely set innerHTML", "[webui][renderer]")
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
   nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+
+  CHECK(check_dom_equals());
+}
+
+TEST_CASE("Render dynamic attributes", "[webui][renderer]")
+{
+  using namespace nbdl::webui::html;
+  using namespace nbdl::ui_spec;
+
+  auto target = make_dom_test_equality(
+    "<div class=\"foo foo bar baz boo\" >"
+    "</div>"
+  );
+
+  auto my_store = hana::make_map(
+    hana::make_pair("key_1"_s, std::string("foo"))
+  , hana::make_pair("key_2"_s, nbdl::optional<std::string>{std::string("baz")})
+  );
+
+  auto prepend = [](auto prefix) { return [=](auto path) { return concat(prefix, get(path)); };};
+
+  auto spec =
+    div(
+      attr_class(concat(
+        "foo "_s
+      , get("key_1"_s)
+      , " "_s
+      , match(get("key_2"_s)
+        , when<std::string>(prepend("bar "_s))
+        , when<nbdl::nothing>(""_s)
+        )
+      , " boo"_s
+      ))
+    );
+
+  using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
+  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
 
   CHECK(check_dom_equals());
 }

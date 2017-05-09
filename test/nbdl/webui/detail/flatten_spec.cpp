@@ -22,6 +22,7 @@ int main()
 {
   using namespace nbdl::ui_spec;
   using namespace nbdl::webui::html;
+  namespace tag = nbdl::webui::html::tag;
   using nbdl::webui::detail::action_fn;
 
   auto begin = [](auto ...xs)
@@ -78,7 +79,7 @@ int main()
     constexpr auto result = nbdl::webui::detail::flatten_spec(spec);
     constexpr auto expected = mpdef::make_list(
       begin(tag::element_t{}, div_s),
-        action_fn<tag::attribute_t, decltype("class"_s), decltype("foo"_s)>{},
+        action_fn<tag::attribute_t, decltype("class"_s), mpdef::list<decltype("foo"_s)>>{},
         begin(tag::element_t{}, div_s),
           action_fn<tag::text_node_t, decltype("Hello World!"_s)>{},
         end  (tag::element_t{}, div_s),
@@ -105,7 +106,7 @@ int main()
     constexpr auto result = hana::type_c<decltype(nbdl::webui::detail::flatten_spec(spec))>;
     constexpr auto expected = hana::type_c<decltype(mpdef::make_list(
       begin(tag::element_t{}, div_s),
-        action_fn<tag::attribute_t, decltype("class"_s), decltype("foo"_s)>{}
+        action_fn<tag::attribute_t, decltype("class"_s), mpdef::list<decltype("foo"_s)>>{}
       , action_fn<match_tag, path_t<get_t<decltype("key"_s)>>
         , mpdef::list<
             mpdef::pair<hana::type<int>, mpdef::list<
