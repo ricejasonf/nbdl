@@ -105,10 +105,19 @@ namespace nbdl
       template <typename Parent>
       void render(Parent&& parent)
       {
-        nbdl::run_sync(
-          hana::transform(render_pipe, [](auto& x) { return nbdl::promise(std::ref(x)); })
-        , std::forward<Parent>(parent)
-        );
+        emscripten::val current = std::forward<Parent&&>(parent);
+        hana::for_each(render_pipe, [&](auto& x)
+        {
+          // TODO render_pipe can probably just be functions now
+          // since the result is always emscripten::val
+          nbdl::run_sync(
+            nbdl::pipe(
+              nbdl::promise(std::ref(x))
+            , [&](auto&& el) { current = std::forward<decltype(el)>(el); }
+            )
+          , current
+          );
+        });
       }
 
       void update()

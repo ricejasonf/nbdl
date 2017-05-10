@@ -141,3 +141,29 @@ TEST_CASE("Render dynamic attributes", "[webui][renderer]")
 
   CHECK(check_dom_equals());
 }
+
+#if 0 // This is really slow
+TEST_CASE("Handle scaled up document structure", "[webui][renderer]")
+{
+  using namespace nbdl::webui::html;
+  using namespace nbdl::ui_spec;
+
+  auto target = make_dom_test_equality("<div> </div>");
+
+  auto my_store = hana::make_map();
+
+
+  constexpr auto make_child = hana::always(div(attr_class("child"_s)));
+
+  auto spec = hana::unpack(
+    hana::make_range(hana::size_c<0>, hana::size_c<300>)
+  , [&](auto ...i)
+    {
+      return div(attr_class("parent"_s), make_child(i)...);
+    }
+  );
+
+  using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
+  nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+}
+#endif
