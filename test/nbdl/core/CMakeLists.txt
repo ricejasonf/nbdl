@@ -6,6 +6,7 @@
 #
 
 nbdl_catch_test_suite(build_targets "test.nbdl.core"
+  apply_action.cpp
   context.cpp
   context_match.cpp
   context_state_consumer.cpp

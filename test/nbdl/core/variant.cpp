@@ -186,3 +186,15 @@ TEST_CASE("variant as a nbdl::Store", "[variant][Store]")
     CHECK(result == std::string("should match this"));
   }
 }
+
+TEST_CASE("Apply action update raw.", "[variant][apply_action]")
+{
+  auto store = nbdl::variant<int, std::string>{};
+
+  nbdl::apply_action(store, std::string("OK!"));
+
+  std::string result("FAIL!");
+
+  store.match([&](std::string const& value) { result = value; }, nbdl::noop);
+  CHECK(result == std::string("OK!"));
+}

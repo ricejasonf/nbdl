@@ -26,6 +26,7 @@
 #include <nbdl/concept/Store.hpp>
 #include <nbdl/concept/UpstreamMessage.hpp>
 #include <nbdl/context.hpp>
+#include <nbdl/context_store.hpp>
 #include <nbdl/delta.hpp>
 #include <nbdl/echo_provider.hpp>
 #include <nbdl/entity.hpp>

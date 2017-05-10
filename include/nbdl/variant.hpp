@@ -364,10 +364,11 @@ namespace nbdl
   template<>
   struct apply_action_impl<variant_tag>
   {
-    static constexpr auto apply(...)
+    template <typename Store, typename Other>
+    static constexpr auto apply(Store& s, Other&& o)
     {
-      // TODO Perhaps actions would be useful for updating elements.
-      return hana::false_c;
+      s = std::forward<Other>(o);
+      return hana::true_c;
     }
   };
   
