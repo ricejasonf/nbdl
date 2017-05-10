@@ -43,6 +43,19 @@ namespace nbdl
       return hana::make<Tag>();
     }
   };
+
+  // Wrapper tag for creating stores that don't implement `make_store`
+  template <typename Store>
+  struct context_store { };
+
+  template <typename Store>
+  struct make_store_impl<context_store<Store>>
+  {
+    static constexpr auto apply(...)
+      -> Store
+    { return {}; }
+  };
+
 } // nbdl
 
 #endif

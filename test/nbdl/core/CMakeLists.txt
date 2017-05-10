@@ -9,6 +9,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   context.cpp
   context_match.cpp
   context_state_consumer.cpp
+  context_store.cpp
   delta.cpp
   detail/string_concat.cpp
   echo_provider.cpp
