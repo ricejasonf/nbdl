@@ -140,7 +140,7 @@ namespace test_context_def {
                 Name(hana::type_c<void>),
                 Entity<entity::my_entity<1>>,
                 PathKey<test_context::key<entity::my_entity<1>>>,
-                Store(hana::type_c<Store_>),
+                Store<Store_>,
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             )
@@ -156,7 +156,7 @@ namespace test_context_def {
                 Name(hana::type_c<void>),
                 Entity<entity::my_entity<1>>,
                 PathKey<test_context::key<entity::my_entity<1>>>,
-                Store(hana::type_c<Store_>),
+                Store<Store_>,
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             ),
@@ -168,7 +168,7 @@ namespace test_context_def {
                 Name(hana::type_c<void>),
                 Entity<entity::my_entity<2>>,
                 PathKey<test_context::key<entity::my_entity<2>>>,
-                Store(hana::type_c<Store_>),
+                Store<Store_>,
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             ),
@@ -180,7 +180,7 @@ namespace test_context_def {
                 Name(hana::type_c<void>),
                 Entity<entity::my_entity<3>>,
                 PathKey<test_context::key<entity::my_entity<3>>>,
-                Store(hana::type_c<Store_>),
+                Store<Store_>,
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             ),
@@ -192,7 +192,7 @@ namespace test_context_def {
                 Name(hana::type_c<void>),
                 Entity<entity::my_entity<4>>,
                 PathKey<test_context::key<entity::my_entity<4>>>,
-                Store(hana::type_c<Store_>),
+                Store<Store_>,
                 Actions(Create(), Read(), UpdateRaw(), Delete())
               )
             )

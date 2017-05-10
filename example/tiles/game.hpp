@@ -133,7 +133,7 @@ namespace tiles
               Name(hana::type_c<void>), // FIXME
               Entity<game>,
               PathKey<int>,
-              Store(hana::type_c<game_store>),
+              Store<game_store>,
               Actions(),
               AccessPoint(
                 Name(hana::type_c<void>), // FIXME

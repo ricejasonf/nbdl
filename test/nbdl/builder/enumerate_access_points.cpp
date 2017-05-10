@@ -63,7 +63,7 @@ int main()
 
     constexpr auto def =
       Context(
-        Store(hana::type_c<nbdl::null_store>),
+        Store<nbdl::null_store>,
         Providers(
           Provider(
             Name(names::Provider1),

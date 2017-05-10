@@ -66,7 +66,7 @@ int main()
     constexpr auto def =
       Context(
         Provider(
-          Store(hana::type_c<test_store_tag>),
+          Store<test_store_tag>,
           Name(names::Provider1),
           AccessPoint(
             Name(names::E1),
@@ -90,7 +90,7 @@ int main()
         Provider(
           Name(names::Provider1),
           AccessPoint(
-            Store(hana::type_c<test_store_tag>),
+            Store<test_store_tag>,
             Name(names::E1),
             Entity<names::E1_t>,
             PathKey<names::E1_key>,
