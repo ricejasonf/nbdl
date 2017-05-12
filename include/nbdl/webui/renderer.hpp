@@ -38,31 +38,29 @@ namespace nbdl
       template <typename Tag, typename ...Params>
       struct construct_render_node<action_fn<Tag, Params...>>
       {
-        template <typename StoreRef>
-        static auto apply(StoreRef store_ref)
+        template <typename Store>
+        static auto apply(Store store)
         {
-          using Store = typename StoreRef::type;
-
           if constexpr(std::is_default_constructible<action_fn<Tag, Params...>>::value)
           {
             return action_fn<Tag, Params...>{};
           }
           else
           {
-            return mut_action_fn<Tag, Store, Params...>(store_ref.get());
+            return mut_action_fn<Tag, Store, Params...>(store);
           }
         }
       };
 
-      template <typename StoreRef>
+      template <typename Store>
       struct construct_pipe_helper_fn
       {
-        StoreRef store_ref;
+        Store store;
 
         template <typename ...Node>
         auto operator()(Node ...) const
         {
-          return nbdl::pipe(detail::construct_render_node<Node>::apply(store_ref)...);
+          return nbdl::pipe(detail::construct_render_node<Node>::apply(store)...);
         }
       };
     }
@@ -85,20 +83,19 @@ namespace nbdl
 
       Store store;
 
-      using StoreRef = decltype(std::ref(store));
       using FnList = decltype(get_fn_list());
       using RenderPipe = decltype(hana::unpack(
         FnList{}
-      , detail::construct_pipe_helper_fn<StoreRef>{std::ref(store)}
+      , detail::construct_pipe_helper_fn<Store>{store}
       ));
 
       RenderPipe render_pipe;
 
       renderer_impl(Store s)
-        : store(std::move(s))
+        : store(s)
         , render_pipe(hana::unpack(
             FnList{}
-          , detail::construct_pipe_helper_fn<StoreRef>{std::ref(store)}
+          , detail::construct_pipe_helper_fn<Store>{store}
           ))
       { }
 
@@ -106,17 +103,9 @@ namespace nbdl
       void render(Parent&& parent)
       {
         emscripten::val current = std::forward<Parent&&>(parent);
-        hana::for_each(render_pipe, [&](auto& x)
+        hana::for_each(render_pipe, [&](auto& fn)
         {
-          // TODO render_pipe can probably just be functions now
-          // since the result is always emscripten::val
-          nbdl::run_sync(
-            nbdl::pipe(
-              nbdl::promise(std::ref(x))
-            , [&](auto&& el) { current = std::forward<decltype(el)>(el); }
-            )
-          , current
-          );
+          current = fn(current);
         });
       }
 

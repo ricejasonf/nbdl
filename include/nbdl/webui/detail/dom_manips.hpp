@@ -19,6 +19,7 @@
 #include <nbdl/webui/renderer.hpp>
 
 #include <emscripten/val.h>
+#include <functional>
 #include <utility>
 
 namespace nbdl::webui::detail
@@ -29,31 +30,31 @@ namespace nbdl::webui::detail
     template <typename Key, typename FnList>
     constexpr auto operator()(mpdef::pair<Key, FnList>) const
     {
-      return hana::type_c<renderer_impl<std::reference_wrapper<Store>, FnList, hana::true_>>;
+      return hana::type_c<renderer_impl<Store, FnList, hana::true_>>;
     }
   };
 
   template <typename HtmlTagName>
   struct action_fn<begin, html::tag::element_t, HtmlTagName>
   {
-    template <typename Resolver, typename ParentElement>
-    void operator()(Resolver& resolve, ParentElement&& p) const
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p) const
     {
       auto el = emscripten::val::global("document").template
         call<emscripten::val>("createElement", emscripten::val(hana::to<char const*>(HtmlTagName{})));
       std::forward<ParentElement>(p).template
         call<void>("appendChild", el);
-      resolve(std::move(el));
+      return el;
     }
   };
 
   template <typename HtmlTagName>
   struct action_fn<end, html::tag::element_t, HtmlTagName>
   {
-    template <typename Resolver, typename ParentElement>
-    void operator()(Resolver& resolve, ParentElement&& p) const
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p) const
     {
-      resolve(std::forward<ParentElement>(p)["parentNode"]);
+      return std::forward<ParentElement>(p)["parentNode"];
     }
   };
 
@@ -61,15 +62,15 @@ namespace nbdl::webui::detail
   template <typename AttributeName, char ...Cs>
   struct action_fn<html::tag::attribute_t, AttributeName, mpdef::list<hana::string<Cs...>>>
   {
-    template <typename Resolver, typename ParentElement>
-    void operator()(Resolver& resolve, ParentElement&& p) const
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p) const
     {
       p.template call<void>(
         "setAttribute"
       , emscripten::val(hana::to<char const*>(AttributeName{}))
       , emscripten::val(hana::to<char const*>(hana::string<Cs...>{}))
       );
-      resolve(std::forward<ParentElement>(p));
+      return std::forward<ParentElement>(p);
     }
   };
 
@@ -82,20 +83,20 @@ namespace nbdl::webui::detail
   template <typename Store, typename AttributeName, typename StringParams>
   struct mut_action_fn<html::tag::attribute_t, Store, AttributeName, StringParams>
   {
-    Store const& store;
+    Store store;
     emscripten::val el;
 
-    mut_action_fn(Store const& s)
+    mut_action_fn(Store s)
       : store(s)
       , el(emscripten::val::undefined())
     { }
 
-    template <typename Resolver, typename ParentElement>
-    void operator()(Resolver& resolve, ParentElement&& p)
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p)
     {
       el = p;
       update();
-      resolve(std::forward<ParentElement>(p));
+      return std::forward<ParentElement>(p);
     }
 
     void update()
@@ -113,20 +114,21 @@ namespace nbdl::webui::detail
             );
           }
         )
-      , store);
+      , std::ref(store).get()
+      );
     }
   };
 
   template <typename String>
   struct action_fn<html::tag::text_node_t, String>
   {
-    template <typename Resolver, typename ParentElement>
-    void operator()(Resolver& resolve, ParentElement&& p) const
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p) const
     {
       auto el = emscripten::val::global("document").template
         call<emscripten::val>("createTextNode", emscripten::val(hana::to<char const*>(String{})));
       p.template call<void>("appendChild", el);
-      resolve(std::forward<ParentElement>(p));
+      return std::forward<ParentElement>(p);
     }
   };
 
@@ -139,18 +141,18 @@ namespace nbdl::webui::detail
   template <typename Store, typename ...PathNodes>
   struct mut_action_fn<html::tag::text_node_t, Store, ui_spec::path_t<PathNodes...>>
   {
-    Store const& store;
+    Store store;
     emscripten::val el;
     emscripten::val parent_el;
 
-    mut_action_fn(Store const& s)
+    mut_action_fn(Store s)
       : store(s)
       , el(emscripten::val::undefined())
       , parent_el(emscripten::val::undefined())
     { }
 
-    template <typename Resolver, typename ParentElement>
-    void operator()(Resolver& resolve, ParentElement&& p)
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p)
     {
       nbdl::run_sync(
         nbdl::pipe(
@@ -161,11 +163,11 @@ namespace nbdl::webui::detail
               call<emscripten::val>("createTextNode", emscripten::val(value));
             p.template call<void>("appendChild", el);
             parent_el = p;
-            resolve(std::forward<ParentElement>(p));
           }
         )
-      , store
+      , std::ref(store).get()
       );
+      return std::forward<ParentElement>(p);
     }
 
     void update()
@@ -181,7 +183,7 @@ namespace nbdl::webui::detail
             el = new_el;
           }
         )
-      , store
+      , std::ref(store).get()
       );
     }
   };
@@ -206,7 +208,7 @@ namespace nbdl::webui::detail
   struct construct_branch_renderers<hana::tuple<X...>>
   {
     template <typename Store>
-    static auto apply(Store& store)
+    static auto apply(Store store)
     {
       return hana::make_tuple(X(store)...);
     }
@@ -232,13 +234,13 @@ namespace nbdl::webui::detail
       )
     )::type;
 
-    Store& store;
+    Store store;
     emscripten::val parent_el;
     emscripten::val container_el;
     int branch_id;
     Renderers renderers;
 
-    mut_action_fn(Store& s)
+    mut_action_fn(Store s)
       : store(s)
       , parent_el(emscripten::val::undefined())
       , container_el(emscripten::val::undefined())
@@ -248,50 +250,53 @@ namespace nbdl::webui::detail
 
     void update()
     {
-      nbdl::run_sync(nbdl::pipe(
-        nbdl::path_promise(PathSpec{})
-      , [](auto const& value)
-        {
-          using T = typename decltype(hana::typeid_(value))::type;
-          return *hana::index_if(Branches{}, match_branch_pred_fn<T>{});
-        }
-      , nbdl::tap([&](auto index)
-        {
-          if (hana::value(index) != branch_id)
+      nbdl::run_sync(
+        nbdl::pipe(
+          nbdl::path_promise(PathSpec{})
+        , [](auto const& value)
           {
-            // Something changed! :D
-            if (branch_id != -1)
-            {
-              container_el.template call<void>("removeChild", container_el["firstChild"]);
-            }
-            branch_id = hana::value(index);
-            renderers[index].render(container_el);
+            using T = typename decltype(hana::typeid_(value))::type;
+            return *hana::index_if(Branches{}, match_branch_pred_fn<T>{});
           }
-        })
-      , nbdl::catch_(nbdl::noop)
-      ), store);
+        , nbdl::tap([&](auto index)
+          {
+            if (hana::value(index) != branch_id)
+            {
+              // Something changed! :D
+              if (branch_id != -1)
+              {
+                container_el.template call<void>("removeChild", container_el["firstChild"]);
+              }
+              branch_id = hana::value(index);
+              renderers[index].render(container_el);
+            }
+          })
+        , nbdl::catch_(nbdl::noop)
+        )
+      , std::ref(store).get()
+      );
     }
 
-    template <typename Resolver, typename ParentElement>
-    void operator()(Resolver& resolve, ParentElement&& p)
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p)
     {
       parent_el = p;
       container_el = emscripten::val::global("document").template
         call<emscripten::val>("createElement", emscripten::val("span"));
       update();
       parent_el.template call<void>("appendChild", container_el);
-      resolve(std::forward<ParentElement>(p));
+      return std::forward<ParentElement>(p);
     }
   };
 
   template <typename String>
   struct action_fn<html::tag::unsafe_set_inner_html_t, String>
   {
-    template <typename Resolver, typename ParentElement>
-    void operator()(Resolver& resolve, ParentElement&& p) const
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p) const
     {
       p.set("innerHTML", emscripten::val(hana::to<char const*>(String{})));
-      resolve(std::forward<ParentElement>(p));
+      return std::forward<ParentElement>(p);
     }
   };
 }

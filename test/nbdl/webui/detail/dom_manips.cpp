@@ -49,15 +49,8 @@ TEST_CASE("begin element", "[webui][dom_manips]")
 {
   using nbdl::webui::detail::begin;
   auto body = make_body();
-  auto result = emscripten::val::undefined();
 
-  nbdl::run_sync(
-    nbdl::pipe(
-      nbdl::promise(nbdl::webui::detail::action_fn<begin, tag::element_t, div_tag>{})
-    , [&](auto const& node) { result = node; }
-    )
-  , body
-  );
+  auto result = nbdl::webui::detail::action_fn<begin, tag::element_t, div_tag>{}(body);
 
   CHECK(result["parentNode"].strictlyEquals(body));
 }
@@ -72,9 +65,9 @@ TEST_CASE("end element", "[webui][dom_manips]")
 
   nbdl::run_sync(
     nbdl::pipe(
-      nbdl::promise(nbdl::webui::detail::action_fn<begin, tag::element_t, div_tag>{})
+      nbdl::webui::detail::action_fn<begin, tag::element_t, div_tag>{}
     , nbdl::tap([&](auto const& node) { result1 = node; })
-    , nbdl::promise(nbdl::webui::detail::action_fn<end,   tag::element_t, div_tag>{})
+    , nbdl::webui::detail::action_fn<end,   tag::element_t, div_tag>{}
     , nbdl::tap([&](auto const& node) { result2 = node; })
     )
   , body
@@ -110,18 +103,22 @@ TEST_CASE("class attribute and text content", "[webui][dom_manips]")
 
   using MyStore = decltype(my_store);
 
+
+  auto mut_node_1 = mut_action_fn<tag::text_node_t, MyStore, decltype(get("key_1"_s))>(my_store);
+  auto mut_node_2 = mut_action_fn<tag::text_node_t, MyStore, decltype(get("key_2"_s))>(my_store);
+
   nbdl::run_sync(
     nbdl::pipe(
-      nbdl::promise(action_fn<begin, tag::element_t, div_tag>{})
-    , nbdl::promise(action_fn<tag::attribute_t, decltype("class"_s), mpdef::list<decltype("foo"_s)>>{})
-    , nbdl::promise(action_fn<begin, tag::element_t, div_tag>{})
-    , nbdl::promise(action_fn<tag::attribute_t, decltype("class"_s), mpdef::list<decltype("bar"_s)>>{})
-    , nbdl::promise(action_fn<tag::text_node_t, decltype("I'm some static text content."_s)>{})
-    , nbdl::promise(mut_action_fn<tag::text_node_t, MyStore, decltype(get("key_1"_s))>(my_store))
-    , nbdl::promise(mut_action_fn<tag::text_node_t, MyStore, decltype(get("key_2"_s))>(my_store))
-    , nbdl::promise(action_fn<tag::text_node_t, decltype(" More static text."_s)>{})
-    , nbdl::promise(action_fn<end, tag::element_t, div_tag>{})
-    , nbdl::promise(action_fn<end, tag::element_t, div_tag>{})
+      action_fn<begin, tag::element_t, div_tag>{}
+    , action_fn<tag::attribute_t, decltype("class"_s), mpdef::list<decltype("foo"_s)>>{}
+    , action_fn<begin, tag::element_t, div_tag>{}
+    , action_fn<tag::attribute_t, decltype("class"_s), mpdef::list<decltype("bar"_s)>>{}
+    , action_fn<tag::text_node_t, decltype("I'm some static text content."_s)>{}
+    , std::ref(mut_node_1)
+    , std::ref(mut_node_2)
+    , action_fn<tag::text_node_t, decltype(" More static text."_s)>{}
+    , action_fn<end, tag::element_t, div_tag>{}
+    , action_fn<end, tag::element_t, div_tag>{}
     )
   , target
   );
