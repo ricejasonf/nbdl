@@ -91,7 +91,14 @@ namespace nbdl::webui::detail
     { }
 
     template <typename Resolver, typename ParentElement>
-    void operator()(Resolver& resolve, ParentElement&& p) const
+    void operator()(Resolver& resolve, ParentElement&& p)
+    {
+      el = p;
+      update();
+      resolve(std::forward<ParentElement>(p));
+    }
+
+    void update()
     {
       nbdl::run_sync(
         nbdl::pipe(
@@ -99,12 +106,11 @@ namespace nbdl::webui::detail
         , nbdl::detail::string_concat
         , [&](auto const& text_value)
           {
-            p.template call<void>(
+            el.template call<void>(
               "setAttribute"
             , emscripten::val(hana::to<char const*>(AttributeName{}))
             , emscripten::val(text_value)
             );
-            resolve(std::forward<ParentElement>(p));
           }
         )
       , store);

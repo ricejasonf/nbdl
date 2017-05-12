@@ -116,8 +116,8 @@ TEST_CASE("Render dynamic attributes", "[webui][renderer]")
   );
 
   auto my_store = hana::make_map(
-    hana::make_pair("key_1"_s, std::string("foo"))
-  , hana::make_pair("key_2"_s, nbdl::optional<std::string>{std::string("baz")})
+    hana::make_pair("key_1"_s, std::string("fooz"))
+  , hana::make_pair("key_2"_s, nbdl::optional<std::string>{})
   );
 
   auto prepend = [](auto prefix) { return [=](auto path) { return concat(prefix, get(path)); };};
@@ -138,6 +138,11 @@ TEST_CASE("Render dynamic attributes", "[webui][renderer]")
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
   auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+
+  my_store["key_1"_s] = std::string("foo");
+  my_store["key_2"_s] = std::string("baz");
+
+  nbdl::notify_state_change(renderer, hana::type_c<void>);
 
   CHECK(check_dom_equals());
 }
