@@ -29,8 +29,28 @@ namespace nbdl::webui
     { return element(hana::string<'p', 'r', 'e'>{}, args...); }
 
     template <typename ...Args>
+    constexpr auto ul(Args ...args)
+    { return element(hana::string<'u', 'l'>{}, args...); }
+
+    template <typename ...Args>
+    constexpr auto li(Args ...args)
+    { return element(hana::string<'l', 'i'>{}, args...); }
+
+    template <typename ...Args>
+    constexpr auto a(Args ...args)
+    { return element(hana::string<'a'>{}, args...); }
+
+    template <typename ...Args>
+    constexpr auto p(Args ...args)
+    { return element(hana::string<'p'>{}, args...); }
+
+    template <typename ...Args>
     constexpr auto attr_class(Args ...args)
     { return attribute(hana::string<'c', 'l', 'a', 's', 's'>{}, args...); }
+
+    template <typename ...Args>
+    constexpr auto attr_href(Args ...args)
+    { return attribute(hana::string<'h', 'r', 'e', 'f'>{}, args...); }
   }
 }
 
