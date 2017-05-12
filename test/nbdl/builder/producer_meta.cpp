@@ -5,7 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <nbdl/def/builder/provider_meta.hpp>
+#include <nbdl/def/builder/producer_meta.hpp>
 
 #include <boost/hana.hpp>
 
@@ -14,15 +14,15 @@ namespace hana = boost::hana;
 #define DEFINE_TYPE(NAME) \
   struct NAME##_t {}; constexpr auto NAME = hana::type_c<NAME##_t>;
 
-DEFINE_TYPE(Provider1);
-DEFINE_TYPE(Provider1Name);
+DEFINE_TYPE(Producer1);
+DEFINE_TYPE(Producer1Name);
 DEFINE_TYPE(AccessPoints);
 
 int main()
 {
   using namespace nbdl_def::builder;
-  constexpr auto x = nbdl_def::builder::make_provider_meta(Provider1, Provider1Name, AccessPoints);
-  BOOST_HANA_CONSTANT_ASSERT(provider_meta::provider(x) == Provider1);
-  BOOST_HANA_CONSTANT_ASSERT(provider_meta::name(x) == Provider1Name);
-  BOOST_HANA_CONSTANT_ASSERT(provider_meta::access_points(x) == AccessPoints);
+  constexpr auto x = nbdl_def::builder::make_producer_meta(Producer1, Producer1Name, AccessPoints);
+  BOOST_HANA_CONSTANT_ASSERT(producer_meta::producer(x) == Producer1);
+  BOOST_HANA_CONSTANT_ASSERT(producer_meta::name(x) == Producer1Name);
+  BOOST_HANA_CONSTANT_ASSERT(producer_meta::access_points(x) == AccessPoints);
 }

@@ -37,8 +37,8 @@ namespace nbdl
     static constexpr auto apply()
     {
       return test_context_def::make(
-        test_context::provider_tag{},
-        test_context::provider_tag{},
+        test_context::producer_tag{},
+        test_context::producer_tag{},
         test_context::state_consumer_tag{},
         test_context::consumer_tag{},
         test_context_match::tcms_store_tag{}
@@ -113,7 +113,7 @@ TEST_CASE("Match a value in the stores.", "[context]")
 TEST_CASE("Matching nbdl::uninitialized triggers upstream read message.", "[context]")
 {
   auto context = nbdl::make_unique_context<test_context_match::my_context>();
-  auto& provider1       = context->cell<1>();
+  auto& producer1       = context->cell<1>();
   auto& state_consumer  = context->cell<2>();
 
   bool result = false;
@@ -125,10 +125,10 @@ TEST_CASE("Matching nbdl::uninitialized triggers upstream read message.", "[cont
 
   CHECK(result);
 
-  // provider1 should record an upstream read message.
-  REQUIRE(provider1.recorded_messages.size() == 1);
+  // producer1 should record an upstream read message.
+  REQUIRE(producer1.recorded_messages.size() == 1);
   {
-    bool result = provider1.recorded_messages[0].match(
+    bool result = producer1.recorded_messages[0].match(
       [](auto const& x)
         -> std::enable_if_t<!nbdl::UpstreamMessage<decltype(x)>::value, bool>
       { return false; },

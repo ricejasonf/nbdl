@@ -9,7 +9,7 @@
 
 #include <nbdl/concept/UpstreamMessage.hpp>
 #include <nbdl/def/builder/entity_messages.hpp>
-#include <nbdl/def/builder/provider_meta.hpp>
+#include <nbdl/def/builder/producer_meta.hpp>
 
 #include <boost/hana/functional/on.hpp>
 #include <boost/hana/functional/partial.hpp>
@@ -37,16 +37,16 @@ namespace nbdl_def::builder
   {
     // aggregate all entity messages
     // and partition by upstream/downstream
-    template<typename ProvidersMeta>
-    constexpr auto operator()(ProvidersMeta providers) const
+    template<typename ProducersMeta>
+    constexpr auto operator()(ProducersMeta producers) const
     {
       return hana::unpack(
         hana::partition(
           hana::flatten(
             hana::transform(
               hana::flatten(
-                hana::unpack(providers,
-                mpdef::make_list ^hana::on^ provider_meta::access_points)
+                hana::unpack(producers,
+                mpdef::make_list ^hana::on^ producer_meta::access_points)
               ),
               builder::entity_messages
             )

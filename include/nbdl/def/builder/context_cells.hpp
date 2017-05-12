@@ -16,16 +16,16 @@ namespace builder {
 namespace hana  = boost::hana;
 namespace hanax = boost::hana::experimental;
 
-// return provider lookup, consumer lookup, and tuple of the instances of those
+// return producer lookup, consumer lookup, and tuple of the instances of those
 struct context_cells_fn
 {
-  template<typename ProviderKeys>
-  struct make_provider_lookup_pair_list_fn
+  template<typename ProducerKeys>
+  struct make_producer_lookup_pair_list_fn
   {
     template<typename Index>
     constexpr auto operator()(Index i) const
     {
-      return hana::unpack(hana::at(ProviderKeys{}, i), mpdef::make_list ^hana::on^
+      return hana::unpack(hana::at(ProducerKeys{}, i), mpdef::make_list ^hana::on^
         hana::reverse_partial(mpdef::make_pair, i));
     }
   };
@@ -42,29 +42,29 @@ struct context_cells_fn
 
   struct make_cell_tags_fn
   {
-    template<typename ...ProviderTags, typename ...ConsumerTags>
-    constexpr auto operator()(mpdef::list<ProviderTags...>, mpdef::list<ConsumerTags...>)
+    template<typename ...ProducerTags, typename ...ConsumerTags>
+    constexpr auto operator()(mpdef::list<ProducerTags...>, mpdef::list<ConsumerTags...>)
     {
       return hana::type_c<
-        hanax::types<hana::tag_of_t<ProviderTags>..., hana::tag_of_t<ConsumerTags>...>
+        hanax::types<hana::tag_of_t<ProducerTags>..., hana::tag_of_t<ConsumerTags>...>
       >;
     }
   };
 
   // returns a pair.. (lookup, tuple type)
-  template<typename ProviderMap, typename ConsumerMap>
-  constexpr auto operator()(ProviderMap, ConsumerMap) const
+  template<typename ProducerMap, typename ConsumerMap>
+  constexpr auto operator()(ProducerMap, ConsumerMap) const
   {
     using hana::on;
-    // at this point the keys for the provider map
+    // at this point the keys for the producer map
     // are a list of keys that should point to the
-    // underlying provider instance
-    constexpr auto pkeys = hana::unpack(ProviderMap{}, mpdef::make_list ^on^ hana::first);
-    constexpr auto pvals = hana::unpack(ProviderMap{}, mpdef::make_list ^on^ hana::second);
+    // underlying producer instance
+    constexpr auto pkeys = hana::unpack(ProducerMap{}, mpdef::make_list ^on^ hana::first);
+    constexpr auto pvals = hana::unpack(ProducerMap{}, mpdef::make_list ^on^ hana::second);
     constexpr auto plookup = hana::decltype_(hana::unpack(
       hana::flatten(hana::unpack(
         hana::make_range(hana::size_c<0>, hana::length(pkeys)),
-        mpdef::make_list ^on^ make_provider_lookup_pair_list_fn<decltype(pkeys)>{}
+        mpdef::make_list ^on^ make_producer_lookup_pair_list_fn<decltype(pkeys)>{}
       )),
       mpdef::make_map
     ));

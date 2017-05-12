@@ -28,8 +28,8 @@ namespace nbdl
     static constexpr auto apply()
     {
       return test_context_def::make(
-        test_context::provider_tag{},
-        test_context::provider_tag{},
+        test_context::producer_tag{},
+        test_context::producer_tag{},
         test_context::state_consumer_tag{},
         test_context::consumer_tag{},
         test_context::mock_store_tag{}
@@ -41,7 +41,7 @@ namespace nbdl
 namespace
 {
   auto context = nbdl::make_unique_context<test_context_state_consumer::my_context>();
-  auto& provider0       = context->cell<0>();
+  auto& producer0       = context->cell<0>();
   auto& state_consumer  = context->cell<2>();
   auto& notifications   = state_consumer.recorded_notifications;
 }
@@ -56,7 +56,7 @@ void init_mock_stuff()
 TEST_CASE("No notifications are sent if state does not change.", "[context]") 
 {
   init_mock_stuff();
-  provider0.push_api.push(provider0.push_api.message_api().make_downstream_create_message(
+  producer0.push_api.push(producer0.push_api.message_api().make_downstream_create_message(
       path<1>(1, 1),
       my_entity<1>{1, 1}
   ));
@@ -67,7 +67,7 @@ TEST_CASE("A single notification is sent when state changes for a single, primar
 {
   init_mock_stuff();
   mock_store_result_apply_action = path<1>(1, 1);
-  provider0.push_api.push(provider0.push_api.message_api().make_downstream_create_message(
+  producer0.push_api.push(producer0.push_api.message_api().make_downstream_create_message(
       path<1>(1, 1),
       my_entity<1>{1, 1}
   ));
@@ -86,7 +86,7 @@ TEST_CASE("Notifications are sent when a store is listening to actions from othe
   hana::at_c<1>(mock_store_result_apply_foreign_action) = path<1>(1, 1); // trigger
   hana::at_c<2>(mock_store_result_apply_foreign_action).push_back(path<2>(2, 1)); // resulting notify
   hana::at_c<2>(mock_store_result_apply_foreign_action).push_back(path<2>(2, 2)); // resulting notify
-  provider0.push_api.push(provider0.push_api.message_api().make_downstream_create_message(
+  producer0.push_api.push(producer0.push_api.message_api().make_downstream_create_message(
       path<1>(1, 1),
       my_entity<1>{1, 1}
   ));

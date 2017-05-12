@@ -21,14 +21,14 @@
 #include <nbdl/concept/Delta.hpp>
 #include <nbdl/concept/DownstreamMessage.hpp>
 #include <nbdl/concept/Entity.hpp>
-#include <nbdl/concept/Provider.hpp>
+#include <nbdl/concept/Producer.hpp>
 #include <nbdl/concept/StateConsumer.hpp>
 #include <nbdl/concept/Store.hpp>
 #include <nbdl/concept/UpstreamMessage.hpp>
 #include <nbdl/context.hpp>
 #include <nbdl/context_store.hpp>
 #include <nbdl/delta.hpp>
-#include <nbdl/echo_provider.hpp>
+#include <nbdl/echo_producer.hpp>
 #include <nbdl/entity.hpp>
 #include <nbdl/entity_members.hpp>
 #include <nbdl/get.hpp>
@@ -37,7 +37,7 @@
 #include <nbdl/make_context.hpp>
 #include <nbdl/make_def.hpp>
 #include <nbdl/make_delta.hpp>
-#include <nbdl/make_provider.hpp>
+#include <nbdl/make_producer.hpp>
 #include <nbdl/make_state_consumer.hpp>
 #include <nbdl/make_store.hpp>
 #include <nbdl/map_store.hpp>

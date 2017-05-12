@@ -6,7 +6,7 @@
 //
 
 #include <assets/TestContext.hpp>
-#include <nbdl/echo_provider.hpp>
+#include <nbdl/echo_producer.hpp>
 #include <nbdl/make_context.hpp>
 #include <nbdl/null_store.hpp>
 
@@ -14,7 +14,7 @@
 
 namespace message = nbdl::message;
 
-namespace test_echo_provider
+namespace test_echo_producer
 {
   struct my_context { };
 }
@@ -22,13 +22,13 @@ namespace test_echo_provider
 namespace nbdl
 {
   template <>
-  struct make_def_impl<test_echo_provider::my_context>
+  struct make_def_impl<test_echo_producer::my_context>
   {
     static constexpr auto apply()
     {
       return test_context_def::make(
-        nbdl::echo_provider{},
-        test_context::provider_tag{},
+        nbdl::echo_producer{},
+        test_context::producer_tag{},
         test_context::consumer_tag{},
         test_context::consumer_tag{},
         nbdl::null_store{}
@@ -37,9 +37,9 @@ namespace nbdl
   };
 }
 
-TEST_CASE("Echo provider should echo messages to downstream.", "[echo_provider]")
+TEST_CASE("Echo producer should echo messages to downstream.", "[echo_producer]")
 {
-  auto context = nbdl::make_unique_context<test_echo_provider::my_context>();
+  auto context = nbdl::make_unique_context<test_echo_producer::my_context>();
   auto& consumer2 = context->cell<2>();
 
   using Path = test_context::path<0>;

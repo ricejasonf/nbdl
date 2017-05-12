@@ -28,8 +28,8 @@ namespace nbdl
     static constexpr auto apply()
     {
       return test_context_def::make(
-        test_context::provider_tag{},
-        test_context::provider_tag{},
+        test_context::producer_tag{},
+        test_context::producer_tag{},
         test_context::consumer_tag{},
         test_context::consumer_tag{},
         nbdl::null_store{}

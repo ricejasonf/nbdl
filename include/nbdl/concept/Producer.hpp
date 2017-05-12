@@ -7,9 +7,9 @@
 #ifndef NBDL_CONCEPT_PROVIDER_HPP
 #define NBDL_CONCEPT_PROVIDER_HPP
 
-#include<nbdl/fwd/concept/Provider.hpp>
+#include<nbdl/fwd/concept/Producer.hpp>
 
-#include<nbdl/make_provider.hpp>
+#include<nbdl/make_producer.hpp>
 #include<nbdl/send_upstream_message.hpp>
 
 #include<boost/hana/core/default.hpp>
@@ -20,11 +20,11 @@ namespace nbdl
   namespace hana = boost::hana;
 
   template <typename T>
-  struct Provider
+  struct Producer
   {
     using Tag = typename hana::tag_of<T>::type;
     static constexpr bool value =
-          !hana::is_default<nbdl::make_provider_impl          <Tag>>::value
+          !hana::is_default<nbdl::make_producer_impl          <Tag>>::value
       &&  !hana::is_default<nbdl::send_upstream_message_impl  <Tag>>::value
       ;
   };

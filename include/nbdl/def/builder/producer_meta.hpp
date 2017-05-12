@@ -18,8 +18,8 @@ namespace builder {
 namespace hana = boost::hana;
 
 MPDEF_METASTRUCT(
-  provider_meta
-  , provider
+  producer_meta
+  , producer
   , name
   , access_points
 );

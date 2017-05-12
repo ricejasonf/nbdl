@@ -25,9 +25,9 @@ namespace test_context
 {
   namespace name
   {
-    template<int i> struct provider_t { };
+    template<int i> struct producer_t { };
     template<int i>
-    constexpr auto provider = boost::hana::type_c<provider_t<i>>;
+    constexpr auto producer = boost::hana::type_c<producer_t<i>>;
 
     template<int i> struct consumer_t { };
     template<int i>
@@ -111,26 +111,26 @@ namespace test_context_def {
   namespace entity = test_context::entity;
   using namespace nbdl_def;
 
-  // Provider and Consumer are actually tags
+  // Producer and Consumer are actually tags
   template<
-    typename Provider1,
-    typename Provider2,
+    typename Producer1,
+    typename Producer2,
     typename Consumer1,
     typename Consumer2,
     typename Store_
   >
   constexpr auto make(
-      Provider1 const& p1,
-      Provider2 const& p2,
+      Producer1 const& p1,
+      Producer2 const& p2,
       Consumer1 const& c1,
       Consumer2 const& c2,
       Store_ const&
   ) {
     return
       Context(
-        Providers(
-          Provider(
-            Name(test_context::name::provider<1>),
+        Producers(
+          Producer(
+            Name(test_context::name::producer<1>),
             Type(p1),
             AccessPoint(
               Name(hana::type_c<void>),
@@ -145,8 +145,8 @@ namespace test_context_def {
               )
             )
           ),
-          Provider(
-            Name(test_context::name::provider<2>),
+          Producer(
+            Name(test_context::name::producer<2>),
             Type(p2),
             AccessPoint(
               Name(hana::type_c<void>),
@@ -221,31 +221,31 @@ namespace test_context {
     int_tag() : x(i) { }
   };
 
-  struct provider_tag { };
+  struct producer_tag { };
   struct consumer_tag { };
   struct state_consumer_tag { };
   struct null_system_message { };
 
   template<typename PushApi, typename T = void>
-  struct provider
+  struct producer
   {
-    using hana_tag = test_context::provider_tag;
+    using hana_tag = test_context::producer_tag;
     PushApi push_api;
     T t_;
 
     template<typename P, typename A>
-    provider(P&& p, A&& a)
+    producer(P&& p, A&& a)
       : push_api(std::forward<P>(p))
       , t_(std::forward<A>(a))
     { }
   };
 
   template<typename PushApi>
-  struct provider<PushApi, void>
+  struct producer<PushApi, void>
   {
-    using hana_tag = test_context::provider_tag;
+    using hana_tag = test_context::producer_tag;
 
-    // If there are other providers the variants supplied by the PushApi
+    // If there are other producers the variants supplied by the PushApi
     // will probably not be sufficient.
     using MessageVariant = typename decltype(std::declval<PushApi>().message_api()
       .template get_upstream_variant_type<null_system_message>())::type;
@@ -254,7 +254,7 @@ namespace test_context {
     std::vector<MessageVariant> recorded_messages;
 
     template<typename P>
-    provider(P&& p)
+    producer(P&& p)
       : push_api(std::forward<P>(p))
       , recorded_messages()
     { }
@@ -326,10 +326,10 @@ namespace test_context {
 
 namespace nbdl
 {
-  // Provider
+  // Producer
 
   template <>
-  struct make_provider_impl<test_context::provider_tag>
+  struct make_producer_impl<test_context::producer_tag>
   {
     template <typename ...Args>
     static constexpr auto apply(Args&& ...args)
@@ -338,15 +338,15 @@ namespace nbdl
         !decltype(hana::contains(hana::make_tuple(hana::typeid_(args)...), hana::type_c<void>)){}
       , "Type void should not be passed as parameter to context element"
       );
-      return test_context::provider<std::decay_t<Args>...>(std::forward<Args>(args)...);
+      return test_context::producer<std::decay_t<Args>...>(std::forward<Args>(args)...);
     }
   };
 
   template <>
-  struct send_upstream_message_impl<test_context::provider_tag>
+  struct send_upstream_message_impl<test_context::producer_tag>
   {
-    template <typename Provider, typename Message>
-    static constexpr auto apply(Provider& p, Message&& m)
+    template <typename Producer, typename Message>
+    static constexpr auto apply(Producer& p, Message&& m)
     {
       p.recorded_messages.push_back(std::forward<Message>(m));
     }
@@ -371,8 +371,8 @@ namespace nbdl
   template <>
   struct send_downstream_message_impl<test_context::consumer_tag>
   {
-    template <typename Provider, typename Message>
-    static constexpr auto apply(Provider& p, Message&& m)
+    template <typename Producer, typename Message>
+    static constexpr auto apply(Producer& p, Message&& m)
     {
       p.recorded_messages.push_back(std::forward<Message>(m));
     }

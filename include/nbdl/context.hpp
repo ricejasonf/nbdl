@@ -11,7 +11,7 @@
 #include <nbdl/concept/Consumer.hpp>
 #include <nbdl/concept/UpstreamMessage.hpp>
 #include <nbdl/concept/DownstreamMessage.hpp>
-#include <nbdl/concept/Provider.hpp>
+#include <nbdl/concept/Producer.hpp>
 #include <nbdl/concept/StateConsumer.hpp>
 #include <nbdl/detail/concept_pred.hpp>
 #include <nbdl/detail/normalize_path_type.hpp>
@@ -43,7 +43,7 @@ namespace nbdl
   class context
   {
     using ContextMeta     = nbdl_def::builder::make_context_meta_t<Tag, ArgTypes>;
-    using ProviderLookup  = typename ContextMeta::provider_lookup;
+    using ProducerLookup  = typename ContextMeta::producer_lookup;
     using CellTagTypes    = typename ContextMeta::cell_tag_types;
     using StoreMap        = typename ContextMeta::store_map;
     using MessageApi      = nbdl::message_api<context>;
@@ -158,8 +158,8 @@ namespace nbdl
     static constexpr auto cell_factory()
     {
       using CellTag = typename decltype(hana::at_c<i>(CellTagTypes{}))::type;
-      if constexpr(nbdl::Provider<CellTag>::value)
-        return nbdl::make_provider<CellTag>;
+      if constexpr(nbdl::Producer<CellTag>::value)
+        return nbdl::make_producer<CellTag>;
       else if constexpr(nbdl::StateConsumer<CellTag>::value)
         return nbdl::make_state_consumer<CellTag>;
       else // if Consumer
@@ -170,7 +170,7 @@ namespace nbdl
     static constexpr auto get_push_api_type()
     {
       using CellTag = typename decltype(hana::at_c<i>(CellTagTypes{}))::type;
-      if constexpr(nbdl::Provider<CellTag>::value)
+      if constexpr(nbdl::Producer<CellTag>::value)
         return hana::type_c<push_downstream_api>;
       else if constexpr(nbdl::StateConsumer<CellTag>::value)
         return hana::type_c<push_upstream_api_state_consumer>;
@@ -243,7 +243,7 @@ namespace nbdl
     {
       using Index = decltype(
         hana::at_key(
-          ProviderLookup{}, 
+          ProducerLookup{}, 
           message::get_path_type(m)
         )
       );
@@ -332,7 +332,7 @@ namespace nbdl
           {
             // There is a resolved value in the store
             // so send it as a downstream read message,
-            // and don't bother the Provider with it.
+            // and don't bother the Producer with it.
             propagate_downstream(
               MessageApi{}.to_downstream(m, std::forward<decltype(value)>(value))
             );
@@ -443,11 +443,11 @@ namespace nbdl
     // Push functions contain references to self
     // another option is to use shared_from_this,
     // but that responsibility should be on the
-    // Providers.
+    // Producers.
     context(context const&) = delete;
 
     // Access cell by its position
-    // in the tuple of Providers/Consumers
+    // in the tuple of Producers/Consumers
     template <std::size_t i>
     auto& cell()
     {

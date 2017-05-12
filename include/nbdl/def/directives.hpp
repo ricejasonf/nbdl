@@ -15,8 +15,8 @@ namespace nbdl_def {
   MPDEF_DIRECTIVE_LEAF(Name)
 
   MPDEF_DIRECTIVE(Context)
-  MPDEF_DIRECTIVE_LIST(Providers)
-  MPDEF_DIRECTIVE(Provider)
+  MPDEF_DIRECTIVE_LIST(Producers)
+  MPDEF_DIRECTIVE(Producer)
   MPDEF_DIRECTIVE_LIST(Consumers)
   MPDEF_DIRECTIVE(Consumer)
   MPDEF_DIRECTIVE_LIST(AccessPoints)

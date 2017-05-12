@@ -23,7 +23,7 @@ Basic useful feature list:
 ```cpp
   // Excerpt from example/tiles/game.hpp (wip)
 
-  template <typename ProviderTag, typename ConsumerTag>
+  template <typename ProducerTag, typename ConsumerTag>
   struct context
   {
     static constexpr auto make_def()
@@ -36,8 +36,8 @@ Basic useful feature list:
             Entity(Type(hana::type_c<game>)),
             Entity(Type(hana::type_c<game_move>))
           ),
-          Provider(
-            Type(ProviderTag{}),
+          Producer(
+            Type(ProducerTag{}),
             AccessPoint(
               EntityName(hana::type_c<game>),
               Store(hana::type_c<game_store>),
@@ -55,7 +55,7 @@ Basic useful feature list:
 
 ```
 
-This generates a type that owns a provider, consumer, and stores. It also generates variants for both upstream and downstream messages for all of the entity actions defined.
+This generates a type that owns a producer, consumer, and stores. It also generates variants for both upstream and downstream messages for all of the entity actions defined.
 
 ### Event Chaining with `nbdl::pipe`
 

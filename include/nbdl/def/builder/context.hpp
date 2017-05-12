@@ -11,11 +11,11 @@
 #include <nbdl/def/directives.hpp>
 #include <nbdl/def/builder/consumer_map.hpp>
 #include <nbdl/def/builder/context_cells.hpp>
-#include <nbdl/def/builder/enumerate_providers.hpp>
+#include <nbdl/def/builder/enumerate_producers.hpp>
 #include <nbdl/def/builder/enumerate_consumers.hpp>
 #include <nbdl/def/builder/message_api.hpp>
-#include <nbdl/def/builder/provider_map.hpp>
-#include <nbdl/def/builder/provider_meta.hpp>
+#include <nbdl/def/builder/producer_map.hpp>
+#include <nbdl/def/builder/producer_meta.hpp>
 #include <nbdl/def/builder/store_map.hpp>
 #include <nbdl/make_def.hpp>
 
@@ -36,14 +36,14 @@ namespace nbdl_def { namespace builder
   namespace hanax = boost::hana::experimental;
 
   template <
-    typename ProviderLookup,
+    typename ProducerLookup,
     typename CellTagTypes,
     typename StoreMap,
     typename MessageApiMeta
   >
   struct context_meta
   {
-    using provider_lookup       = ProviderLookup;
+    using producer_lookup       = ProducerLookup;
     using cell_tag_types        = CellTagTypes;
     using store_map             = StoreMap;
     using message_api_meta      = MessageApiMeta;
@@ -58,18 +58,18 @@ namespace nbdl_def { namespace builder
 
       static_assert(hana::first(Def{}) == tag::Context, "");
 
-      constexpr auto providers_meta   = builder::enumerate_providers(Def{});
+      constexpr auto producers_meta   = builder::enumerate_producers(Def{});
       constexpr auto consumers_meta   = builder::enumerate_consumers(Def{});
-      constexpr auto provider_map     = builder::provider_map(providers_meta);
+      constexpr auto producer_map     = builder::producer_map(producers_meta);
       constexpr auto consumer_map     = builder::consumer_map(consumers_meta);
-      constexpr auto cell_info        = builder::context_cells(provider_map, consumer_map);
+      constexpr auto cell_info        = builder::context_cells(producer_map, consumer_map);
       constexpr auto store_map        = builder::store_map(
                                           hana::flatten(
-                                            hana::unpack(providers_meta,
-                                            mpdef::make_list ^hana::on^ provider_meta::access_points)
+                                            hana::unpack(producers_meta,
+                                            mpdef::make_list ^hana::on^ producer_meta::access_points)
                                           )
                                         );
-      constexpr auto message_api      = builder::make_message_api(providers_meta);
+      constexpr auto message_api      = builder::make_message_api(producers_meta);
       constexpr auto params = hana::concat(
         cell_info,
         mpdef::make_list(store_map, message_api)

@@ -7,17 +7,17 @@
 #ifndef NBDL_ECHO_PROVIDER_HPP
 #define NBDL_ECHO_PROVIDER_HPP
 
-#include<nbdl/fwd/echo_provider.hpp>
+#include<nbdl/fwd/echo_producer.hpp>
 
 #include<nbdl/entity.hpp>
-#include<nbdl/make_provider.hpp>
+#include<nbdl/make_producer.hpp>
 #include<nbdl/message.hpp>
 
 namespace nbdl
 {
   namespace hana = boost::hana;
 
-  namespace echo_provider_detail
+  namespace echo_producer_detail
   {
     template <typename Message>
     auto make_unique_key(Message const& m)
@@ -45,34 +45,34 @@ namespace nbdl
   }
 
   template <typename PushApi>
-  struct echo_provider_impl
+  struct echo_producer_impl
   {
-    using hana_tag = echo_provider;
+    using hana_tag = echo_producer;
 
     PushApi push_api;
   };
 
   template <>
-  struct make_provider_impl<echo_provider>
+  struct make_producer_impl<echo_producer>
   {
     template <typename PushApi>
     static constexpr auto apply(PushApi&& p)
     {
-      return echo_provider_impl<PushApi>{std::forward<PushApi>(p)};
+      return echo_producer_impl<PushApi>{std::forward<PushApi>(p)};
     }
   };
 
   template <>
-  struct send_upstream_message_impl<echo_provider>
+  struct send_upstream_message_impl<echo_producer>
   {
-    template <typename Provider, typename Message>
-    static constexpr void apply(Provider const& p, Message const& m)
+    template <typename Producer, typename Message>
+    static constexpr void apply(Producer const& p, Message const& m)
     {
       if constexpr(message::is_create<Message>)
       {
         p.push_api.push(p.push_api.message_api().to_downstream_from_root(
           m,
-          echo_provider_detail::make_unique_key(m)
+          echo_producer_detail::make_unique_key(m)
         ));
       }
       else

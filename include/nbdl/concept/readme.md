@@ -1,6 +1,6 @@
 ##  Concepts and associated functions in Nbdl:
 
-### Provider
+### Producer
   - make_provider
   - send_upstream_message
 

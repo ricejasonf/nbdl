@@ -7,8 +7,8 @@
 
 #include <mpdef/list.hpp>
 #include <nbdl/def/builder/access_point_meta.hpp>
-#include <nbdl/def/builder/provider_map.hpp>
-#include <nbdl/def/builder/provider_meta.hpp>
+#include <nbdl/def/builder/producer_map.hpp>
+#include <nbdl/def/builder/producer_meta.hpp>
 #include <nbdl/def/directives.hpp>
 
 #include <boost/hana.hpp>
@@ -22,10 +22,10 @@ namespace builder = nbdl_def::builder;
 
 namespace names {
   DEFINE_TYPE(Foo);
-  DEFINE_TYPE(Provider1);
-  DEFINE_TYPE(Provider2);
-  DEFINE_TYPE(Provider1Name);
-  DEFINE_TYPE(Provider2Name);
+  DEFINE_TYPE(Producer1);
+  DEFINE_TYPE(Producer2);
+  DEFINE_TYPE(Producer1Name);
+  DEFINE_TYPE(Producer2Name);
   DEFINE_TYPE(Entity_1_1);
   DEFINE_TYPE(Entity_1_2);
   DEFINE_TYPE(Entity_2_1);
@@ -64,38 +64,38 @@ struct show { };
 int main()
 {
   {
-    constexpr auto providers_meta = hana::make_tuple(
-      builder::make_provider_meta_with_map(
-        builder::provider_meta::provider     = names::Provider1,
-        builder::provider_meta::name         = names::Provider1Name,
-        builder::provider_meta::access_points = access_points_1
+    constexpr auto producers_meta = hana::make_tuple(
+      builder::make_producer_meta_with_map(
+        builder::producer_meta::producer     = names::Producer1,
+        builder::producer_meta::name         = names::Producer1Name,
+        builder::producer_meta::access_points = access_points_1
       ),
-      builder::make_provider_meta_with_map(
-        builder::provider_meta::provider     = names::Provider2,
-        builder::provider_meta::name         = names::Provider2Name,
-        builder::provider_meta::access_points = access_points_2
+      builder::make_producer_meta_with_map(
+        builder::producer_meta::producer     = names::Producer2,
+        builder::producer_meta::name         = names::Producer2Name,
+        builder::producer_meta::access_points = access_points_2
       )
     );
 
-    constexpr auto result = nbdl_def::builder::provider_map(providers_meta);
+    constexpr auto result = nbdl_def::builder::producer_map(producers_meta);
 
     BOOST_HANA_CONSTANT_ASSERT(
       hana::at_key(result, 
         mpdef::make_list(
           builder::access_point_meta::path(hana::at_c<0>(access_points_1)),
           builder::access_point_meta::path(hana::at_c<1>(access_points_1)),
-          names::Provider1Name
+          names::Producer1Name
         )
       )
-      == names::Provider1);
+      == names::Producer1);
 
     BOOST_HANA_CONSTANT_ASSERT(
       hana::at_key(result,
         mpdef::make_list(
           builder::access_point_meta::path(hana::at_c<0>(access_points_2)),
-          names::Provider2Name
+          names::Producer2Name
         )
       )
-      == names::Provider2);
+      == names::Producer2);
   }
 }

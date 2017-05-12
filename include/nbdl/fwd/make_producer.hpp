@@ -14,17 +14,17 @@ namespace nbdl
   namespace hana = boost::hana;
 
   template <typename T, typename = void>
-  struct make_provider_impl : make_provider_impl<T, hana::when<true>> { };
+  struct make_producer_impl : make_producer_impl<T, hana::when<true>> { };
 
   template <typename T>
-  struct make_provider_fn
+  struct make_producer_fn
   {
     template <typename PushApi, typename ...Args>
     constexpr decltype(auto) operator()(PushApi&&, Args&& ...) const;
   };
 
   template <typename T>
-  constexpr make_provider_fn<T> make_provider{};
+  constexpr make_producer_fn<T> make_producer{};
 } // nbdl
 
 #endif

@@ -14,7 +14,7 @@
 
 namespace
 {
-  auto context = tiles::make_context<nbdl::echo_provider, nbdl_test::state_consumer>();
+  auto context = tiles::make_context<nbdl::echo_producer, nbdl_test::state_consumer>();
   auto& state = context->cell<1>();
 }
 

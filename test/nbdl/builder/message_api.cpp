@@ -8,7 +8,7 @@
 #include <mpdef/list.hpp>
 #include <nbdl/def/builder/access_point_meta.hpp>
 #include <nbdl/def/builder/message_api.hpp>
-#include <nbdl/def/builder/provider_meta.hpp>
+#include <nbdl/def/builder/producer_meta.hpp>
 #include <nbdl/def/directives.hpp>
 #include <nbdl/entity_members.hpp>
 #include <nbdl/message.hpp>
@@ -26,14 +26,14 @@ namespace builder = nbdl_def::builder;
 namespace names
 {
   DEFINE_TYPE(Foo);
-  DEFINE_TYPE(Provider1);
+  DEFINE_TYPE(Producer1);
   DEFINE_TYPE(Entity1);
 }//names
 
 namespace
 {
   struct my_system_message { };
-  struct provider1 { };
+  struct producer1 { };
 }
 
 int main()
@@ -41,7 +41,7 @@ int main()
   namespace channel = nbdl::message::channel;
   namespace action = nbdl::message::action;
   using builder::access_point_meta;
-  using builder::provider_meta;
+  using builder::producer_meta;
   {
     constexpr auto access_point = builder::make_access_point_meta_with_map(
       access_point_meta::name             = names::Foo,
@@ -52,16 +52,16 @@ int main()
     );
     using Path = hana::tuple<names::Entity1_key>;
     using CreatePath = hana::tuple<hana::type<names::Entity1_key>>;
-    constexpr auto provider_1 = builder::make_provider_meta_with_map(
-      provider_meta::provider       = hana::type_c<provider1>,
-      provider_meta::name           = names::Provider1,
-      provider_meta::access_points  = mpdef::make_list(access_point)
+    constexpr auto producer_1 = builder::make_producer_meta_with_map(
+      producer_meta::producer       = hana::type_c<producer1>,
+      producer_meta::name           = names::Producer1,
+      producer_meta::access_points  = mpdef::make_list(access_point)
     );
 
     struct context_mock
     {
       using message_api_meta = typename decltype(
-        builder::make_message_api(mpdef::make_list(provider_1))
+        builder::make_message_api(mpdef::make_list(producer_1))
       )::type;
     };
 

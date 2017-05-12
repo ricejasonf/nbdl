@@ -20,8 +20,8 @@ namespace hana = boost::hana;
 
 namespace names {
 
-DEFINE_NAME(Provider1);
-DEFINE_NAME(Provider2);
+DEFINE_NAME(Producer1);
+DEFINE_NAME(Producer2);
 
 DEFINE_NAME(Root1);
 DEFINE_NAME(Root2);
@@ -64,9 +64,9 @@ int main()
     constexpr auto def =
       Context(
         Store<nbdl::null_store>,
-        Providers(
-          Provider(
-            Name(names::Provider1),
+        Producers(
+          Producer(
+            Name(names::Producer1),
             AccessPoints(
               AccessPoint(
                 Name(names::Root1),
@@ -88,8 +88,8 @@ int main()
               )
             )
           ),
-          Provider(
-            Name(names::Provider2),
+          Producer(
+            Name(names::Producer2),
             AccessPoint(
               Name(names::Root3),
               Entity<names::Root3_t>,

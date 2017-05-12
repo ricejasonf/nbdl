@@ -21,16 +21,16 @@ nbdl_add_test("test.nbdl.builder.store_map"
   store_map.cpp
 )
 
-nbdl_add_test("test.nbdl.builder.provider_meta"
-  provider_meta.cpp
+nbdl_add_test("test.nbdl.builder.producer_meta"
+  producer_meta.cpp
 )
 
-nbdl_add_test("test.nbdl.builder.provider_map"
-  provider_map.cpp
+nbdl_add_test("test.nbdl.builder.producer_map"
+  producer_map.cpp
 )
 
-nbdl_add_test("test.nbdl.builder.enumerate_providers"
-  enumerate_providers.cpp
+nbdl_add_test("test.nbdl.builder.enumerate_producers"
+  enumerate_producers.cpp
 )
 
 nbdl_add_test("test.nbdl.builder.enumerate_consumers"

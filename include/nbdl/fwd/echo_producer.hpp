@@ -10,10 +10,10 @@
 namespace nbdl
 {
   // tag
-  struct echo_provider { };
+  struct echo_producer { };
 
   template <typename PushApi>
-  struct echo_provider_impl;
+  struct echo_producer_impl;
 } // nbdl
 
 #endif

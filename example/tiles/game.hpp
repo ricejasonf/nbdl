@@ -118,7 +118,7 @@ namespace tiles
     );
   }
 
-  template <typename ProviderTag, typename ConsumerTag>
+  template <typename ProducerTag, typename ConsumerTag>
   struct context
   {
     static constexpr auto make_def()
@@ -127,8 +127,8 @@ namespace tiles
       namespace hana = boost::hana;
       return
         Context(
-          Provider(
-            Type(ProviderTag{}),
+          Producer(
+            Type(ProducerTag{}),
             AccessPoint(
               Name(hana::type_c<void>), // FIXME
               Entity<game>,
@@ -148,10 +148,10 @@ namespace tiles
       }
   };
 
-  template <typename ProviderTag, typename ConsumerTag, typename ...Args>
+  template <typename ProducerTag, typename ConsumerTag, typename ...Args>
   auto make_context(Args&& ... args)
   {
-    return nbdl::make_unique_context<tiles::context<ProviderTag, ConsumerTag>>
+    return nbdl::make_unique_context<tiles::context<ProducerTag, ConsumerTag>>
       (std::forward<Args>(args)...);
   }
 }

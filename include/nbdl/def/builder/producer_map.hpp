@@ -8,7 +8,7 @@
 #define NBDL_DEF_BUILDER_PROVIDER_MAP_HPP
 
 #include <nbdl/def/builder/access_point_meta.hpp>
-#include <nbdl/def/builder/provider_meta.hpp>
+#include <nbdl/def/builder/producer_meta.hpp>
 #include <mpdef/pair.hpp>
 
 #include <boost/hana.hpp>
@@ -19,37 +19,37 @@ namespace builder {
 
 namespace details {
 
-  struct build_provider_pair_fn
+  struct build_producer_pair_fn
   {
-    template<typename ProviderMeta>
-    constexpr auto operator()(ProviderMeta)
+    template<typename ProducerMeta>
+    constexpr auto operator()(ProducerMeta)
     {
-      constexpr ProviderMeta provider_meta{};
-      auto path_types = hana::unique(hana::transform(provider_meta::access_points(provider_meta),
+      constexpr ProducerMeta producer_meta{};
+      auto path_types = hana::unique(hana::transform(producer_meta::access_points(producer_meta),
         access_point_meta::path));
       return mpdef::make_pair(
-        hana::append(path_types, provider_meta::name(provider_meta)),
-        provider_meta::provider(provider_meta)
+        hana::append(path_types, producer_meta::name(producer_meta)),
+        producer_meta::producer(producer_meta)
       );
     }
   };
 
 }//details
 
-struct provider_map_fn
+struct producer_map_fn
 {
-  template<typename Providers>
-  constexpr auto operator()(Providers providers) const
+  template<typename Producers>
+  constexpr auto operator()(Producers producers) const
   {
-    return hana::unpack(providers,
+    return hana::unpack(producers,
       hana::on(
         mpdef::make_map,
-        details::build_provider_pair_fn{}
+        details::build_producer_pair_fn{}
       )
     );
   }
 };
-constexpr provider_map_fn provider_map{};
+constexpr producer_map_fn producer_map{};
 
 }//builder
 }//nbdl_def

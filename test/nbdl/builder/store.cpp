@@ -20,7 +20,7 @@ namespace builder = nbdl_def::builder;
   struct NAME##_key {};
 
 namespace names {
-  DEFINE_TYPE(Provider1);
+  DEFINE_TYPE(Producer1);
   DEFINE_TYPE(E1);
 }//names
 
@@ -44,8 +44,8 @@ int main()
 
     constexpr auto def =
       Context(
-        Provider(
-          Name(names::Provider1),
+        Producer(
+          Name(names::Producer1),
           AccessPoint(
             Name(names::E1),
             Entity<names::E1_t>,
@@ -58,16 +58,16 @@ int main()
     BOOST_HANA_CONSTANT_ASSERT(access_point_meta::store(result) == hana::type_c<nbdl::null_store>);
   }
   {
-    // Specify the store in Provider
+    // Specify the store in Producer
     using namespace nbdl_def;
     using nbdl_def::builder::access_point_meta;
 
     struct test_store_tag { };
     constexpr auto def =
       Context(
-        Provider(
+        Producer(
           Store<test_store_tag>,
-          Name(names::Provider1),
+          Name(names::Producer1),
           AccessPoint(
             Name(names::E1),
             Entity<names::E1_t>,
@@ -87,8 +87,8 @@ int main()
     struct test_store_tag { };
     constexpr auto def =
       Context(
-        Provider(
-          Name(names::Provider1),
+        Producer(
+          Name(names::Producer1),
           AccessPoint(
             Store<test_store_tag>,
             Name(names::E1),

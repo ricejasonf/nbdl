@@ -13,7 +13,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   context_store.cpp
   delta.cpp
   detail/string_concat.cpp
-  echo_provider.cpp
+  echo_producer.cpp
   entity.cpp
   map_store.cpp
   match_path.cpp

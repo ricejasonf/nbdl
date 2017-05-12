@@ -10,7 +10,7 @@
 namespace nbdl
 {
   template<typename T>
-  struct Provider;
+  struct Producer;
 } // nbdl
 
 #endif
