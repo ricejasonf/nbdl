@@ -26,6 +26,11 @@ RUN git clone -b bugfix/constexpr_arrays https://github.com/ricejasonf/hana.git 
   && cp -r hana/include/* /usr/local/include \
   && rm -rf hana
 
+# Kvasir.Mpl
+RUN git clone -b development https://github.com/kvasir-io/mpl.git \
+  && cp -r mpl/src/* /usr/local/include \
+  && rm -rf mpl
+
 ARG BUILD_TYPE=Debug
 ENV BUILD_TYPE ${BUILD_TYPE}
 

@@ -8,42 +8,92 @@
 #define NBDL_MPDEF_LIST_HPP
 
 #include <boost/hana.hpp>
+#include <kvasir/mpl/types/list.hpp>
+#include <kvasir/mpl/sequence/join.hpp>
 #include <utility>
 
-namespace mpdef {
-
-template<typename ...T>
-struct list { };
-
-struct list_tag;
-
-struct make_list_fn
+namespace mpdef
 {
   template<typename ...T>
-  constexpr auto operator()(T...) const
+  struct list { };
+
+  struct list_tag;
+
+  struct make_list_fn
   {
-    return mpdef::list<T...>{};
+    template<typename ...T>
+    constexpr auto operator()(T...) const
+    {
+      return mpdef::list<T...>{};
+    }
+  };
+  constexpr make_list_fn make_list{};
+
+  // Comparable Operators
+
+  template<typename... T, typename... U>
+  constexpr auto operator==(mpdef::list<T...> t, mpdef::list<U...> u)
+  {
+    return boost::hana::equal(t, u);
   }
-};
-constexpr make_list_fn make_list{};
 
-// Comparable Operators
+  template<typename... T, typename... U>
+  constexpr auto operator!=(mpdef::list<T...> t, mpdef::list<U...> u)
+  {
+    return boost::hana::not_equal(t, u);
+  }
 
-template<typename... T, typename... U>
-constexpr auto operator==(mpdef::list<T...> t, mpdef::list<U...> u)
-{
-  return boost::hana::equal(t, u);
-}
+  // Kvasir.Mpl temp stuff
+  namespace kmpl = kvasir::mpl;
 
-template<typename... T, typename... U>
-constexpr auto operator!=(mpdef::list<T...> t, mpdef::list<U...> u)
-{
-  return boost::hana::not_equal(t, u);
-}
+  template <typename ...>
+  struct to_mpdef_list_impl;
+
+  template <typename ...Xs>
+  struct to_mpdef_list_impl<mpdef::list<Xs...>>
+  {
+    using type = mpdef::list<Xs...>;
+  };
+
+  template <typename ...Xs>
+  struct to_mpdef_list_impl<kmpl::list<Xs...>>
+  {
+    using type = mpdef::list<Xs...>;
+  };
+
+  template <typename ...T>
+  using to_mpdef_list = typename to_mpdef_list_impl<T...>::type;
+
+  template <typename ...>
+  struct unpack_to_flatten_kmpl_list_impl;
+
+  template <typename FlattenFn>
+  struct unpack_to_flatten_kmpl_list_impl<mpdef::list<>, FlattenFn>
+  {
+    using type = kmpl::list<>;
+  };
+
+  template <typename X1, typename ...Xs, typename FlattenFn>
+  struct unpack_to_flatten_kmpl_list_impl<mpdef::list<X1, Xs...>, FlattenFn>
+  {
+    using type = kmpl::join<decltype(FlattenFn{}(X1{})), decltype(FlattenFn{}(Xs{}))...>;
+  };
+
+  template <typename X1, typename ...Xs, typename FlattenFn>
+  struct unpack_to_flatten_kmpl_list_impl<const mpdef::list<X1, Xs...>, FlattenFn>
+  {
+    using type = kmpl::join<decltype(FlattenFn{}(X1{})), decltype(FlattenFn{}(Xs{}))...>;
+  };
+
+  template <typename ...T>
+  using unpack_to_flatten_kmpl_list = typename unpack_to_flatten_kmpl_list_impl<T...>::type;
+
+
 
 }//mpdef
 
-namespace boost { namespace hana {
+namespace boost::hana
+{
 
   template<typename ...T>
   struct tag_of<mpdef::list<T...>> { using type = mpdef::list_tag; };
@@ -133,7 +183,6 @@ namespace boost { namespace hana {
   {
     static constexpr bool value = true;
   };
-
-}}//boost::hana
+}
 
 #endif

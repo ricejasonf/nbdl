@@ -36,6 +36,7 @@ int main()
   };
 
   constexpr hana::string<'d', 'i', 'v'> div_s{};
+#if 0
 
   {
     constexpr auto spec = div();
@@ -50,6 +51,7 @@ int main()
 
     CHECK_TYPE_EQUAL(result, expected);
   }
+#endif
   {
     constexpr auto spec = div(div(), div());
 

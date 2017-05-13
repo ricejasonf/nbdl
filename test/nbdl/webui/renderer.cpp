@@ -29,10 +29,7 @@ namespace
   {
     return emscripten::val::global("checkDomEquals")().isTrue();
   }
-
-  using div_tag = hana::string<'d', 'i', 'v'>;
 }
-
 TEST_CASE("Render store data then update", "[webui][renderer]")
 {
   using namespace nbdl::webui::html;
@@ -147,7 +144,7 @@ TEST_CASE("Render dynamic attributes", "[webui][renderer]")
   CHECK(check_dom_equals());
 }
 
-#if 0 // This is really slow
+#if 0 // Test is slow
 TEST_CASE("Handle scaled up document structure", "[webui][renderer]")
 {
   using namespace nbdl::webui::html;

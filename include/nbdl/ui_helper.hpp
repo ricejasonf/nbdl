@@ -11,6 +11,7 @@
 
 #include <boost/hana/transform.hpp>
 #include <boost/hana/type.hpp>
+#include <kvasir/mpl/sequence/join.hpp>
 #include <mpdef/list.hpp>
 #include <mpdef/pair.hpp>
 #include <utility>
@@ -18,6 +19,7 @@
 namespace nbdl::ui_helper
 {
   namespace hana = boost::hana;
+  namespace kmpl = kvasir::mpl;
 
   /*
    * flatten_match_node
@@ -29,7 +31,7 @@ namespace nbdl::ui_helper
     constexpr auto operator()(mpdef::pair<T, Spec>) const
     {
       using Flattened = decltype(std::declval<FlattenSpecFn>()(Spec{}));
-      return mpdef::pair<hana::type<T>, Flattened>{};
+      return mpdef::pair<hana::type<T>, mpdef::to_mpdef_list<Flattened>>{};
     }
   };
 
@@ -38,7 +40,7 @@ namespace nbdl::ui_helper
     template <typename Template, typename FlattenSpecFn, typename Path, typename Map>
     constexpr auto operator()(Template tpl, FlattenSpecFn const&, ui_spec::match_t<Path, Map>) const
     {
-      return mpdef::list<typename decltype(tpl(
+      return kmpl::list<typename decltype(tpl(
         hana::type_c<ui_spec::match_tag>
       , hana::type_c<Path>
       , hana::type_c<
@@ -71,10 +73,7 @@ namespace nbdl::ui_helper
 
         if constexpr(hana::equal(ui_spec::tag::concat, current_tag))
         {
-          return hana::flatten(hana::unpack(
-            child_nodes
-          , hana::on(mpdef::make_list, flatten_param_node_fn{})
-          ));
+          return mpdef::unpack_to_flatten_kmpl_list<decltype(child_nodes), flatten_param_node_fn>{};
         }
         else
         {
@@ -87,7 +86,7 @@ namespace nbdl::ui_helper
       }
       else
       {
-        return mpdef::list<Node>{};
+        return kmpl::list<Node>{};
       }
     }
   };

@@ -69,11 +69,13 @@ TEST_CASE("Match values by type in params_promise.", "[params_promise][ui_spec][
     hana::make_pair(foo, string_option{})
   );
 
-  constexpr auto matcher = hana::at_c<0>(nbdl::ui_helper::flatten_param_node(match(
-    get(foo)
-  , when<nbdl::nothing>(nothing_s)
-  , when<std::string>(get)
-  )));
+  constexpr auto matcher = hana::at_c<0>(mpdef::to_mpdef_list<decltype(
+    nbdl::ui_helper::flatten_param_node(match(
+      get(foo)
+    , when<nbdl::nothing>(nothing_s)
+    , when<std::string>(get)
+    ))
+  )>{});
 
   std::string result("Fail!");
 
