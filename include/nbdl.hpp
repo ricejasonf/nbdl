@@ -54,7 +54,7 @@
 #include <nbdl/run_sync.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>
-#include <nbdl/throwable_transform.hpp>
+#include <nbdl/try.hpp>
 #include <nbdl/uid.hpp>
 #include <nbdl/util/base64_decode.hpp>
 #include <nbdl/util/base64_encode.hpp>

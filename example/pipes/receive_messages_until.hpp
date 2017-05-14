@@ -31,7 +31,7 @@ namespace example
     {
       nbdl::run_async(nbdl::pipe(
         read_raw_message(socket)
-      , nbdl::throwable_transform([&](std::string&& msg_json)
+      , nbdl::try_([&](std::string&& msg_json)
         {
           std::cout << "RAW MESSAGE: " << msg_json << '\n';
           Message message;

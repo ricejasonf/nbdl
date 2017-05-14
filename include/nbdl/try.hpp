@@ -4,8 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_THROWABLE_TRANSFORM_HPP
-#define NBDL_THROWABLE_TRANSFORM_HPP
+#ifndef NBDL_TRY_HPP
+#define NBDL_TRY_HPP
 
 #include <nbdl/promise.hpp>
 
@@ -15,7 +15,7 @@ namespace nbdl
 {
   // Wraps a function in a promise that
   // catches exceptions and "rejects" them.
-  struct throwable_transform_fn
+  struct try_fn
   {
     template <typename Fn>
     auto operator()(Fn&& fn) const
@@ -44,7 +44,7 @@ namespace nbdl
     }
   };
 
-  constexpr throwable_transform_fn throwable_transform{};
+  constexpr try_fn try_{};
 }
 
 #endif
