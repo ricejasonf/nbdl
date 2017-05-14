@@ -16,11 +16,13 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   echo_producer.cpp
   entity.cpp
   map_store.cpp
+  match.cpp
   match_path.cpp
   message_api.cpp
   params_promise.cpp
   path_promise.cpp
   pipe.cpp
+  run_sync.cpp
   variant.cpp
 )
 
