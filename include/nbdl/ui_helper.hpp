@@ -35,16 +35,45 @@ namespace nbdl::ui_helper
     }
   };
 
+  template <typename FlattenSpecFn>
+  struct flatten_match_if_node_helper_fn
+  {
+    template <typename Pred, typename Spec>
+    constexpr auto operator()(mpdef::pair<Pred, Spec>) const
+    {
+      using Flattened = decltype(std::declval<FlattenSpecFn>()(Spec{}));
+      return mpdef::pair<Pred, mpdef::to_mpdef_list<Flattened>>{};
+                      // ^ doesn't wrap in hana::type
+    }
+  };
+
   struct flatten_match_node_fn
   {
     template <typename Template, typename FlattenSpecFn, typename Path, typename Map>
-    constexpr auto operator()(Template tpl, FlattenSpecFn const&, ui_spec::match_t<Path, Map>) const
+    constexpr auto operator()(Template tpl
+                            , FlattenSpecFn const&
+                            , ui_spec::match_t<Path, Map>) const
     {
       return kmpl::list<typename decltype(tpl(
         hana::type_c<ui_spec::match_tag>
       , hana::type_c<Path>
       , hana::type_c<
           decltype(hana::transform(Map{}, flatten_match_node_helper_fn<FlattenSpecFn>{}))
+        >
+      ))::type>{};
+    }
+
+    // TODO fix duplication for match_if :/
+    template <typename Template, typename FlattenSpecFn, typename Path, typename Map>
+    constexpr auto operator()(Template tpl
+                            , FlattenSpecFn const&
+                            , ui_spec::match_if_t<Path, Map>) const
+    {
+      return kmpl::list<typename decltype(tpl(
+        hana::type_c<ui_spec::match_if_tag>
+      , hana::type_c<Path>
+      , hana::type_c<
+          decltype(hana::transform(Map{}, flatten_match_if_node_helper_fn<FlattenSpecFn>{}))
         >
       ))::type>{};
     }
@@ -80,7 +109,10 @@ namespace nbdl::ui_helper
           static_assert(hana::type_c<Node> == hana::type_c<void>);
         }
       }
-      else if constexpr(hana::is_a<ui_spec::match_tag, Node>())
+      else if constexpr(hana::or_(
+            hana::is_a<ui_spec::match_if_tag, Node>()
+         || hana::is_a<ui_spec::match_tag, Node>()
+      ))
       {
         return flatten_match_node(hana::template_<param_action_t>, flatten_param_node_fn{}, Node{});
       }

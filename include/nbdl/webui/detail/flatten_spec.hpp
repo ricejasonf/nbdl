@@ -81,7 +81,9 @@ namespace nbdl::webui::detail
           >>{};
         }
       }
-      else if constexpr(hana::is_a<ui_spec::match_tag, Node>())
+      else if constexpr(   hana::is_a<ui_spec::match_tag, Node>()
+                        || hana::is_a<ui_spec::match_if_tag, Node>()
+                       )
       {
         return ui_helper::flatten_match_node(
           hana::template_<action_fn>

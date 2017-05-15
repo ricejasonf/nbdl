@@ -8,6 +8,7 @@
 #define NBDL_PARAMS_PROMISE_HPP
 
 #include <nbdl/catch.hpp>
+#include <nbdl/detail/match_if.hpp>
 #include <nbdl/path_promise.hpp>
 #include <nbdl/promise.hpp>
 #include <nbdl/ui_helper.hpp>
@@ -84,6 +85,37 @@ namespace nbdl
                   resolve(store, hana::concat(tuple, result));
                 }
               ), store);
+            }
+          ), store);
+        });
+      }
+
+      template <typename PathSpec, typename Branches>
+      auto operator()(ui_helper::param_action_t<ui_spec::match_if_tag, PathSpec, Branches>) const
+      {
+        return nbdl::promise([](auto& resolve, auto const& store, auto const& tuple)
+        {
+          nbdl::run_sync(nbdl::pipe(
+            nbdl::path_promise(PathSpec{})
+          , [&](auto const& value)
+            {
+              constexpr auto preds = hana::transform(Branches{}, hana::first);
+
+              // ugly, ugly nesting :(
+              nbdl::run_sync(nbdl::pipe(
+                nbdl::detail::match_if(preds)
+              , [](auto index) { return hana::at(Branches{}, index); }
+              , [&](auto const& result)
+                {
+                  nbdl::run_sync(nbdl::pipe(
+                    params_promise(hana::second(result))
+                  , [&](auto const& result)
+                    {
+                      resolve(store, hana::concat(tuple, result));
+                    }
+                  ), store);
+                }
+              ), value);
             }
           ), store);
         });

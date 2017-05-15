@@ -144,6 +144,44 @@ TEST_CASE("Render dynamic attributes", "[webui][renderer]")
   CHECK(check_dom_equals());
 }
 
+TEST_CASE("Match value using list of predicates", "[webui][renderer][ui_spec][match_if")
+{
+  using namespace nbdl::webui::html;
+  using namespace nbdl::ui_spec;
+
+  auto target = make_dom_test_equality(
+    "<div class=\"foo bar\" ></div>"
+  );
+
+  auto my_store = hana::make_map(
+    hana::make_pair("key_1"_s, std::string("something else"))
+  );
+
+  auto spec =
+    div(
+      attr_class(concat(
+        "foo "_s
+      , match_if(
+          get("key_1"_s)
+        , cond(equal("blah"_s), "FAIL"_s)
+        , cond(equal("blaz"_s), "FAIL"_s)
+        , cond(equal("blar"_s), "FAIL"_s)
+        , cond(equal("hello"_s), "bar"_s)
+        , otherwise("FAIL"_s)
+        )
+      ))
+    );
+
+  using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
+  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+
+  my_store["key_1"_s] = std::string("hello");
+
+  nbdl::notify_state_change(renderer, hana::type_c<void>);
+
+  CHECK(check_dom_equals());
+}
+
 #if 0 // Test is slow
 TEST_CASE("Handle scaled up document structure", "[webui][renderer]")
 {

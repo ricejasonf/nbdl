@@ -8,6 +8,7 @@
 #define NBDL_WEBUI_DETAIL_DOM_MANIPS_HPP
 
 #include <nbdl/catch.hpp>
+#include <nbdl/detail/match_if.hpp>
 #include <nbdl/detail/string_concat.hpp>
 #include <nbdl/fwd/webui/detail/dom_manips.hpp>
 #include <nbdl/params_promise.hpp>
@@ -288,6 +289,87 @@ namespace nbdl::webui::detail
       return std::forward<ParentElement>(p);
     }
   };
+
+  /*
+   * match_if
+   */
+
+  template <typename PathSpec, typename Branches>
+  struct action_fn<ui_spec::match_if_tag, PathSpec, Branches>
+  {
+    action_fn() = delete;
+  };
+
+  //  Branches - list<pair<T, list<action...>>...>
+  template <typename Store, typename PathSpec, typename Branches>
+  struct mut_action_fn<ui_spec::match_if_tag, Store, PathSpec, Branches>
+  {
+    using Renderers = typename decltype(
+      hana::unpack(
+        hana::transform(
+          Branches{}
+        , make_nested_renderer_impl_type_from_pair_fn<Store>{}
+        )
+      , hana::template_<hana::tuple>
+      )
+    )::type;
+
+    Store store;
+    emscripten::val parent_el;
+    emscripten::val container_el;
+    std::size_t branch_id;
+    Renderers renderers;
+
+    mut_action_fn(Store s)
+      : store(s)
+      , parent_el(emscripten::val::undefined())
+      , container_el(emscripten::val::undefined())
+      , branch_id(-1)
+      , renderers(construct_branch_renderers<Renderers>::apply(s))
+    { }
+
+    void update()
+    {
+      constexpr auto preds = hana::transform(Branches{}, hana::first);
+
+      nbdl::run_sync(
+        nbdl::pipe(
+          nbdl::path_promise(PathSpec{})
+        , nbdl::detail::match_if(preds)
+        , nbdl::tap([&](auto index)
+          {
+            if (index != branch_id)
+            {
+              // Something changed! :D
+              if (branch_id != -1)
+              {
+                container_el.template call<void>("removeChild", container_el["firstChild"]);
+              }
+              branch_id = index;
+              renderers[index].render(container_el);
+            }
+          })
+        , nbdl::catch_(nbdl::noop)
+        )
+      , std::ref(store).get()
+      );
+    }
+
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p)
+    {
+      parent_el = p;
+      container_el = emscripten::val::global("document").template
+        call<emscripten::val>("createElement", emscripten::val("span"));
+      update();
+      parent_el.template call<void>("appendChild", container_el);
+      return std::forward<ParentElement>(p);
+    }
+  };
+
+  /*
+   * unsafe_set_inner_html
+   */
 
   template <typename String>
   struct action_fn<html::tag::unsafe_set_inner_html_t, String>

@@ -14,6 +14,7 @@
 #include <nbdl/promise.hpp>
 
 #include <boost/hana/core/tag_of.hpp>
+#include <boost/hana/bool.hpp>
 #include <boost/hana/functional/always.hpp>
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
@@ -115,7 +116,27 @@ namespace nbdl::ui_spec
         }
       }
     };
+
+    struct make_cond_pair_fn
+    {
+      template <typename T, typename Spec, typename Path>
+      constexpr auto operator()(when_t<T, Spec>, Path) const
+      {
+        if constexpr(std::__invokable<Spec, Path>::value)
+        {
+          return mpdef::pair<T, decltype(std::declval<Spec>()(Path{}))>{};
+        }
+        else
+        {
+          return mpdef::pair<T, Spec>{};
+        }
+      }
+    };
   }
+
+  /*
+   * when<T> - for matching types
+   */
 
   template <typename T = void>
   struct when_fn
@@ -128,6 +149,35 @@ namespace nbdl::ui_spec
 
   template <typename T = void>
   constexpr when_fn<T> when{};
+
+  /*
+   * cond - alias for matching with predicate
+   *        (to be used with predicates)
+   */
+
+  struct cond_fn
+  {
+    template <typename Pred, typename Spec>
+    constexpr auto operator()(Pred pred, Spec) const
+      -> when_t<decltype(pred), Spec>
+    { return {}; }
+  };
+
+  constexpr cond_fn cond{};
+
+  /*
+   * otherwise - alias for default branch
+   */
+
+  struct otherwise_fn
+  {
+    template <typename Spec>
+    constexpr auto operator()(Spec) const
+      -> when_t<decltype(hana::always(hana::true_c)), Spec>
+    { return {}; }
+  };
+
+  constexpr otherwise_fn otherwise{};
 
   /*
    * match
@@ -153,73 +203,60 @@ namespace nbdl::ui_spec
 
   constexpr match_fn match{};
 
-#if 0 //not used yet
   /*
-   * bind 
-   *  - Takes a function and parameters
-   *    which can be path_specs
-   *  - not sure about the name here
+   * match_if (uses predicates instead of types)
    */
 
-  template <typename Fn, typename ...Params>
-  struct bind_impl<Fn, Params...>
+  struct match_if_tag { };
+
+  template <typename ...> 
+  struct match_if_t { };
+
+  struct match_if_fn
   {
-    template <typename Resolver, typename Element>
-    void operator()(Resolver& resolve, Element&& el) const
+    template <typename ...Xs, typename ...Whens>
+    constexpr auto operator()(path_t<Xs...>, Whens...) const
+      -> match_if_t<
+        path_t<Xs...>
+      , mpdef::list<
+          decltype(detail::make_cond_pair_fn{}(std::declval<Whens>(), path_t<Xs...>{}))...
+        >
+      >
+    { return {}; }
+  };
+
+  constexpr match_if_fn match_if{};
+
+  /*
+   * equal
+   */
+
+  template <typename X>
+  struct equal_
+  {
+    template <typename Y>
+    constexpr auto operator()(Y const& y) const
     {
-      Fn{}(el, Params{}...);
-      resolve(std::forward<Element>(el));
+      if constexpr(hana::is_a<hana::string_tag, X>)
+      {
+        return hana::equal(hana::to<char const*>(X{}), y);
+      }
+      else
+      {
+        return hana::equal(X{}, y);
+      }
     }
   };
 
-  template <typename Store, typename Fn, typename ...Params>
-  struct mut_bind_impl<Store, Fn, Params...>
+  struct equal_fn
   {
-    Store const& store;
-    Fn fn;
-
-    mut_bind_impl(Store const& s)
-      : store(s)
-      , fn()
-    { }
-
-    template <typename Resolver, typename Element>
-    void operator()(Resolver& resolve, Element&& el)
-    {
-      nbdl::run_sync(
-        nbdl::pipe(
-          nbdl::params_promise(Params{})
-        , hana::fuse([](auto const& ...params) { fn(el, params...); })
-        )
-      , store
-      );
-      resolve(std::forward<Element>(el));
-    }
-
-    void update()
-    {
-      nbdl::run_sync(
-        nbdl::pipe(
-          nbdl::params_promise(Params{})
-        , hana::fuse([](auto const& ...params) { fn.update(params...); })
-        )
-      , store
-      );
-    }
+    template <typename X>
+    constexpr auto operator()(X) const
+      -> equal_<X>
+    { return {}; }
   };
 
-  struct bind_fn
-  {
-    template <typename Fn, typename ...Params>
-    constexpr auto operator()(Fn, Params...) const
-    {
-      return bind_impl<Fn, Params...>{};
-    }
-  };
-
-  constexpr bind_fn bind{};
-#endif
-
+  constexpr equal_fn equal{};
 }
 
 namespace boost::hana
@@ -228,6 +265,12 @@ namespace boost::hana
   struct tag_of<nbdl::ui_spec::match_t<T...>>
   {
     using type = nbdl::ui_spec::match_tag;
+  };
+
+  template <typename ...T>
+  struct tag_of<nbdl::ui_spec::match_if_t<T...>>
+  {
+    using type = nbdl::ui_spec::match_if_tag;
   };
 
   template <typename ...T>
