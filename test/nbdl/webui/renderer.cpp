@@ -41,7 +41,7 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
     "I'm some static text content."
     " Here is some updated dynamic text."
     " More dynamic text."
-    " More static text."
+    " More static text.1242"
     "<span> Here is some optional text.</span>"
     "</div>"
     "</div>"
@@ -51,6 +51,7 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
     hana::make_pair("key_1"_s, std::string("UPDATE ME"))
   , hana::make_pair("key_2"_s, std::string(" More dynamic text."))
   , hana::make_pair("key_3"_s, nbdl::optional<std::string>{})
+  , hana::make_pair("key_4"_s, 5)
   );
 
   constexpr auto spec =
@@ -60,6 +61,8 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
       , text_node(get("key_1"_s))
       , text_node(get("key_2"_s))
       , text_node(" More static text."_s)
+      , text_node(hana::size_c<12>)
+      , text_node(get("key_4"_s))
       , match(
           get("key_3"_s)
         , when<std::string>(text_node(get("key_3"_s)))
@@ -73,6 +76,7 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
 
   my_store["key_1"_s] = std::string(" Here is some updated dynamic text.");
   my_store["key_3"_s] = std::string(" Here is some optional text.");
+  my_store["key_4"_s] = 42;
 
   nbdl::notify_state_change(renderer, hana::type_c<void>);
 

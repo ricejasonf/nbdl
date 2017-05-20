@@ -25,6 +25,20 @@
 
 namespace nbdl::webui::detail
 {
+  // converts a Constant or string to js val
+  template <typename T>
+  emscripten::val to_json_val(T t)
+  {
+    if constexpr (hana::is_a<hana::string_tag, T>)
+    {
+      return emscripten::val(hana::to<char const*>(t));
+    }
+    else
+    {
+      return emscripten::val(hana::value(t));
+    }
+  }
+
   template <typename Store>
   struct make_nested_renderer_impl_type_from_pair_fn
   {
@@ -120,14 +134,14 @@ namespace nbdl::webui::detail
     }
   };
 
-  template <typename String>
-  struct action_fn<html::tag::text_node_t, String>
+  template <typename Value>
+  struct action_fn<html::tag::text_node_t, Value>
   {
     template <typename ParentElement>
     decltype(auto) operator()(ParentElement&& p) const
     {
       auto el = emscripten::val::global("document").template
-        call<emscripten::val>("createTextNode", emscripten::val(hana::to<char const*>(String{})));
+        call<emscripten::val>("createTextNode", to_json_val(Value{}));
       p.template call<void>("appendChild", el);
       return std::forward<ParentElement>(p);
     }
