@@ -7,6 +7,7 @@
 #ifndef NBDL_DETAIL_MATCH_IF_HPP
 #define NBDL_DETAIL_MATCH_IF_HPP
 
+#include <mpdef/list.hpp>
 #include <nbdl/run_sync.hpp>
 #include <nbdl/pipe.hpp>
 #include <nbdl/promise.hpp>
@@ -22,48 +23,55 @@ namespace nbdl::detail
 {
   namespace hana = boost::hana;
 
-  struct predicate_promise_fn
-  {
     template <typename Pred>
-    auto operator()(Pred const& pred) const
+  struct predicate_promise
+  {
+    using hana_tag = nbdl::promise_tag;
+
+    template <typename Resolver, typename Value, typename I>
+    void resolve(Resolver& resolver, Value const& value, I i) const
     {
-      return nbdl::promise([&](auto& resolver, auto const& value, auto i)
+      using Result = std::decay_t<decltype(Pred{}(value))>;
+
+      // Reject when we find a matching predicate.
+      if constexpr(hana::Constant<Result>::value)
       {
-        // Reject when we find a matching predicate.
-        if constexpr(hana::and_(
-          hana::Constant<decltype(pred(value))>{}
-        , decltype(pred(value)){})
-        )
+        if constexpr(Result::value)
+          resolver.reject(i);
+        else
+          resolver.resolve(value, hana::size_c<I::value + 1>);
+      }
+      else
+      {
+        if (Pred{}(value))
         {
           resolver.reject(i);
         }
         else
         {
-          if (pred(value))
-          {
-            resolver.reject(i);
-          }
-          else
-          {
-            resolver.resolve(value, i + hana::size_c<1>);
-          }
+          resolver.resolve(value, hana::size_c<I::value + 1>);
         }
-      });
+      }
+    }
+
+    template <typename Resolver, typename ...Args>
+    void reject(Resolver&& resolver, Args&&... args) noexcept
+    {
+      // propagate rejection
+      std::forward<Resolver>(resolver).reject(std::forward<Args>(args)...);
     }
   };
 
-  constexpr predicate_promise_fn predicate_promise{};
-
   struct match_if_fn
   {
-    template <typename Preds>
-    auto operator()(Preds const& preds) const
+    template <typename ...Preds>
+    auto operator()(mpdef::list<Preds...>) const
     {
-      return nbdl::promise([&](auto& resolve, auto&& value)
+      return nbdl::promise([](auto& resolve, auto&& value)
       {
         nbdl::run_sync(
-          nbdl::pipe(
-            hana::transform(hana::to_tuple(preds), predicate_promise)
+          hana::make_tuple(
+            predicate_promise<Preds>{}...
           , [](auto const& ...args)
             {
               static_assert(

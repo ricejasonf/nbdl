@@ -1,4 +1,4 @@
-.PHONY: image_tvossimulator_sysroot
+.PHONY: image_tvossimulator_sysroot metabench
 # Targets here are just a convenience for using
 # docker to manage the development environment.
 
@@ -37,3 +37,12 @@ tvossimulator_develop:
 
 	# UIKit include directory
 	#${SYSROOT}/System/Library/Frameworks/UIKit.framework/Headers \
+
+# METABENCH
+
+image_metabench:
+	docker pull ricejasonf/emscripten \
+	&& docker build --no-cache=true -f ./docker/Dockerfile-metabench -t nbdl:metabench .
+
+metabench:
+	docker run --rm -it -p 8080:8080 -v ${shell pwd}:/opt/src:ro nbdl:metabench

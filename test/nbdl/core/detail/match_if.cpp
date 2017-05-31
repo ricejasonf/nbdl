@@ -5,24 +5,35 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <mpdef/list.hpp>
 #include <nbdl/detail/match_if.hpp>
 
-#include <boost/hana/functional/always.hpp>
-#include <boost/hana/pair.hpp>
-#include <boost/hana/string.hpp>
-#include <boost/hana/tuple.hpp>
+#include <boost/hana/bool.hpp>
 #include <catch.hpp>
-#include <mpdef/pair.hpp>
-#include <string>
 
 namespace hana = boost::hana;
-using namespace hana::literals;
+
+namespace
+{
+  template <std::size_t i>
+  struct eq_fn
+  {
+    bool operator()(std::size_t value) const
+    {
+      return value == i;
+    }
+  };
+
+  struct always_true_fn
+  {
+    constexpr hana::true_ operator()(std::size_t) const
+    { return {}; }
+  };
+}
 
 TEST_CASE("Match first element in a tuple that satisfies a predicate.", "[detail][match_if]")
 {
-  auto eq = [](std::size_t expected) { return [=](std::size_t value) { return expected == value; }; };
-  auto always = [](auto result) { return [=](auto) { return result; }; };
-  auto preds = hana::make_tuple(eq(40), eq(41), eq(42), eq(43), always(hana::true_c));
+  auto preds = mpdef::make_list(eq_fn<40>{}, eq_fn<41>{}, eq_fn<42>{}, eq_fn<43>{}, always_true_fn{});
 
   auto run = [&](std::size_t value)
   {
