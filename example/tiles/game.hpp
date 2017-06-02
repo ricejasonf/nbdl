@@ -88,7 +88,7 @@ namespace tiles
     // initialize the one game that we have :/
     game_store_impl()
       : game_({ 3, 3,
-        {{
+        std::array<unsigned char, 64>{{
           3, 4, 6,
           8, 0, 1,
           2, 5, 7
