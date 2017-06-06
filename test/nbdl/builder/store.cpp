@@ -58,28 +58,6 @@ int main()
     BOOST_HANA_CONSTANT_ASSERT(access_point_meta::store(result) == hana::type_c<nbdl::null_store>);
   }
   {
-    // Specify the store in Producer
-    using namespace nbdl_def;
-    using nbdl_def::builder::access_point_meta;
-
-    struct test_store_tag { };
-    constexpr auto def =
-      Context(
-        Producer(
-          Store<test_store_tag>,
-          Name(names::Producer1),
-          AccessPoint(
-            Name(names::E1),
-            Entity<names::E1_t>,
-            PathKey<names::E1_key>,
-            Actions(Create())
-          )
-        )
-      );
-    constexpr auto result = hana::at_c<0>(nbdl_def::builder::enumerate_access_points(def));
-    BOOST_HANA_CONSTANT_ASSERT(access_point_meta::store(result) == hana::type_c<test_store_tag>);
-  }
-  {
     // Specify the store in AccessPoint
     using namespace nbdl_def;
     using nbdl_def::builder::access_point_meta;

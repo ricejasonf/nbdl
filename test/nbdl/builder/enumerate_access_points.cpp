@@ -141,7 +141,7 @@ int main()
         ),
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
-        access_point_meta::entities = mpdef::make_list(names::Root1, names::Nested1),
+        access_point_meta::entities = mpdef::make_list(/*names::Root1,*/ names::Nested1),
         access_point_meta::path = hana::type_c<hana::tuple<names::Root1_key, names::Nested1_key>>
       ),
       // Root1/Nested2/Nested3
@@ -153,8 +153,8 @@ int main()
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
         access_point_meta::entities = mpdef::make_list(
-          names::Root1,
-          names::Nested2,
+          //names::Root1,
+          //names::Nested2,
           names::Nested3
         ),
         access_point_meta::path = hana::type_c<hana::tuple<
@@ -175,7 +175,7 @@ int main()
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
         access_point_meta::entities = mpdef::make_list(
-          names::Root2,
+          //names::Root2,
           names::Nested1
         ),
         access_point_meta::path = hana::type_c<hana::tuple<
@@ -192,8 +192,8 @@ int main()
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
         access_point_meta::entities = mpdef::make_list(
-          names::Root2,
-          names::Nested2,
+          //names::Root2,
+          //names::Nested2,
           names::Nested3
         ),
         access_point_meta::path = hana::type_c<hana::tuple<
@@ -214,7 +214,7 @@ int main()
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
         access_point_meta::entities = mpdef::make_list(
-          names::Root3,
+          //names::Root3,
           names::Nested1
         ),
         access_point_meta::path = hana::type_c<hana::tuple<
@@ -231,8 +231,8 @@ int main()
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
         access_point_meta::entities = mpdef::make_list(
-          names::Root3,
-          names::Nested2,
+          //names::Root3,
+          //names::Nested2,
           names::Nested3
         ),
         access_point_meta::path = hana::type_c<hana::tuple<
@@ -243,7 +243,6 @@ int main()
       )
     );
 
-    //using foo = typename decltype(result)::foo;
     BOOST_HANA_CONSTANT_ASSERT(result == expected);
 
     BOOST_HANA_CONSTANT_ASSERT(access_point_meta::name(hana::at(result, hana::int_c<0>)) == names::Root2);

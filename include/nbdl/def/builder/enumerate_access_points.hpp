@@ -83,16 +83,14 @@ namespace enum_access_points_detail {
   )>{};
   constexpr auto collect_path_nodes = collect_list_fn<access_point_path_key_fn>{};
 
-  constexpr auto settings = mpdef::with_settings(tag::Store);
+  //constexpr auto settings = mpdef::with_settings(tag::Store);
   constexpr auto collector = mpdef::compose_collectors(
-    mpdef::collect_settings,
-    collect_entities,
+    //mpdef::collect_settings,
+    //collect_entities,
     collect_path_nodes
   );
   constexpr auto matcher = mpdef::create_in_tree_finder(is_access_point_def_fn{}, collector);
   constexpr auto initial_summary = mpdef::make_list(
-    settings,
-    mpdef::make_list(),
     mpdef::make_list()
   );
 
@@ -153,14 +151,13 @@ namespace enum_access_points_detail {
     {
       auto node_children = hana::second(hana::first(result));
       auto summary       = hana::second(result);
-      auto settings      = hana::at(summary, hana::int_c<0>);
-      auto entities      = hana::at(summary, hana::int_c<1>);
-      auto path_nodes    = hana::at(summary, hana::int_c<2>);
+      auto entity        = node_children[tag::Entity];
+      auto path_nodes    = hana::at(summary, hana::int_c<0>);
       return builder::make_access_point_meta(
         node_children[tag::Name],
         hana::find(node_children, tag::Actions).value_or(mpdef::make_list()),
-        settings[tag::Store].value_or(hana::type_c<nbdl::null_store>),
-        entities,
+        hana::find(node_children, tag::Store).value_or(hana::type_c<nbdl::null_store>),
+        mpdef::make_list(entity),
         hana::typeid_(hana::unpack(path_nodes, hana::template_<hana::tuple>))
       );
     }
