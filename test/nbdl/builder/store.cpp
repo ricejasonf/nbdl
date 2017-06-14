@@ -7,6 +7,7 @@
 
 #include <nbdl/def/builder/access_point_meta.hpp>
 #include <nbdl/def/builder/enumerate_access_points.hpp>
+#include <nbdl/def/builder/enumerate_producers.hpp>
 #include <nbdl/def/directives.hpp>
 #include <nbdl/entity_members.hpp>
 
@@ -45,6 +46,7 @@ int main()
     constexpr auto def =
       Context(
         Producer(
+          Type(hana::type_c<void>),
           Name(names::Producer1),
           AccessPoint(
             Name(names::E1),
@@ -54,7 +56,10 @@ int main()
           )
         )
       );
-    constexpr auto result = hana::at_c<0>(nbdl_def::builder::enumerate_access_points(def));
+    constexpr auto result = hana::at_c<0>(builder::producer_meta::access_points(hana::at_c<0>(
+      nbdl_def::builder::enumerate_producers(def)
+    )));
+
     BOOST_HANA_CONSTANT_ASSERT(access_point_meta::store(result) == hana::type_c<nbdl::null_store>);
   }
   {
@@ -66,6 +71,7 @@ int main()
     constexpr auto def =
       Context(
         Producer(
+          Type(hana::type_c<void>),
           Name(names::Producer1),
           AccessPoint(
             Store<test_store_tag>,
@@ -76,7 +82,9 @@ int main()
           )
         )
       );
-    constexpr auto result = hana::at_c<0>(nbdl_def::builder::enumerate_access_points(def));
+    constexpr auto result = hana::at_c<0>(builder::producer_meta::access_points(hana::at_c<0>(
+      nbdl_def::builder::enumerate_producers(def)
+    )));
     BOOST_HANA_CONSTANT_ASSERT(access_point_meta::store(result) == hana::type_c<test_store_tag>);
   }
 }

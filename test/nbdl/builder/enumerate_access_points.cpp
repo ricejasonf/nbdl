@@ -8,6 +8,8 @@
 #include <mpdef/list.hpp>
 #include <nbdl/def/builder/access_point_meta.hpp>
 #include <nbdl/def/builder/enumerate_access_points.hpp>
+#include <nbdl/def/builder/enumerate_producers.hpp>
+#include <nbdl/def/builder/producer_meta.hpp>
 #include <nbdl/def/directives.hpp>
 
 #include <boost/hana.hpp>
@@ -66,6 +68,7 @@ int main()
         Store<nbdl::null_store>,
         Producers(
           Producer(
+            Type(hana::type_c<void>),
             Name(names::Producer1),
             AccessPoints(
               AccessPoint(
@@ -89,6 +92,7 @@ int main()
             )
           ),
           Producer(
+            Type(hana::type_c<void>),
             Name(names::Producer2),
             AccessPoint(
               Name(names::Root3),
@@ -103,33 +107,14 @@ int main()
         )
       );
 
-    auto result = nbdl_def::builder::enumerate_access_points(def);
+    auto result = hana::flatten(hana::transform(
+      builder::enumerate_producers(def)
+    , builder::producer_meta::access_points
+    ));
 
+    // The AccessPoints should be enumerated depth-first and in order
+    // as changes would break the interfaces of applications' messages
     constexpr auto expected = mpdef::make_list(
-      // Root2
-      builder::make_access_point_meta_with_map(
-        access_point_meta::name = names::Root2,
-        access_point_meta::actions = mpdef::make_map(
-          mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
-          mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
-          mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
-          mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
-        ),
-        access_point_meta::store =
-          hana::type_c<nbdl::null_store>,
-        access_point_meta::entities = mpdef::make_list(names::Root2),
-        access_point_meta::path = hana::type_c<hana::tuple<names::Root2_key>>
-      ),
-      // Root3
-      builder::make_access_point_meta_with_map(
-        access_point_meta::name = names::Root3,
-        access_point_meta::actions = mpdef::make_map(
-          mpdef::make_tree_node(tag::Create,  mpdef::make_map())
-        ),
-        access_point_meta::store = hana::type_c<nbdl::null_store>,
-        access_point_meta::entities = mpdef::make_list(names::Root3),
-        access_point_meta::path = hana::type_c<hana::tuple<names::Root3_key>>
-      ),
       // Root1/Nested1
       builder::make_access_point_meta_with_map(
         access_point_meta::name = names::Nested1,
@@ -162,6 +147,20 @@ int main()
           names::Nested2_key,
           names::Nested3_key
         >>
+      ),
+      // Root2
+      builder::make_access_point_meta_with_map(
+        access_point_meta::name = names::Root2,
+        access_point_meta::actions = mpdef::make_map(
+          mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
+          mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
+          mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
+          mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
+        ),
+        access_point_meta::store =
+          hana::type_c<nbdl::null_store>,
+        access_point_meta::entities = mpdef::make_list(names::Root2),
+        access_point_meta::path = hana::type_c<hana::tuple<names::Root2_key>>
       ),
       // Root2/Nested1
       builder::make_access_point_meta_with_map(
@@ -201,6 +200,16 @@ int main()
           names::Nested2_key,
           names::Nested3_key
         >>
+      ),
+      // Root3
+      builder::make_access_point_meta_with_map(
+        access_point_meta::name = names::Root3,
+        access_point_meta::actions = mpdef::make_map(
+          mpdef::make_tree_node(tag::Create,  mpdef::make_map())
+        ),
+        access_point_meta::store = hana::type_c<nbdl::null_store>,
+        access_point_meta::entities = mpdef::make_list(names::Root3),
+        access_point_meta::path = hana::type_c<hana::tuple<names::Root3_key>>
       ),
       // Root3/Nested1
       builder::make_access_point_meta_with_map(
@@ -244,30 +253,5 @@ int main()
     );
 
     BOOST_HANA_CONSTANT_ASSERT(result == expected);
-
-    BOOST_HANA_CONSTANT_ASSERT(access_point_meta::name(hana::at(result, hana::int_c<0>)) == names::Root2);
-    BOOST_HANA_CONSTANT_ASSERT(access_point_meta::actions(hana::at(result, hana::int_c<0>)) ==
-      mpdef::make_map(
-        mpdef::make_tree_node(tag::Create,  mpdef::make_map()),
-        mpdef::make_tree_node(tag::Read,    mpdef::make_map()),
-        mpdef::make_tree_node(tag::Update,  mpdef::make_map()),
-        mpdef::make_tree_node(tag::Delete,  mpdef::make_map())
-      )
-    );
-    BOOST_HANA_CONSTANT_ASSERT(
-      access_point_meta::store(hana::at(result, hana::int_c<0>))
-        ==
-      hana::type_c<nbdl::null_store>
-    );
-    BOOST_HANA_CONSTANT_ASSERT(
-      access_point_meta::entities(hana::at(result, hana::int_c<0>))
-        ==
-      mpdef::make_list(names::Root2)
-    );
-    BOOST_HANA_CONSTANT_ASSERT(
-      access_point_meta::path(hana::at(result, hana::int_c<0>))
-        ==
-      hana::type_c<hana::tuple<names::Root2_key>>
-    );
   }
 }

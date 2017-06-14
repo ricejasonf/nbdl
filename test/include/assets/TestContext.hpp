@@ -148,52 +148,54 @@ namespace test_context_def {
           Producer(
             Name(test_context::name::producer<2>),
             Type(p2),
-            AccessPoint(
-              Name(hana::type_c<void>),
-              Entity<entity::root2>,
-              PathKey<test_context::key<entity::root2>>,
+            AccessPoints(
               AccessPoint(
                 Name(hana::type_c<void>),
-                Entity<entity::my_entity<1>>,
-                PathKey<test_context::key<entity::my_entity<1>>>,
-                Store<Store_>,
-                Actions(Create(), Read(), UpdateRaw(), Delete())
-              )
-            ),
-            AccessPoint(
-              Name(hana::type_c<void>),
-              Entity<entity::root2>,
-              PathKey<test_context::key<entity::root2>>,
+                Entity<entity::root2>,
+                PathKey<test_context::key<entity::root2>>,
+                AccessPoint(
+                  Name(hana::type_c<void>),
+                  Entity<entity::my_entity<1>>,
+                  PathKey<test_context::key<entity::my_entity<1>>>,
+                  Store<Store_>,
+                  Actions(Create(), Read(), UpdateRaw(), Delete())
+                )
+              ),
               AccessPoint(
                 Name(hana::type_c<void>),
-                Entity<entity::my_entity<2>>,
-                PathKey<test_context::key<entity::my_entity<2>>>,
-                Store<Store_>,
-                Actions(Create(), Read(), UpdateRaw(), Delete())
-              )
-            ),
-            AccessPoint(
-              Name(hana::type_c<void>),
-              Entity<entity::root2>,
-              PathKey<test_context::key<entity::root2>>,
+                Entity<entity::root2>,
+                PathKey<test_context::key<entity::root2>>,
+                AccessPoint(
+                  Name(hana::type_c<void>),
+                  Entity<entity::my_entity<2>>,
+                  PathKey<test_context::key<entity::my_entity<2>>>,
+                  Store<Store_>,
+                  Actions(Create(), Read(), UpdateRaw(), Delete())
+                )
+              ),
               AccessPoint(
                 Name(hana::type_c<void>),
-                Entity<entity::my_entity<3>>,
-                PathKey<test_context::key<entity::my_entity<3>>>,
-                Store<Store_>,
-                Actions(Create(), Read(), UpdateRaw(), Delete())
-              )
-            ),
-            AccessPoint(
-              Name(hana::type_c<void>),
-              Entity<entity::root2>,
-              PathKey<test_context::key<entity::root2>>,
+                Entity<entity::root2>,
+                PathKey<test_context::key<entity::root2>>,
+                AccessPoint(
+                  Name(hana::type_c<void>),
+                  Entity<entity::my_entity<3>>,
+                  PathKey<test_context::key<entity::my_entity<3>>>,
+                  Store<Store_>,
+                  Actions(Create(), Read(), UpdateRaw(), Delete())
+                )
+              ),
               AccessPoint(
                 Name(hana::type_c<void>),
-                Entity<entity::my_entity<4>>,
-                PathKey<test_context::key<entity::my_entity<4>>>,
-                Store<Store_>,
-                Actions(Create(), Read(), UpdateRaw(), Delete())
+                Entity<entity::root2>,
+                PathKey<test_context::key<entity::root2>>,
+                AccessPoint(
+                  Name(hana::type_c<void>),
+                  Entity<entity::my_entity<4>>,
+                  PathKey<test_context::key<entity::my_entity<4>>>,
+                  Store<Store_>,
+                  Actions(Create(), Read(), UpdateRaw(), Delete())
+                )
               )
             )
           )
