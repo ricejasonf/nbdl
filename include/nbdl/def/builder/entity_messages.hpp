@@ -95,21 +95,21 @@ namespace entity_messages_detail {
 template <typename AccessPoint>
 struct entity_message_fn
 {
-  template<typename EntityMessageMeta>
-  constexpr auto operator()(EntityMessageMeta e) const
+  template <typename PathType
+          , typename EntityType
+          , typename PrivatePayload
+          , typename Action
+          , typename Channel>
+  constexpr auto operator()(mpdef::metastruct<entity_message_meta>::list
+                                      <PathType
+                                      , EntityType
+                                      , PrivatePayload
+                                      , Action
+                                      , Channel> e) const
   {
-    using Channel = decltype(entity_message_meta::channel(e));
-    using Action = decltype(entity_message_meta::action(e));
-    using PathType = decltype(entity_message_meta::path(e));
-
-    using Path = typename decltype(hana::if_(
-      hana::and_(
-        std::is_same<Channel, nbdl::message::channel::upstream>{},
-        std::is_same<Action, nbdl::message::action::create>{}
-      ),
-      nbdl::detail::make_create_path_type(PathType{}),
-      PathType{}
-    ))::type;
+    using Path = typename nbdl::detail::make_create_path<
+      typename PathType::type, Channel, Action
+    >::type;
 
     using Comps = hana::tuple<
       Channel,
@@ -117,7 +117,7 @@ struct entity_message_fn
       Path
     >;
 
-    using Maybes = typename entity_messages_detail::get_maybes<AccessPoint, EntityMessageMeta>::type;
+    using Maybes = typename entity_messages_detail::get_maybes<AccessPoint, decltype(e)>::type;
     using Tuple = decltype(hana::concat(std::declval<Comps>(), std::declval<Maybes>()));
 
     return hana::type_c<Tuple>;
@@ -171,26 +171,45 @@ struct entity_messages_fn
 
     const auto private_payload = hana::nothing;
 
-    const auto messages_meta = hana::unpack(
-      hana::cartesian_product(mpdef::make_list(
-        mpdef::make_list(path),
-        mpdef::make_list(entity_type),
-        mpdef::make_list(private_payload),
-        actions,
-        mpdef::make_list(nbdl::message::channel::upstream{}, nbdl::message::channel::downstream{})
-      )),
-      mpdef::make_list ^hana::on^ hana::fuse(builder::make_entity_message_meta)
+    const auto messages = hana::unpack(
+      actions
+    , [=](auto ...action)
+      {
+        return mpdef::make_list(
+          entity_message_fn<AccessPoint>{}(builder::make_entity_message_meta(
+            path
+          , entity_type
+          , private_payload
+          , action
+          , nbdl::message::channel::upstream{}
+          ))...
+        , entity_message_fn<AccessPoint>{}(builder::make_entity_message_meta(
+            path
+          , entity_type
+          , private_payload
+          , action
+          , nbdl::message::channel::downstream{}
+          ))...
+        );
+      }
     );
 
     // add a nbdl::not_found message if a read is present
-    return hana::concat(
-      hana::unpack(messages_meta, mpdef::make_list ^hana::on^ entity_message_fn<AccessPoint>{}),
-      hana::maybe(
-        mpdef::make_list(),
-        hana::compose(mpdef::make_list, entity_not_found_message_fn<AccessPoint>{}),
-        hana::find_if(messages_meta,
-          entity_messages_detail::entity_message_meta_is_downstream_read_fn{}))
-    );
+    if constexpr(hana::is_just(hana::index_if(actions
+      , [](auto x) { return std::is_same<nbdl::message::action::read, decltype(x)>{}; })))
+      
+      return hana::append(
+        messages
+      , entity_not_found_message_fn<AccessPoint>{}(builder::make_entity_message_meta(
+          path
+        , entity_type
+        , private_payload
+        , nbdl::message::action::read{}
+        , nbdl::message::channel::downstream{}
+        ))
+      );
+    else
+      return messages;
   }
 };
 constexpr entity_messages_fn entity_messages{};

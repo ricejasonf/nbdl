@@ -23,7 +23,7 @@
 
 namespace hana = boost::hana;
 
-#define MAKE_STRING(NAME) auto NAME##_s = BOOST_HANA_STRING(#NAME);
+#define MAKE_STRING(NAME) constexpr auto NAME##_s = BOOST_HANA_STRING(#NAME);
 
 namespace
 {

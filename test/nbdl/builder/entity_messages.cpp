@@ -101,6 +101,25 @@ int main()
           hana::optional<names::Entity1_t>
         >>,
         hana::type_c<hana::tuple<
+          channel::upstream,
+          action::read,
+          Path,
+          hana::optional<nbdl::uid>
+        >>,
+        hana::type_c<hana::tuple<
+          channel::upstream,
+          action::update_raw,
+          Path,
+          hana::optional<nbdl::uid>,
+          hana::optional<names::Entity1_t>
+        >>,
+        hana::type_c<hana::tuple<
+          channel::upstream,
+          action::delete_,
+          Path,
+          hana::optional<nbdl::uid>
+        >>,
+        hana::type_c<hana::tuple<
           channel::downstream,
           action::create,
           Path,
@@ -109,24 +128,11 @@ int main()
           hana::optional<names::Entity1_t>
         >>,
         hana::type_c<hana::tuple<
-          channel::upstream,
-          action::read,
-          Path,
-          hana::optional<nbdl::uid>
-        >>,
-        hana::type_c<hana::tuple<
           channel::downstream,
           action::read,
           Path,
           hana::optional<nbdl::uid>,
           hana::optional<bool>,
-          hana::optional<names::Entity1_t>
-        >>,
-        hana::type_c<hana::tuple<
-          channel::upstream,
-          action::update_raw,
-          Path,
-          hana::optional<nbdl::uid>,
           hana::optional<names::Entity1_t>
         >>,
         hana::type_c<hana::tuple<
@@ -136,12 +142,6 @@ int main()
           hana::optional<nbdl::uid>,
           hana::optional<bool>,
           hana::optional<names::Entity1_t>
-        >>,
-        hana::type_c<hana::tuple<
-          channel::upstream,
-          action::delete_,
-          Path,
-          hana::optional<nbdl::uid>
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,

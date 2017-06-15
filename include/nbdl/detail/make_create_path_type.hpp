@@ -7,6 +7,8 @@
 #ifndef NBDL_DETAIL_MAKE_CREATE_PATH_TYPE_HPP
 #define NBDL_DETAIL_MAKE_CREATE_PATH_TYPE_HPP
 
+#include <nbdl/message.hpp>
+
 #include <boost/hana.hpp>
 
 namespace nbdl::detail
@@ -18,8 +20,16 @@ namespace nbdl::detail
   //   Currently it's just a tuple where a "create path"
   //   has the last node wrapped as a hana::type.
   // )
-  template <typename Path>
+  template <typename Path
+          , typename Channel = message::channel::upstream
+          , typename Action = message::action::create>
   struct make_create_path
+  {
+    using type = Path;
+  };
+  
+  template <typename Path>
+  struct make_create_path<Path, message::channel::upstream, message::action::create>
   {
     using KeyType = decltype(hana::typeid_(hana::back(std::declval<Path>())));
 
