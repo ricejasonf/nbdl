@@ -40,6 +40,26 @@ namespace entity_messages_detail {
   );
   constexpr auto get_action = hana::partial(hana::at_key, action_map);
 
+  template <typename T1, typename T2, typename T3, typename T4>
+  struct drop_nothings
+  { using type = mpdef::list<T1, T2, T3, T4>; };
+
+  template <typename T1, typename T2, typename T3>
+  struct drop_nothings<T1, T2, T3, hana::optional<>>
+  { using type = mpdef::list<T1, T2, T3>; };
+
+  template <typename T1, typename T2>
+  struct drop_nothings<T1, T2, hana::optional<>, hana::optional<>>
+  { using type = mpdef::list<T1, T2>; };
+
+  template <typename T1>
+  struct drop_nothings<T1, hana::optional<>, hana::optional<>, hana::optional<>>
+  { using type = mpdef::list<T1>; };
+
+  template <>
+  struct drop_nothings<hana::optional<>, hana::optional<>, hana::optional<>, hana::optional<>>
+  { using type = mpdef::list<>; };
+
   template <typename AccessPoint, typename EntityMessage, typename = void>
   struct get_maybes;
 
@@ -51,12 +71,12 @@ namespace entity_messages_detail {
   > 
   {
     // these are reversed to truncate the nothings
-    using Xs = mpdef::list<
-      typename decltype(builder::entity_message_private_payload(A{}, E{}))::type,
-      typename decltype(builder::entity_message_payload(A{}, E{}))::type,
-      typename decltype(builder::entity_message_uid(A{}, E{}))::type
-    >;
-    using type = decltype(hana::reverse(hana::drop_while(Xs{}, hana::is_nothing)));
+    using type = typename drop_nothings<
+      std::decay_t<typename decltype(builder::entity_message_uid(A{}, E{}))::type>
+    , std::decay_t<typename decltype(builder::entity_message_payload(A{}, E{}))::type>
+    , std::decay_t<typename decltype(builder::entity_message_private_payload(A{}, E{}))::type>
+    , hana::optional<>
+    >::type;
   };
 
   template <typename A, typename E>
@@ -66,15 +86,12 @@ namespace entity_messages_detail {
       >::value>
   > 
   {
-    // these are reversed to truncate the nothings
-    using Xs = mpdef::list<
-      typename decltype(builder::entity_message_private_payload(A{}, E{}))::type,
-      typename decltype(builder::entity_message_payload(A{}, E{}))::type,
-      typename decltype(builder::entity_message_is_from_root(A{}, E{}))::type,
-      typename decltype(builder::entity_message_uid(A{}, E{}))::type
-    >;
-    // these are reversed to truncate the nothings
-    using type = decltype(hana::reverse(hana::drop_while(Xs{}, hana::is_nothing)));
+    using type = typename drop_nothings<
+      std::decay_t<typename decltype(builder::entity_message_uid(A{}, E{}))::type>
+    , std::decay_t<typename decltype(builder::entity_message_is_from_root(A{}, E{}))::type>
+    , std::decay_t<typename decltype(builder::entity_message_payload(A{}, E{}))::type>
+    , std::decay_t<typename decltype(builder::entity_message_private_payload(A{}, E{}))::type>
+    >::type;
   };
 
   struct entity_message_meta_is_downstream_read_fn
