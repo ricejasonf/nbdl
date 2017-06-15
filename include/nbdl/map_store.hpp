@@ -59,14 +59,16 @@ namespace nbdl
         }
         else if constexpr(message::is_read<Message>)
         {
-          return map[message::get_path(m)].match(
+          bool result = false;
+          map[message::get_path(m)].match(
             [&](nbdl::unresolved)
             {
                map[message::get_path(m)] = *message::get_maybe_payload(m);
-               return true;
+               result = true;
             },
-            [](auto const&) { return false; }
+            [](auto const&) { }
           );
+          return result;
         }
         else
         {

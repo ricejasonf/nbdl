@@ -5798,8 +5798,10 @@ namespace Catch {
                     break;
                 case RunTests::InRandomOrder:
                 {
-                    RandomNumberGenerator rng;
-                    std::random_shuffle( matchingTestCases.begin(), matchingTestCases.end(), rng );
+                    // I don't even use this...
+                    //RandomNumberGenerator rng;
+                    //std::random_shuffle( matchingTestCases.begin(), matchingTestCases.end(), rng );
+                    std::sort( matchingTestCases.begin(), matchingTestCases.end(), LexSort() );
                 }
                     break;
                 case RunTests::InDeclarationOrder:

@@ -52,9 +52,10 @@ namespace
     template <typename Message, typename Orig>
     constexpr auto operator()(Message const& m, Orig const& o) const
     {
-      return m.match(
+      bool result = false;
+      m.match(
         [&](auto const& m)
-          -> std::enable_if_t<std::is_same<std::decay_t<decltype(m)>, std::decay_t<Orig>>::value, bool>
+          -> std::enable_if_t<std::is_same<std::decay_t<decltype(m)>, std::decay_t<Orig>>::value, void>
         {
           CHECK(hana::equal(
             hana::decltype_(message::get_channel(m)),
@@ -69,10 +70,11 @@ namespace
           CHECK(hana::equal(message::get_maybe_private_payload(m), message::get_maybe_private_payload(o)));
           CHECK(hana::equal(message::get_maybe_is_from_root(m), message::get_maybe_is_from_root(o)));
           // TODO compare nbdl::uids
-          return true;
+          result = true;
         },
-        [](auto const&) { return false; }
+        [&](auto const&) { result = false; }
       );
+      return result;
     }
   };
 

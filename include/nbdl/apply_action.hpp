@@ -31,6 +31,15 @@ namespace nbdl
     static_assert(nbdl::Store<Store>::value,
       "nbdl::apply_action(store, message) requires 'store' to be a Store");
 
+#if 0 // TODO This would make a useful early error message
+    static_assert(
+      !hana::is_convertible<
+        decltype(Impl::apply(std::forward<Store>(s), std::forward<Message>(m)))
+      , bool
+      >::value
+    , "nbdl::apply_action must return a value convertible to bool"
+    );
+#endif
     return Impl::apply(std::forward<Store>(s), std::forward<Message>(m));
   };
 

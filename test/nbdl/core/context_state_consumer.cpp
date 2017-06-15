@@ -72,9 +72,10 @@ TEST_CASE("A single notification is sent when state changes for a single, primar
       my_entity<1>{1, 1}
   ));
   REQUIRE(notifications.size() == 1);
-  bool result = notifications[0].match(
-    [](path<1> const& p) { return hana::equal(p, path<1>(1, 1)); },
-    [](auto const&) { return false; }
+  bool result = false;
+  notifications[0].match(
+    [&](path<1> const& p) { result = hana::equal(p, path<1>(1, 1)); },
+    [](auto const&) { }
   );
   CHECK(result);
 }
@@ -91,14 +92,19 @@ TEST_CASE("Notifications are sent when a store is listening to actions from othe
       my_entity<1>{1, 1}
   ));
   REQUIRE(notifications.size() == 2);
-  bool result1 = notifications[0].match(
-    [](path<2> const& p) { return hana::equal(p, path<2>(2, 1)); },
-    [](auto const&) { return false; }
+
+  bool result1 = false;
+  notifications[0].match(
+    [&](path<2> const& p) { result1 = hana::equal(p, path<2>(2, 1)); },
+    [](auto const&) { }
   );
-  bool result2 = notifications[1].match(
-    [](path<2> const& p) { return hana::equal(p, path<2>(2, 2)); },
-    [](auto const&) { return false; }
+
+  bool result2 = false;
+  notifications[1].match(
+    [&](path<2> const& p) { result2 = hana::equal(p, path<2>(2, 2)); },
+    [](auto const&) { }
   );
+
   CHECK(result1);
   CHECK(result2);
 }

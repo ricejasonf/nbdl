@@ -67,13 +67,15 @@ namespace nbdl
     static constexpr auto apply(Store&&, Message const& m)
     {
       using Path = std::decay_t<decltype(message::get_path(m))>;
-      return mock_store_result_apply_action.match(
+      bool result = false;
+      mock_store_result_apply_action.match(
         [&](Path const& p)
         {
-          return hana::equal(p, message::get_path(m));
+          result = hana::equal(p, message::get_path(m));
         },
-        [](auto const&) { return false; }
+        [](auto const&) { }
       );
+      return result;
     }
   };
 

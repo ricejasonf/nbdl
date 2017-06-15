@@ -43,10 +43,12 @@ namespace nbdl
 template <typename Variant, typename T>
 bool test_variant_equal(Variant const& v, T const& t)
 {
-  return v.match(
-    [&](T const& t_)  { return hana::equal(t, t_); },
-    [](auto&&)        { return false; }
+  bool result = false;
+  v.match(
+    [&](T const& t_)  { result = hana::equal(t, t_); },
+    [](auto&&)        { }
   );
+  return result;
 }
 
 TEST_CASE("Apply action upstream create.", "[map_store][apply_action]")
@@ -102,9 +104,10 @@ TEST_CASE("Apply action upstream read.", "[map_store][apply_action]")
   CHECK(store.map.size() == 1);
   auto node = store.map.find(test_context::path<1>(1, 2));
   REQUIRE(node != store.map.end());
-  bool result = node->second.match(
-    [](nbdl::unresolved)  { return true;  },
-    [](auto&&)            { return false; }
+  bool result = false;
+  node->second.match(
+    [&](nbdl::unresolved)  { result = true;  },
+    [](auto&&)            { }
   );
   CHECK(result);
 }
@@ -186,9 +189,10 @@ TEST_CASE("Apply action downstream read with not_found value in store.", "[map_s
   );
   CHECK(did_state_change == false);
   CHECK(store.map.size() == 1);
-  bool result = store.map[test_context::path<1>(1, 2)].match(
-    [](nbdl::not_found) { return true;  },
-    [](auto&&)          { return false; }
+  bool result = false;
+  store.map[test_context::path<1>(1, 2)].match(
+    [&](nbdl::not_found) { result = true;  },
+    [](auto&&)           { }
   );
   CHECK(result);
 }

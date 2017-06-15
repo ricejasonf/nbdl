@@ -18,19 +18,25 @@ TEST_CASE("Unitialized variant should match Unresolved.", "[variant]")
 {
 	using Number = nbdl::variant<int, std::string, some_tag>;
 	Number number;
-	CHECK(number.match(
-		[](nbdl::unresolved) {
-			return 56;
+  CHECK(number.is<nbdl::unresolved>());
+
+  int result = 0;
+
+	number.match(
+		[&](nbdl::unresolved) {
+			result = 56;
 		},
-		[](std::string) {
-			return 1;
+		[&](std::string) {
+			result = 1;
 		},
-		[](int value) {
-			return value;
+		[&](int value) {
+			result = value;
 		},
-		[](some_tag) {
-			return 3;
-		}) == 56);
+		[&](some_tag) {
+			result = 3;
+		}
+  );
+  CHECK(result == 56);
 }
 
 TEST_CASE("Assign a value to a variant and use the callback interface to retrieve it.", "[variant]")
@@ -38,19 +44,25 @@ TEST_CASE("Assign a value to a variant and use the callback interface to retriev
 	using Number = nbdl::variant<int, std::string, some_tag>;
 	
 	Number number = 512;
-	CHECK(number.match(
-		[](nbdl::unresolved) {
-			return 56;
+  CHECK(number.is<int>());
+
+  int result = 0;
+
+	number.match(
+		[&](nbdl::unresolved) {
+			result = 56;
 		},
-		[](std::string) {
-			return 1;
+		[&](std::string) {
+			result = 1;
 		},
-		[](int value) {
-			return value;
+		[&](int value) {
+			result = value;
 		},
-		[](some_tag) {
-			return 3;
-		}) == 512);
+		[&](some_tag) {
+			result = 3;
+		}
+  );
+  CHECK(result == 512);
 }
 
 TEST_CASE("Copy a variant value.", "[variant]") 
@@ -58,20 +70,28 @@ TEST_CASE("Copy a variant value.", "[variant]")
 	using Number = nbdl::variant<int, some_tag>;
 	Number number1, number2;
 	number1 = 123;
+  CHECK(number1.is<int>());
+
 	number2 = Number(number1);
-	CHECK(number2.match(
-		[](nbdl::unresolved) {
-			return 56;
+  CHECK(number2.is<int>());
+
+  int result = 0;
+
+	number2.match(
+		[&](nbdl::unresolved) {
+			result = 56;
 		},
-		[](std::string) {
-			return 1;
+		[&](std::string) {
+			result = 1;
 		},
-		[](int value) {
-			return value;
+		[&](int value) {
+			result = value;
 		},
-		[](some_tag) {
-			return 3;
-		}) == 123);
+		[&](some_tag) {
+			result = 3;
+		}
+  );
+  CHECK(result == 123);
 }
 
 TEST_CASE("Use the catch all to catch an unspecified tag", "[variant]")
@@ -79,50 +99,68 @@ TEST_CASE("Use the catch all to catch an unspecified tag", "[variant]")
 	using Number = nbdl::variant<int, std::string, some_tag>;
 	
 	Number number = 185;
-	CHECK(number.match(
-		[](nbdl::unresolved) {
-			return 56;
+  CHECK(number.is<int>());
+
+  int result = 0;
+
+	number.match(
+		[&](nbdl::unresolved) {
+			result = 56;
 		},
-		[](std::string) {
-			return 1;
+		[&](std::string) {
+			result = 1;
 		},
-		[](some_tag) {
-			return 3;
+		[&](some_tag) {
+			result = 3;
 		},
-		[](auto) {
-			return 123;
-		}) == 123);
+		[&](auto) {
+			result = 123;
+		}
+  );
+  CHECK(result == 123);
+
 	number = 93;
-	CHECK(number.match(
-		[](nbdl::unresolved) {
-			return 56;
+  CHECK(number.is<int>());
+
+  result = 0;
+
+	number.match(
+		[&](nbdl::unresolved) {
+			result = 56;
 		},
-		[](std::string) {
-			return 1;
+		[&](std::string) {
+			result = 1;
 		},
 		//not last position
-		[](auto) {
-			return 25;
+		[&](auto) {
+			result = 25;
 		},
-		[](some_tag) {
-			return 9;
-		}) == 25);
+		[&](some_tag) {
+			result = 9;
+		}
+  );
+  CHECK(result == 25);
 }
 TEST_CASE("Catch should not be called if there is a valid match.", "[variant]")
 {
 	using Number = nbdl::variant<int, std::string, some_tag>;
 	Number number = 185;
+  CHECK(number.is<int>());
 
-	CHECK(number.match(
-		[](nbdl::unresolved) {
-			return 56;
+  int result = 0;
+
+	number.match(
+		[&](nbdl::unresolved) {
+			result = 56;
 		},
-		[](int) {
-			return 76;
+		[&](int) {
+			result = 76;
 		},
-		[](auto) {
-			return 25;
-		}) == 76);
+		[&](auto) {
+			result = 25;
+		}
+  );
+  CHECK(result == 76);
 }
 
 TEST_CASE("Modify a struct's member in a variant", "[variant]")
@@ -134,20 +172,25 @@ TEST_CASE("Modify a struct's member in a variant", "[variant]")
 	using MyVar = nbdl::variant<person, int, std::string, some_tag, std::vector<char>>;
 	
 	MyVar var = person{ "Jason", "Rice" };
+  CHECK(var.is<person>());
 
 	var.match(
 		[&](person p) {
 			p.name_last = "Ricez";
 			var = p;
 		}, nbdl::noop);
-	bool result = var.match(
-		[](person p) {
+
+  bool result = false;
+
+	var.match(
+		[&](person p) {
 			CHECK(p.name_last == "Ricez");
-			return true;
+			result = true;
 		},
-		[](auto const&) {
-			return false;
+		[&](auto const&) {
+			result = false;
 		});
+
 	CHECK(result);
 }
 

@@ -46,17 +46,20 @@ TEST_CASE("make_delta", "[delta]")
                               auto const& maybe_age
                              )
   {
-    bool result1 = maybe_name_first.match(
-      [](nbdl::nothing) { return true; },
-      [](auto&&)        { return false; }
+    bool result1 = false;
+    maybe_name_first.match(
+      [&](nbdl::nothing) { result1 = true; },
+      [](auto&&)         { }
     );
-    bool result2 = maybe_name_last.match(
-      [](std::string const& name_last)  { return name_last == "McGeez"; },
-      [](nbdl::nothing)                 { return false; }
+    bool result2 = false;
+    maybe_name_last.match(
+      [&](std::string const& name_last)  { result2 = name_last == "McGeez"; },
+      [](nbdl::nothing)                  { }
     );
-    bool result3 = maybe_age.match(
-      [](int age)       { return age = 43; },
-      [](nbdl::nothing) { return false; }
+    bool result3 = false;
+    maybe_age.match(
+      [&](int age)       { result3 = age == 43; },
+      [](nbdl::nothing)  { }
     );
     CHECK(result1);
     CHECK(result2);

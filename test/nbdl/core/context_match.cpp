@@ -128,21 +128,22 @@ TEST_CASE("Matching nbdl::uninitialized triggers upstream read message.", "[cont
   // producer1 should record an upstream read message.
   REQUIRE(producer1.recorded_messages.size() == 1);
   {
-    bool result = producer1.recorded_messages[0].match(
+    bool result = false;
+    producer1.recorded_messages[0].match(
       [](auto const& x)
-        -> std::enable_if_t<!nbdl::UpstreamMessage<decltype(x)>::value, bool>
-      { return false; },
-      [](auto const& msg)
+        -> std::enable_if_t<!nbdl::UpstreamMessage<decltype(x)>::value>
+      { },
+      [&](auto const& msg)
         ->  std::enable_if_t<decltype(hana::equal(
               hana::traits::decay(hana::decltype_(message::get_path(msg))),
               hana::decltype_(path<1>(1, 13))
-            ))::value, bool>
+            ))::value>
       {
         CHECK(message::is_read<decltype(msg)>);
         CHECK(hana::equal(message::get_path(msg), path<1>(1, 13)));
-        return true;
+        result = true;
       },
-      [](auto const&) { return false; }
+      [](auto const&) { }
     );
     CHECK(result);
   }

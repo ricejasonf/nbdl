@@ -472,7 +472,7 @@ namespace nbdl
   struct match_impl<detail::context_store_tag>
   {
     template <typename Store, typename Key, typename Fn>
-    static constexpr auto apply(Store&& s, Key&& k, Fn&& fn)
+    static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
     {
       s.match(std::forward<Key>(k), std::forward<Fn>(fn));
     }

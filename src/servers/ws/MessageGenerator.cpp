@@ -38,13 +38,15 @@ void ws::message_generator::generate_extended_payload_length()
 
 char ws::message_generator::apply_mask_bit(char len)
 {
-  return mask_key.match(
+  char result;
+  mask_key.match(
     [&](nothing) {
-      return len;
+      result = len;
     },
     [&](auto) {
-      return len | (1 << 7);
+      result = len | (1 << 7);
     });
+  return result;
 }
 
 void ws::message_generator::generate_mask()
@@ -60,11 +62,13 @@ void ws::message_generator::generate_mask()
 
 void ws::message_generator::write_byte(int pos, char c)
 {
-  body.push_back(mask_key.match(
+  char result;
+  mask_key.match(
     [&](nothing) {
-      return c;
+      result = c;
     },
     [&](std::array<char, 4> key) {
-      return c ^ key[pos % 4]; 
-    }));
+      result = c ^ key[pos % 4]; 
+    });
+  body.push_back(result);
 }

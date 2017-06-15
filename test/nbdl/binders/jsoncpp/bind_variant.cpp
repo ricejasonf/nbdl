@@ -55,13 +55,11 @@ TEST_CASE("Bind empty variant to JSON.", "[bind][json]")
 {
   my_entity my_entity;
   from_string(test_json_1, my_entity);
-  bool result = my_entity.foo.match(
-      [](nbdl::unresolved) {
-        return true;
-      },
-      [](auto) {
-        return false;
-      });
+  bool result = false;
+  my_entity.foo.match(
+    [&](nbdl::unresolved) { result = true; }
+  , [](auto) { }
+  );
   CHECK(result);
   CHECK(to_string(my_entity) == test_json_1);
 }
@@ -70,13 +68,11 @@ TEST_CASE("Bind variant containing string to JSON.", "[bind][json]")
 {
   my_entity my_entity;
   from_string(test_json_2, my_entity);
-  bool result = my_entity.foo.match(
-      [](std::string str) {
-        return str == "a string";
-      },
-      [](auto) {
-        return false;
-      });
+  bool result = false;
+  my_entity.foo.match(
+    [&](std::string str) { result = str == "a string"; }
+  , [](auto) { }
+  );
   CHECK(result);
   CHECK(to_string(my_entity) == test_json_2);
 }
@@ -85,13 +81,11 @@ TEST_CASE("Bind variant containing entity to JSON.", "[bind][json]")
 {
   my_entity my_entity;
   from_string(test_json_3, my_entity);
-  bool result = my_entity.foo.match(
-      [](bar bar) {
-        return bar.value == "bar";
-      },
-      [](auto) {
-        return false;
-      });
+  bool result = false;
+  my_entity.foo.match(
+    [&](bar bar) { result = bar.value == "bar"; }
+  , [](auto) { }
+  );
   CHECK(result);
   CHECK(to_string(my_entity) == test_json_3);
 }
