@@ -51,12 +51,12 @@ namespace entity_messages_detail {
   > 
   {
     // these are reversed to truncate the nothings
-    using Xs = hana::tuple<
+    using Xs = mpdef::list<
       typename decltype(builder::entity_message_private_payload(A{}, E{}))::type,
       typename decltype(builder::entity_message_payload(A{}, E{}))::type,
       typename decltype(builder::entity_message_uid(A{}, E{}))::type
     >;
-    using type = decltype(hana::reverse(hana::drop_while(std::declval<Xs>(), hana::is_nothing)));
+    using type = decltype(hana::reverse(hana::drop_while(Xs{}, hana::is_nothing)));
   };
 
   template <typename A, typename E>
@@ -67,14 +67,14 @@ namespace entity_messages_detail {
   > 
   {
     // these are reversed to truncate the nothings
-    using Xs = hana::tuple<
+    using Xs = mpdef::list<
       typename decltype(builder::entity_message_private_payload(A{}, E{}))::type,
       typename decltype(builder::entity_message_payload(A{}, E{}))::type,
       typename decltype(builder::entity_message_is_from_root(A{}, E{}))::type,
       typename decltype(builder::entity_message_uid(A{}, E{}))::type
     >;
     // these are reversed to truncate the nothings
-    using type = decltype(hana::reverse(hana::drop_while(std::declval<Xs>(), hana::is_nothing)));
+    using type = decltype(hana::reverse(hana::drop_while(Xs{}, hana::is_nothing)));
   };
 
   struct entity_message_meta_is_downstream_read_fn
@@ -111,14 +111,14 @@ struct entity_message_fn
       typename PathType::type, Channel, Action
     >::type;
 
-    using Comps = hana::tuple<
+    using Comps = mpdef::list<
       Channel,
       Action,
       Path
     >;
 
     using Maybes = typename entity_messages_detail::get_maybes<AccessPoint, decltype(e)>::type;
-    using Tuple = decltype(hana::concat(std::declval<Comps>(), std::declval<Maybes>()));
+    using Tuple = mpdef::to_tuple<decltype(hana::concat(Comps{}, Maybes{}))>;
 
     return hana::type_c<Tuple>;
   }

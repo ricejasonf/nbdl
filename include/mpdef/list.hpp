@@ -88,7 +88,17 @@ namespace mpdef
   template <typename ...T>
   using unpack_to_flatten_kmpl_list = typename unpack_to_flatten_kmpl_list_impl<T...>::type;
 
+  template <typename T>
+  struct to_tuple_impl;
 
+  template <typename ...Xs>
+  struct to_tuple_impl<mpdef::list<Xs...>>
+  {
+    using type = boost::hana::tuple<Xs...>;
+  };
+
+  template <typename T>
+  using to_tuple = typename to_tuple_impl<T>::type;
 
 }//mpdef
 
@@ -174,6 +184,17 @@ namespace boost::hana
         std::make_index_sequence<decltype(hana::length(Xs{}))::value - Size::value>{}
       );
     }
+  };
+
+  // MonadPlus
+
+  template <>
+  struct concat_impl<mpdef::list_tag>
+  {
+    template <typename ...Xs, typename ...Ys>
+    static constexpr auto apply(mpdef::list<Xs...>, mpdef::list<Ys...>)
+      -> mpdef::list<Xs..., Ys...>
+    { return {}; }
   };
 
   // Sequence
