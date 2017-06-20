@@ -30,6 +30,7 @@ namespace
     return emscripten::val::global("checkDomEquals")().isTrue();
   }
 }
+
 TEST_CASE("Render store data then update", "[webui][renderer]")
 {
   using namespace nbdl::webui::html;

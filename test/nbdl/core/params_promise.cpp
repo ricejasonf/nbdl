@@ -41,14 +41,14 @@ TEST_CASE("params_promise resolves parameters which may be path specs.", "[param
   nbdl::run_sync(
     nbdl::pipe(
       nbdl::params_promise(mpdef::make_list(hana::int_c<0>, get(foo), hana::int_c<2>))
-    , nbdl::tap([&](auto const& tuple) { 
-        static_assert(decltype(hana::equal(hana::int_c<0>, hana::at_c<0>(tuple))){});
-        static_assert(decltype(hana::equal(hana::int_c<2>, hana::at_c<2>(tuple))){});
-        static_assert(decltype(hana::equal(
-          hana::type_c<std::reference_wrapper<const std::string>>
-        , hana::typeid_(hana::at_c<1>(tuple))
-        )){});
-        result = hana::at_c<1>(tuple);
+    , nbdl::tap([&](auto const& params) { 
+        hana::unpack(params, [&](hana::int_<0>
+                              , auto ref_a
+                              , hana::int_<2>
+                              )
+        {
+          result = ref_a;
+        });
       })
     )
   , store
@@ -81,19 +81,21 @@ TEST_CASE("Match values by type in params_promise.", "[params_promise][ui_spec][
 
   auto my_pipe = nbdl::pipe(
     nbdl::params_promise(mpdef::make_list(hana::int_c<0>, matcher, hana::int_c<2>))
-  , nbdl::tap([&](auto const& tuple) {
-      static_assert(decltype(hana::equal(hana::int_c<0>, hana::at_c<0>(tuple))){});
-      static_assert(decltype(hana::equal(hana::int_c<2>, hana::at_c<2>(tuple))){});
-
-      auto value = hana::at_c<1>(tuple);
-      if constexpr(hana::is_a<hana::string_tag, decltype(value)>)
+  , nbdl::tap([&](auto const& params) {
+      hana::unpack(params, [&](hana::int_<0>
+                            , auto value
+                            , hana::int_<2>
+                            )
       {
-        result = std::string(hana::to<char const*>(value));
-      }
-      else
-      {
-        result = value;
-      }
+        if constexpr(hana::is_a<hana::string_tag, decltype(value)>)
+        {
+          result = std::string(hana::to<char const*>(value));
+        }
+        else
+        {
+          result = value;
+        }
+      });
     })
   );
  

@@ -15,6 +15,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   detail/string_concat.cpp
   detail/find_index.cpp
   detail/match_if.cpp
+  detail/params_view.cpp
   echo_producer.cpp
   entity.cpp
   map_store.cpp

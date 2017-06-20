@@ -9,6 +9,7 @@
 
 #include <nbdl/catch.hpp>
 #include <nbdl/detail/match_if.hpp>
+#include <nbdl/detail/params_view.hpp>
 #include <nbdl/path_promise.hpp>
 #include <nbdl/promise.hpp>
 #include <nbdl/ui_helper.hpp>
@@ -65,7 +66,7 @@ namespace nbdl
       template <typename PathSpec, typename Branches>
       auto operator()(ui_helper::param_action_t<ui_spec::match_tag, PathSpec, Branches>) const
       {
-        return nbdl::promise([](auto& resolve, auto const& store, auto const& tuple)
+        return nbdl::promise([](auto& resolve, auto const& store, auto const& params)
         {
           nbdl::run_sync(nbdl::pipe(
             nbdl::path_promise(PathSpec{})
@@ -82,7 +83,7 @@ namespace nbdl
                 params_promise(hana::second(*result))
               , [&](auto const& result)
                 {
-                  resolve(store, hana::concat(tuple, result));
+                  resolve(store, params_view_concat(params, result));
                 }
               ), store);
             }
@@ -93,29 +94,21 @@ namespace nbdl
       template <typename PathSpec, typename Branches>
       auto operator()(ui_helper::param_action_t<ui_spec::match_if_tag, PathSpec, Branches>) const
       {
-        return nbdl::promise([](auto& resolve, auto const& store, auto const& tuple)
+        return nbdl::promise([](auto& resolve, auto const& store, auto const& params)
         {
           nbdl::run_sync(nbdl::pipe(
             nbdl::path_promise(PathSpec{})
-          , [&](auto const& value)
+          , nbdl::detail::match_if(hana::transform(Branches{}, hana::first))
+          , [](auto index) { return hana::second(hana::at(Branches{}, index)); }
+          , [&](auto const& result)
             {
-              constexpr auto preds = hana::transform(Branches{}, hana::first);
-
-              // ugly, ugly nesting :(
               nbdl::run_sync(nbdl::pipe(
-                nbdl::detail::match_if(preds)
-              , [](auto index) { return hana::at(Branches{}, index); }
-              , [&](auto const& result)
+                params_promise(result)
+              , [&](auto const& results)
                 {
-                  nbdl::run_sync(nbdl::pipe(
-                    params_promise(hana::second(result))
-                  , [&](auto const& result)
-                    {
-                      resolve(store, hana::concat(tuple, result));
-                    }
-                  ), store);
+                  resolve(store, params_view_concat(params, results));
                 }
-              ), value);
+              ), store);
             }
           ), store);
         });
@@ -127,12 +120,13 @@ namespace nbdl
     {
       if constexpr(hana::is_a<ui_spec::path_tag, Param>)
       {
-        return nbdl::promise([](auto& resolve, auto const& store, auto const& tuple)
+        return nbdl::promise([](auto& resolve, auto const& store, auto const& params)
         {
           nbdl::run_sync(
             nbdl::pipe(
               nbdl::path_promise(Param{})
-            , [&](auto const& result) { resolve(store, hana::append(tuple, std::cref(result))); }
+            , [&](auto const& result)
+              { resolve(store, detail::params_view_append(std::cref(result), params)); }
             , nbdl::catch_(nbdl::noop)
             )
           , store
@@ -145,21 +139,24 @@ namespace nbdl
       }
       else
       {
-        return nbdl::promise([](auto& resolve, auto const& store, auto const& tuple)
+        return nbdl::promise([](auto& resolve, auto const& store, auto const& params)
         {
-          resolve(store, hana::append(tuple, Param{}));
+          resolve(store, params_view_append(Param{}, params));
         });
       }
     }
-  }
+  } // detail
 
   template <typename ...Params>
   auto params_promise_fn::operator()(mpdef::list<Params...>) const
   {
     return nbdl::pipe(
-      nbdl::promise([](auto& resolve, auto const& store) { resolve(store, hana::make_tuple()); })
+      nbdl::promise([](auto& resolve, auto const& store)
+      {
+        resolve(store, detail::make_params_view());
+      })
     , detail::make_param_promise(Params{})...
-    , hana::arg<2> // (store, tuple) -- we just want the tuple
+    , hana::arg<2> // (store, params) -- we just want the params
     );
   }
 }

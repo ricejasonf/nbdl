@@ -7,8 +7,10 @@
 #ifndef NBDL_DETAIL_STRING_CONCAT_HPP
 #define NBDL_DETAIL_STRING_CONCAT_HPP
 
+#include <array>
 #include <boost/hana/core/is_a.hpp>
 #include <boost/hana/core/to.hpp>
+#include <boost/hana/ext/std/array.hpp>
 #include <boost/hana/for_each.hpp>
 #include <boost/hana/length.hpp>
 #include <boost/hana/string.hpp>
@@ -35,8 +37,7 @@ namespace nbdl::detail
       }
       else if constexpr(hana::is_a<hana::string_tag, String>)
       {
-        constexpr auto length = decltype(hana::length(std::cref(str).get())){};
-        return string_view(hana::to<char const*>(std::cref(str).get()), hana::value(length));
+        return string_view(hana::to<char const*>(str), decltype(hana::length(str))::value);
       }
       else
       {
@@ -52,19 +53,28 @@ namespace nbdl::detail
     template <typename Strings>
     auto operator()(Strings const& strings) const
     {
-      static_assert(hana::Sequence<Strings>::value, "Strings must be a hana::Sequence");
+      using string_view = std::experimental::string_view;
+      static_assert(hana::Foldable<Strings>::value, "Strings must be a hana::Foldable");
 
-      auto views = hana::transform(strings, to_string_view);
-      std::size_t length = hana::sum<std::size_t>(
-        hana::transform(views, [](auto const& x) { return x.length(); })
-      );
+      auto views = hana::unpack(strings, [](auto const& ...x)
+      {
+        return std::array<string_view, sizeof...(x)>{{to_string_view(x)...}};
+      });
+
+      std::size_t length = hana::unpack(views, [](auto const& ...x)
+      {
+        return (x.length() + ... + 0);
+      });
+
       std::string result(length, 0);
       auto current = result.begin();
+
       hana::for_each(views, [&](auto const& view)
       {
         std::copy(view.begin(), view.end(), current);
         current += view.length();
       });
+
       return result;
     }
   };
