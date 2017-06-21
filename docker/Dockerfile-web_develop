@@ -8,6 +8,7 @@ RUN git clone -b bugfix/constexpr_arrays https://github.com/ricejasonf/hana.git 
 
 # Kvasir.Mpl
 RUN git clone -b development https://github.com/kvasir-io/mpl.git \
+  && cd mpl && git checkout 41c85408d7777b6d476fe70cd6cfcaad8f02a19c && cd .. \
   && cp -r mpl/src/* /usr/local/src/emscripten/system/include \
   && rm -rf mpl
 
@@ -15,11 +16,8 @@ RUN git clone -b development https://github.com/kvasir-io/mpl.git \
 ARG BUILD_TYPE=Release
 ENV BUILD_TYPE ${BUILD_TYPE}
 
-RUN apt-get -yq update && apt-get install -yq vim
-
 WORKDIR /opt/build
 CMD /usr/local/src/emscripten/emconfigure cmake \
   -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
   /opt/src \
-  && echo '. /usr/share/bash-completion/bash_completion && set -o vi' >> /root/.bashrc \
   && /bin/bash

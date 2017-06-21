@@ -5,13 +5,13 @@
 SOURCE_DIR = ${shell pwd}
 
 image_develop:
-	docker build --no-cache=true -f ./docker/Dockerfile-develop -t nbdl:develop .
+	docker build -f ./docker/Dockerfile-develop -t nbdl:develop .
 
 develop:
 	docker run --rm -it -v ${shell pwd}:/opt/src:ro nbdl:develop
 
 image_web_develop:
-	docker build --no-cache=true -f ./docker/Dockerfile-web_develop -t nbdl:web_develop .
+	docker build -f ./docker/Dockerfile-web_develop -t nbdl:web_develop .
 
 web_develop:
 	docker run --rm -it -v ${shell pwd}:/opt/src:ro nbdl:web_develop
@@ -40,7 +40,7 @@ tvossimulator_develop:
 
 image_metabench:
 	docker pull ricejasonf/emscripten \
-	&& docker build --no-cache=true -f ./docker/Dockerfile-metabench -t nbdl:metabench .
+	&& docker build -f ./docker/Dockerfile-metabench -t nbdl:metabench .
 
 metabench:
 	docker run --rm -it -p 8080:8080 -v ${shell pwd}:/opt/src:ro nbdl:metabench

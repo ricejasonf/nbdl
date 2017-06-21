@@ -17,6 +17,7 @@ RUN git clone -b bugfix/constexpr_arrays https://github.com/ricejasonf/hana.git 
 
 # Kvasir.Mpl
 RUN git clone -b development https://github.com/kvasir-io/mpl.git \
+  && cd mpl && git checkout 41c85408d7777b6d476fe70cd6cfcaad8f02a19c && cd .. \
   && cp -r mpl/src/* /usr/local/include \
   && rm -rf mpl
 

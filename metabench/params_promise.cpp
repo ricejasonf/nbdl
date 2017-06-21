@@ -8,22 +8,31 @@ namespace hana = boost::hana;
 struct foo_t { };
 constexpr hana::type<foo_t> foo{};
 
-int main()
+template <int i, typename Store>
+void make_params_promise(Store const& store)
 {
   using nbdl::ui_spec::get;
 
+  nbdl::run_sync(
+    nbdl::params_promise(mpdef::make_list(
+      hana::int_c<-1 - i>
+    , get(foo)
+    , hana::int_c<1 + i>
+    , hana::int_c<2 + i>
+    , hana::int_c<3 + i>
+    , hana::int_c<4 + i>
+    ))
+  , store
+  );
+}
+
+int main()
+{
   auto store = hana::make_map(
     hana::make_pair(foo, std::string("OK!"))
   );
 
 #if defined(METABENCH)
-  nbdl::run_sync(
-    nbdl::params_promise(mpdef::make_list(
-      hana::int_c<-1>
-    , get(foo)
-    , <%= (0..n).map { |i| "hana::int_c<#{i}>" }.join(', ') %>
-    ))
-  , store
-  );
+  <%= (0..n).map { |i| "make_params_promise<#{i}>(store)" }.join('; ') %>;
 #endif
 }
