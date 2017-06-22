@@ -9,8 +9,6 @@
 
 namespace nbdl
 {
-  namespace hana = boost::hana;
-
   struct match_path_fn
   {
     template<typename Store, typename Path, typename ...Fn>
