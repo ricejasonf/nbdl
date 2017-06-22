@@ -23,11 +23,10 @@
 namespace nbdl::detail
 {
   namespace hana = boost::hana;
+  using string_view = std::experimental::string_view;
 
   struct to_string_view_fn
   {
-    using string_view = std::experimental::string_view;
-
     template <typename String>
     string_view operator()(String const& str) const
     {
@@ -50,17 +49,9 @@ namespace nbdl::detail
 
   struct string_concat_fn
   {
-    template <typename Strings>
-    auto operator()(Strings const& strings) const
+    template <typename Views>
+    auto with_views(Views const& views) const
     {
-      using string_view = std::experimental::string_view;
-      static_assert(hana::Foldable<Strings>::value, "Strings must be a hana::Foldable");
-
-      auto views = hana::unpack(strings, [](auto const& ...x)
-      {
-        return std::array<string_view, sizeof...(x)>{{to_string_view(x)...}};
-      });
-
       std::size_t length = hana::unpack(views, [](auto const& ...x)
       {
         return (x.length() + ... + 0);
@@ -76,6 +67,15 @@ namespace nbdl::detail
       });
 
       return result;
+    }
+
+    template <typename Strings>
+    auto operator()(Strings const& strings) const
+    {
+      return with_views(hana::unpack(strings, [](auto const& ...x)
+      {
+        return std::array<string_view, sizeof...(x)>{{to_string_view(x)...}};
+      }));
     }
   };
 

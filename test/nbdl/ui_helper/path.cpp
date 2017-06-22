@@ -10,6 +10,7 @@
 #include <boost/hana/equal.hpp>
 #include <boost/hana/integral_constant.hpp>
 #include <boost/hana/map.hpp>
+#include <boost/hana/pair.hpp>
 #include <catch.hpp>
 
 namespace hana = boost::hana;
