@@ -122,7 +122,7 @@ TEST_CASE("Render dynamic attributes", "[webui][renderer]")
   , hana::make_pair("key_2"_s, nbdl::optional<std::string>{})
   );
 
-  auto prepend = [](auto prefix) { return [=](auto path) { return concat(prefix, get(path)); };};
+  auto prepend = [](auto prefix) { return [=](auto path) { return concat(prefix, path); };};
 
   auto spec =
     div(
@@ -154,8 +154,10 @@ TEST_CASE("Match value using list of predicates", "[webui][renderer][ui_spec][ma
   using namespace nbdl::webui::html;
   using namespace nbdl::ui_spec;
 
+  auto prepend = [](auto prefix) { return [=](auto path) { return concat(prefix, path); };};
+
   auto target = make_dom_test_equality(
-    "<div class=\"foo bar\" ></div>"
+    "<div class=\"foo prefix_hello\" ></div>"
   );
 
   auto my_store = hana::make_map(
@@ -171,7 +173,7 @@ TEST_CASE("Match value using list of predicates", "[webui][renderer][ui_spec][ma
         , cond(equal("blah"_s), "FAIL"_s)
         , cond(equal("blaz"_s), "FAIL"_s)
         , cond(equal("blar"_s), "FAIL"_s)
-        , cond(equal("hello"_s), "bar"_s)
+        , cond(equal("hello"_s), prepend("prefix_"_s))
         , otherwise("FAIL"_s)
         )
       ))

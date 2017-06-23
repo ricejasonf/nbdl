@@ -9,12 +9,9 @@
 
 #include <nbdl/catch.hpp>
 #include <nbdl/detail/match_if.hpp>
-#include <nbdl/detail/string_concat.hpp>
 #include <nbdl/fwd/webui/detail/dom_manips.hpp>
-#include <nbdl/params_promise.hpp>
-#include <nbdl/path_promise.hpp>
-#include <nbdl/run_sync.hpp>
-#include <nbdl/tap.hpp>
+#include <nbdl/ui_helper/params_concat.hpp>
+#include <nbdl/ui_helper/path.hpp>
 #include <nbdl/ui_spec.hpp>
 #include <nbdl/webui/html.hpp>
 #include <nbdl/webui/renderer.hpp>
@@ -116,20 +113,12 @@ namespace nbdl::webui::detail
 
     void update()
     {
-      nbdl::run_sync(
-        nbdl::pipe(
-          nbdl::params_promise(StringParams{})
-        , nbdl::detail::string_concat
-        , [&](auto const& text_value)
-          {
-            el.template call<void>(
-              "setAttribute"
-            , emscripten::val(hana::to<char const*>(AttributeName{}))
-            , emscripten::val(text_value)
-            );
-          }
-        )
-      , std::ref(store).get()
+      std::string text_value = ui_helper::params_concat(StringParams{}, std::ref(store).get())
+        .to_string();
+      el.template call<void>(
+        "setAttribute"
+      , emscripten::val(hana::to<char const*>(AttributeName{}))
+      , emscripten::val(std::move(text_value))
       );
     }
   };
@@ -169,37 +158,27 @@ namespace nbdl::webui::detail
     template <typename ParentElement>
     decltype(auto) operator()(ParentElement&& p)
     {
-      nbdl::run_sync(
-        nbdl::pipe(
-          nbdl::path_promise(ui_spec::path_t<PathNodes...>{})
-        , [&](auto const& value)
-          {
-            el = emscripten::val::global("document").template
-              call<emscripten::val>("createTextNode", emscripten::val(value));
-            p.template call<void>("appendChild", el);
-            parent_el = p;
-          }
-        )
-      , std::ref(store).get()
-      );
+      nbdl::ui_helper::path(ui_spec::path_t<PathNodes...>{}
+                          , std::ref(store).get() , [&](auto const& value)
+      {
+        el = emscripten::val::global("document").template
+          call<emscripten::val>("createTextNode", emscripten::val(value));
+        p.template call<void>("appendChild", el);
+        parent_el = p;
+      });
       return std::forward<ParentElement>(p);
     }
 
     void update()
     {
-      nbdl::run_sync(
-        nbdl::pipe(
-          nbdl::path_promise(ui_spec::path_t<PathNodes...>{})
-        , [&](auto const& value)
-          {
-            auto new_el = emscripten::val::global("document").template
-              call<emscripten::val>("createTextNode", emscripten::val(value));
-            parent_el.template call<void>("replaceChild", new_el, el);
-            el = new_el;
-          }
-        )
-      , std::ref(store).get()
-      );
+      nbdl::ui_helper::path(ui_spec::path_t<PathNodes...>{}
+                          , std::ref(store).get(), [&](auto const& value)
+      {
+        auto new_el = emscripten::val::global("document").template
+          call<emscripten::val>("createTextNode", emscripten::val(value));
+        parent_el.template call<void>("replaceChild", new_el, el);
+        el = new_el;
+      });
     }
   };
 
@@ -265,31 +244,21 @@ namespace nbdl::webui::detail
 
     void update()
     {
-      nbdl::run_sync(
-        nbdl::pipe(
-          nbdl::path_promise(PathSpec{})
-        , [](auto const& value)
+      ui_helper::path(PathSpec{}, std::ref(store).get(), [&](auto const& value)
+      {
+        using T = typename decltype(hana::typeid_(value))::type;
+        constexpr auto index = *hana::index_if(Branches{}, match_branch_pred_fn<T>{});
+        if (hana::value(index) != branch_id)
+        {
+          // Something changed! :D
+          if (branch_id != -1)
           {
-            using T = typename decltype(hana::typeid_(value))::type;
-            return *hana::index_if(Branches{}, match_branch_pred_fn<T>{});
+            container_el.template call<void>("removeChild", container_el["firstChild"]);
           }
-        , nbdl::tap([&](auto index)
-          {
-            if (hana::value(index) != branch_id)
-            {
-              // Something changed! :D
-              if (branch_id != -1)
-              {
-                container_el.template call<void>("removeChild", container_el["firstChild"]);
-              }
-              branch_id = hana::value(index);
-              renderers[index].render(container_el);
-            }
-          })
-        , nbdl::catch_(nbdl::noop)
-        )
-      , std::ref(store).get()
-      );
+          branch_id = hana::value(index);
+          renderers[index].render(container_el);
+        }
+      });
     }
 
     template <typename ParentElement>
@@ -346,27 +315,22 @@ namespace nbdl::webui::detail
     {
       constexpr auto preds = hana::transform(Branches{}, hana::first);
 
-      nbdl::run_sync(
-        nbdl::pipe(
-          nbdl::path_promise(PathSpec{})
-        , nbdl::detail::match_if(preds)
-        , nbdl::tap([&](auto index)
+      ui_helper::path(PathSpec{}, std::ref(store).get(), [&](auto const& value)
+      {
+        nbdl::detail::match_if(preds).resolve(nbdl::detail::wrap_promise([&](auto index)
+        {
+          if (index != branch_id)
           {
-            if (index != branch_id)
+            // Something changed! :D
+            if (branch_id != -1)
             {
-              // Something changed! :D
-              if (branch_id != -1)
-              {
-                container_el.template call<void>("removeChild", container_el["firstChild"]);
-              }
-              branch_id = index;
-              renderers[index].render(container_el);
+              container_el.template call<void>("removeChild", container_el["firstChild"]);
             }
-          })
-        , nbdl::catch_(nbdl::noop)
-        )
-      , std::ref(store).get()
-      );
+            branch_id = index;
+            renderers[index].render(container_el);
+          }
+        }), value);
+      });
     }
 
     template <typename ParentElement>

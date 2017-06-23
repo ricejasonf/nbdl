@@ -21,6 +21,12 @@ namespace nbdl
     Fn fn;
 
     template <typename ...Args>
+    void operator()(Args&&... args) noexcept
+    {
+      fn(std::forward<Args>(args)...);
+    }
+
+    template <typename ...Args>
     void resolve(Args&&... args) noexcept
     {
       fn(std::forward<Args>(args)...);

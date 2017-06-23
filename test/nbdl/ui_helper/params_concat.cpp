@@ -33,6 +33,6 @@ TEST_CASE("Concatenate ui_spec params into an std::string.", "[ui_helper][params
   , foo_s
   );
 
-  std::string result = nbdl::ui_helper::params_concat(params, store);
+  std::string result = nbdl::ui_helper::params_concat(params, store).to_string();
   CHECK(result == std::string("foobarbaz Hello, world! foo"));
 }
