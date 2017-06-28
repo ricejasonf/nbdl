@@ -79,6 +79,25 @@ namespace nbdl_test
       });
     });
   };
+
+  constexpr auto receive_data = [](std::string& buffer)
+  {
+    return nbdl::promise([&](auto& resolver, tcp::socket& socket)
+    {
+      asio::async_read(socket, asio::buffer(buffer), [&](auto error, std::size_t size)
+      {
+        if (error)
+        {
+          resolver.reject(error);
+        }
+        else
+        {
+          buffer.resize(size);
+          resolver.resolve(socket); 
+        }
+      });
+    });
+  };
 }
 
 #endif

@@ -5,16 +5,14 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 
-include_directories(${nbdl_project_SOURCE_DIR}/src)
 nbdl_catch_test_suite(build_targets test.nbdl.websocket
-  generate_handshake_response.cpp
-  messages.cpp
-  parse_handshake_request.cpp
+  detail/parse_handshake_request.cpp
+  detail/send_handshake_response.cpp
+  #messages.cpp
 )
 
 foreach(_target IN LISTS build_targets)
-  target_link_libraries(${_target} nbdl_servers_ws
-     nbdl_servers_ws
+  target_link_libraries(${_target}
     ${CMAKE_THREAD_LIBS_INIT}
   )
 endforeach()
