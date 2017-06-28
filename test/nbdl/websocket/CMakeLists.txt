@@ -13,5 +13,8 @@ nbdl_catch_test_suite(build_targets test.nbdl.websocket
 )
 
 foreach(_target IN LISTS build_targets)
-  target_link_libraries(${_target} nbdl_servers_ws)
+  target_link_libraries(${_target} nbdl_servers_ws
+     nbdl_servers_ws
+    ${CMAKE_THREAD_LIBS_INIT}
+  )
 endforeach()

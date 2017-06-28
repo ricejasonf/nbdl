@@ -4,44 +4,78 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<servers/ws/HttpRequestParser.hpp>
-#include<catch.hpp>
+#include <boost/hana/functional/always.hpp>
+#include <boost/hana/tuple.hpp>
+#include <catch.hpp>
+#include <nbdl/catch.hpp>
+#include <nbdl/run_async.hpp>
+#include <nbdl/websocket/detail/parse_handshake_request.hpp>
+#include <nbdl/tap.hpp>
+#include <nbdl_test/asio_helpers.hpp>
+#include <string>
 
-std::string request1 =
-	"GET /chat HTTP/1.1"
-	"\r\n"
-	"Host: example.com:8000"
-	"\r\n"
-	"Origin: http://myorigin.com"
-	"\r\n"
-	"Upgrade: websocket"
-	"\r\n"
-	"Connection: Upgrade"
-	"\r\n"
-	"Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ=="
-	"\r\n"
-	"Sec-WebSocket-Version: 13"
-	"\r\n"
-	"Cookies: nbdl-auth:adslkjfasdf; blah=asdfasd;"
-	"\r\n"
-	"\r\n"
-	;
+namespace hana = boost::hana;
 
-TEST_CASE("Request parser should populate pertinent headers.", "[websocket]") 
+namespace
 {
-	using HttpRequestParser = nbdl::servers::ws::http_request_parser;
-	using HttpRequest = nbdl::servers::ws::http_request;
-	HttpRequestParser parser;	
+  using nbdl::websocket::detail::handshake_info_t;
+  using nbdl::websocket::detail::bad_request;
 
-	auto result = parser.parse(request1.begin(), request1.end());
-	REQUIRE(result == HttpRequestParser::GOOD);
+  inline handshake_info_t run_test(std::string const& request)
+  {
+    handshake_info_t handshake_info{};
 
-	HttpRequest request = parser.get_request();
-	CHECK(request.uri == "/chat");
-	CHECK(request.upgrade_header == "websocket");
-	CHECK(request.origin_header == "http://myorigin.com");
-	CHECK(request.connection_header == "Upgrade");
-	CHECK(request.sec_websocket_key_header == "dGhlIHNhbXBsZSBub25jZQ==");
-	CHECK(request.sec_websocket_version_header == "13");
-	CHECK(request.cookies_header == "nbdl-auth:adslkjfasdf; blah=asdfasd;");
+    // TODO make a socket holder
+    asio::io_service io;
+    auto server_socket = hana::always(asio::ip::tcp::socket(io));
+    auto client_socket = hana::always(asio::ip::tcp::socket(io));
+
+    nbdl::run_async(hana::make_tuple(
+      std::ref(server_socket)
+    , nbdl_test::accept()
+    , nbdl::websocket::detail::parse_handshake_request()
+    , nbdl::tap([&](handshake_info_t h) { handshake_info = h; })
+    , nbdl::catch_([](asio::error_code) { CHECK(false); })
+    , nbdl::catch_([](bad_request)      { CHECK(false); })
+    ));
+
+    nbdl::run_async(hana::make_tuple(
+      std::ref(client_socket)
+    , nbdl_test::connect()
+    , nbdl_test::send_data(request)
+    , nbdl::catch_([](auto) { CHECK(false); })
+    ));
+
+    io.run();
+
+    return handshake_info;
+  }
+}
+
+TEST_CASE("Request parser should populate pertinent header values.", "[websocket]") 
+{
+  std::string request =
+    "GET / HTTP/1.1"
+    "\r\n"
+    "Host: example.com:8000"
+    "\r\n"
+    "Origin: http://myorigin.com"
+    "\r\n"
+    "Upgrade: websocket"
+    "\r\n"
+    "Connection: Upgrade"
+    "\r\n"
+    "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ=="
+    "\r\n"
+    "Sec-WebSocket-Version: 13"
+    "\r\n"
+    "Cookies: nbdl-auth:adslkjfasdf; blah=asdfasd;"
+    "\r\n"
+    "\r\n"
+    ;
+
+  auto handshake_info = run_test(request);
+
+  CHECK(handshake_info.websocket_key == "dGhlIHNhbXBsZSBub25jZQ==");
+  CHECK(handshake_info.cookies == "nbdl-auth:adslkjfasdf; blah=asdfasd;");
 }

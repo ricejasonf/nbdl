@@ -12,6 +12,7 @@
 #include <boost/hana/length.hpp>
 #include <boost/hana/string.hpp>
 #include <dyno.hpp>
+#include <string>
 #include <experimental/string_view>
 #include <type_traits>
 #include <utility>
