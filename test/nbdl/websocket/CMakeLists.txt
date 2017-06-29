@@ -8,7 +8,7 @@
 nbdl_catch_test_suite(build_targets test.nbdl.websocket
   detail/parse_handshake_request.cpp
   detail/send_handshake_response.cpp
-  #messages.cpp
+  detail/message.cpp
 )
 
 foreach(_target IN LISTS build_targets)
