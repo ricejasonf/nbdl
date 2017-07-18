@@ -26,7 +26,7 @@ TEST_CASE("Find index first element in a tuple that satisfies a predicate.", "[d
   CHECK(nbdl::detail::find_index(preds, 45) == 4);
 }
 
-TEST_CASE("Find index first element in a tuple that satisfies a predicate.", "[detail][find_index]")
+TEST_CASE("Find index first element in empty tuple that satisfies a predicate.", "[detail][find_index]")
 {
   auto always = [](auto result) { return [=](auto) { return result; }; };
   auto preds = hana::make_tuple(always(hana::true_c));

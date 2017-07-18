@@ -35,7 +35,7 @@ TEST_CASE("Default/Copy construct string_concat_view.", "[detail][string_concat_
   CHECK(result.to_string() == expected);
 }
 
-TEST_CASE("Concat strings from a tuple of string like objects.", "[detail][string_concat_view]")
+TEST_CASE("Concat string views from a tuple of string like objects.", "[detail][string_concat_view]")
 {
   auto strings = hana::make_tuple(
     std::string("Hello")

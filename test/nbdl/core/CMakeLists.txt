@@ -26,6 +26,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   params_promise.cpp
   path_promise.cpp
   pipe.cpp
+  run_async_loop.cpp
   run_sync.cpp
   variant.cpp
 )

@@ -20,5 +20,5 @@ TEST_CASE("Apply action to hana::Searchable.", "[apply_action]")
 
   nbdl::apply_action(store, hana::make_tuple(42));
 
-  CHECK(hana::make_tuple(42) == store);
+  CHECK(hana::equal(hana::make_tuple(42), store));
 }

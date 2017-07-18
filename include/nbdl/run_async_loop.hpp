@@ -4,12 +4,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_RUN_ASYNC_HPP
-#define NBDL_RUN_ASYNC_HPP
+#ifndef NBDL_RUN_ASYNC_LOOP_HPP
+#define NBDL_RUN_ASYNC_LOOP_HPP
 
 #include <nbdl/detail/promise_join.hpp>
-#include <nbdl/detail/wrap_promise.hpp>
 #include <nbdl/fwd/promise.hpp>
+#include <nbdl/run_async.hpp>
 
 #include <type_traits>
 #include <utility>
@@ -19,33 +19,35 @@ namespace nbdl
   namespace detail
   {
     template <typename End>
-    struct promise_end
+    struct promise_end_loop
     {
       using hana_tag = promise_tag;
 
       End* end;
 
-      promise_end(End* e)
+      promise_end_loop(End* e)
         : end(e)
       { }
 
       template <typename ...Args>
-      void operator()(Args&&...)
+      void operator()(Args&&... args)
       {
-        delete end;
+        // Repeat the sequence from the beginning
+        this->resolve(std::forward<Args>(args)...);
       }
 
       template <typename ...Args>
-      void resolve(Args&&...)
+      void resolve(Args&&... args)
       {
-        delete end;
+        // Repeat the sequence from the beginning
+        end->promise.resolve(std::forward<Args>(args)...);
       }
 
-      template <typename Arg1, typename ...Args>
-      void reject(Arg1&&, Args&&...)
+      template <typename ...Args>
+      void reject(Args&&...)
       {
         static_assert(
-          std::is_void<Arg1>::value
+          sizeof...(Args) > 9000
         , "Unhandled Rejection!"
         );
       }
@@ -58,36 +60,36 @@ namespace nbdl
     };
 
     template <typename InputPromise>
-    struct shared_end_pipe
+    struct shared_end_pipe_loop
     {
       using Promise = decltype(detail::promise_join(
         std::declval<InputPromise>()
-      , std::declval<promise_end<shared_end_pipe>>()
+      , std::declval<promise_end_loop<shared_end_pipe_loop>>()
       ));
 
       // Holds joined promise for async pipes
       Promise promise;
 
-      shared_end_pipe(InputPromise const& p)
-        : promise(promise_join(p, promise_end<shared_end_pipe>(this)))
+      shared_end_pipe_loop(InputPromise const& p)
+        : promise(promise_join(p, promise_end_loop<shared_end_pipe_loop>(this)))
       { }
 
-      shared_end_pipe(InputPromise&& p)
-        : promise(promise_join(std::move(p), promise_end<shared_end_pipe>(this)))
+      shared_end_pipe_loop(InputPromise&& p)
+        : promise(promise_join(std::move(p), promise_end_loop<shared_end_pipe_loop>(this)))
       { }
 
-      shared_end_pipe(shared_end_pipe const&) = delete;
+      shared_end_pipe_loop(shared_end_pipe_loop const&) = delete;
     };
   }
 
-  struct run_async_fn
+  struct run_async_loop_fn
   {
     template <typename P, typename ...Args>
     void operator()(P&& promise, Args&&... args) const
     {
       using Promise = std::decay_t<P>;
 
-      auto shared_promise = new detail::shared_end_pipe<Promise>(
+      auto shared_promise = new detail::shared_end_pipe_loop<Promise>(
         std::forward<P>(promise)
       );
 
@@ -95,7 +97,7 @@ namespace nbdl
     }
   };
 
-  constexpr run_async_fn run_async{};
+  constexpr run_async_loop_fn run_async_loop{};
 }
 
 #endif
