@@ -16,14 +16,6 @@ namespace hana = boost::hana;
 
 namespace
 {
-  /*
-  using nbdl::websocket::detail::send_binary;
-  using nbdl::websocket::detail::send_close;
-  using nbdl::websocket::detail::send_ping;
-  using nbdl::websocket::detail::send_pong;
-  using nbdl::websocket::detail::send_text;
-  */
-
   enum struct message_kind
   {
     DATA
@@ -166,7 +158,13 @@ TEST_CASE("Send and receive messages with interjecting control frames.", "[webso
   CHECK(result == expected);
 }
 
-TEST_CASE("Send and receive messages across multiple data frames.", "[websocket]")
+TEST_CASE("Handle bad input.", "[websocket]")
 {
-  // TODO
+  test_messages result = run_test(send_partial_frame("Bad opcode!", 100));
+
+  test_messages expected{
+    hana::make_pair(message_kind::BAD_INPUT , std::string())
+  };
+
+  CHECK(result == expected);
 }

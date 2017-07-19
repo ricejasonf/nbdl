@@ -8,20 +8,17 @@
 #define NBDL_WEBSOCKET_DETAIL_MESSAGE_READER_HPP
 
 #include <nbdl/promise.hpp>
+#include <nbdl/run_async_loop.hpp>
 
 #include <algorithm>
 #include <asio.hpp>
 #include <boost/hana/tuple.hpp>
 #include <cstdint>
-#include <memory>
-#include <string_view>
 
 namespace nbdl::websocket::detail
 {
   using asio::ip::tcp;
   namespace hana = boost::hana;
-  using namespace std::string_view_literals;
-  using std::string_view;
 
   namespace read_event
   {
@@ -266,13 +263,13 @@ namespace nbdl::websocket::detail
     template <typename Resolver>
     void keep_reading(Resolver& resolver)
     {
-      nbdl::run_async(
+      nbdl::run_async_loop(
         hana::make_tuple(
           read_frame_header
         , read_extended_length
         , read_masking_key
         , opcode_dispatch
-        , [&resolver, this](auto event_type)
+        , [&resolver, this](auto event_type) -> frame_context_t<Payload>&
           {
             if (event_type == read_event::message)
             {
@@ -286,7 +283,7 @@ namespace nbdl::websocket::detail
             {
               handler[event_type](event_type, frame_ctx);
             }
-            this->keep_reading(resolver);
+            return frame_ctx;
           }
         , nbdl::catch_([&resolver, this](auto event)
           {
