@@ -188,13 +188,13 @@ namespace nbdl::websocket::detail
   };
 
   template <unsigned char opcode>
-  auto send_impl = nbdl::promise(send_impl_fn<opcode>{});
+  constexpr auto send_impl = send_impl_fn<opcode>{};
 
-  auto send_text   = detail::send_impl< static_cast<unsigned char>(opcode_kind::text)  >;
-  auto send_binary = detail::send_impl< static_cast<unsigned char>(opcode_kind::binary)>;
-  auto send_close  = detail::send_impl< static_cast<unsigned char>(opcode_kind::close) >;
-  auto send_ping   = detail::send_impl< static_cast<unsigned char>(opcode_kind::ping)  >;
-  auto send_pong   = detail::send_impl< static_cast<unsigned char>(opcode_kind::pong)  >;
+  constexpr auto send_text   = detail::send_impl< static_cast<unsigned char>(opcode_kind::text)  >;
+  constexpr auto send_binary = detail::send_impl< static_cast<unsigned char>(opcode_kind::binary)>;
+  constexpr auto send_close  = detail::send_impl< static_cast<unsigned char>(opcode_kind::close) >;
+  constexpr auto send_ping   = detail::send_impl< static_cast<unsigned char>(opcode_kind::ping)  >;
+  constexpr auto send_pong   = detail::send_impl< static_cast<unsigned char>(opcode_kind::pong)  >;
 }
 
 #endif

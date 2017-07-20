@@ -6,9 +6,11 @@
 #
 
 nbdl_catch_test_suite(build_targets test.nbdl.websocket
+  detail/get_auth_token.cpp
+  detail/message.cpp
   detail/parse_handshake_request.cpp
   detail/send_handshake_response.cpp
-  detail/message.cpp
+  endpoint.cpp
 )
 
 foreach(_target IN LISTS build_targets)

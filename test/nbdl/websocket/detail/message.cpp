@@ -36,7 +36,6 @@ namespace
   inline test_messages run_test(SendStuff&& send_stuff)
   {
     using nbdl::websocket::detail::make_message_reader;
-    using nbdl::websocket::detail::keep_reading;
     using nbdl::websocket::detail::message_sender;
     namespace read_event = nbdl::websocket::detail::read_event;
 
@@ -78,7 +77,7 @@ namespace
     nbdl::run_async(hana::make_tuple(
       std::ref(server_socket)
     , nbdl_test::accept()
-    , keep_reading(reader)
+    , [&](auto&& ...) { reader.keep_reading(); }
     , nbdl::catch_([](auto) { CHECK(false); })
     ));
 

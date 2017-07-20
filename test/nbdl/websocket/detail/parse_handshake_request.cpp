@@ -19,7 +19,7 @@ namespace hana = boost::hana;
 namespace
 {
   using nbdl::websocket::detail::handshake_info_t;
-  using nbdl::websocket::detail::bad_request;
+  using nbdl::websocket::event::bad_request_t;
 
   inline handshake_info_t run_test(std::string const& request)
   {
@@ -34,9 +34,9 @@ namespace
       std::ref(server_socket)
     , nbdl_test::accept()
     , nbdl::websocket::detail::parse_handshake_request()
-    , nbdl::tap([&](handshake_info_t h) { handshake_info = h; })
+    , nbdl::tap([&](auto&&, handshake_info_t h) { handshake_info = h; })
     , nbdl::catch_([](asio::error_code) { CHECK(false); })
-    , nbdl::catch_([](bad_request)      { CHECK(false); })
+    , nbdl::catch_([](hana::basic_type<bad_request_t>) { CHECK(false); })
     ));
 
     nbdl::run_async(hana::make_tuple(

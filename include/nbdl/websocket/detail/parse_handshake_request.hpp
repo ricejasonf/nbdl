@@ -8,6 +8,7 @@
 #define NBDL_WEBSOCKET_DETAIL_PARSE_HANDSHAKE_REQUEST_HPP
 
 #include <nbdl/promise.hpp>
+#include <nbdl/websocket/detail/expect_equal.hpp>
 
 #include <algorithm>
 #include <asio.hpp>
@@ -22,38 +23,10 @@ namespace nbdl::websocket::detail
   using namespace std::string_view_literals;
   using std::string_view;
 
-  struct bad_request { };
-
   struct handshake_info_t
   {
     std::string websocket_key;
     std::string cookies;
-  };
-
-  // This could probably use a compile time string
-  constexpr auto expect_equal = [](string_view str)
-  {
-    std::string input_buffer(str.size(), 0);
-    return nbdl::promise([=, buffer = std::move(input_buffer)](auto& resolver, auto& socket)
-      mutable
-    {
-      asio::async_read(socket, asio::buffer(buffer, str.size()), [&](auto error_code, std::size_t)
-      {
-        if (error_code)
-        {
-          resolver.reject(error_code);
-        }
-        else if (std::equal(str.begin(), str.end(), buffer.begin()))
-        {
-          resolver.resolve(socket);
-        }
-        else
-        {
-          // TODO maybe just use an error_code
-          resolver.reject(bad_request{});
-        }
-      });
-    });
   };
 
   constexpr auto parse_header = [](auto& handshake_info, std::string header)
@@ -113,7 +86,7 @@ namespace nbdl::websocket::detail
             }
             else
             {
-              resolver.resolve(handshake_info);
+              resolver.resolve(socket, handshake_info);
             }
           }
         }
@@ -124,8 +97,7 @@ namespace nbdl::websocket::detail
   // Promise that mutates a handshake_info_t
   constexpr auto parse_handshake_request = []() {
     return hana::make_tuple(
-      nbdl::promise([&](auto& resolve, auto& socket) { resolve(socket); })
-    , expect_equal("GET / HTTP/1.1\r\n"sv)
+      expect_equal("GET / HTTP/1.1\r\n"sv)
     , nbdl::promise(read_headers{handshake_info_t{}, std::string{}})
     );
   };

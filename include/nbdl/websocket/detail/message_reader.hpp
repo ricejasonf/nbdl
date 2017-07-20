@@ -260,8 +260,7 @@ namespace nbdl::websocket::detail
 
     message_reader(message_reader const&) = delete;
 
-    template <typename Resolver>
-    void keep_reading(Resolver& resolver)
+    void keep_reading()
     {
       nbdl::run_async_loop(
         hana::make_tuple(
@@ -269,7 +268,7 @@ namespace nbdl::websocket::detail
         , read_extended_length
         , read_masking_key
         , opcode_dispatch
-        , [&resolver, this](auto event_type) -> frame_context_t<Payload>&
+        , [this](auto event_type) -> frame_context_t<Payload>&
           {
             if (event_type == read_event::message)
             {
@@ -285,10 +284,9 @@ namespace nbdl::websocket::detail
             }
             return frame_ctx;
           }
-        , nbdl::catch_([&resolver, this](auto event)
+        , nbdl::catch_([this](auto event)
           {
             handler[hana::typeid_(event)](event, frame_ctx);
-            resolver.resolve();
           })
         )
       , frame_ctx
@@ -301,16 +299,6 @@ namespace nbdl::websocket::detail
     EventHandler handler;
   };
 
-  constexpr auto keep_reading = [](auto& reader)
-  {
-    return nbdl::promise([&](auto& resolver, tcp::socket&)
-    {
-      reader.keep_reading(resolver); 
-    });
-  };
-
-  // TODO The interface that deals with receiving the socket
-  // object needs to be looked at.
   constexpr auto make_message_reader = [](auto payload_type, tcp::socket& socket, auto&& handler)
   {
     using Payload = typename decltype(payload_type)::type;

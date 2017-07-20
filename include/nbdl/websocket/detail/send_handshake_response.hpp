@@ -10,6 +10,7 @@
 #include <nbdl/detail/beast_sha1.hpp>
 #include <nbdl/promise.hpp>
 #include <nbdl/util/base64_encode.hpp>
+#include <nbdl/websocket/detail/get_auth_token.hpp>
 #include <nbdl/websocket/detail/parse_handshake_request.hpp>
 
 #include <array>
@@ -44,7 +45,8 @@ namespace nbdl::websocket::detail
     template <typename Resolver>
     auto operator()(Resolver& resolver, tcp::socket& socket, handshake_info_t const& handshake_info)
     {
-      accept_token = generate_accept_token(handshake_info.websocket_key);
+      auto const& [websocket_key, cookies] = handshake_info;
+      accept_token = generate_accept_token(websocket_key);
 
       const Buffers buffers{{
         asio::buffer(response_start)
@@ -52,7 +54,7 @@ namespace nbdl::websocket::detail
       , asio::buffer(response_end)
       }};
 
-      asio::async_write(socket, buffers, [&](auto error_code, std::size_t)
+      asio::async_write(socket, buffers, [&, cookies = cookies](auto error_code, std::size_t)
       {
         if (error_code)
         {
@@ -60,7 +62,7 @@ namespace nbdl::websocket::detail
         }
         else
         {
-          resolver.resolve(socket);
+          resolver.resolve(socket, detail::get_auth_token(cookies));
         }
       });
     }

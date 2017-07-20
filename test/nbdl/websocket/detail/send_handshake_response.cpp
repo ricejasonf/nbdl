@@ -6,6 +6,7 @@
 //
 #include <boost/hana/functional/always.hpp>
 #include <boost/hana/tuple.hpp>
+#include <boost/hana/type.hpp>
 #include <catch.hpp>
 #include <nbdl/catch.hpp>
 #include <nbdl/run_async.hpp>
@@ -21,7 +22,6 @@ namespace hana = boost::hana;
 namespace
 {
   using nbdl::websocket::detail::handshake_info_t;
-  using nbdl::websocket::detail::bad_request;
 
   inline void run_test(handshake_info_t const& handshake_info, std::string& response_string)
   {
@@ -35,7 +35,6 @@ namespace
     , nbdl::promise([&](auto& resolve, auto& socket) { resolve(socket, handshake_info); })
     , nbdl::websocket::detail::send_handshake_response()
     , nbdl::catch_([](asio::error_code) { CHECK(false); })
-    , nbdl::catch_([](bad_request)      { CHECK(false); })
     ));
 
     nbdl::run_async(hana::make_tuple(
