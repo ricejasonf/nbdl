@@ -16,12 +16,14 @@
 
 #include <boost/hana.hpp>
 #include <boost/hana/experimental/types.hpp>
+#include <boost/mp11/algorithm.hpp>
 #include <type_traits>
 
 namespace nbdl
 {
 
   namespace hana = boost::hana;
+  namespace mp11 = boost::mp11;
 
   struct variant_tag { };
 
@@ -47,12 +49,10 @@ namespace nbdl
       template <typename Fn>
       void call_by_type(int value_type_id, Fn const& fn) const
       {
-        hana::for_each(
-          hana::range_c<int, 0, hana::length(Types{})>,
-          [&](auto i) -> void {
-            if (value_type_id == hana::value(i))
-              fn(hana::at(Types{}, i));
-          });
+        mp11::mp_with_index<sizeof...(Tn) + 1>(value_type_id, [&](auto index)
+        {
+          fn(hana::at(Types{}, index));
+        });
       }
 
       void copy(int src_type_id, const void* src, void* dest)

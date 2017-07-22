@@ -8,8 +8,6 @@
 #define NBDL_MPDEF_LIST_HPP
 
 #include <boost/hana.hpp>
-#include <kvasir/mpl/types/list.hpp>
-#include <kvasir/mpl/sequence/join.hpp>
 #include <utility>
 
 namespace mpdef
@@ -42,51 +40,6 @@ namespace mpdef
   {
     return boost::hana::not_equal(t, u);
   }
-
-  // Kvasir.Mpl temp stuff
-  namespace kmpl = kvasir::mpl;
-
-  template <typename ...>
-  struct to_mpdef_list_impl;
-
-  template <typename ...Xs>
-  struct to_mpdef_list_impl<mpdef::list<Xs...>>
-  {
-    using type = mpdef::list<Xs...>;
-  };
-
-  template <typename ...Xs>
-  struct to_mpdef_list_impl<kmpl::list<Xs...>>
-  {
-    using type = mpdef::list<Xs...>;
-  };
-
-  template <typename ...T>
-  using to_mpdef_list = typename to_mpdef_list_impl<T...>::type;
-
-  template <typename ...>
-  struct unpack_to_flatten_kmpl_list_impl;
-
-  template <typename FlattenFn>
-  struct unpack_to_flatten_kmpl_list_impl<mpdef::list<>, FlattenFn>
-  {
-    using type = kmpl::list<>;
-  };
-
-  template <typename X1, typename ...Xs, typename FlattenFn>
-  struct unpack_to_flatten_kmpl_list_impl<mpdef::list<X1, Xs...>, FlattenFn>
-  {
-    using type = kmpl::join<decltype(FlattenFn{}(X1{})), decltype(FlattenFn{}(Xs{}))...>;
-  };
-
-  template <typename X1, typename ...Xs, typename FlattenFn>
-  struct unpack_to_flatten_kmpl_list_impl<const mpdef::list<X1, Xs...>, FlattenFn>
-  {
-    using type = kmpl::join<decltype(FlattenFn{}(X1{})), decltype(FlattenFn{}(Xs{}))...>;
-  };
-
-  template <typename ...T>
-  using unpack_to_flatten_kmpl_list = typename unpack_to_flatten_kmpl_list_impl<T...>::type;
 
   template <typename T>
   struct to_tuple_impl;

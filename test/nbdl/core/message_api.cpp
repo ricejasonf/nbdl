@@ -22,7 +22,7 @@ namespace
   using nbdl::message::channel::upstream;
   using nbdl::message::channel::downstream;
   using nbdl::message::action::create;
-  using nbdl::message::action::read;
+  using action_read = nbdl::message::action::read;
   using nbdl::message::action::update;
   using nbdl::message::action::update_raw;
   using nbdl::message::action::delete_;
@@ -76,7 +76,7 @@ namespace
     CreatePath<i>,
     maybe_uid, MaybePayload<i>>;
   template <int i>
-  using UpstreamRead = hana::tuple<upstream, read, Path<i>, maybe_uid>;
+  using UpstreamRead = hana::tuple<upstream, action_read, Path<i>, maybe_uid>;
   template <int i>
   using UpstreamUpdate = hana::tuple<upstream, update, Path<i>, maybe_uid, MaybePayload<i>>;
   template <int i>
@@ -87,7 +87,7 @@ namespace
   using DownstreamCreate = hana::tuple<downstream, create, Path<i>, maybe_uid,
     hana::optional<bool>, MaybePayload<i>>;
   template <int i>
-  using DownstreamRead = hana::tuple<downstream, read, Path<i>, maybe_uid,
+  using DownstreamRead = hana::tuple<downstream, action_read, Path<i>, maybe_uid,
     hana::optional<bool>, MaybePayload<i>>;
   template <int i>
   using DownstreamUpdate = hana::tuple<downstream, update, Path<i>, maybe_uid,
@@ -137,13 +137,13 @@ BOOST_HANA_CONSTANT_ASSERT(
   msgs.get_message_type(upstream{}, create{}, CreatePath<1>{}) == hana::type_c<UpstreamCreate<1>>
 );
 BOOST_HANA_CONSTANT_ASSERT(
-  msgs.get_message_type(upstream{}, read{}, Path<1>{1}) == hana::type_c<UpstreamRead<1>>
+  msgs.get_message_type(upstream{}, action_read{}, Path<1>{1}) == hana::type_c<UpstreamRead<1>>
 );
 BOOST_HANA_CONSTANT_ASSERT(
   msgs.get_message_type(downstream{}, create{}, Path<1>{1}) == hana::type_c<DownstreamCreate<1>>
 );
 BOOST_HANA_CONSTANT_ASSERT(
-  msgs.get_message_type(downstream{}, read{}, Path<1>{1}) == hana::type_c<DownstreamRead<1>>
+  msgs.get_message_type(downstream{}, action_read{}, Path<1>{1}) == hana::type_c<DownstreamRead<1>>
 );
 BOOST_HANA_CONSTANT_ASSERT(
   msgs.get_message_type(upstream{}, update_raw{}, Path<2>{2}) == hana::type_c<UpstreamUpdateRaw<2>>
@@ -175,7 +175,7 @@ TEST_CASE("make_upstream_read_message", "[message_api]")
 {
   auto m = msgs.make_upstream_read_message(Path<1>{1});
   BOOST_HANA_CONSTANT_ASSERT(decay_c(message::get_channel(m)) == hana::type_c<upstream>);
-  BOOST_HANA_CONSTANT_ASSERT(decay_c(message::get_action(m)) == hana::type_c<read>);
+  BOOST_HANA_CONSTANT_ASSERT(decay_c(message::get_action(m)) == hana::type_c<action_read>);
   CHECK(hana::equal(message::get_path(m), Path<1>{1}));
 }
 
