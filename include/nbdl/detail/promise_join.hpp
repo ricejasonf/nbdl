@@ -7,13 +7,15 @@
 #ifndef NBDL_DETAIL_PROMISE_JOIN_HPP
 #define NBDL_DETAIL_PROMISE_JOIN_HPP
 
-#include <nbdl/fwd/detail/promise_join.hpp>
-
 #include <nbdl/detail/wrap_promise.hpp>
+#include <nbdl/fwd/detail/promise_join.hpp>
+#include <nbdl/fwd/hold_lazy.hpp>
 
 #include <boost/hana/concept/foldable.hpp>
+#include <boost/hana/core/is_a.hpp>
 #include <boost/hana/fold_right.hpp>
 #include <boost/hana/integral_constant.hpp>
+#include <boost/hana/type.hpp>
 #include <utility>
 
 namespace nbdl::detail
@@ -27,6 +29,15 @@ namespace nbdl::detail
         std::forward<Current>(current)
       , std::forward<Next>(next)
       , detail::promise_join_fn{}
+      );
+    }
+    else if constexpr(decltype(hana::is_a<make_lazy_holder_tag, Current>)::value)
+    {
+      using Promise = decltype(current(hana::typeid_(next)));
+
+      return promise_join_t<Promise, std::decay_t<Next>>(
+        std::forward<Current>(current)(hana::typeid_(next))
+      , std::forward<Next>(next)
       );
     }
     else
