@@ -9,6 +9,7 @@
 
 #include <nbdl/async_enqueue.hpp>
 #include <nbdl/catch.hpp>
+#include <nbdl/concept/Endpoint.hpp>
 #include <nbdl/endpoint_handler.hpp>
 #include <nbdl/promise.hpp>
 #include <nbdl/run_async_loop.hpp>
@@ -62,11 +63,15 @@ namespace nbdl::websocket::detail
       }
     }
   };
+  
+  struct endpoint_impl_tag { };
 
   template <typename Queue, typename Handler, typename SendMessageImpl>
   struct endpoint_impl
   {
-    using Payload = typename Queue::value_type;
+    using hana_tag = endpoint_impl_tag;
+    using value_type = typename Queue::value_type;
+    using Payload = value_type;
 
     template <typename Q, typename H, typename InitFn>
     endpoint_impl(tcp::socket& s, Q&& queue_, H&& handler_, InitFn&& init)
@@ -269,6 +274,17 @@ namespace nbdl::websocket::detail
       })
     );
   }
+}
+
+namespace nbdl
+{
+  // Endpoint
+
+  template <>
+  struct Endpoint<nbdl::websocket::detail::endpoint_impl_tag>
+  {
+    static constexpr bool value = true;
+  };
 }
 
 #endif

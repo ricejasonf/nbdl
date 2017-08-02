@@ -115,7 +115,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
                 save_event(event_kind::READY)(token.value);
                 for (auto& msg : server_to_client_messages)
                 {
-                  self.send_message(msg); 
+                  nbdl::endpoint_send_message(self, msg); 
                 }
               })
             , hana::make_pair(event::message, [&](auto& self, auto const& message)
@@ -123,7 +123,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
                 save_event(event_kind::MESSAGE)(message);
                 if (message == "close")
                 {
-                  self.send_close();
+                  nbdl::endpoint_send_close(self);
                 }
               })
             , hana::make_pair(event::close, save_and_close(save_event(event_kind::CLOSE), resolver))
@@ -161,7 +161,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
                 save_event(event_kind::READY)();
                 for (auto& msg : client_to_server_messages)
                 {
-                  self.send_message(msg); 
+                  nbdl::endpoint_send_message(self, msg); 
                 }
               })
             , hana::make_pair(event::message, [&](auto& self, auto const& message)
@@ -169,7 +169,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
                 save_event(event_kind::MESSAGE)(message);
                 if (message == "close")
                 {
-                  self.send_close();
+                  nbdl::endpoint_send_close(self);
                 }
               })
             , hana::make_pair(event::close,   save_and_close(save_event(event_kind::CLOSE), resolver))

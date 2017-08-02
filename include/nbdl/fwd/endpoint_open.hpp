@@ -18,8 +18,8 @@ namespace nbdl
 
   struct endpoint_open_fn
   {
-    template <typename Endpoint, typename SendQueue, typename EndpointHandler>
-    constexpr auto operator()(Endpoint&&, SendQueue&&, EndpointHandler&&) const;
+    template <typename EndpointInfo, typename SendQueue, typename EndpointHandler>
+    auto operator()(EndpointInfo&&, SendQueue&&, EndpointHandler&&) const;
   };
 
   constexpr endpoint_open_fn endpoint_open{};
