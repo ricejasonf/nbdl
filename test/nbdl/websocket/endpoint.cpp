@@ -4,7 +4,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-  #include <iostream>
+
 #include <catch.hpp>
 #include <nbdl/catch.hpp>
 #include <nbdl/hold.hpp>
@@ -172,7 +172,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
                   nbdl::endpoint_send_close(self);
                 }
               })
-            , hana::make_pair(event::close,   save_and_close(save_event(event_kind::CLOSE), resolver))
+            , hana::make_pair(event::close, save_and_close(save_event(event_kind::CLOSE), resolver))
             , hana::make_pair(
                 event::bad_request
               , save_and_close(save_event(event_kind::BAD_REQUEST), resolver)
