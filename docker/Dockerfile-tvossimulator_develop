@@ -1,61 +1,14 @@
-#FROM ricejasonf/emscripten
-FROM tvossimulator_sysroot
-WORKDIR /usr/local/src
+FROM tvossimulator_sysroot AS sysroot
+FROM nbdl_build:tvossimulator
 
-# cctools (linker for darwin targets)
-RUN git clone https://github.com/tpoechtrager/cctools-port.git \
-  && cd cctools-port/cctools \
-  && ./configure \
-  && make \
-  && make install
+  COPY --from=sysroot /opt/sysroot/ /opt/sysroot
 
-COPY docker/tvossimulator.toolchain.cmake /opt/toolchain.cmake
+  ARG BUILD_TYPE=Debug
+  ENV BUILD_TYPE ${BUILD_TYPE}
 
-# JsonCpp
-RUN git clone https://github.com/open-source-parsers/jsoncpp.git \
-  && cd jsoncpp && mkdir build && cd build \
-  && cmake \
-    -DCMAKE_TOOLCHAIN_FILE=/opt/toolchain.cmake \
-    -DCMAKE_INSTALL_PREFIX=/opt/sysroot/usr/local \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_FLAGS=" -stdlib=libc++" \
-    -DJSONCPP_WITH_TESTS=OFF \
-    -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF \
-    .. \
-  && make install \
-  && mkdir /opt/sysroot/usr/local/include/jsoncpp \
-  && cp -r /opt/sysroot/usr/local/include/json \
-   /opt/sysroot/usr/local/include/jsoncpp/ \
-  && rm -rf jsoncpp
-
-# Asio
-RUN git clone https://github.com/chriskohlhoff/asio.git \
-  && cp asio/asio/include/asio.hpp /opt/sysroot/usr/local/include \
-  && cp -r asio/asio/include/asio /opt/sysroot/usr/local/include \
-  && rm -rf asio
-
-# Boost.Hana (workaround branch)
-RUN git clone -b bugfix/constexpr_arrays https://github.com/ricejasonf/hana.git \
-  && cp -r hana/include/* /opt/sysroot/usr/local/include \
-  && rm -rf hana
-
-# Kvasir.Mpl
-RUN git clone -b development https://github.com/kvasir-io/mpl.git \
-  && cp -r mpl/src/* /opt/sysroot/usr/local/include \
-  && rm -rf mpl
-
-
-ARG BUILD_TYPE=Debug
-ENV BUILD_TYPE ${BUILD_TYPE}
-
-RUN apt-get -yq update && apt-get install -yq vim
-
-WORKDIR /opt/build
-CMD cmake \
-  -DCMAKE_TOOLCHAIN_FILE=/opt/toolchain.cmake \
-  -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-  -DCMAKE_CXX_FLAGS=" -stdlib=libc++ -DASIO_STANDALONE -DASIO_NO_TYPEID" \
-  -DNBDL_HAS_UIKIT=1 \
-  /opt/src \
-  && echo '. /usr/share/bash-completion/bash_completion && set -o vi' >> /root/.bashrc \
-  && /bin/bash
+  WORKDIR /opt/build
+  CMD cmake \
+    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -DCMAKE_TOOLCHAIN_FILE='/opt/toolchain.cmake' \
+    /opt/src \
+    && /bin/bash

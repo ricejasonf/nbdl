@@ -10,7 +10,6 @@
 
 #include<boost/hana.hpp>
 #include<catch.hpp>
-#include<jsoncpp/json/json.h>
 #include<string>
 
 using Account = account;

@@ -140,15 +140,16 @@ serialized to json and unserialized on the other end of a tcp socket or whatever
 
 ### Playing with the Examples
 
-Currently Nbdl's dependencies are not trivial to deal with, but if you have Docker installed it is easy to get started. As a convenience, a GNU Makefile in the root directory simplifies the use of docker further.
-
+Nbdl uses [CppDock](https://github.com/ricejasonf/cppdock) with Docker to create a developement environment with all of the dependencies installed.
 
 ```
-make image && make develop
+make image_develop && make develop
 ```
 
-Simply run these to download the image and start the development container. This creates a build directory in the container with cmake initialized for you ready to go with a recent version of Clang. Then at the prompt you can build various targets using `make`.
+Simply run these to build the image and start the development container. This creates a build directory in the container with cmake initialized for you ready to go with a recent version of Clang. Then at the prompt you can build various targets using `make`.
 
 ```
 root@f2b146e7bad9:/opt/build# make run.example.pipes
 ```
+
+Note: You may have to build the CppDock platform images locally as both projects are in a state of flux.

@@ -1,33 +1,12 @@
-FROM ricejasonf/emscripten
-WORKDIR /usr/local/src
+FROM nbdl_build:emscripten
 
-# Boost.Hana (workaround branch)
-RUN git clone -b bugfix/constexpr_arrays https://github.com/ricejasonf/hana.git \
-  && cp -r hana/include/* /usr/local/src/emscripten/system/include \
-  && rm -rf hana
+  # Debug just doesn't work with emscripten right now
+  ARG BUILD_TYPE=Release
+  ENV BUILD_TYPE ${BUILD_TYPE}
 
-# Boost.CallableTraits
-RUN git clone -b master https://github.com/badair/callable_traits.git \
-  && cp -r callable_traits/include/* /usr/local/src/emscripten/system/include \
-  && rm -rf callable_traits
-
-# Dyno
-RUN git clone -b master https://github.com/ldionne/dyno.git \
-  && cp -r dyno/include/* /usr/local/src/emscripten/system/include \
-  && rm -rf dyno
-
-# Kvasir.Mpl
-RUN git clone -b development https://github.com/kvasir-io/mpl.git \
-  && cd mpl && git checkout 41c85408d7777b6d476fe70cd6cfcaad8f02a19c && cd .. \
-  && cp -r mpl/src/* /usr/local/src/emscripten/system/include \
-  && rm -rf mpl
-
-# Debug just doesn't work with emscripten right now
-ARG BUILD_TYPE=Release
-ENV BUILD_TYPE ${BUILD_TYPE}
-
-WORKDIR /opt/build
-CMD /usr/local/src/emscripten/emconfigure cmake \
-  -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-  /opt/src \
-  && /bin/bash
+  WORKDIR /opt/build
+  CMD cmake \
+    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -DCMAKE_TOOLCHAIN_FILE='/opt/toolchain.cmake' \
+    /opt/src \
+    && /bin/bash

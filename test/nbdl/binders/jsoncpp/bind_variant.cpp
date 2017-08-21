@@ -8,7 +8,6 @@
 #include <nbdl/variant.hpp>
 
 #include <catch.hpp>
-#include <jsoncpp/json/json.h>
 #include <string>
 
 using nbdl::binder::jsoncpp::from_string;

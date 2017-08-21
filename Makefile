@@ -5,13 +5,15 @@
 SOURCE_DIR = ${shell pwd}
 
 image_develop:
-	docker build -f ./docker/Dockerfile-develop -t nbdl:develop .
+	cppdock build linux_x64 \
+	&& docker build -f ./docker/Dockerfile-develop -t nbdl:develop .
 
 develop:
 	docker run --rm -it -v ${shell pwd}:/opt/src:ro nbdl:develop
 
 image_web_develop:
-	docker build -f ./docker/Dockerfile-web_develop -t nbdl:web_develop .
+	cppdock build emscripten \
+	&& docker build -f ./docker/Dockerfile-web_develop -t nbdl:web_develop .
 
 web_develop:
 	docker run --rm -it -v ${shell pwd}:/opt/src:ro nbdl:web_develop
@@ -25,8 +27,9 @@ image_tvossimulator_sysroot:
 	| docker build -f ./foo/docker/Dockerfile-sysroot -t tvossimulator_sysroot -
 
 image_tvossimulator_develop:
-	docker build -f ./docker/Dockerfile-tvossimulator_develop \
-		-t nbdl:tvossimulator_develop .
+	cppdock build tvossimulator \
+	&& docker build -f ./docker/Dockerfile-tvossimulator_develop \
+			-t nbdl:tvossimulator_develop .
 
 tvossimulator_develop:
 	docker run --rm -it \
