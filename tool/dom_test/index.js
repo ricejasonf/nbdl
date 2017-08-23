@@ -1,6 +1,7 @@
 var fs      = require('fs');
 var process = require('process');
 var jsdom   = require('jsdom');
+var ws      = require('ws');
 
 global.initDom = initDom;
 global.initDomEquality = initDomEquality;
@@ -8,7 +9,7 @@ global.checkDomEquals = checkDomEquals;
 initDom('')
 
 var Module = {
-  ENVIRONMENT: 'WEB', // or 'NODE' maybe
+  ENVIRONMENT: 'NODE',
   "arguments": []
 };
 
@@ -26,10 +27,14 @@ function initDom(body)
 {
   global.document = jsdom.jsdom('<!doctype html><html><body>' + body + '</body></html>');
   global.window   = global.document.defaultView;
+  global.window.WebSocket = ws;
 
   for (var prop in global.window)
   {
-    global[prop] = global.window[prop];
+    if (!global[prop]) 
+    {
+      global[prop] = global.window[prop];
+    }
   }
 }
 

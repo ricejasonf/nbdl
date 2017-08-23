@@ -8,6 +8,7 @@
 if (EMSCRIPTEN)
   add_subdirectory(core)
   add_subdirectory(webui)
+  add_subdirectory(websocket_api)
   return()
 endif (EMSCRIPTEN)
 
