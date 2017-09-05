@@ -6,3 +6,4 @@
 #
 
 nbdl_add_dom_test(test.nbdl.websocket_api.client_endpoint client_endpoint.cpp)
+nbdl_add_dom_test(test.nbdl.websocket_api.client_endpoint_fail client_endpoint_fail.cpp)

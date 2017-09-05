@@ -22,6 +22,9 @@ namespace nbdl::websocket_api::detail
   namespace event = nbdl::endpoint_event;
   using js_val = nbdl::detail::js_val;
 
+  template <typename Payload>
+  void send_impl(js_val const& websocket, Payload const& p);
+
   struct endpoint_impl_tag { };
 
   template <typename Queue, typename Handler>
@@ -108,7 +111,7 @@ namespace nbdl::websocket_api::detail
 
         s.addEventListener('open', function(event)
         {
-          Module.__nbdl_endpoint_open($2); 
+          Module.__nbdl_endpoint_ready($2); 
         });
 
         // 'error' handler apparently needed in nodejs land
@@ -199,21 +202,22 @@ namespace nbdl::websocket_api::detail
     {
       EM_ASM_(
         {
-          window.NBDL_DETAIL_JS_GET($0).send(Module.HEAPU8.subarray($1, $2).buffer);
+          window.NBDL_DETAIL_JS_GET($0).send(JSON.stringify(
+            window.NBDL_DETAIL_JS_GET($1)));
         }
       , websocket.handle()
-      , p.data()
-      , p.size()
+      , p.handle()
       );
     }
     else
     {
       EM_ASM_(
         {
-          window.NBDL_DETAIL_JS_GET($0).send(JSON.stringify($1));
+          window.NBDL_DETAIL_JS_GET($0).send(Module.HEAPU8.subarray($1, $2).buffer);
         }
       , websocket.handle()
-      , p.handle()
+      , p.data()
+      , p.size()
       );
     }
   }

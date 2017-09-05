@@ -17,9 +17,12 @@ var Module = {
 eval(fs.readFileSync(process.argv[2], 'utf8'));
 
 // emscripten set exit status
-if (typeof EXITSTATUS == 'undefined')
-  EXITSTATUS = 1
-process.exit(EXITSTATUS);
+if (!Module.noExitRuntime)
+{
+  if (typeof EXITSTATUS == 'undefined')
+    EXITSTATUS = 1
+  process.exit(EXITSTATUS);
+}
 
 /**************************/
 
