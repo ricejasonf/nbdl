@@ -25,7 +25,6 @@ namespace nbdl_def {
   MPDEF_DIRECTIVE(Create)
   MPDEF_DIRECTIVE(Read)
   MPDEF_DIRECTIVE(Update)
-  MPDEF_DIRECTIVE(UpdateRaw)
   MPDEF_DIRECTIVE(Delete)
 
   MPDEF_DIRECTIVE_TYPE(Store)

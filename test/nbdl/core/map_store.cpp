@@ -197,14 +197,14 @@ TEST_CASE("Apply action downstream read with not_found value in store.", "[map_s
   CHECK(result);
 }
 
-TEST_CASE("Apply action upstream update raw.", "[map_store][apply_action]")
+TEST_CASE("Apply action upstream update.", "[map_store][apply_action]")
 {
   auto context = nbdl::make_unique_context<test_map_store::my_context>();
   auto push_api = context->cell<0>().push_api;
 
   auto store = test_map_store::make_test_store();
   bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_upstream_update_raw_message(
+    push_api.message_api().make_upstream_update_message(
       test_context::path<1>(1, 2),
       test_context::entity::my_entity<1>{2, 1}
     )
@@ -213,15 +213,15 @@ TEST_CASE("Apply action upstream update raw.", "[map_store][apply_action]")
   CHECK(store.map.size() == 0);
 }
 
-TEST_CASE("Apply action downstream update raw with no value.", "[map_store][apply_action]")
+TEST_CASE("Apply action downstream update with no value.", "[map_store][apply_action]")
 {
   auto context = nbdl::make_unique_context<test_map_store::my_context>();
   auto push_api = context->cell<0>().push_api;
 
-  // update_raw always overwrites
+  // update always overwrites
   auto store = test_map_store::make_test_store();
   bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_downstream_update_raw_message(
+    push_api.message_api().make_downstream_update_message(
       test_context::path<1>(1, 2),
       test_context::entity::my_entity<1>{2, 1}
     )
@@ -234,16 +234,16 @@ TEST_CASE("Apply action downstream update raw with no value.", "[map_store][appl
   ));
 }
 
-TEST_CASE("Apply action downstream update raw with value.", "[map_store][apply_action]")
+TEST_CASE("Apply action downstream update with value.", "[map_store][apply_action]")
 {
   auto context = nbdl::make_unique_context<test_map_store::my_context>();
   auto push_api = context->cell<0>().push_api;
 
-  // update_raw always overwrites
+  // update always overwrites
   auto store = test_map_store::make_test_store();
   store.map[test_context::path<1>(1, 2)] = test_context::entity::my_entity<1>{0, 0};
   bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_downstream_update_raw_message(
+    push_api.message_api().make_downstream_update_message(
       test_context::path<1>(1, 2),
       test_context::entity::my_entity<1>{2, 1}
     )

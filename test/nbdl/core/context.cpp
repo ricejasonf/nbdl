@@ -263,7 +263,7 @@ TEST_CASE("Dispatch Downstream Update Message", "[context]")
     auto& consumer3 = context->cell<3>();
 
     // Send downstream update to consumers.
-    auto msg = producer0.push_api.message_api().make_downstream_update_raw_message(
+    auto msg = producer0.push_api.message_api().make_downstream_update_message(
       Path(1, 2),
       Entity{2, 1}
     );
@@ -299,7 +299,7 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
     auto& consumer3 = context->cell<3>();
 
     // Send upstream update to producer0.
-    auto msg = consumer2.push_api.message_api().make_upstream_update_raw_message(
+    auto msg = consumer2.push_api.message_api().make_upstream_update_message(
       Path(1, 2),
       Entity{2, 1}
     );
@@ -334,7 +334,7 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
     auto& consumer3 = context->cell<3>();
 
     // Send upstream update to producer0.
-    auto msg = consumer2.push_api.message_api().make_upstream_update_raw_message(
+    auto msg = consumer2.push_api.message_api().make_upstream_update_message(
       Path(1, 2),
       Entity{2, 1}
     );

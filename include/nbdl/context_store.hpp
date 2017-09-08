@@ -46,10 +46,7 @@ namespace nbdl
     template <typename Store, typename Message>
     static constexpr auto apply(Store&& s, Message&& m)
     {
-      if constexpr(
-          message::is_downstream<Message>
-      && (message::is_update<Message> || message::is_update_raw<Message>)
-      )
+      if constexpr(message::is_downstream<Message> && message::is_update<Message>)
       {
         return nbdl::apply_action(
           std::forward<Store>(s).store

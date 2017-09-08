@@ -35,7 +35,6 @@ namespace entity_messages_detail {
     mpdef::make_pair(tag::Create,      action::create{}),
     mpdef::make_pair(tag::Read,        action::read{}),
     mpdef::make_pair(tag::Update,      action::update{}),
-    mpdef::make_pair(tag::UpdateRaw,   action::update_raw{}),
     mpdef::make_pair(tag::Delete,      action::delete_{})
   );
   constexpr auto get_action = hana::partial(hana::at_key, action_map);

@@ -47,7 +47,7 @@ namespace nbdl
       }
       else // if downstream
       {
-        if constexpr(message::is_create<Message> || message::is_update_raw<Message>)
+        if constexpr(message::is_create<Message> || message::is_update<Message>)
         {
           map[message::get_path(m)] = *message::get_maybe_payload(m);
           return true;

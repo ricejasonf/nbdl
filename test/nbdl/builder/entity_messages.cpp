@@ -79,7 +79,7 @@ int main()
         mpdef::make_map(
           nbdl_def::Create(),
           nbdl_def::Read(),
-          nbdl_def::UpdateRaw(),
+          nbdl_def::Update(),
           nbdl_def::Delete()
         ),
       access_point_meta::store = hana::type_c<void>,
@@ -108,7 +108,7 @@ int main()
         >>,
         hana::type_c<hana::tuple<
           channel::upstream,
-          action::update_raw,
+          action::update,
           Path,
           hana::optional<nbdl::uid>,
           hana::optional<names::Entity1_t>
@@ -137,7 +137,7 @@ int main()
         >>,
         hana::type_c<hana::tuple<
           channel::downstream,
-          action::update_raw,
+          action::update,
           Path,
           hana::optional<nbdl::uid>,
           hana::optional<bool>,

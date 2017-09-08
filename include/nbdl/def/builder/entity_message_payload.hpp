@@ -35,7 +35,7 @@ namespace detail {
   { return mpdef::justify_type(hana::decltype_(hana::just(entity_type))); }
 
   template<typename A, typename E, typename Channel>
-  constexpr auto entity_message_payload(A, E entity_type, action::update_raw, Channel)
+  constexpr auto entity_message_payload(A, E entity_type, action::update, Channel)
   { return mpdef::justify_type(hana::decltype_(hana::just(entity_type))); }
 
   template<typename A, typename E, typename Channel>

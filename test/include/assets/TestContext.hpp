@@ -141,7 +141,7 @@ namespace test_context_def {
                 Entity<entity::my_entity<1>>,
                 PathKey<test_context::key<entity::my_entity<1>>>,
                 Store<Store_>,
-                Actions(Create(), Read(), UpdateRaw(), Delete())
+                Actions(Create(), Read(), Update(), Delete())
               )
             )
           ),
@@ -158,7 +158,7 @@ namespace test_context_def {
                   Entity<entity::my_entity<1>>,
                   PathKey<test_context::key<entity::my_entity<1>>>,
                   Store<Store_>,
-                  Actions(Create(), Read(), UpdateRaw(), Delete())
+                  Actions(Create(), Read(), Update(), Delete())
                 )
               ),
               AccessPoint(
@@ -170,7 +170,7 @@ namespace test_context_def {
                   Entity<entity::my_entity<2>>,
                   PathKey<test_context::key<entity::my_entity<2>>>,
                   Store<Store_>,
-                  Actions(Create(), Read(), UpdateRaw(), Delete())
+                  Actions(Create(), Read(), Update(), Delete())
                 )
               ),
               AccessPoint(
@@ -182,7 +182,7 @@ namespace test_context_def {
                   Entity<entity::my_entity<3>>,
                   PathKey<test_context::key<entity::my_entity<3>>>,
                   Store<Store_>,
-                  Actions(Create(), Read(), UpdateRaw(), Delete())
+                  Actions(Create(), Read(), Update(), Delete())
                 )
               ),
               AccessPoint(
@@ -194,7 +194,7 @@ namespace test_context_def {
                   Entity<entity::my_entity<4>>,
                   PathKey<test_context::key<entity::my_entity<4>>>,
                   Store<Store_>,
-                  Actions(Create(), Read(), UpdateRaw(), Delete())
+                  Actions(Create(), Read(), Update(), Delete())
                 )
               )
             )

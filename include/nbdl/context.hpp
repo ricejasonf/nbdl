@@ -132,7 +132,7 @@ namespace nbdl
       template <typename PathSpec, typename Payload>
       void update(PathSpec, Payload&& p)
       {
-        MessageApi{}.make_upstream_update_raw_message(
+        MessageApi{}.make_upstream_update_message(
           nbdl::detail::resolve_path<PathSpec>(*this)
         , std::forward<Payload>(p)
         );

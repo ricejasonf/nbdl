@@ -7,10 +7,10 @@
 #ifndef NBDL_FWD_MESSAGE_HPP
 #define NBDL_FWD_MESSAGE_HPP
 
-namespace nbdl { namespace message
+namespace nbdl::message
 {
   /*
-   * A message is just a tuple right now.
+   * A message is just a tuple.
    *
    * The action and channel tags serve to
    * indicate how the message should be
@@ -22,18 +22,16 @@ namespace nbdl { namespace message
     struct create { };
     struct read { };
     struct update { };
-    struct update_raw { };
     struct delete_ { };
 
     struct validation_fail { };
-  } // action
+  }
 
   namespace channel
   {
     struct upstream { };
     struct downstream { };
-  } // channel
-
-}} // nbdl::message
+  }
+}
 
 #endif

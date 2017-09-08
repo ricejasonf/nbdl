@@ -32,7 +32,7 @@ TEST_CASE("Make a store for use in nbdl::context", "[context_store][make_store]"
 
   nbdl::apply_action(store, hana::make_tuple(
     channel::downstream{}
-  , action::update_raw{}
+  , action::update{}
   , hana::type_c<void>
   , hana::nothing
   , hana::nothing

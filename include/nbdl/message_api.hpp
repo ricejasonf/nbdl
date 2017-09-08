@@ -186,7 +186,6 @@ namespace nbdl
     using create      = message::action::create;
     using read        = message::action::read;
     using update      = message::action::update;
-    using update_raw  = message::action::update_raw;
     using delete_     = message::action::delete_;
 
     static constexpr auto type_list_by_channel = mpdef::make_map(
@@ -376,27 +375,6 @@ namespace nbdl
     auto make_downstream_update_message(nbdl::from_root r, Path&& p, T&& ...t) const
     {
       return make_message(downstream{}, update{}, std::forward<Path>(p),
-        r.is_from_root, std::forward<T>(t)...);
-    }
-
-    // UpdateRaw
-    template <typename Path, typename ...T>
-    auto make_upstream_update_raw_message(Path&& p, T&& ...t) const
-    {
-      return make_message(upstream{}, update_raw{}, std::forward<Path>(p), std::forward<T>(t)...);
-    }
-
-    template <typename Path, typename ...T>
-    auto make_downstream_update_raw_message(Path&& p, T&& ...t) const
-    {
-      return make_message(downstream{}, update_raw{}, std::forward<Path>(p),
-        false, std::forward<T>(t)...);
-    }
-
-    template <typename Path, typename ...T>
-    auto make_downstream_update_raw_message(nbdl::from_root r, Path&& p, T&& ...t) const
-    {
-      return make_message(downstream{}, update_raw{}, std::forward<Path>(p),
         r.is_from_root, std::forward<T>(t)...);
     }
 
