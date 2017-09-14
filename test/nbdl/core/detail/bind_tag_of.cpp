@@ -41,7 +41,7 @@ int main()
   , foo_tag
   >;
 
-  namespace tag = nbdl::bind_detail::tag;
+  namespace tag = nbdl::_b::tag;
 
   using expected = tag::sequence<
     int
@@ -61,7 +61,7 @@ int main()
   , foo_tag
   >;
 
-  using result = nbdl::bind_detail::bind_tag_of<input>;
+  using result = nbdl::detail::bind_tag_of<input>;
 
   BOOST_HANA_CONSTANT_ASSERT(hana::type_c<result> == hana::type_c<expected>);
 }

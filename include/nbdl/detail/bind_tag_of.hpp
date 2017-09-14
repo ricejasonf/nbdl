@@ -18,10 +18,13 @@
 #include <boost/hana/core/when.hpp>
 #include <type_traits>
 
-namespace nbdl::bind_detail
+namespace nbdl::_b
 {
   namespace hana = boost::hana;
 
+  // Changing the names of these tags is a breaking change
+  // This includes namespaces and anything that shows up
+  // in the symbols.
   namespace tag
   {
     template <typename ...>
@@ -154,6 +157,12 @@ namespace nbdl::bind_detail
   {
     using type = tag::dynamic_buffer;
   };
+}
+
+namespace nbdl::detail
+{
+  template <typename T, typename U = void>
+  using bind_tag_of = _b::bind_tag_of<T, U>;
 }
 
 #endif
