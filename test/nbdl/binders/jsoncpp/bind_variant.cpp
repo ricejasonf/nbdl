@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include <nbdl/binder/jsoncpp.hpp>
+#include <nbdl/string.hpp>
 #include <nbdl/variant.hpp>
 
 #include <catch.hpp>
@@ -15,9 +16,9 @@ using nbdl::binder::jsoncpp::to_string;
 
 struct bar
 {
-  std::string value;
+  nbdl::string value;
 };
-using Foo = nbdl::variant<std::string, int, bar>;
+using Foo = nbdl::variant<nbdl::string, int, bar>;
 struct my_entity
 {
   Foo foo;
@@ -69,7 +70,7 @@ TEST_CASE("Bind variant containing string to JSON.", "[bind][json]")
   from_string(test_json_2, my_entity);
   bool result = false;
   my_entity.foo.match(
-    [&](std::string str) { result = str == "a string"; }
+    [&](nbdl::string str) { result = str == "a string"; }
   , [](auto) { }
   );
   CHECK(result);

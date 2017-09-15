@@ -10,8 +10,11 @@
 #include<nbdl/concept/BindableMap.hpp>
 #include<nbdl/concept/BindableSequence.hpp>
 #include<nbdl/concept/BindableVariant.hpp>
+#include<nbdl/concept/Container.hpp>
+#include<nbdl/concept/String.hpp>
 #include<nbdl/bind_map.hpp>
 #include<nbdl/bind_sequence.hpp>
+#include<nbdl/string.hpp>
 
 #include<json/json.h>
 #include<string>
@@ -30,6 +33,13 @@ namespace nbdl { namespace binder { namespace jsoncpp
         if (!obj.isBool())
           throw std::runtime_error("JSON Boolean expected");
         field = obj.asBool();
+      }
+
+      void bind_(Json::Value const& obj, char& field)
+      {
+        if (!obj.isIntegral())
+          throw std::runtime_error("JSON Integral expected");
+        field = obj.asUInt();
       }
 
       void bind_(Json::Value const& obj, unsigned int& field)
@@ -53,13 +63,6 @@ namespace nbdl { namespace binder { namespace jsoncpp
         field = obj.asDouble();
       }
 
-      void bind_(Json::Value const& obj, std::string& field)
-      {
-        if (!obj.isString())
-          throw std::runtime_error("JSON String expected");
-        field = obj.asString();
-      }
-
       Json::Value const& json_val;
 
       public:
@@ -72,6 +75,30 @@ namespace nbdl { namespace binder { namespace jsoncpp
       void bind_member(T&& field)
       {
         bind_(json_val, std::forward<T>(field));
+      }
+
+      template <typename Container>
+      void bind_container(Container& c)
+      {
+        if (!json_val.isArray())
+          throw std::runtime_error("JSON Array expected");
+
+        typename Container::value_type temp;
+
+        for (Json::Value const& val : json_val)
+        {
+          temp = {};
+          BindFn{}(reader(val), temp);
+          c.insert(c.end(), std::move(temp));
+        }
+      }
+
+      template <typename String>
+      void bind_string(String& field)
+      {
+        if (!json_val.isString())
+          throw std::runtime_error("JSON String expected");
+        field = String{json_val.asCString()};
       }
 
       template<typename T>
@@ -141,6 +168,23 @@ namespace nbdl { namespace binder { namespace jsoncpp
       void bind_member(X&& x)
       {
         json_val = std::forward<X>(x);
+      }
+
+      template <typename Container>
+      void bind_container(Container const& c)
+      {
+        for (auto const& x : c)
+        {
+          Json::Value el;
+          BindFn{}(writer(el), x);
+          json_val.append(el);
+        }
+      }
+
+      template<class String>
+      void bind_string(String const& x)
+      {
+        json_val = Json::Value{&(*x.begin()), &(*x.end())};
       }
 
       template<typename T>
@@ -237,7 +281,18 @@ namespace nbdl { namespace binder { namespace jsoncpp
           && !nbdl::BindableVariant<T>::value
         >
       {
-        binder.bind_member(std::forward<T>(t));
+        if constexpr(nbdl::String<T>::value)
+        {
+          binder.bind_string(std::forward<T>(t));
+        }
+        else if constexpr(nbdl::Container<T>::value)
+        {
+          binder.bind_container(std::forward<T>(t));
+        }
+        else
+        {
+          binder.bind_member(std::forward<T>(t));
+        }
       }
     };
 

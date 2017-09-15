@@ -46,7 +46,7 @@ namespace nbdl
   struct bind_map_impl<Tag, hana::when<nbdl::Entity<Tag>::value>>
   {
     template <typename Entity, typename BindFn>
-    static auto apply(Entity&& e, BindFn&& f)
+    static constexpr auto apply(Entity&& e, BindFn&& f)
     {
       return hana::unpack(nbdl::entity_members<Entity>, [&](auto ...m)
       {
@@ -64,7 +64,7 @@ namespace nbdl
   struct bind_map_impl<hana::map_tag>
   {
     template <typename BindableMap, typename BindFn>
-    static auto apply(BindableMap&& map, BindFn&& f)
+    static constexpr auto apply(BindableMap&& map, BindFn&& f)
     {
       return hana::unpack(map, [&](auto&& ...pair)
       {

@@ -27,7 +27,8 @@ namespace nbdl
 
   struct variant_tag { };
 
-  namespace detail {
+  namespace detail
+  {
 
     template <typename DefaultType, typename... Tn>
     class variant
@@ -235,6 +236,9 @@ namespace nbdl
     }
   };
 
+  template <typename ...T>
+  auto bind_variant_types<nbdl::variant<T...>> = hana::experimental::types<T...>{};
+
   // Store
 
   template<>
@@ -290,7 +294,6 @@ namespace nbdl
       return hana::true_c;
     }
   };
-  
-}//nbdl
+}
 
 #endif

@@ -4,11 +4,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include<nbdl/binder/jsoncpp.hpp>
+#include <nbdl/binder/jsoncpp.hpp>
+#include <nbdl/string.hpp>
 
-#include<boost/hana.hpp>
-#include<catch.hpp>
-#include<string>
+#include <boost/hana.hpp>
+#include <catch.hpp>
+#include <string>
 
 namespace hana = boost::hana;
 
@@ -16,11 +17,11 @@ using nbdl::binder::jsoncpp::from_string;
 using nbdl::binder::jsoncpp::to_string;
 
 std::string seq_json = "[ \"Hello\", \"World!\", 5, 6 ]\n";
-auto expected_xs = hana::make_tuple(std::string("Hello"), std::string("World!"), 5, 6);
+auto expected_xs = hana::make_tuple(nbdl::string("Hello"), nbdl::string("World!"), 5, 6);
 
 TEST_CASE("Bind a sequence to JSON.", "[bind][json]") 
 {
-  auto xs = hana::make_tuple(std::string{}, std::string{}, int{}, int{});
+  auto xs = hana::make_tuple(nbdl::string{}, nbdl::string{}, int{}, int{});
   from_string(seq_json, xs);
   CHECK((xs == expected_xs));
   //actually prints it out
@@ -32,11 +33,11 @@ TEST_CASE("Bind a sequence from JSON.", "[bind][json]")
 }
 
 std::string seq_json_2 = "\"Moo\"\n";
-auto expected_xs_2 = hana::make_tuple(std::string("Moo"));
+auto expected_xs_2 = hana::make_tuple(nbdl::string("Moo"));
 
 TEST_CASE("Bind a sequence with only element to JSON.", "[bind][json]") 
 {
-  auto xs = hana::make_tuple(std::string{});
+  auto xs = hana::make_tuple(nbdl::string{});
   from_string(seq_json_2, xs);
   CHECK((xs == expected_xs_2));
   //actually prints it out

@@ -18,6 +18,7 @@
 #include <boost/hana/concept/sequence.hpp>
 #include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/fwd/optional.hpp>
+#include <boost/hana/ext/std/pair.hpp> // to support std map containers
 #include <type_traits>
 #include <utility>
 
@@ -49,7 +50,7 @@ namespace nbdl
   struct bind_sequence_impl<Tag, hana::when<nbdl::Entity<Tag>::value>>
   {
     template <typename Entity, typename BindFn>
-    static auto apply(Entity&& e, BindFn&& f)
+    static constexpr auto apply(Entity&& e, BindFn&& f)
     {
       return hana::unpack(nbdl::entity_members<Entity>, [&](auto ...m)
       {
@@ -68,7 +69,7 @@ namespace nbdl
   >>
   {
     template <typename BindableSequence, typename BindFn>
-    static auto apply(BindableSequence&& xs, BindFn&& f)
+    static constexpr auto apply(BindableSequence&& xs, BindFn&& f)
     {
       return hana::unpack(std::forward<BindableSequence>(xs), [&](auto&& ...x)
       {
@@ -76,6 +77,6 @@ namespace nbdl
       });
     }
   };
-} // nbdl
+}
 
 #endif

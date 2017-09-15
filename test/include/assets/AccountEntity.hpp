@@ -8,16 +8,15 @@
 #define NBDL_TEST_ASSETS_ACCOUNT_HPP
 
 #include <nbdl/entity_members.hpp>
-
-#include <string>
+#include <nbdl/string.hpp>
 
 struct address
 {
-	std::string line1;
-	std::string line2;
-	std::string city;
-	std::string state;
-	std::string zip_code;
+	nbdl::string line1;
+	nbdl::string line2;
+	nbdl::string city;
+	nbdl::string state;
+	nbdl::string zip_code;
 };
 namespace nbdl {
 	NBDL_ENTITY(
@@ -31,7 +30,7 @@ namespace nbdl {
 
 struct food_group 
 {
-	std::string name;
+	nbdl::string name;
 };
 namespace nbdl {
 	NBDL_ENTITY(food_group, name);
@@ -40,7 +39,7 @@ namespace nbdl {
 struct food
 {
 	unsigned id;
-	std::string name;
+	nbdl::string name;
 	food_group food_group;
 };
 namespace nbdl {
@@ -52,10 +51,10 @@ namespace nbdl {
 
 struct account
 {
-	std::string name_first;
-	std::string name_last;
-	std::string phone_number;
-	std::string email;
+	nbdl::string name_first;
+	nbdl::string name_last;
+	nbdl::string phone_number;
+	nbdl::string email;
 	unsigned int age;
 	address address;
 	food food;
@@ -83,7 +82,7 @@ namespace nbdl {
 	struct Member_custom_validator<NBDL_MEMBER(&account::email)>
 	{
 		template<typename AddError>
-		static void validate(const std::string &value, AddError addError)
+		static void validate(const nbdl::string &value, AddError addError)
 		{
 			addError(ErrorToken::Custom1);
 		}

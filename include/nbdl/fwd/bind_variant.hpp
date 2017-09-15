@@ -8,6 +8,7 @@
 #define NBDL_FWD_BIND_VARIANT_HPP
 
 #include<boost/hana/core/when.hpp>
+#include<boost/hana/experimental/types.hpp>
 
 namespace nbdl
 {
@@ -28,7 +29,13 @@ namespace nbdl
   };
 
   constexpr bind_variant_fn bind_variant{};
-} // nbdl
+
+  // bind_variant_types
+  // Customization point for specifying the types that an instance of a variant supports
+  // It must be set to an instance of hana::types and have at least one type
+  template <typename>
+  auto bind_variant_types = 42;
+}
 
 #endif
 
