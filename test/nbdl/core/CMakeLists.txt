@@ -12,6 +12,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   context_state_consumer.cpp
   context_store.cpp
   delta.cpp
+  detail/filter_empties.cpp
   detail/string_concat.cpp
   detail/string_concat_view.cpp
   detail/find_index.cpp
@@ -34,9 +35,15 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
 )
 
 # compile-time tests
+
+nbdl_add_test("test.nbdl.core.detail.bind_tag_of"
+  detail/bind_tag_of.cpp
+)
+
 nbdl_add_test("test.nbdl.core.detail.concept_pred"
   detail/concept_pred.cpp
 )
+
 nbdl_add_test("test.nbdl.core.ui_spec"
   ui_spec.cpp
 )

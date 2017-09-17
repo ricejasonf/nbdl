@@ -39,6 +39,28 @@ namespace nbdl
     );
   };
 
+  namespace detail
+  {
+    // bleh
+    struct bind_sequence_no_filter_fn
+    {
+      template<typename BindableSequence, typename BindFn>
+      constexpr auto operator()(BindableSequence&& s, BindFn&& f) const
+      {
+        using Tag = hana::tag_of_t<BindableSequence>;
+        using Impl = bind_sequence_impl<Tag>;
+
+        static_assert(nbdl::BindableSequence<BindableSequence>::value,
+          "nbdl::bind_sequence(seq, fn) requires 'seq' to be a BindableSequence");
+
+        return Impl::apply(
+          std::forward<BindableSequence>(s),
+          std::forward<BindFn>(f)
+        );
+      }
+    };
+  }
+
   template<typename Tag, bool condition>
   struct bind_sequence_impl<Tag, hana::when<condition>>
     : hana::default_

@@ -11,24 +11,20 @@
 #include <nbdl/fwd/concept/Buffer.hpp>
 
 #include <iterator>
+#include <type_traits>
 
 namespace nbdl
 {
   namespace hana = boost::hana;
 
-  namespace detail
-  {
-    constexpr auto is_contiguous = 
-  }
-
   template<typename T>
   struct Buffer
   {
-    using Tag = typename std::decay_t<T>::type;
+    using Tag = typename std::decay<T>::type;
     static constexpr bool value = nbdl::Container<Tag>::value
-                               && decltype(detail::is_contiguous<Tag>())::value
-                               && decltype(detail::is_byte_container<Tag>())::value
-                               && decltype(detail::is_size_fixed<Tag>())::value
+                               && decltype(detail::is_contiguous(std::declval<Tag>()))::value
+                               && decltype(detail::is_byte_container(std::declval<Tag>()))::value
+                               && decltype(detail::is_size_fixed(std::declval<Tag>()))::value
                                ;
   };
 }

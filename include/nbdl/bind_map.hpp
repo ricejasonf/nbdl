@@ -75,10 +75,15 @@ namespace nbdl
         , "BindableMap keys must be convertible to char const*"
         );
 
+        return std::forward<BindFn>(f)(
+          hana::make_pair(hana::first(pair), std::ref(hana::second(pair)))...
+        );
+#if 0
         return (f(hana::make_pair(
           hana::first(pair),
           std::ref(hana::second(pair))
         )), ...);
+#endif
       });
     }
   };

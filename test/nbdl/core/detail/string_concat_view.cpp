@@ -13,8 +13,6 @@
 #include <catch.hpp>
 #include <string>
 
-#include <iostream>
-
 namespace hana = boost::hana;
 
 namespace

@@ -11,6 +11,7 @@
 
 #include <boost/hana/core/default.hpp>
 #include <boost/hana/core/tag_of.hpp>
+#include <type_traits>
 
 namespace nbdl
 {
@@ -19,11 +20,11 @@ namespace nbdl
   template<typename T>
   struct DynamicBuffer
   {
-    using Tag = typename std::decay_t<T>::type;
+    using Tag = typename std::decay<T>::type;
     static constexpr bool value = nbdl::Container<Tag>::value
-                               && decltype(detail::is_contiguous<Tag>())::value
-                               && decltype(detail::is_byte_container<Tag>())::value
-                               && !decltype(detail::is_size_fixed<Tag>())::value
+                               && decltype(detail::is_contiguous(std::declval<Tag>()))::value
+                               && decltype(detail::is_byte_container(std::declval<Tag>()))::value
+                               && !decltype(detail::is_size_fixed(std::declval<Tag>()))::value
                                ;
   };
 }
