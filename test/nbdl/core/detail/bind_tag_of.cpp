@@ -6,6 +6,7 @@
 //
 #include <nbdl/detail/bind_tag_of.hpp>
 #include <nbdl/string.hpp>
+#include <nbdl/variant.hpp>
 
 #include <boost/hana.hpp>
 #include <catch.hpp>
@@ -39,6 +40,7 @@ int main()
   , hana::tuple<hana::int_<42>>
   , hana::tuple<int, float>
   , foo_tag
+  , nbdl::variant<foo_tag, nbdl::string>
   >;
 
   namespace tag = nbdl::_b::tag;
@@ -59,6 +61,7 @@ int main()
   , tag::sequence<tag::constant<42>>
   , tag::sequence<int, float>
   , foo_tag
+  , tag::variant<foo_tag, tag::string>
   >;
 
   using result = nbdl::detail::bind_tag_of<input>;

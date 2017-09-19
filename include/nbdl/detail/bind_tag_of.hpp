@@ -16,6 +16,7 @@
 #include <nbdl/concept/String.hpp>
 
 #include <boost/hana/core/when.hpp>
+#include <boost/hana/unpack.hpp>
 #include <type_traits>
 
 namespace nbdl::_b
@@ -97,12 +98,18 @@ namespace nbdl::_b
     );
   };
 
+  template <typename ...T>
+  struct bind_tag_unpack_variant_types_helper
+  {
+    using type = tag::variant<bind_tag_of<T>...>;
+  };
+
   template <typename T>
   struct bto<T, hana::when<BindableVariant<T>::value>>
   {
-    using type = typename decltype(
-      hana::unpack(nbdl::bind_variant_types<T>, bind_tag_unpack_helper<tag::variant>)
-    )::type;
+    using type = typename decltype(hana::unpack(
+      nbdl::bind_variant_types<T>, hana::metafunction<bind_tag_unpack_variant_types_helper>
+    ))::type;
   };
 
   constexpr auto bind_tag_unpack_map_helper = [](auto const& ...x)
