@@ -24,7 +24,6 @@
 
 namespace nbdl_def::builder
 {
-
   namespace hana = boost::hana;
 
   namespace enum_access_points_detail
@@ -54,7 +53,7 @@ namespace nbdl_def::builder
       if constexpr(has_actions(node_children))
       {
         return mpdef::make_list(builder::make_access_point_meta(
-          node_children[tag::Name]
+          hana::find(node_children, tag::Name).value_or(hana::type_c<void>)
         , actions
         , hana::find(node_children, tag::Store).value_or(hana::type_c<nbdl::null_store>)
         , mpdef::make_list(node_children[tag::Entity])

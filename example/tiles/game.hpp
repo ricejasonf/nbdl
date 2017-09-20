@@ -130,13 +130,11 @@ namespace tiles
           Producer(
             Type(ProducerTag{}),
             AccessPoint(
-              Name(hana::type_c<void>), // FIXME
               Entity<game>,
               PathKey<int>,
               Store<game_store>,
               Actions(),
               AccessPoint(
-                Name(hana::type_c<void>), // FIXME
                 Entity<game_move>,
                 PathKey<int>,
                 Actions(Create())
