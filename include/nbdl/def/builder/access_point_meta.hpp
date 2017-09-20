@@ -20,6 +20,7 @@ MPDEF_METASTRUCT(
   , store
   , entities
   , path
+  , listen_paths
 );
 
 #if 0

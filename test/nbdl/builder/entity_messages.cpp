@@ -45,7 +45,8 @@ int main()
       access_point_meta::actions        = mpdef::make_map(nbdl_def::Create()),
       access_point_meta::store          = hana::type_c<void>,
       access_point_meta::entities       = mpdef::make_list(names::Entity1),
-      access_point_meta::path           = hana::type_c<hana::tuple<names::Entity1_key>>
+      access_point_meta::path           = hana::type_c<hana::tuple<names::Entity1_key>>,
+      access_point_meta::listen_paths   = mpdef::list<>{}
     );
     using Path = hana::tuple<names::Entity1_key>;
     using CreatePath = hana::tuple<hana::type<names::Entity1_key>>;
@@ -84,7 +85,8 @@ int main()
         ),
       access_point_meta::store = hana::type_c<void>,
       access_point_meta::entities = mpdef::make_list(names::Entity1),
-      access_point_meta::path = hana::type_c<hana::tuple<names::Entity1_key>>
+      access_point_meta::path = hana::type_c<hana::tuple<names::Entity1_key>>,
+      access_point_meta::listen_paths   = mpdef::list<>{}
     );
     using Path = hana::tuple<names::Entity1_key>;
     using CreatePath = hana::tuple<hana::type<names::Entity1_key>>;

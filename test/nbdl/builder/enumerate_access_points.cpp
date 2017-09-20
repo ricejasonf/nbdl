@@ -101,6 +101,10 @@ int main()
               Actions(
                 Create()
               ),
+              ListenPaths(
+                Path<names::Root1_key, names::Nested1_key>,
+                Path<names::Root1_key, names::Nested2_key, names::Nested3_key>
+              ),
               nested_accesspoints
             )
           )
@@ -127,7 +131,8 @@ int main()
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
         access_point_meta::entities = mpdef::make_list(/*names::Root1,*/ names::Nested1),
-        access_point_meta::path = hana::type_c<hana::tuple<names::Root1_key, names::Nested1_key>>
+        access_point_meta::path = hana::type_c<hana::tuple<names::Root1_key, names::Nested1_key>>,
+        access_point_meta::listen_paths = mpdef::list<>{}
       ),
       // Root1/Nested2/Nested3
       builder::make_access_point_meta_with_map(
@@ -146,7 +151,8 @@ int main()
           names::Root1_key,
           names::Nested2_key,
           names::Nested3_key
-        >>
+        >>,
+        access_point_meta::listen_paths = mpdef::list<>{}
       ),
       // Root2
       builder::make_access_point_meta_with_map(
@@ -160,7 +166,8 @@ int main()
         access_point_meta::store =
           hana::type_c<nbdl::null_store>,
         access_point_meta::entities = mpdef::make_list(names::Root2),
-        access_point_meta::path = hana::type_c<hana::tuple<names::Root2_key>>
+        access_point_meta::path = hana::type_c<hana::tuple<names::Root2_key>>,
+        access_point_meta::listen_paths = mpdef::list<>{}
       ),
       // Root2/Nested1
       builder::make_access_point_meta_with_map(
@@ -180,7 +187,8 @@ int main()
         access_point_meta::path = hana::type_c<hana::tuple<
           names::Root2_key,
           names::Nested1_key
-        >>
+        >>,
+        access_point_meta::listen_paths = mpdef::list<>{}
       ),
       // Root2/Nested2/Nested3
       builder::make_access_point_meta_with_map(
@@ -199,7 +207,8 @@ int main()
           names::Root2_key,
           names::Nested2_key,
           names::Nested3_key
-        >>
+        >>,
+        access_point_meta::listen_paths = mpdef::list<>{}
       ),
       // Root3
       builder::make_access_point_meta_with_map(
@@ -209,7 +218,11 @@ int main()
         ),
         access_point_meta::store = hana::type_c<nbdl::null_store>,
         access_point_meta::entities = mpdef::make_list(names::Root3),
-        access_point_meta::path = hana::type_c<hana::tuple<names::Root3_key>>
+        access_point_meta::path = hana::type_c<hana::tuple<names::Root3_key>>,
+        access_point_meta::listen_paths = mpdef::list<
+          hana::type<hana::tuple<names::Root1_key, names::Nested1_key>>
+        , hana::type<hana::tuple<names::Root1_key, names::Nested2_key, names::Nested3_key>>
+        >{}
       ),
       // Root3/Nested1
       builder::make_access_point_meta_with_map(
@@ -229,7 +242,8 @@ int main()
         access_point_meta::path = hana::type_c<hana::tuple<
           names::Root3_key,
           names::Nested1_key
-        >>
+        >>,
+        access_point_meta::listen_paths = mpdef::list<>{}
       ),
       // Root3/Nested2/Nested3
       builder::make_access_point_meta_with_map(
@@ -248,7 +262,8 @@ int main()
           names::Root3_key,
           names::Nested2_key,
           names::Nested3_key
-        >>
+        >>,
+        access_point_meta::listen_paths = mpdef::list<>{}
       )
     );
 

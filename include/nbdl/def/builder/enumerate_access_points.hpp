@@ -44,11 +44,25 @@ namespace nbdl_def::builder
           ;
     };
 
+    struct transform_listen_paths_fn
+    {
+      // TreeNodes is pair<Path_t, types<...>>
+      template <typename ...TreeNodes>
+      constexpr auto operator()(mpdef::list<TreeNodes...>) const
+      {
+        return mpdef::list<
+          decltype(hana::unpack(hana::second(TreeNodes{}), hana::template_<hana::tuple>))
+          ...
+        >{};
+      }
+    };
+
     template <typename ...PathNode, typename NodeChildren>
     inline constexpr auto make_access_point_meta_helper(mpdef::list<PathNode...>
                                                       , NodeChildren node_children)
     {
       constexpr auto actions = hana::find(node_children, tag::Actions).value_or(mpdef::make_list());
+      constexpr auto listen_paths = hana::find(node_children, tag::ListenPaths).value_or(mpdef::list<>{});
 
       if constexpr(has_actions(node_children))
       {
@@ -58,6 +72,7 @@ namespace nbdl_def::builder
         , hana::find(node_children, tag::Store).value_or(hana::type_c<nbdl::null_store>)
         , mpdef::make_list(node_children[tag::Entity])
         , hana::type_c<hana::tuple<typename PathNode::type...>>
+        , transform_listen_paths_fn{}(listen_paths)
         ));
       }
       else

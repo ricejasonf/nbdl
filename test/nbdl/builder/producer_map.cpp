@@ -37,14 +37,16 @@ constexpr auto access_points_1 = mpdef::make_list(
     builder::access_point_meta::actions         = mpdef::make_list(nbdl_def::tag::Create),
     builder::access_point_meta::store           = hana::type_c<void>,
     builder::access_point_meta::entities        = mpdef::make_list(names::Entity_1_1),
-    builder::access_point_meta::path            = hana::type_c<hana::tuple<names::Entity_1_1_key>>
+    builder::access_point_meta::path            = hana::type_c<hana::tuple<names::Entity_1_1_key>>,
+    builder::access_point_meta::listen_paths    = mpdef::list<>{}
   ),
   builder::make_access_point_meta_with_map(
     builder::access_point_meta::name            = names::Foo,
     builder::access_point_meta::actions         = mpdef::make_list(nbdl_def::tag::Create),
     builder::access_point_meta::store           = hana::type_c<void>,
     builder::access_point_meta::entities        = mpdef::make_list(names::Entity_1_2),
-    builder::access_point_meta::path            = hana::type_c<hana::tuple<names::Entity_1_2_key>>
+    builder::access_point_meta::path            = hana::type_c<hana::tuple<names::Entity_1_2_key>>,
+    builder::access_point_meta::listen_paths    = mpdef::list<>{}
   )
 );
 
@@ -54,7 +56,8 @@ constexpr auto access_points_2 = mpdef::make_list(
     builder::access_point_meta::actions         = mpdef::make_list(nbdl_def::tag::Create),
     builder::access_point_meta::store           = hana::type_c<void>,
     builder::access_point_meta::entities        = mpdef::make_list(names::Entity_2_1),
-    builder::access_point_meta::path            = hana::type_c<hana::tuple< names::Entity_2_1_key>>
+    builder::access_point_meta::path            = hana::type_c<hana::tuple< names::Entity_2_1_key>>,
+    builder::access_point_meta::listen_paths    = mpdef::list<>{}
   )
 );
 

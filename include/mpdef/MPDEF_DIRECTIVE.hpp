@@ -12,6 +12,7 @@
 #include <mpdef/tree_node.hpp>
 
 #include <boost/hana.hpp>
+#include <boost/hana/experimental/types.hpp>
 
 #define MPDEF_DIRECTIVE(NAME)                           \
 namespace tag {                                         \
@@ -44,5 +45,13 @@ namespace tag {                                         \
 }                                                       \
 template<typename T>                                    \
 constexpr auto NAME = mpdef::make_tree_node(tag::NAME, boost::hana::type_c<T>);
+
+#define MPDEF_DIRECTIVE_TYPE_LIST(NAME)                 \
+namespace tag {                                         \
+  struct NAME##_t {};                                   \
+  constexpr auto NAME = boost::hana::type_c<NAME##_t>;  \
+}                                                       \
+template<typename ...T>                                 \
+constexpr auto NAME = mpdef::make_tree_node(tag::NAME, boost::hana::experimental::types<T...>{});
 
 #endif
