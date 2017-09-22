@@ -133,7 +133,7 @@ namespace tiles
               Entity<game>,
               PathKey<int>,
               Store<game_store>,
-              Actions(),
+              ListenPaths(Path<int, int>),
               AccessPoint(
                 Entity<game_move>,
                 PathKey<int>,

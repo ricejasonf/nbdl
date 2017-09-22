@@ -61,6 +61,16 @@ namespace test_context
       : value(v)
     { }
   };
+
+  using path1 = hana::tuple<key<entity::root1>, key<entity::my_entity<1>>>;
+
+  template <int i>
+  using path = hana::tuple<
+    key<decltype(hana::if_(hana::bool_c<i == 0>, entity::root1{}, entity::root2{}))>,
+    key<decltype(hana::if_(hana::bool_c<i == 0>, entity::my_entity<1>{}, entity::my_entity<i>{}))>
+  >;
+
+  using path_variant = nbdl::variant<path<0>, path<1>, path<2>, path<3>, path<4>>;
 } // test_context
 
 namespace boost::hana
@@ -170,7 +180,13 @@ namespace test_context_def {
                   Entity<entity::my_entity<2>>,
                   PathKey<test_context::key<entity::my_entity<2>>>,
                   Store<Store_>,
-                  Actions(Create(), Read(), Update(), Delete())
+                  Actions(Create(), Read(), Update(), Delete()),
+                  ListenPaths(
+                    Path<
+                      test_context::key<entity::root2>
+                    , test_context::key<entity::my_entity<1>>
+                    >
+                  )
                 )
               ),
               AccessPoint(
@@ -299,16 +315,6 @@ namespace test_context {
       , recorded_messages()
     { }
   };
-
-  using path1 = hana::tuple<key<entity::root1>, key<entity::my_entity<1>>>;
-
-  template <int i>
-  using path = hana::tuple<
-    key<decltype(hana::if_(hana::bool_c<i == 0>, entity::root1{}, entity::root2{}))>,
-    key<decltype(hana::if_(hana::bool_c<i == 0>, entity::my_entity<1>{}, entity::my_entity<i>{}))>
-  >;
-
-  using path_variant = nbdl::variant<path<0>, path<1>, path<2>, path<3>, path<4>>;
 
   template <typename PushApi>
   struct state_consumer

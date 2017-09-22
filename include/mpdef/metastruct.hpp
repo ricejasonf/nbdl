@@ -11,6 +11,7 @@
 #include <mpdef/tree_node.hpp>
 
 #include <boost/hana.hpp>
+#include <boost/mp11/bind.hpp>
 
 namespace mpdef {
 
@@ -27,6 +28,8 @@ struct metastruct
   template<std::size_t i>
   struct at_fn
   {
+    static constexpr std::size_t value = i;
+
     template<typename... T>
     constexpr auto operator()(list<T...>) const
       -> decltype(hana::arg<i + 1>(T{}...))
@@ -75,6 +78,11 @@ struct make_metastruct_with_map_fn
 template<typename M>
 constexpr make_metastruct_with_map_fn<M> make_metastruct_with_map{};
 
+template <typename Key, typename List>
+using metastruct_get_impl = decltype(Key{}(List{}));
+
+template <typename Key>
+using metastruct_get = boost::mp11::mp_bind_front<metastruct_get_impl, Key>;
 
 } // mpdef
 

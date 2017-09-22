@@ -46,6 +46,7 @@ namespace nbdl
     using ProducerLookup  = typename ContextMeta::producer_lookup;
     using CellTagTypes    = typename ContextMeta::cell_tag_types;
     using StoreMap        = typename ContextMeta::store_map;
+    using ListenerLookup  = typename ContextMeta::listener_lookup;
     using MessageApi      = nbdl::message_api<context>;
 
     public:
@@ -381,24 +382,24 @@ namespace nbdl
         }
       }
 
-      // apply the action to ALL OTHER stores
-      hana::for_each(stores, [&](auto& pair)
+      // apply the action to stores that are listening to the path_type
+      constexpr auto listeners = hana::find(ListenerLookup{}, path_type).value_or(mpdef::list<>{});
+      hana::for_each(listeners, [&](auto listener_path_type)
       {
-        if constexpr(!decltype(hana::equal(hana::first(pair), path_type))::value)
+        nbdl::apply_foreign_action(stores[listener_path_type], m, [&](auto const& path)
         {
-          nbdl::apply_foreign_action(hana::second(pair), m, [&](auto const& path)
-          {
-            static_assert(
-              decltype(
-                hana::equal(
-                  hana::traits::decay(hana::decltype_(path)),
-                  hana::first(pair)
-                )
-              )::value
-              , "Store can only mark its own path as modified.");
-            notify_state_consumers(path);
-          });
-        }
+          static_assert(
+            decltype(
+              hana::equal(
+                hana::traits::decay(hana::decltype_(path))
+              , listener_path_type
+              )
+            )::value
+          , "Store can only mark its own path as modified."
+          );
+
+          notify_state_consumers(path);
+        });
       });
     }
 

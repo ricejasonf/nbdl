@@ -13,6 +13,7 @@
 #include <nbdl/def/builder/context_cells.hpp>
 #include <nbdl/def/builder/enumerate_producers.hpp>
 #include <nbdl/def/builder/enumerate_consumers.hpp>
+#include <nbdl/def/builder/listener_lookup.hpp>
 #include <nbdl/def/builder/message_api.hpp>
 #include <nbdl/def/builder/producer_map.hpp>
 #include <nbdl/def/builder/producer_meta.hpp>
@@ -29,7 +30,7 @@
 #include <boost/hana/unpack.hpp>
 #include <utility>
 
-namespace nbdl_def { namespace builder
+namespace nbdl_def::builder
 {
 
   namespace hana  = boost::hana;
@@ -39,7 +40,8 @@ namespace nbdl_def { namespace builder
     typename ProducerLookup,
     typename CellTagTypes,
     typename StoreMap,
-    typename MessageApiMeta
+    typename MessageApiMeta,
+    typename ListenerLookup
   >
   struct context_meta
   {
@@ -47,6 +49,7 @@ namespace nbdl_def { namespace builder
     using cell_tag_types        = CellTagTypes;
     using store_map             = StoreMap;
     using message_api_meta      = MessageApiMeta;
+    using listener_lookup       = ListenerLookup;
   };
 
   struct context_fn
@@ -69,10 +72,11 @@ namespace nbdl_def { namespace builder
                                             mpdef::make_list ^hana::on^ producer_meta::access_points)
                                           )
                                         );
+      constexpr auto listener_lookup  = hana::type_c<builder::listener_lookup<decltype(producers_meta)>>;
       constexpr auto message_api      = builder::make_message_api(producers_meta);
       constexpr auto params = hana::concat(
         cell_info,
-        mpdef::make_list(store_map, message_api)
+        mpdef::make_list(store_map, message_api, listener_lookup)
       );
 
       return hana::unpack(params, hana::template_<context_meta>);
@@ -83,6 +87,6 @@ namespace nbdl_def { namespace builder
 
   template <typename Tag, typename ArgTypes>
   using make_context_meta_t = typename decltype(builder::context(hana::type_c<Tag>, ArgTypes{}))::type;
-}} // nbdl_def::builder
+}
 
 #endif

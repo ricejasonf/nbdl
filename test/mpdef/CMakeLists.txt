@@ -32,3 +32,6 @@ nbdl_add_test("test.mpdef.justify_type"
 nbdl_add_test("test.mpdef.string"
   string.cpp
 )
+nbdl_add_test("test.mpdef.group_by"
+  group_by.cpp
+)
