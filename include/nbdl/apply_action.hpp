@@ -9,7 +9,9 @@
 
 #include <nbdl/fwd/apply_action.hpp>
 
+#include <nbdl/concept/NetworkStore.hpp>
 #include <nbdl/concept/Store.hpp>
+#include <nbdl/fwd/apply_message.hpp>
 
 #include <boost/hana/concept/searchable.hpp>
 #include <boost/hana/core/default.hpp>
@@ -47,38 +49,25 @@ namespace nbdl
   struct apply_action_impl<Tag, hana::when<condition>>
     : hana::default_
   {
-    static constexpr auto apply(...)
-    {
-      return hana::false_c;
-    }
-
-      // typical use case
-      //
-      // for non-read actions the dispatcher will probably want
-      // to propagate the state change to consumers via a new
-      // message or a change notification except for weird edge
-      // cases like write-only or null stores
-      //
-      // maybe make action Read use a uid (it already does)
-      // to ensure the requestor is the only one receiving
-      // the response to prevent unnecessary traffic
-      // there would have to be a special store just for read requests
-      //
-      // when a client app is waiting on a read it should queue changes
-      // to that resource and squash the whole thing before telling the
-      // consumer. this should probably be handled internally
-  };
-
-  template<typename Tag>
-  struct apply_action_impl<Tag, hana::when<hana::Searchable<Tag>::value>>
-  {
     template <typename Store, typename Other>
     static constexpr auto apply(Store& s, Other&& o)
     {
       s = std::forward<Other>(o);
+
+      // Do the cheapest, laziest assumption here
       return hana::true_c;
     }
   };
-} // nbdl
+
+  template <typename Tag>
+  struct apply_action_impl<Tag, hana::when<nbdl::NetworkStore<Tag>::value>>
+  {
+    template <typename Store, typename Action>
+    static constexpr auto apply(Store& s, Action&& a)
+    {
+      return nbdl::apply_message(s , std::forward<Action>(a));
+    }
+  };
+}
 
 #endif

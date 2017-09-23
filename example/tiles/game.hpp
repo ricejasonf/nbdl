@@ -189,7 +189,7 @@ namespace nbdl
   };
 
   template <>
-  struct apply_foreign_action_impl<tiles::game_store>
+  struct apply_foreign_message_impl<tiles::game_store>
   {
     template <typename Store, typename Message, typename Fn>
     static constexpr auto apply(Store&& s, Message&& m, Fn&& fn)

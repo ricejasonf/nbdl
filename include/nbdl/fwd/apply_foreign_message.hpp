@@ -4,8 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_FWD_APPLY_FOREIGN_ACTION_HPP
-#define NBDL_FWD_APPLY_FOREIGN_ACTION_HPP
+#ifndef NBDL_FWD_APPLY_FOREIGN_MESSAGE_HPP
+#define NBDL_FWD_APPLY_FOREIGN_MESSAGE_HPP
 
 #include<boost/hana/core/when.hpp>
 
@@ -14,9 +14,9 @@ namespace nbdl
   namespace hana = boost::hana;
 
   template<typename T, typename = void>
-  struct apply_foreign_action_impl : apply_foreign_action_impl<T, hana::when<true>> { };
+  struct apply_foreign_message_impl : apply_foreign_message_impl<T, hana::when<true>> { };
 
-  struct apply_foreign_action_fn
+  struct apply_foreign_message_fn
   {
     /*
      * Store
@@ -28,7 +28,7 @@ namespace nbdl
     constexpr void operator()(Store&&, Message&&, Fn&&) const;
   };
 
-  constexpr apply_foreign_action_fn apply_foreign_action{};
+  constexpr apply_foreign_message_fn apply_foreign_message{};
 } // nbdl
 
 #endif

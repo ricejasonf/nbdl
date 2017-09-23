@@ -7,11 +7,11 @@
 #ifndef NBDL_NULL_STORE_HPP
 #define NBDL_NULL_STORE_HPP
 
-#include<nbdl/fwd/make_store.hpp>
-#include<nbdl/fwd/null_store.hpp>
+#include <nbdl/fwd/make_store.hpp> // nbdl::uninitialized
+#include <nbdl/fwd/null_store.hpp>
 
-#include<nbdl/apply_action.hpp>
-#include<nbdl/get.hpp>
+#include <nbdl/apply_message.hpp>
+#include <nbdl/get.hpp>
 
 namespace nbdl
 {
@@ -23,7 +23,7 @@ namespace nbdl
   };
 
   template <>
-  struct apply_action_impl<null_store>
+  struct apply_message_impl<null_store>
   {
     template <typename Store, typename Message>
     static constexpr auto apply(Store&&, Message&&)
@@ -41,6 +41,6 @@ namespace nbdl
       -> nbdl::uninitialized
     { return {}; }
   };
-} // nbdl
+}
 
 #endif

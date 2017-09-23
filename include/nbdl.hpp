@@ -9,7 +9,7 @@
 
 #include <nbdl/apply_action.hpp>
 #include <nbdl/apply_delta.hpp>
-#include <nbdl/apply_foreign_action.hpp>
+#include <nbdl/apply_foreign_message.hpp>
 #include <nbdl/bind_map.hpp>
 #include <nbdl/bind_sequence.hpp>
 #include <nbdl/bind_variant.hpp>

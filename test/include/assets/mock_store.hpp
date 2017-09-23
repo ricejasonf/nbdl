@@ -35,7 +35,7 @@ namespace
     path_variant,             // path of store that is listening
     path_variant,             // path of message to listen for
     std::vector<path_variant> // paths that will be marked as changed as a result of the message
-  >  mock_store_result_apply_foreign_action;
+  >  mock_store_result_apply_foreign_message;
 }
 
 namespace nbdl
@@ -61,7 +61,7 @@ namespace nbdl
   };
 
   template <>
-  struct apply_action_impl<test_context::mock_store_tag>
+  struct apply_message_impl<test_context::mock_store_tag>
   {
     template <typename Store, typename Message>
     static constexpr auto apply(Store&&, Message const& m)
@@ -80,20 +80,20 @@ namespace nbdl
   };
 
   template <>
-  struct apply_foreign_action_impl<test_context::mock_store_tag>
+  struct apply_foreign_message_impl<test_context::mock_store_tag>
   {
     template <typename Store, typename Message, typename Fn>
     static constexpr auto apply(Store const&, Message const& m, Fn const& fn)
     {
       using Path = typename std::decay_t<Store>::path;
       using MessagePath = typename std::decay_t<decltype(message::get_path(m))>;
-      hana::at_c<0>(mock_store_result_apply_foreign_action).match([&](Path const&)
+      hana::at_c<0>(mock_store_result_apply_foreign_message).match([&](Path const&)
       {
-        hana::at_c<1>(mock_store_result_apply_foreign_action).match([&](MessagePath const& mp)
+        hana::at_c<1>(mock_store_result_apply_foreign_message).match([&](MessagePath const& mp)
         {
           if (hana::equal(mp, message::get_path(m)))
           {
-            for (auto const& v : hana::at_c<2>(mock_store_result_apply_foreign_action))
+            for (auto const& v : hana::at_c<2>(mock_store_result_apply_foreign_message))
             {
               v.match([&](Path const& p_)
               {

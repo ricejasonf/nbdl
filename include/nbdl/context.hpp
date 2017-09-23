@@ -7,15 +7,15 @@
 #ifndef NBDL_CONTEXT_HPP
 #define NBDL_CONTEXT_HPP
 
-#include <nbdl/def/builder/context.hpp>
+#include <nbdl/apply_message.hpp>
 #include <nbdl/concept/Consumer.hpp>
-#include <nbdl/concept/UpstreamMessage.hpp>
 #include <nbdl/concept/DownstreamMessage.hpp>
 #include <nbdl/concept/Producer.hpp>
 #include <nbdl/concept/StateConsumer.hpp>
+#include <nbdl/concept/UpstreamMessage.hpp>
+#include <nbdl/def/builder/context.hpp>
 #include <nbdl/detail/concept_pred.hpp>
 #include <nbdl/detail/normalize_path_type.hpp>
-#include <nbdl/apply_action.hpp>
 #include <nbdl/match.hpp>
 #include <nbdl/message.hpp>
 #include <nbdl/message_api.hpp>
@@ -311,7 +311,7 @@ namespace nbdl
       auto& store = stores[path_type];
       if constexpr(message::is_upstream<Message> && message::is_read<Message>)
       {
-        nbdl::apply_action(store, m);
+        nbdl::apply_message(store, m);
         // send response message
         nbdl::match(store, message::get_path(m), hana::overload_linearly(
           [&](nbdl::uninitialized)
@@ -340,28 +340,14 @@ namespace nbdl
           }
         ));
       }
-#if 0
-      else if constexpr(message::is_downstream<Message> && message::is_update<Message>)
-      {
-      // TODO Github issue #15: Handle Downstream Deltas by squashing them
-      nbdl::apply_action_downstream_delta(store, m).match(
-        [](auto&& d)
-          -> std::enable_if_t<nbdl::Delta<decltype(d)>::value>
-        {
-          // TODO create new downstream message with `d` as the payload
-        },
-        nbdl::noop
-      );
-      }
-#endif
       else
       {
         if constexpr(!decltype(hana::equal(
-          hana::type_c<decltype(nbdl::apply_action(store, m))>,
+          hana::type_c<decltype(nbdl::apply_message(store, m))>,
           hana::type_c<hana::false_>
         ))::value)
         {
-          if (nbdl::apply_action(store, m))
+          if (nbdl::apply_message(store, m))
           {
             // the state changed
             if constexpr(message::is_upstream<Message>)
@@ -386,7 +372,7 @@ namespace nbdl
       constexpr auto listeners = hana::find(ListenerLookup{}, path_type).value_or(mpdef::list<>{});
       hana::for_each(listeners, [&](auto listener_path_type)
       {
-        nbdl::apply_foreign_action(stores[listener_path_type], m, [&](auto const& path)
+        nbdl::apply_foreign_message(stores[listener_path_type], m, [&](auto const& path)
         {
           static_assert(
             decltype(
@@ -459,7 +445,7 @@ namespace nbdl
   // As a Store for StateConsumers
 
   template <>
-  struct apply_action_impl<detail::context_store_tag>
+  struct apply_message_impl<detail::context_store_tag>
   {
     template <typename Store, typename Message>
     static constexpr auto apply(Store& s, Message&& m)
@@ -478,6 +464,6 @@ namespace nbdl
       s.match(std::forward<Key>(k), std::forward<Fn>(fn));
     }
   };
-}//nbdl
+}
 
 #endif

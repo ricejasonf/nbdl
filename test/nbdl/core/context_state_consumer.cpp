@@ -50,7 +50,7 @@ void init_mock_stuff()
 {
   notifications = {};
   mock_store_result_apply_action = {};
-  mock_store_result_apply_foreign_action = {};
+  mock_store_result_apply_foreign_message = {};
 }
 
 TEST_CASE("No notifications are sent if state does not change.", "[context]") 
@@ -83,10 +83,10 @@ TEST_CASE("A single notification is sent when state changes for a single, primar
 TEST_CASE("Notifications are sent when a store is listening to actions from other paths.", "[context]") 
 {
   init_mock_stuff();
-  hana::at_c<0>(mock_store_result_apply_foreign_action) = path<2>(2, 1); // path of store
-  hana::at_c<1>(mock_store_result_apply_foreign_action) = path<1>(1, 1); // trigger
-  hana::at_c<2>(mock_store_result_apply_foreign_action).push_back(path<2>(2, 1)); // resulting notify
-  hana::at_c<2>(mock_store_result_apply_foreign_action).push_back(path<2>(2, 2)); // resulting notify
+  hana::at_c<0>(mock_store_result_apply_foreign_message) = path<2>(2, 1); // path of store
+  hana::at_c<1>(mock_store_result_apply_foreign_message) = path<1>(1, 1); // trigger
+  hana::at_c<2>(mock_store_result_apply_foreign_message).push_back(path<2>(2, 1)); // resulting notify
+  hana::at_c<2>(mock_store_result_apply_foreign_message).push_back(path<2>(2, 2)); // resulting notify
   producer0.push_api.push(producer0.push_api.message_api().make_downstream_create_message(
       path<1>(1, 1),
       my_entity<1>{1, 1}

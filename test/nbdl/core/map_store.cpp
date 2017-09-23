@@ -310,7 +310,7 @@ TEST_CASE("Apply action with foreign path.", "[map_store][apply_action]")
 
   auto store = test_map_store::make_test_store();
   bool did_state_change = false;
-  nbdl::apply_foreign_action(store,
+  nbdl::apply_foreign_message(store,
     push_api.message_api().make_downstream_create_message(
       test_context::path<2>(0, 0),
       test_context::entity::my_entity<2>{0, 0}

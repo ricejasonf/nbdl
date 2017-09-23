@@ -9,7 +9,7 @@
 
 #include <nbdl/fwd/map_store.hpp>
 
-#include <nbdl/apply_action.hpp>
+#include <nbdl/apply_message.hpp>
 #include <nbdl/binder/hash.hpp>
 #include <nbdl/get.hpp>
 #include <nbdl/make_store.hpp>
@@ -111,7 +111,7 @@ namespace nbdl
   };
 
   template <>
-  struct apply_action_impl<map_store_tag>
+  struct apply_message_impl<map_store_tag>
   {
     template <typename Store, typename Message>
     static constexpr auto apply(Store&& s, Message&& m)

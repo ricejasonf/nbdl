@@ -30,6 +30,7 @@ TEST_CASE("Make a store for use in nbdl::context", "[context_store][make_store]"
 
   static_assert(decltype(check_type)::value, "Expecting type nbdl::context_store_t<hana::tuple<int>>.");
 
+  static_assert(nbdl::NetworkStore<my_store>::value);
   nbdl::apply_action(store, hana::make_tuple(
     channel::downstream{}
   , action::update{}

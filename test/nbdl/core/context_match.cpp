@@ -5,11 +5,13 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <assets/TestContext.hpp>
+#include <nbdl/apply_message.hpp>
 #include <nbdl/make_context.hpp>
 #include <nbdl/map_store.hpp>
+#include <nbdl/match.hpp>
 #include <nbdl/message.hpp>
 
+#include <assets/TestContext.hpp>
 #include <catch.hpp>
 
 namespace hana = boost::hana;
@@ -82,7 +84,7 @@ namespace nbdl
   };
 
   template <>
-  struct apply_action_impl<test_context_match::tcms_store_tag>
+  struct apply_message_impl<test_context_match::tcms_store_tag>
   {
     template <typename Store, typename Message>
     static constexpr auto apply(Store&&, Message&&)

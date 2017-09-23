@@ -8,7 +8,7 @@
 #define NBDL_CONTEXT_STORE_HPP
 
 #include <nbdl/apply_action.hpp>
-#include <nbdl/apply_foreign_action.hpp>
+#include <nbdl/apply_foreign_message.hpp>
 #include <nbdl/make_store.hpp>
 #include <nbdl/message.hpp>
 
@@ -41,7 +41,7 @@ namespace nbdl
   };
 
   template <typename S>
-  struct apply_action_impl<context_store<S>>
+  struct apply_message_impl<context_store<S>>
   {
     template <typename Store, typename Message>
     static constexpr auto apply(Store&& s, Message&& m)
@@ -61,21 +61,6 @@ namespace nbdl
   };
 
   template <typename S>
-  struct apply_foreign_action_impl<context_store<S>>
-  {
-    template<typename Store, typename Message, typename Fn>
-    static constexpr void apply(Store&& s, Message&& m, Fn&& fn)
-    {
-      // just proxy to the contained store
-      nbdl::apply_foreign_action(
-        std::forward<Store>(s).store
-      , std::forward<Message>(m)
-      , std::forward<Fn>(fn)
-      );
-    }
-  };
-
-  template <typename S>
   struct match_impl<context_store<S>>
   {
     template <typename Store, typename Key, typename Fn>
@@ -86,6 +71,6 @@ namespace nbdl
     }
   };
 
-} // nbdl
+}
 
 #endif
