@@ -31,40 +31,18 @@ namespace nbdl
     , name_last
     , age
   );
-} // nbdl
+}
 
-TEST_CASE("make_delta", "[delta]")
+TEST_CASE("Make delta from one object", "[delta]")
 {
   using delta_test_entity::person;
   person p1{"Skippy", "McGee", 42};
-  person p2{"Skippy", "McGeez", 43};
+  person p2{};
 
-  auto d = nbdl::make_delta<nbdl::delta_tag>(p2, p1);
+  auto d1 = nbdl::make_delta<nbdl::delta_tag>(p1);
+  nbdl::apply_delta(d1, p2);
 
-  hana::unpack(d.storage, [&](auto const& maybe_name_first,
-                              auto const& maybe_name_last,
-                              auto const& maybe_age
-                             )
-  {
-    bool result1 = false;
-    maybe_name_first.match(
-      [&](nbdl::nothing) { result1 = true; },
-      [](auto&&)         { }
-    );
-    bool result2 = false;
-    maybe_name_last.match(
-      [&](std::string const& name_last)  { result2 = name_last == "McGeez"; },
-      [](nbdl::nothing)                  { }
-    );
-    bool result3 = false;
-    maybe_age.match(
-      [&](int age)       { result3 = age == 43; },
-      [](nbdl::nothing)  { }
-    );
-    CHECK(result1);
-    CHECK(result2);
-    CHECK(result3);
-  });
+  CHECK(hana::equal(p1, p2));
 }
 
 TEST_CASE("apply_delta mutate object in place", "[delta][apply_delta]")
@@ -76,24 +54,50 @@ TEST_CASE("apply_delta mutate object in place", "[delta][apply_delta]")
 
   auto d = nbdl::make_delta<nbdl::delta_tag>(p2, p1);
 
-  nbdl::apply_delta(d, p3);
+  CHECK(nbdl::apply_delta(d, p3));
+
+  CHECK("Scrappy" == p3.name_first);
+  CHECK("McGeez"  == p3.name_last);
+  CHECK(43        == p3.age);
+
+  // check idempotence
+  CHECK(!nbdl::apply_delta(d, p3));
 
   CHECK("Scrappy" == p3.name_first);
   CHECK("McGeez"  == p3.name_last);
   CHECK(43        == p3.age);
 }
 
-TEST_CASE("apply_delta using rvalue", "[delta][apply_delta]")
+TEST_CASE("apply_delta mutate delta in place", "[delta][apply_delta]")
 {
   using delta_test_entity::person;
   person p1{"Skippy", "McGee", 42};
   person p2{"Skippy", "McGeez", 43};
+  person p3{"Scrappy", "Doo", 6};
+  person p4{"Scrappy", "Doo", 500};
 
-  auto d = nbdl::make_delta<nbdl::delta_tag>(p2, p1);
+  auto d1 = nbdl::make_delta<nbdl::delta_tag>(p2, p1); // _,        McGeez, 43
+  auto d2 = nbdl::make_delta<nbdl::delta_tag>(p3, p2); // Scrappy,  Doo,    6
+  auto d3 = nbdl::make_delta<nbdl::delta_tag>(p4, p3); // _,        _,      500
+  auto d4 = nbdl::make_delta<nbdl::delta_tag>(p4, p4); // _,        _,      _
 
-  person p3 = nbdl::apply_delta(d, person{"Scrappy", "Doo", 6});
+  CHECK(nbdl::apply_delta(d2, d1));
+  CHECK(nbdl::apply_delta(d3, d1));
+  CHECK(!nbdl::apply_delta(d4, d1));
+  CHECK(nbdl::apply_delta(d1, p1));
 
-  CHECK("Scrappy" == p3.name_first);
-  CHECK("McGeez"  == p3.name_last);
-  CHECK(43        == p3.age);
+  CHECK("Scrappy" == p1.name_first);
+  CHECK("Doo"     == p1.name_last);
+  CHECK(500       == p1.age);
+
+  // check idempotence
+
+  nbdl::apply_delta(d2, d1);
+  nbdl::apply_delta(d3, d1);
+  nbdl::apply_delta(d4, d1);
+  CHECK(!nbdl::apply_delta(d1, p1));
+
+  CHECK("Scrappy" == p1.name_first);
+  CHECK("Doo"     == p1.name_last);
+  CHECK(500       == p1.age);
 }

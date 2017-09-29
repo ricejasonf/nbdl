@@ -7,7 +7,7 @@
 #ifndef NBDL_FWD_MAKE_DELTA_HPP
 #define NBDL_FWD_MAKE_DELTA_HPP
 
-#include<boost/hana/core/when.hpp>
+#include <boost/hana/core/when.hpp>
 
 namespace nbdl
 {
@@ -19,12 +19,15 @@ namespace nbdl
   template <typename T>
   struct make_delta_fn
   {
-    template <typename BindableSequence>
-    constexpr decltype(auto) operator()(BindableSequence const&, BindableSequence const&) const;
+    template <typename X>
+    constexpr auto operator()(X&&) const;
+
+    template <typename X, typename Y>
+    constexpr auto operator()(X&&, Y&&) const;
   };
 
   template <typename T>
   constexpr make_delta_fn<T> make_delta{};
-} // nbdl
+}
 
 #endif

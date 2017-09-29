@@ -17,23 +17,52 @@
 namespace nbdl
 {
   template <typename T>
-  template <typename BindableSequence>
-  constexpr decltype(auto) make_delta_fn<T>::operator()(BindableSequence const& x1,
-                                                        BindableSequence const& x2) const
+  template <typename X>
+  constexpr auto make_delta_fn<T>::operator()(X&& x) const
   {
     using Tag = hana::tag_of_t<T>;
     using Impl = make_delta_impl<Tag>;
 
-    using Return = decltype(Impl::apply(x1, x2));
+    using Return = decltype(Impl::apply(std::forward<X>(x)));
 
-    static_assert(nbdl::BindableSequence<BindableSequence>::value
-      , "nbdl::make_delta<T>(x, y) x and y must satisfy BindableSequence");
+    static_assert(
+      nbdl::BindableSequence<X>::value
+    , "nbdl::make_delta<T>(x) x must satisfy BindableSequence"
+    );
 
     static_assert(
       nbdl::Delta<Return>::value
-      , "nbdl::make_delta<T>(x, y) must return a Delta.");
+    , "nbdl::make_delta<T>(x) must return a Delta."
+    );
 
-    return Impl::apply(x1, x2);
+    return Impl::apply(std::forward<X>(x));
+  };
+
+  template <typename T>
+  template <typename X, typename Y>
+  constexpr auto make_delta_fn<T>::operator()(X&& x, Y&& y) const
+  {
+    using Tag = hana::tag_of_t<T>;
+    using Impl = make_delta_impl<Tag>;
+
+    using Return = decltype(Impl::apply(std::forward<X>(x), std::forward<Y>(y)));
+
+    static_assert(
+      decltype(hana::equal(hana::typeid_(x), hana::typeid_(y)))::value
+    , "nbdl::make_delta<T>(x, y) x and y must must be the same type"
+    );
+
+    static_assert(
+      nbdl::BindableSequence<X>::value && nbdl::BindableSequence<Y>::value
+    , "nbdl::make_delta<T>(x, y) x and y must satisfy BindableSequence"
+    );
+
+    static_assert(
+      nbdl::Delta<Return>::value
+    , "nbdl::make_delta<T>(x, y) must return a Delta."
+    );
+
+    return Impl::apply(std::forward<X>(x), std::forward<Y>(y));
   };
 
   template <typename Tag, bool condition>

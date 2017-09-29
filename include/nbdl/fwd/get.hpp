@@ -18,8 +18,11 @@ namespace nbdl
 
   struct get_fn
   {
-    template<typename Store, typename Path>
-    constexpr decltype(auto) operator()(Store&&, Path&&) const;
+    template<typename Store>
+    constexpr decltype(auto) operator()(Store&&) const;
+
+    template<typename Store, typename Key>
+    constexpr decltype(auto) operator()(Store&&, Key&&) const;
   };
 
   constexpr get_fn get{};

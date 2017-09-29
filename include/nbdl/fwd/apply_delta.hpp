@@ -7,7 +7,7 @@
 #ifndef NBDL_FWD_APPLY_DELTA_HPP
 #define NBDL_FWD_APPLY_DELTA_HPP
 
-#include<boost/hana/core/when.hpp>
+#include <boost/hana/core/when.hpp>
 
 namespace nbdl
 {
@@ -19,10 +19,10 @@ namespace nbdl
   struct apply_delta_fn
   {
     template <typename Delta, typename BindableSequence>
-    constexpr decltype(auto) operator()(Delta const&, BindableSequence&&) const;
+    constexpr bool operator()(Delta const&, BindableSequence&&) const;
   };
 
   constexpr apply_delta_fn apply_delta{};
-} // nbdl
+}
 
 #endif

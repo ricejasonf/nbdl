@@ -7,13 +7,13 @@
 #ifndef NBDL_CONCEPT_DELTA_HPP
 #define NBDL_CONCEPT_DELTA_HPP
 
-#include<nbdl/fwd/concept/Delta.hpp>
+#include <nbdl/fwd/concept/Delta.hpp>
 
-#include<nbdl/fwd/make_delta.hpp>
-#include<nbdl/fwd/apply_delta.hpp>
+#include <nbdl/fwd/make_delta.hpp>
+#include <nbdl/fwd/apply_delta.hpp>
 
-#include<boost/hana/core/default.hpp>
-#include<boost/hana/core/tag_of.hpp>
+#include <boost/hana/core/default.hpp>
+#include <boost/hana/core/tag_of.hpp>
 
 namespace nbdl
 {
@@ -28,6 +28,6 @@ namespace nbdl
       &&  !hana::is_default<nbdl::apply_delta_impl      <Tag>>::value
       ;
   };
-} // nbdl
+}
 
 #endif

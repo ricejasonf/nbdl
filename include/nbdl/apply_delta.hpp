@@ -15,7 +15,7 @@
 namespace nbdl
 {
   template <typename Delta, typename BindableSequence>
-  constexpr decltype(auto) apply_delta_fn::operator()(Delta const& d, BindableSequence&& e) const
+  constexpr bool apply_delta_fn::operator()(Delta const& d, BindableSequence&& e) const
   {
     using Tag = hana::tag_of_t<Delta>;
     using Impl = apply_delta_impl<Tag>;
@@ -35,6 +35,6 @@ namespace nbdl
   {
     static constexpr auto apply(...) = delete;
   };
-} // nbdl
+}
 
 #endif

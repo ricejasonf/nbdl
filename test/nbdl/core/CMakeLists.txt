@@ -22,6 +22,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   echo_producer.cpp
   entity.cpp
   hold_lazy.cpp
+  local_version.cpp
   map_store.cpp
   match.cpp
   match_path.cpp

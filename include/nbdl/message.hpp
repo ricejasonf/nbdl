@@ -416,6 +416,13 @@ namespace nbdl::message
   }
 
   template <typename Message>
+  constexpr auto is_confirmed_fn::operator()(Message const&) const
+    -> std::enable_if_t<!has_is_confirmed<Message>, hana::false_>
+  {
+    return hana::false_c;
+  }
+
+  template <typename Message>
   constexpr auto get_payload_fn::operator()(Message&& m) const
   {
     return get_payload_impl<std::decay_t<Message>>(std::forward<Message>(m));

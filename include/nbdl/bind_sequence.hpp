@@ -95,7 +95,7 @@ namespace nbdl
     {
       return hana::unpack(std::forward<BindableSequence>(xs), [&](auto&& ...x)
       {
-        return f(std::forward<decltype(x)>(x)...);
+        return std::forward<BindFn>(f)(std::forward<decltype(x)>(x)...);
       });
     }
   };

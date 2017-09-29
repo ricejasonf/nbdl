@@ -19,25 +19,21 @@
 
 namespace nbdl
 {
-  // Store
+  // State
 
   template<typename Tag>
   struct get_impl<Tag, hana::when<nbdl::Entity<Tag>::value>>
   {
-    template <typename Store, typename Key>
-    static constexpr decltype(auto) apply(Store&& s, Key&&)
+    template <typename State>
+    static constexpr decltype(auto) apply(State&& s)
     {
-      return get_member<std::decay_t<Key>>(std::forward<Store>(s));
+      return std::forward<State>(s);
     }
-  };
 
-  template<typename Tag>
-  struct apply_action_impl<Tag, hana::when<nbdl::Entity<Tag>::value>>
-  {
-    static constexpr auto apply(...)
+    template <typename State, typename Key>
+    static constexpr decltype(auto) apply(State&& s, Key&&)
     {
-      // TODO Perhaps actions would be useful for updating elements.
-      return hana::false_c;
+      return get_member<std::decay_t<Key>>(std::forward<State>(s));
     }
   };
 }

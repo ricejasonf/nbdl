@@ -7,8 +7,9 @@
 #ifndef NBDL_GET_HPP
 #define NBDL_GET_HPP
 
-#include <nbdl/concept/Store.hpp>
 #include <nbdl/fwd/get.hpp>
+
+#include <nbdl/concept/State.hpp>
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/concept/searchable.hpp>
@@ -21,16 +22,28 @@ namespace nbdl
 {
   namespace hana = boost::hana;
 
-  template<typename Store, typename Key>
-  constexpr decltype(auto) get_fn::operator()(Store&& s, Key&& k) const
+  template<typename State, typename Key>
+  constexpr decltype(auto) get_fn::operator()(State&& s, Key&& k) const
   {
-    using Tag = hana::tag_of_t<Store>;
+    using Tag = hana::tag_of_t<State>;
     using Impl = get_impl<Tag>;
 
-    static_assert(nbdl::Store<Store>::value,
-      "nbdl::get(store, path) requires 'store' to be a Store");
+    static_assert(nbdl::State<State>::value,
+      "nbdl::get(store, path) requires 'store' to be State");
 
-    return Impl::apply(std::forward<Store>(s), std::forward<Key>(k));
+    return Impl::apply(std::forward<State>(s), std::forward<Key>(k));
+  };
+
+  template<typename State>
+  constexpr decltype(auto) get_fn::operator()(State&& s) const
+  {
+    using Tag = hana::tag_of_t<State>;
+    using Impl = get_impl<Tag>;
+
+    static_assert(nbdl::State<State>::value,
+      "nbdl::get(store, path) requires 'store' to be State");
+
+    return Impl::apply(std::forward<State>(s));
   };
 
   template<typename Tag, bool condition>
@@ -43,21 +56,27 @@ namespace nbdl
   template<typename Tag>
   struct get_impl<Tag, hana::when<hana::Searchable<Tag>::value>>
   {
-    template <typename Store, typename Key>
-    static constexpr decltype(auto) apply(Store&& s, Key&& k)
+    template <typename State>
+    static constexpr decltype(auto) apply(State&& s)
     {
-      if constexpr(hana::Sequence<Store>::value)
+      return std::forward<State>(s);
+    }
+
+    template <typename State, typename Key>
+    static constexpr decltype(auto) apply(State&& s, Key&& k)
+    {
+      if constexpr(hana::Sequence<State>::value)
       {
         using Pred = decltype(hana::compose(hana::equal.to(hana::typeid_(k)), hana::typeid_));
         using Index = decltype(hana::index_if(s, Pred{}).value());
-        return hana::at(std::forward<Store>(s), Index{});
+        return hana::at(std::forward<State>(s), Index{});
       }
       else
       {
-        return hana::at_key(std::forward<Store>(s), std::forward<Key>(k));
+        return hana::at_key(std::forward<State>(s), std::forward<Key>(k));
       }
     }
   };
-} // nbdl
+}
 
 #endif

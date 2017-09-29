@@ -28,8 +28,10 @@ namespace nbdl
     using Tag = hana::tag_of_t<Store>;
     using Impl = apply_message_impl<Tag>;
 
-    static_assert(nbdl::NetworkStore<Store>::value,
-      "nbdl::apply_message(store, message) requires 'store' to be a NetworkStore");
+    static_assert(
+      nbdl::NetworkStore<Tag>::value
+    , "nbdl::apply_message(store, message) requires 'store' to be a NetworkStore"
+    );
 
 #if 0 // TODO add Message concept
     static_assert(nbdl::Message<Message>::value,

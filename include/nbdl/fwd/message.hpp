@@ -7,6 +7,7 @@
 #ifndef NBDL_FWD_MESSAGE_HPP
 #define NBDL_FWD_MESSAGE_HPP
 
+#include <boost/hana/integral_constant.hpp>
 #include <type_traits>
 #include <utility>
 
@@ -87,6 +88,28 @@ namespace nbdl::message
   template <typename Message, typename = void>
   constexpr auto get_normalized_path_impl = get_path_impl<Message>;
 
+  // traits
+
+  template <typename Message>
+  constexpr bool has_uid = !std::is_same<const no_impl,
+    decltype(get_uid_impl<std::decay_t<Message>>)>::value;
+
+  template <typename Message>
+  constexpr bool has_is_confirmed = !std::is_same<const no_impl,
+    decltype(is_confirmed_impl<std::decay_t<Message>>)>::value;
+
+  template <typename Message>
+  constexpr bool has_payload = !std::is_same<const no_impl,
+    decltype(get_payload_impl<std::decay_t<Message>>)>::value;
+
+  template <typename Message>
+  constexpr bool has_private_payload = !std::is_same<const no_impl,
+    decltype(get_uid_impl<std::decay_t<Message>>)>::value;
+
+  template <typename Message>
+  constexpr bool is_path_normalizable = !std::is_same<const no_impl,
+    decltype(get_normalized_path_impl<std::decay_t<Message>>)>::value;
+
   struct get_channel_fn
   {
     template <typename Message>
@@ -117,6 +140,10 @@ namespace nbdl::message
     template <typename Message>
     constexpr auto operator()(Message&& m) const
       -> decltype(is_confirmed_impl<std::decay_t<Message>>(std::forward<Message>(m)));
+
+    template <typename Message>
+    constexpr auto operator()(Message const& m) const
+      -> std::enable_if_t<!has_is_confirmed<Message>, boost::hana::false_>;
   };
 
   struct get_payload_fn
@@ -180,22 +207,6 @@ namespace nbdl::message
   {
     return to_downstream(std::forward<decltype(m)>(m), true);
   };
-
-  template <typename Message>
-  constexpr bool has_uid = !std::is_same<no_impl, std::decay_t<decltype(get_uid_impl<Message>)>>::value;
-
-  template <typename Message>
-  constexpr bool has_is_confirmed = !std::is_same<no_impl, std::decay_t<decltype(is_confirmed_impl<Message>)>>::value;
-
-  template <typename Message>
-  constexpr bool has_payload = !std::is_same<no_impl, std::decay_t<decltype(get_payload_impl<Message>)>>::value;
-
-  template <typename Message>
-  constexpr bool has_private_payload = !std::is_same<no_impl, std::decay_t<decltype(get_uid_impl<Message>)>>::value;
-
-  template <typename Message>
-  constexpr bool is_path_normalizable = !std::is_same<no_impl,
-    std::decay_t<decltype(get_normalized_path_impl<Message>)>>::value;
 
   // no_uid - readable param for no_impl
 

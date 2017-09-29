@@ -4,6 +4,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+
+#include <nbdl/apply_action.hpp>
+#include <nbdl/match.hpp>
 #include <nbdl/variant.hpp>
 
 #include <boost/hana/tuple.hpp>

@@ -282,17 +282,6 @@ namespace nbdl
       });
     }
   };
-
-  template<>
-  struct apply_action_impl<variant_tag>
-  {
-    template <typename Store, typename Other>
-    static constexpr auto apply(Store& s, Other&& o)
-    {
-      s = std::forward<Other>(o);
-      return hana::true_c;
-    }
-  };
 }
 
 namespace boost::hana

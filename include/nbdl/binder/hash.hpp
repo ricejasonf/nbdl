@@ -12,13 +12,14 @@
 #include <nbdl/concept/BindableMap.hpp>
 #include <nbdl/concept/BindableSequence.hpp>
 #include <nbdl/concept/BindableVariant.hpp>
+#include <nbdl/concept/Container.hpp>
 #include <nbdl/detail/hash_combine.hpp>
 
 #include <functional>
 
 namespace nbdl::binder
 {
-  namespace detail {
+  namespace hash_detail {
 
     struct writer
     {
@@ -49,6 +50,13 @@ namespace nbdl::binder
             bind(value); 
           });
         }
+        else if constexpr(nbdl::Container<T>::value)
+        {
+          for (auto const& x : t)
+          {
+            nbdl::detail::hash_combine(digest, x);
+          }
+        }
         else
         {
           nbdl::detail::hash_combine(digest, t);
@@ -62,7 +70,7 @@ namespace nbdl::binder
     template <typename T>
     std::size_t operator()(T const& t) const
     {
-      detail::writer binder{};
+      hash_detail::writer binder{};
       binder.bind(t);
       return binder.digest;
     }

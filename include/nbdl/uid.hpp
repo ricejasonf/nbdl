@@ -10,6 +10,7 @@
 #include <nbdl/entity.hpp>
 
 #include <array>
+#include <boost/hana/ext/std/array.hpp>
 #include <cstdint>
 
 #ifdef EMSCRIPTEN
