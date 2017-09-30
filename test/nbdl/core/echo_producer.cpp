@@ -8,6 +8,7 @@
 #include <assets/TestContext.hpp>
 #include <nbdl/echo_producer.hpp>
 #include <nbdl/make_context.hpp>
+#include <nbdl/message.hpp>
 #include <nbdl/null_store.hpp>
 
 #include <catch.hpp>
@@ -43,12 +44,14 @@ TEST_CASE("Echo producer should echo messages to downstream.", "[echo_producer]"
   auto& consumer2 = context->cell<2>();
 
   using Path = test_context::path<0>;
-  using CreatePath = typename nbdl::detail::make_create_path<test_context::path<0>>::type;
   using Entity = test_context::entity::my_entity<1>;
 
-  auto msg = consumer2.push_api.message_api().make_upstream_create_message(
-    CreatePath(5, decltype(hana::back(std::declval<CreatePath>())){}),
-    Entity{5, 5}
+  auto msg = message::make_upstream_create(
+    message::make_create_path<test_context::key<test_context::entity::my_entity<1>>>(
+      hana::make_tuple(test_context::key<test_context::entity::root1>{5})
+    )
+  , message::no_uid
+  , Entity{5, 5}
   );
   consumer2.push_api.push(msg);
   consumer2.push_api.push(msg);

@@ -18,7 +18,6 @@
 #include <nbdl/detail/normalize_path_type.hpp>
 #include <nbdl/match.hpp>
 #include <nbdl/message.hpp>
-#include <nbdl/message_api.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>
 #include <nbdl/variant.hpp>
@@ -42,18 +41,12 @@ namespace nbdl
   template <typename Tag, typename ArgTypes>
   class context
   {
-    using ContextMeta     = nbdl_def::builder::make_context_meta_t<Tag, ArgTypes>;
+    using tag = Tag;
+    using ContextMeta     = nbdl_def::builder::make_context_meta_t<Tag>;
     using ProducerLookup  = typename ContextMeta::producer_lookup;
     using CellTagTypes    = typename ContextMeta::cell_tag_types;
     using StoreMap        = typename ContextMeta::store_map;
     using ListenerLookup  = typename ContextMeta::listener_lookup;
-    using MessageApi      = nbdl::message_api<context>;
-
-    public:
-
-    using message_api_meta = typename ContextMeta::message_api_meta;
-
-    private:
 
     // calling the push functions after
     // the context is destroyed will result
@@ -64,6 +57,8 @@ namespace nbdl
 
       public:
 
+      using tag = tag;
+
       push_upstream_api(context& c) : ctx(c) { }
 
       template <typename Message>
@@ -73,8 +68,6 @@ namespace nbdl
           "nbdl::context::push_upstream_api requires an UpstreamMessage");
          ctx.push_message(std::forward<Message>(m));
       }
-
-      constexpr MessageApi message_api() const { return {}; }
     };
 
     class push_downstream_api
@@ -82,6 +75,8 @@ namespace nbdl
       context& ctx;
 
       public:
+
+      using tag = tag;
 
       push_downstream_api(context& c) : ctx(c) { }
 
@@ -92,8 +87,6 @@ namespace nbdl
           "nbdl::context::push_downstream_api requires a DownstreamMessage");
          ctx.push_message(std::forward<Message>(m));
       }
-
-      constexpr MessageApi message_api() const { return {}; }
     };
 
     class push_upstream_api_state_consumer
@@ -101,6 +94,8 @@ namespace nbdl
       context& ctx;
 
       public:
+
+      using tag = tag;
 
       push_upstream_api_state_consumer(context& c) : ctx(c) { }
 
@@ -115,39 +110,8 @@ namespace nbdl
       template <typename Path, typename ...Fns>
       void match(Path&& path, Fns&& ...fns) const
       {
-        ctx.match(std::forward<Path>(path), std::forward<Fns&&>(fns)...);
+        ctx.match(std::forward<Path>(path), std::forward<Fns>(fns)...);
       }
-
-      constexpr MessageApi message_api() const { return {}; }
-
-#if 0
-      template <typename PathSpec, typename ...Payloads>
-      void create(PathSpec, Payloads&& ...ps)
-      {
-        MessageApi{}.make_upstream_create_message(
-          nbdl::detail::resolve_path<PathSpec>(*this)
-        , std::forward<Payloads>(ps)...
-        );
-      }
-
-      template <typename PathSpec, typename Payload>
-      void update(PathSpec, Payload&& p)
-      {
-        MessageApi{}.make_upstream_update_message(
-          nbdl::detail::resolve_path<PathSpec>(*this)
-        , std::forward<Payload>(p)
-        );
-      }
-
-      template <typename PathSpec>
-      void delete_(PathSpec)
-      {
-        MessageApi{}.make_upstream_delete_message(
-          nbdl::detail::resolve_path<PathSpec>(*this)
-        , std::forward<Payload>(p)
-        );
-      }
-#endif
 
       using hana_tag = detail::context_store_tag;
     };
@@ -244,8 +208,8 @@ namespace nbdl
     {
       using Index = decltype(
         hana::at_key(
-          ProducerLookup{}, 
-          message::get_path_type(m)
+          ProducerLookup{}
+        , message::get_path_type(m)
         )
       );
       nbdl::send_upstream_message(cells[Index{}], std::forward<Message>(m));
@@ -278,26 +242,31 @@ namespace nbdl
 
     // called inside push_upstream_api_state_consumer
     template <typename Path, typename ...Fns>
-    decltype(auto) match(Path&& p, Fns&& ...fns)
+    void match(Path&& p, Fns&& ...fns)
     {
       constexpr auto path_type = decltype(hana::traits::decay(hana::decltype_(p))){};
-      return nbdl::match(stores[path_type], p, hana::overload_linearly(
-        [&](nbdl::uninitialized)
+      nbdl::match(stores[path_type], p, [&](auto const& value)
+      {
+        if constexpr(
+          decltype(hana::equal(hana::typeid_(value), hana::type_c<nbdl::uninitialized>)){}
+        )
         {
-          if constexpr(decltype(MessageApi{}.has_upstream_read(p))::value)
+          // Trigger upstream read request.
+          // This is a special case that stores can use to trigger
+          // read requests automatically.
+          // The store's value should be set to `nbdl::unresolved`
+          [&](auto d1, auto d2) // makes dependent
           {
-            // Trigger upstream read request.
-            // The store's value should be set to `nbdl::unresolved`
-            push_message(MessageApi{}.make_upstream_read_message(p));
-            return hana::overload_linearly(std::forward<Fns>(fns)...)(nbdl::unresolved{});
-          }
-        },
-        [&](auto const& value)
+            push_message(message::make_upstream_read(p, d1));
+            hana::overload_linearly(std::forward<Fns>(fns)...)(d2);
+          }(message::no_uid, nbdl::unresolved{});
+        }
+        else
         {
           // Users should not be allowed to modify values directly.
-          return hana::overload_linearly(std::forward<Fns>(fns)...)(value);
+          hana::overload_linearly(std::forward<Fns>(fns)...)(value);
         }
-      ));
+      });
     }
 
     // All actions MUST be applied to the
@@ -306,6 +275,7 @@ namespace nbdl
     // called inside PushUpstreamMessageFn and PushDownstreamMessageFn
     template <typename Message>
     auto push_message(Message const& m)
+      -> std::enable_if_t<message::is_path_normalizable<Message>>
     {
       constexpr auto path_type = decltype(message::get_path_type(m)){};
       auto& store = stores[path_type];
@@ -335,7 +305,7 @@ namespace nbdl
             // so send it as a downstream read message,
             // and don't bother the Producer with it.
             propagate_downstream(
-              MessageApi{}.to_downstream(m, std::forward<decltype(value)>(value))
+              message::to_downstream_read(m, std::forward<decltype(value)>(value))
             );
           }
         ));
@@ -387,6 +357,13 @@ namespace nbdl
           notify_state_consumers(path);
         });
       });
+    }
+    
+    template <typename Message>
+    auto push_message(Message const& m)
+      -> std::enable_if_t<!message::is_path_normalizable<Message> && message::is_upstream<Message>>
+    {
+      propagate_upstream(m);
     }
 
     // constructor helper

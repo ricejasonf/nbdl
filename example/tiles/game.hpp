@@ -16,6 +16,7 @@
 namespace tiles
 {
   namespace hana = boost::hana;
+  namespace message = nbdl::message;
 
   namespace detail
   {
@@ -107,14 +108,16 @@ namespace tiles
   // need a better way to get path types
   using game_path = hana::tuple<int>;
   using game_move_path = hana::tuple<int, int>;
-  using game_move_create_path = hana::tuple<int, hana::type<int>>;
 
   template <typename StateConsumer, typename Index>
   void create_game_move(StateConsumer& c, Index i)
   {
     c.push_api.push(
-      c.push_api.message_api()
-        .make_upstream_create_message(game_move_create_path{}, game_move{i})
+      message::make_upstream_create(
+        message::make_create_path<int>(hana::make_tuple(0))
+      , message::no_uid
+      , game_move{i}
+      )
     );
   }
 
@@ -195,9 +198,9 @@ namespace nbdl
     static constexpr auto apply(Store&& s, Message&& m, Fn&& fn)
     {
       if constexpr(decltype(hana::and_(
-        hana::bool_c<message::is_create<Message>>,
-        hana::bool_c<message::is_downstream<Message>>,
-        hana::typeid_(message::get_path_type(m)) == hana::type_c<tiles::game_move_path>
+        hana::bool_c<message::is_downstream<Message>>
+      , hana::bool_c<message::is_create<Message>>
+      , message::get_path_type(m) == hana::type_c<tiles::game_move_path>
       ))::value)
       {
         auto parent_path = hana::drop_back(message::get_path(m), hana::int_c<1>);

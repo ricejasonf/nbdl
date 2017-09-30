@@ -21,6 +21,7 @@
 #include <nbdl/message.hpp>
 
 #include <boost/hana.hpp>
+#include <boost/mp11/list.hpp>
 #include <utility>
 
 namespace nbdl_def {
@@ -28,6 +29,7 @@ namespace builder {
 
 namespace hana = boost::hana;
 namespace tag = nbdl_def::tag;
+using namespace boost::mp11;
 
 namespace entity_messages_detail {
   namespace action = nbdl::message::action;
@@ -38,197 +40,169 @@ namespace entity_messages_detail {
     mpdef::make_pair(tag::Delete,      action::delete_{})
   );
   constexpr auto get_action = hana::partial(hana::at_key, action_map);
-
-  template <typename T1, typename T2, typename T3, typename T4>
-  struct drop_nothings
-  { using type = mpdef::list<T1, T2, T3, T4>; };
-
-  template <typename T1, typename T2, typename T3>
-  struct drop_nothings<T1, T2, T3, hana::optional<>>
-  { using type = mpdef::list<T1, T2, T3>; };
-
-  template <typename T1, typename T2>
-  struct drop_nothings<T1, T2, hana::optional<>, hana::optional<>>
-  { using type = mpdef::list<T1, T2>; };
-
-  template <typename T1>
-  struct drop_nothings<T1, hana::optional<>, hana::optional<>, hana::optional<>>
-  { using type = mpdef::list<T1>; };
-
-  template <>
-  struct drop_nothings<hana::optional<>, hana::optional<>, hana::optional<>, hana::optional<>>
-  { using type = mpdef::list<>; };
-
-  template <typename AccessPoint, typename EntityMessage, typename = void>
-  struct get_maybes;
-
-  template <typename A, typename E>
-  struct get_maybes<A, E, std::enable_if_t<std::is_same<
-        decltype(entity_message_meta::channel(E{})),
-        nbdl::message::channel::upstream
-      >::value>
-  > 
-  {
-    // these are reversed to truncate the nothings
-    using type = typename drop_nothings<
-      std::decay_t<typename decltype(builder::entity_message_uid(A{}, E{}))::type>
-    , std::decay_t<typename decltype(builder::entity_message_payload(A{}, E{}))::type>
-    , std::decay_t<typename decltype(builder::entity_message_private_payload(A{}, E{}))::type>
-    , hana::optional<>
-    >::type;
-  };
-
-  template <typename A, typename E>
-  struct get_maybes<A, E, std::enable_if_t<std::is_same<
-        decltype(entity_message_meta::channel(E{})),
-        nbdl::message::channel::downstream
-      >::value>
-  > 
-  {
-    using type = typename drop_nothings<
-      std::decay_t<typename decltype(builder::entity_message_uid(A{}, E{}))::type>
-    , std::decay_t<typename decltype(builder::entity_message_is_from_root(A{}, E{}))::type>
-    , std::decay_t<typename decltype(builder::entity_message_payload(A{}, E{}))::type>
-    , std::decay_t<typename decltype(builder::entity_message_private_payload(A{}, E{}))::type>
-    >::type;
-  };
-
-  struct entity_message_meta_is_downstream_read_fn
-  {
-    template <typename EntityMessageMeta>
-    constexpr auto operator()(EntityMessageMeta m)
-    {
-      return
-            hana::decltype_(entity_message_meta::action(m))
-              == hana::type_c<nbdl::message::action::read>
-        &&  hana::decltype_(entity_message_meta::channel(m))
-              == hana::type_c<nbdl::message::channel::downstream>
-        ;
-    }
-  };
 }
 
-template <typename AccessPoint>
-struct entity_message_fn
+// make_upstream_messages
+
+template <typename Action, typename ...>
+struct make_upstream_messages;
+
+template <typename Path, typename Uid, typename Payload, typename PrivatePayload>
+struct make_upstream_messages<nbdl::message::action::create
+                            , Path
+                            , Uid
+                            , Payload
+                            , PrivatePayload
+                            >
 {
-  template <typename PathType
-          , typename EntityType
-          , typename PrivatePayload
-          , typename Action
-          , typename Channel>
-  constexpr auto operator()(mpdef::metastruct<entity_message_meta>::list
-                                      <PathType
-                                      , EntityType
-                                      , PrivatePayload
-                                      , Action
-                                      , Channel> e) const
-  {
-    using Path = typename nbdl::detail::make_create_path<
-      typename PathType::type, Channel, Action
-    >::type;
-
-    using Comps = mpdef::list<
-      Channel,
-      Action,
-      Path
-    >;
-
-    using Maybes = typename entity_messages_detail::get_maybes<AccessPoint, decltype(e)>::type;
-    using Tuple = mpdef::to_tuple<decltype(hana::concat(Comps{}, Maybes{}))>;
-
-    return hana::type_c<Tuple>;
-  }
+  using Length = decltype(hana::length(std::declval<Path>()));
+  static_assert(
+    Length::value > 0
+  , "Upstream message must have a path with at least one key."
+  );
+  using CreatePath = decltype(nbdl::message::make_create_path
+    <std::decay_t<decltype(hana::at(std::declval<Path>(), Length{} - hana::size_c<1>))>>(
+      hana::drop_back(std::declval<Path>(), hana::size_c<1>)
+    ));
+  using type = mpdef::list<nbdl::message::upstream_create<CreatePath, Uid, Payload, PrivatePayload>>;
 };
 
-template <typename AccessPoint>
-struct entity_not_found_message_fn
+template <typename Path, typename Uid, typename Payload, typename PrivatePayload>
+struct make_upstream_messages<nbdl::message::action::read
+                            , Path
+                            , Uid
+                            , Payload
+                            , PrivatePayload
+                            >
 {
-  template<typename EntityMessageMeta>
-  constexpr auto operator()(EntityMessageMeta e) const
-  {
-    constexpr auto message_meta = builder::make_entity_message_meta(
-      entity_message_meta::path(e),
-      hana::decltype_(nbdl::not_found{}), // sub the entity with not_found
-      entity_message_meta::private_payload(e),
-      entity_message_meta::action(e),
-      entity_message_meta::channel(e)
-    );
-    return entity_message_fn<AccessPoint>{}(message_meta);
-  }
+  using type = mpdef::list<nbdl::message::upstream_read<Path, Uid>>;
+};
+
+template <typename Path, typename Uid, typename Payload, typename PrivatePayload>
+struct make_upstream_messages<nbdl::message::action::update
+                            , Path
+                            , Uid
+                            , Payload
+                            , PrivatePayload
+                            >
+{
+  using type = mpdef::list<nbdl::message::upstream_update<Path, Uid, Payload>>;
+};
+
+template <typename Path, typename Uid, typename Payload, typename PrivatePayload>
+struct make_upstream_messages<nbdl::message::action::delete_
+                            , Path
+                            , Uid
+                            , Payload
+                            , PrivatePayload
+                            >
+{
+  using type = mpdef::list<nbdl::message::upstream_delete<Path, Uid>>;
+};
+
+// make_downstream_messages
+
+template <typename Action, typename ...>
+struct make_downstream_messages;
+
+template <typename Path, typename Uid, typename Payload, typename IsConfirmed>
+struct make_downstream_messages<nbdl::message::action::create
+                            , Path
+                            , Uid
+                            , Payload
+                            , IsConfirmed
+                            >
+{
+  using type = mpdef::list<
+    nbdl::message::downstream_create<Path, Uid, Payload, IsConfirmed>
+  >;
+};
+
+template <typename Path, typename Uid, typename Payload, typename IsConfirmed>
+struct make_downstream_messages<nbdl::message::action::read
+                            , Path
+                            , Uid
+                            , Payload
+                            , IsConfirmed
+                            >
+{
+  using type = mpdef::list<
+    nbdl::message::downstream_read<Path, Uid, Payload>
+  , nbdl::message::downstream_read<Path, Uid, nbdl::not_found>
+  >;
+};
+
+template <typename Path, typename Uid, typename Payload, typename IsConfirmed>
+struct make_downstream_messages<nbdl::message::action::update
+                            , Path
+                            , Uid
+                            , Payload
+                            , IsConfirmed
+                            >
+{
+  using type = mpdef::list<
+    nbdl::message::downstream_update<Path, Uid, Payload, IsConfirmed>
+  >;
+};
+
+template <typename Path, typename Uid, typename Payload, typename IsConfirmed>
+struct make_downstream_messages<nbdl::message::action::delete_
+                            , Path
+                            , Uid
+                            , Payload
+                            , IsConfirmed
+                            >
+{
+  using type = mpdef::list<
+    nbdl::message::downstream_delete<Path, Uid, IsConfirmed>
+  >;
 };
 
 // generate all messages for a given AccessPoint
 struct entity_messages_fn
 {
-  template<typename AccessPoint>
+  template <typename AccessPoint>
   constexpr auto operator()(AccessPoint access_point) const
   {
-    const auto path = access_point_meta::path(access_point);
-    const auto entity_type = hana::back(
+    auto path = access_point_meta::path(access_point);
+    auto entity_type = hana::back(
       access_point_meta::entities(access_point)
     );
-  #if 0
-    // TODO move definition of PrivatePayload into AccessPoint
-    // and add that to AccessPointMeta
-    // actions can be leaf nodes
-    const auto private_payload = hana::transform(
-      hana::find(AccessPointMeta::actions(access_point), tag::Create)
-        | hana::reverse_partial(hana::find, tag::PrivatePayload)
-        ,
-      hana::second
-    );
-    const auto actions = hana::unpack(hana::second(AccessPointMeta::actions(access_point)),
-      mpdef::make_list ^hana::on^
-        hana::compose(entity_messages_detail::getAction, hana::first)
-    );
-  #endif
-    const auto actions = hana::unpack(access_point_meta::actions(access_point),
+
+    auto actions = hana::unpack(access_point_meta::actions(access_point),
       mpdef::make_list ^hana::on^ hana::compose(entity_messages_detail::get_action, hana::first));
 
-    const auto private_payload = hana::nothing;
+    auto private_payload = nbdl::message::no_impl{};
 
     const auto messages = hana::unpack(
       actions
     , [=](auto ...action)
       {
-        return mpdef::make_list(
-          entity_message_fn<AccessPoint>{}(builder::make_entity_message_meta(
-            path
-          , entity_type
-          , private_payload
-          , action
-          , nbdl::message::channel::upstream{}
-          ))...
-        , entity_message_fn<AccessPoint>{}(builder::make_entity_message_meta(
-            path
-          , entity_type
-          , private_payload
-          , action
-          , nbdl::message::channel::downstream{}
-          ))...
-        );
+        return mp_append<
+          typename make_upstream_messages<
+            decltype(action)
+          , typename decltype(path)::type
+          , nbdl::message::no_impl //nbdl::uid
+          , typename decltype(entity_type)::type
+          , decltype(private_payload)
+          >::type...
+        , typename make_downstream_messages<
+            decltype(action)
+          , typename decltype(path)::type
+          , nbdl::message::no_impl //nbdl::uid
+          , typename decltype(entity_type)::type
+          , nbdl::message::no_impl //bool // is_confirmed
+          >::type...
+        >{};
       }
     );
 
-    // add a nbdl::not_found message if a read is present
-    if constexpr(hana::is_just(hana::index_if(actions
-      , [](auto x) { return std::is_same<nbdl::message::action::read, decltype(x)>{}; })))
-      
-      return hana::append(
-        messages
-      , entity_not_found_message_fn<AccessPoint>{}(builder::make_entity_message_meta(
-          path
-        , entity_type
-        , private_payload
-        , nbdl::message::action::read{}
-        , nbdl::message::channel::downstream{}
-        ))
-      );
-    else
-      return messages;
+    return messages;
   }
 };
-constexpr entity_messages_fn entity_messages{};
+
+template <typename AccessPoint>
+using entity_messages = decltype(entity_messages_fn{}(AccessPoint{}));
 
 }//builder
 }//nbdl_def

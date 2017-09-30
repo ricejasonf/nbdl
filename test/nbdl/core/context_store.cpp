@@ -14,7 +14,8 @@
 #include <boost/hana/type.hpp>
 #include <catch.hpp>
 
-namespace hana    = boost::hana;
+namespace hana = boost::hana;
+namespace message = nbdl::message;
 
 TEST_CASE("Make a store for use in nbdl::context", "[context_store][make_store]")
 {
@@ -31,13 +32,11 @@ TEST_CASE("Make a store for use in nbdl::context", "[context_store][make_store]"
   static_assert(decltype(check_type)::value, "Expecting type nbdl::context_store_t<hana::tuple<int>>.");
 
   static_assert(nbdl::NetworkStore<my_store>::value);
-  nbdl::apply_action(store, hana::make_tuple(
-    channel::downstream{}
-  , action::update{}
-  , hana::type_c<void>
-  , hana::nothing
-  , hana::nothing
-  , hana::just(hana::make_tuple(42))
+  nbdl::apply_message(store, message::make_downstream_update(
+    hana::make_tuple()
+  , message::no_uid
+  , hana::make_tuple(42)
+  , message::no_is_confirmed
   ));
 
   nbdl::match(store, hana::type_c<void>, [&](auto const& value)

@@ -8,10 +8,12 @@
 #include <assets/mock_store.hpp>
 #include <nbdl/make_context.hpp>
 #include <nbdl/map_store.hpp>
+#include <nbdl/message.hpp>
 
 #include <catch.hpp>
 
 namespace hana = boost::hana;
+namespace message = nbdl::message;
 using test_context::path;
 using test_context::entity::my_entity;
 
@@ -56,9 +58,11 @@ void init_mock_stuff()
 TEST_CASE("No notifications are sent if state does not change.", "[context]") 
 {
   init_mock_stuff();
-  producer0.push_api.push(producer0.push_api.message_api().make_downstream_create_message(
-      path<1>(1, 1),
-      my_entity<1>{1, 1}
+  producer0.push_api.push(message::make_downstream_create(
+    path<1>(1, 1)
+  , message::no_uid
+  , my_entity<1>{1, 1}
+  , message::no_is_confirmed
   ));
   CHECK(notifications.size() == 0);
 }
@@ -67,9 +71,11 @@ TEST_CASE("A single notification is sent when state changes for a single, primar
 {
   init_mock_stuff();
   mock_store_result_apply_action = path<1>(1, 1);
-  producer0.push_api.push(producer0.push_api.message_api().make_downstream_create_message(
-      path<1>(1, 1),
-      my_entity<1>{1, 1}
+  producer0.push_api.push(message::make_downstream_create(
+    path<1>(1, 1)
+  , message::no_uid
+  , my_entity<1>{1, 1}
+  , message::no_is_confirmed
   ));
   REQUIRE(notifications.size() == 1);
   bool result = false;
@@ -87,9 +93,11 @@ TEST_CASE("Notifications are sent when a store is listening to actions from othe
   hana::at_c<1>(mock_store_result_apply_foreign_message) = path<1>(1, 1); // trigger
   hana::at_c<2>(mock_store_result_apply_foreign_message).push_back(path<2>(2, 1)); // resulting notify
   hana::at_c<2>(mock_store_result_apply_foreign_message).push_back(path<2>(2, 2)); // resulting notify
-  producer0.push_api.push(producer0.push_api.message_api().make_downstream_create_message(
-      path<1>(1, 1),
-      my_entity<1>{1, 1}
+  producer0.push_api.push(message::make_downstream_create(
+    path<1>(1, 1)
+  , message::no_uid
+  , my_entity<1>{1, 1}
+  , message::no_is_confirmed
   ));
   REQUIRE(notifications.size() == 2);
 

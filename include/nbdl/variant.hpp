@@ -131,7 +131,6 @@ namespace nbdl
         new (&value_) std::decay_t<T>(std::move(val));
       }
 
-      //for serialization
       int get_type_id() const
       {
         return type_id;
@@ -292,6 +291,49 @@ namespace nbdl
     {
       s = std::forward<Other>(o);
       return hana::true_c;
+    }
+  };
+}
+
+namespace boost::hana
+{
+  // Comparable
+
+  template <>
+  struct equal_impl<nbdl::variant_tag, nbdl::variant_tag>
+  {
+    template <typename T>
+    static bool apply(T const& t1, T const& t2)
+    {
+      if (t1.get_type_id() == t2.get_type_id())
+      {
+        bool result = false;
+        t1.match(hana::overload_linearly(
+          [&](auto const& v1)
+          {
+            using V = std::decay_t<decltype(v1)>;
+            t2.match(hana::overload_linearly(
+              [&](V const& v2)
+              {
+                if constexpr(std::is_empty<V>::value)
+                {
+                  result = true;
+                }
+                else
+                {
+                  result = hana::equal(v1, v2);
+                }
+              }
+            , nbdl::noop
+            ));
+          }
+        , nbdl::noop
+        ));
+
+        return result;
+      }
+
+      return false;
     }
   };
 }

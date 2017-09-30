@@ -18,6 +18,7 @@
 
 namespace hana = boost::hana;
 namespace builder = nbdl_def::builder;
+#if 0 // TODO Update or delete this. This could be where order of messages is guaranteed
 
 #define DEFINE_TYPE(NAME) \
   struct NAME##_t {}; constexpr auto NAME = hana::type_c<NAME##_t>; \
@@ -61,9 +62,9 @@ int main()
 
     struct context_mock
     {
-      using message_api_meta = typename decltype(
+      using message_api_meta = decltype(
         builder::make_message_api(mpdef::make_list(producer_1))
-      )::type;
+      );
     };
 
     constexpr nbdl::message_api<context_mock> api{};
@@ -115,3 +116,4 @@ int main()
     );
   }
 }
+#endif

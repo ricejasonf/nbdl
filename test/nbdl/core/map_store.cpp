@@ -4,322 +4,410 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include <assets/TestContext.hpp>
-#include <nbdl/entity_members.hpp>
-#include <nbdl/make_context.hpp>
+
 #include <nbdl/map_store.hpp>
 
+#include <boost/hana/tuple.hpp>
 #include <catch.hpp>
 
-// All of the tests will use messages
-// for test_context::path_type<1> root2/my_entity1
+namespace hana = boost::hana;
+namespace message = nbdl::message;
 
-namespace test_map_store
+namespace
 {
-  struct my_context { };
+  template <int i> struct PathKey { int value; };
+  template <int i> struct Payload { int value; };
+  struct FakeUid { int value; };
 
-  nbdl::map_store<test_context::path<1>, test_context::entity::my_entity<1>> make_test_store()
-  { return {}; }
+  using Path = hana::tuple<PathKey<1>, PathKey<2>>;
 }
 
 namespace nbdl
 {
-  template <>
-  struct make_def_impl<test_map_store::my_context>
+  template <int i>
+  struct bind_sequence_impl<PathKey<i>>
   {
-    static constexpr auto apply()
+    template <typename BindFn>
+    static constexpr auto apply(PathKey<i> p, BindFn&& f)
     {
-      return test_context_def::make(
-        test_context::producer_tag{},
-        test_context::producer_tag{},
-        test_context::consumer_tag{},
-        test_context::consumer_tag{},
-        nbdl::map_store_tag{}
-      );
+      return std::forward<BindFn>(f)(p.value);
     }
   };
 }
 
-template <typename Variant, typename T>
-bool test_variant_equal(Variant const& v, T const& t)
+namespace boost::hana
 {
-  bool result = false;
-  v.match(
-    [&](T const& t_)  { result = hana::equal(t, t_); },
-    [](auto&&)        { }
-  );
-  return result;
+  template <int i>
+  struct equal_impl<PathKey<i>, PathKey<i>>
+  {
+    template <typename T1, typename T2>
+    static constexpr auto apply(T1 const& t1, T2 const& t2)
+    { return t1.value == t2.value; }
+  };
+
+  template <int i>
+  struct equal_impl<Payload<i>, Payload<i>>
+  {
+    template <typename T1, typename T2>
+    static constexpr auto apply(T1 const& t1, T2 const& t2)
+    { return t1.value == t2.value; }
+  };
+
+  template <>
+  struct equal_impl<FakeUid, FakeUid>
+  {
+    static constexpr auto apply(FakeUid const& t1, FakeUid const& t2)
+    { return t1.value == t2.value; }
+  };
 }
 
-TEST_CASE("Apply action upstream create.", "[map_store][apply_action]")
+namespace
 {
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-  using Path = test_context::path<1>;
-  using CreatePath = typename nbdl::detail::make_create_path<Path>::type;
+  nbdl::map_store<Path, Payload<2>> make_test_store()
+  { return {}; }
+}
 
-  auto store = test_map_store::make_test_store();
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_upstream_create_message(
-      CreatePath(1, hana::type_c<test_context::key<test_context::entity::my_entity<1>>>),
-      test_context::entity::my_entity<1>{2, 1}
+TEST_CASE("Apply message upstream create.", "[map_store][apply_message]")
+{
+  auto path = message::make_create_path<PathKey<2>>(hana::make_tuple(PathKey<1>{1}));
+  auto uid = FakeUid{242};
+  auto payload = Payload<2>{42};
+
+  auto store = make_test_store();
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_upstream_create(
+      path
+    , uid
+    , payload
     )
   );
   CHECK(did_state_change == false);
   CHECK(store.map.size() == 0);
 }
 
-TEST_CASE("Apply action downstream create.", "[map_store][apply_action]")
+TEST_CASE("Apply message downstream create.", "[map_store][apply_message]")
 {
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
+  auto path = hana::make_tuple(PathKey<1>{11}, PathKey<2>{22});
+  auto uid = FakeUid{242};
+  auto payload = Payload<2>{42};
 
-  auto store = test_map_store::make_test_store();
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_downstream_create_message(
-      test_context::path<1>(1, 2),
-      test_context::entity::my_entity<1>{2, 1}
+  auto store = make_test_store();
+
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_downstream_create(
+      hana::make_tuple(PathKey<1>{11}, PathKey<2>{22})
+    , uid
+    , Payload<2>{42}
+    , true
     )
   );
   CHECK(did_state_change == true);
   CHECK(store.map.size() == 1);
-  CHECK(test_variant_equal(
-    store.map[test_context::path<1>(1, 2)],
-    test_context::entity::my_entity<1>{2, 1}
+
+  bool result = false;
+  nbdl::match(store, path, hana::overload_linearly(
+    [&](Payload<2> const& result_payload)
+    {
+      result = hana::equal(result_payload, payload);
+    }
+  , nbdl::noop
   ));
+
+  CHECK(result);
 }
 
-TEST_CASE("Apply action upstream read.", "[map_store][apply_action]")
+TEST_CASE("Apply message upstream read.", "[map_store][apply_message]")
 {
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
+  auto path = hana::make_tuple(PathKey<1>{11}, PathKey<2>{22});
+  auto uid = FakeUid{242};
 
-  auto store = test_map_store::make_test_store();
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_upstream_read_message(test_context::path<1>(1, 2))
+  auto store = make_test_store();
+
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_upstream_read(path, uid)
   );
+
   // A placeholder (nbdl::unresolved) is created, but
   // technically the state does not change.
-  CHECK(did_state_change == false);
+  CHECK(not did_state_change);
   CHECK(store.map.size() == 1);
-  auto node = store.map.find(test_context::path<1>(1, 2));
-  REQUIRE(node != store.map.end());
+
   bool result = false;
-  node->second.match(
-    [&](nbdl::unresolved)  { result = true;  },
-    [](auto&&)            { }
-  );
-  CHECK(result);
-}
-
-TEST_CASE("Apply action downstream read with no value in store.", "[map_store][apply_action]")
-{
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-
-  auto store = test_map_store::make_test_store();
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_downstream_read_message(
-      test_context::path<1>(1, 2),
-      test_context::entity::my_entity<1>{2, 1}
-    )
-  );
-  CHECK(did_state_change == true);
-  CHECK(store.map.size() == 1);
-  CHECK(test_variant_equal(
-    store.map[test_context::path<1>(1, 2)],
-    test_context::entity::my_entity<1>{2, 1}
-  ));
-}
-
-TEST_CASE("Apply action downstream read with unresolved value in store.", "[map_store][apply_action]")
-{
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-
-  auto store = test_map_store::make_test_store();
-  store.map[test_context::path<1>(1, 2)] = nbdl::unresolved{};
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_downstream_read_message(
-      test_context::path<1>(1, 2),
-      test_context::entity::my_entity<1>{2, 1}
-    )
-  );
-  CHECK(did_state_change == true);
-  CHECK(store.map.size() == 1);
-  CHECK(test_variant_equal(
-    store.map[test_context::path<1>(1, 2)],
-    test_context::entity::my_entity<1>{2, 1}
-  ));
-}
-
-TEST_CASE("Apply action downstream read with resolved value in store.", "[map_store][apply_action]")
-{
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-
-  auto store = test_map_store::make_test_store();
-  store.map[test_context::path<1>(1, 2)] = test_context::entity::my_entity<1>{2, 1};
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_downstream_read_message(
-      test_context::path<1>(1, 2),
-      test_context::entity::my_entity<1>{0, 0}
-    )
-  );
-  CHECK(did_state_change == false);
-  CHECK(store.map.size() == 1);
-  CHECK(test_variant_equal(
-    store.map[test_context::path<1>(1, 2)],
-    test_context::entity::my_entity<1>{2, 1}
-  ));
-}
-
-TEST_CASE("Apply action downstream read with not_found value in store.", "[map_store][apply_action]")
-{
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-
-  auto store = test_map_store::make_test_store();
-  store.map[test_context::path<1>(1, 2)] = nbdl::not_found{};
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_downstream_read_message(
-      test_context::path<1>(1, 2),
-      test_context::entity::my_entity<1>{0, 0}
-    )
-  );
-  CHECK(did_state_change == false);
-  CHECK(store.map.size() == 1);
-  bool result = false;
-  store.map[test_context::path<1>(1, 2)].match(
-    [&](nbdl::not_found) { result = true;  },
-    [](auto&&)           { }
-  );
-  CHECK(result);
-}
-
-TEST_CASE("Apply action upstream update.", "[map_store][apply_action]")
-{
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-
-  auto store = test_map_store::make_test_store();
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_upstream_update_message(
-      test_context::path<1>(1, 2),
-      test_context::entity::my_entity<1>{2, 1}
-    )
-  );
-  CHECK(did_state_change == false);
-  CHECK(store.map.size() == 0);
-}
-
-TEST_CASE("Apply action downstream update with no value.", "[map_store][apply_action]")
-{
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-
-  // update always overwrites
-  auto store = test_map_store::make_test_store();
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_downstream_update_message(
-      test_context::path<1>(1, 2),
-      test_context::entity::my_entity<1>{2, 1}
-    )
-  );
-  CHECK(did_state_change == true);
-  CHECK(store.map.size() == 1);
-  CHECK(test_variant_equal(
-    store.map[test_context::path<1>(1, 2)],
-    test_context::entity::my_entity<1>{2, 1}
-  ));
-}
-
-TEST_CASE("Apply action downstream update with value.", "[map_store][apply_action]")
-{
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-
-  // update always overwrites
-  auto store = test_map_store::make_test_store();
-  store.map[test_context::path<1>(1, 2)] = test_context::entity::my_entity<1>{0, 0};
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_downstream_update_message(
-      test_context::path<1>(1, 2),
-      test_context::entity::my_entity<1>{2, 1}
-    )
-  );
-  CHECK(did_state_change == true);
-  CHECK(store.map.size() == 1);
-  CHECK(test_variant_equal(
-    store.map[test_context::path<1>(1, 2)],
-    test_context::entity::my_entity<1>{2, 1}
-  ));
-}
-
-TEST_CASE("Apply action upstream delete.", "[map_store][apply_action]")
-{
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-
-  auto store = test_map_store::make_test_store();
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_upstream_delete_message(
-      test_context::path<1>(1, 2)
-    )
-  );
-  CHECK(did_state_change == false);
-  CHECK(store.map.size() == 0);
-}
-
-TEST_CASE("Apply action downstream delete.", "[map_store][apply_action]")
-{
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-
-  auto store = test_map_store::make_test_store();
-  store.map[test_context::path<1>(1, 2)] = test_context::entity::my_entity<1>{0, 0};
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_downstream_delete_message(
-      test_context::path<1>(1, 2)
-    )
-  );
-  CHECK(did_state_change == true);
-  CHECK(store.map.size() == 0);
-}
-
-TEST_CASE("Apply action downstream delete with value present.", "[map_store][apply_action]")
-{
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-
-  auto store = test_map_store::make_test_store();
-  store.map[test_context::path<1>(1, 2)] = test_context::entity::my_entity<1>{0, 0};
-  bool did_state_change = nbdl::apply_action(store,
-    push_api.message_api().make_downstream_delete_message(
-      test_context::path<1>(1, 2)
-    )
-  );
-  CHECK(did_state_change == true);
-  CHECK(store.map.size() == 0);
-}
-
-TEST_CASE("Apply action with foreign path.", "[map_store][apply_action]")
-{
-  auto context = nbdl::make_unique_context<test_map_store::my_context>();
-  auto push_api = context->cell<0>().push_api;
-
-  auto store = test_map_store::make_test_store();
-  bool did_state_change = false;
-  nbdl::apply_foreign_message(store,
-    push_api.message_api().make_downstream_create_message(
-      test_context::path<2>(0, 0),
-      test_context::entity::my_entity<2>{0, 0}
-    ),
-    [&](auto const&)
+  nbdl::match(store, path, hana::overload_linearly(
+    [&](nbdl::unresolved)
     {
-      did_state_change = true;
+      result = true;
     }
+  , nbdl::noop
+  ));
+
+  CHECK(result);
+}
+
+TEST_CASE("Apply message downstream read with no value in store.", "[map_store][apply_message]")
+{
+  auto path = hana::make_tuple(PathKey<1>{11}, PathKey<2>{22});
+  auto uid = FakeUid{242};
+  auto payload = Payload<2>{42};
+
+  auto store = make_test_store();
+
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_downstream_read(
+      path
+    , uid
+    , payload
+    )
   );
+  CHECK(did_state_change == true);
+  CHECK(store.map.size() == 1);
+
+  bool result = false;
+  nbdl::match(store, path, hana::overload_linearly(
+    [&](Payload<2> const& result_payload)
+    {
+      result = hana::equal(result_payload, payload);
+    }
+  , nbdl::noop
+  ));
+
+  CHECK(result);
+}
+
+TEST_CASE("Apply message downstream read with unresolved value in store.", "[map_store][apply_message]")
+{
+  auto path = hana::make_tuple(PathKey<1>{11}, PathKey<2>{22});
+  auto uid = FakeUid{242};
+  auto payload = Payload<2>{42};
+
+  auto store = make_test_store();
+
+  store.map[path] = nbdl::unresolved{}; // this is impl stuff
+
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_downstream_read(
+      path
+    , uid
+    , payload
+    )
+  );
+
+  CHECK(did_state_change == true);
+  CHECK(store.map.size() == 1);
+
+  bool result = false;
+  nbdl::match(store, path, hana::overload_linearly(
+    [&](Payload<2> const& result_payload)
+    {
+      result = hana::equal(result_payload, payload);
+    }
+  , nbdl::noop
+  ));
+
+  CHECK(result);
+}
+
+TEST_CASE("Apply message downstream read with resolved value in store.", "[map_store][apply_message]")
+{
+  auto path = hana::make_tuple(PathKey<1>{11}, PathKey<2>{22});
+  auto uid = FakeUid{242};
+  auto payload = Payload<2>{42};
+  auto original_payload = Payload<2>{223};
+
+  auto store = make_test_store();
+
+  store.map[path] = original_payload;
+
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_downstream_read(
+      path
+    , uid
+    , payload
+    )
+  );
+
   CHECK(did_state_change == false);
+  CHECK(store.map.size() == 1);
+
+  bool result = false;
+  nbdl::match(store, path, hana::overload_linearly(
+    [&](Payload<2> const& result_payload)
+    {
+      result = hana::equal(result_payload, original_payload);
+    }
+  , nbdl::noop
+  ));
+
+  CHECK(result);
+}
+
+TEST_CASE("Apply message downstream read with not_found value in store.", "[map_store][apply_message]")
+{
+  auto path = hana::make_tuple(PathKey<1>{11}, PathKey<2>{22});
+  auto uid = FakeUid{242};
+  auto payload = Payload<2>{42};
+  auto original_payload = nbdl::not_found{};
+
+  auto store = make_test_store();
+
+  store.map[path] = original_payload;
+
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_downstream_read(
+      path
+    , uid
+    , payload
+    )
+  );
+
+  CHECK(did_state_change == false);
+  CHECK(store.map.size() == 1);
+
+  bool result = false;
+  nbdl::match(store, path, hana::overload_linearly(
+    [&](nbdl::not_found)
+    {
+      result = true;
+    }
+  , nbdl::noop
+  ));
+
+  CHECK(result);
+}
+
+TEST_CASE("Apply message upstream update.", "[map_store][apply_message]")
+{
+  auto path = hana::make_tuple(PathKey<1>{11}, PathKey<2>{22});
+  auto uid = FakeUid{242};
+  auto payload = Payload<2>{42};
+
+  auto store = make_test_store();
+
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_upstream_update(
+      path
+    , uid
+    , payload
+    )
+  );
+
+  CHECK(did_state_change == false);
+  CHECK(store.map.size() == 0);
+}
+
+TEST_CASE("Apply message downstream update with no value.", "[map_store][apply_message]")
+{
+  auto path = hana::make_tuple(PathKey<1>{11}, PathKey<2>{22});
+  auto uid = FakeUid{242};
+  auto payload = Payload<2>{42};
+
+  auto store = make_test_store();
+
+  // update always overwrites
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_downstream_update(
+      path
+    , uid
+    , payload
+    , true
+    )
+  );
+
+  CHECK(did_state_change == true);
+  CHECK(store.map.size() == 1);
+
+  bool result = false;
+  nbdl::match(store, path, hana::overload_linearly(
+    [&](Payload<2> const& result_payload)
+    {
+      result = hana::equal(result_payload, payload);
+    }
+  , nbdl::noop
+  ));
+
+  CHECK(result);
+}
+
+TEST_CASE("Apply message downstream update with value.", "[map_store][apply_message]")
+{
+  auto path = hana::make_tuple(PathKey<1>{11}, PathKey<2>{22});
+  auto uid = FakeUid{242};
+  auto payload = Payload<2>{42};
+
+  auto store = make_test_store();
+  store.map[path] = Payload<2>{123};
+
+  // update always overwrites
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_downstream_update(
+      path
+    , uid
+    , payload
+    , true
+    )
+  );
+
+  CHECK(did_state_change == true);
+  CHECK(store.map.size() == 1);
+
+  bool result = false;
+  nbdl::match(store, path, hana::overload_linearly(
+    [&](Payload<2> const& result_payload)
+    {
+      result = hana::equal(result_payload, payload);
+    }
+  , nbdl::noop
+  ));
+
+  CHECK(result);
+}
+
+TEST_CASE("Apply message upstream delete.", "[map_store][apply_message]")
+{
+  auto path = hana::make_tuple(PathKey<1>{11}, PathKey<2>{22});
+  auto uid = FakeUid{242};
+
+  auto store = make_test_store();
+
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_upstream_delete(
+      path
+    , uid
+    )
+  );
+
+  CHECK(did_state_change == false);
+  CHECK(store.map.size() == 0);
+}
+
+TEST_CASE("Apply message downstream delete.", "[map_store][apply_message]")
+{
+  auto path = hana::make_tuple(PathKey<1>{11}, PathKey<2>{22});
+  auto uid = FakeUid{242};
+
+  auto store = make_test_store();
+  store.map[path] = Payload<2>{22};
+
+  bool did_state_change = nbdl::apply_message(
+    store
+  , message::make_downstream_delete(
+      path
+    , uid
+    , true
+    )
+  );
+
+  CHECK(did_state_change == true);
   CHECK(store.map.size() == 0);
 }

@@ -17,15 +17,17 @@
 #include <boost/hana/partition.hpp>
 #include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
+#include <boost/mp11/list.hpp>
 
 namespace nbdl_def::builder
 {
+  using namespace boost::mp11;
 
   namespace hana = boost::hana;
 
   template <
-    typename UpstreamMessageTypes,
-    typename DownstreamMessageTypes
+    typename UpstreamMessageTypes
+  , typename DownstreamMessageTypes
   >
   struct message_api_meta
   {
@@ -38,23 +40,19 @@ namespace nbdl_def::builder
     // aggregate all entity messages
     // and partition by upstream/downstream
     template<typename ProducersMeta>
-    constexpr auto operator()(ProducersMeta producers) const
+    constexpr auto operator()(ProducersMeta) const
     {
-      return hana::unpack(
-        hana::partition(
-          hana::flatten(
-            hana::transform(
-              hana::flatten(
-                hana::unpack(producers,
-                mpdef::make_list ^hana::on^ producer_meta::access_points)
-              ),
-              builder::entity_messages
-            )
-          ),
-          hana::trait<nbdl::UpstreamMessage>
-        ),
-        hana::on(hana::template_<message_api_meta>, hana::decltype_)
-      );
+      return
+      mp_apply<message_api_meta,
+      mp_partition<
+        mp_apply<mp_append,
+        mp_transform<builder::entity_messages,
+        mp_apply<mp_append,
+        mp_transform_q<mpdef::metastruct_get<decltype(producer_meta::access_points)>,
+          ProducersMeta
+        >>>>
+      , nbdl::UpstreamMessage
+      >>{};
     }
   };
   constexpr make_message_api_fn make_message_api{};

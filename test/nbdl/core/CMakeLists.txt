@@ -25,7 +25,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   map_store.cpp
   match.cpp
   match_path.cpp
-  message_api.cpp
+  message.cpp
   params_promise.cpp
   path_promise.cpp
   pipe.cpp
@@ -34,6 +34,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   uid.cpp
   variant.cpp
 )
+#message_api.cpp
 
 # compile-time tests
 

@@ -17,6 +17,8 @@
 namespace hana = boost::hana;
 namespace builder = nbdl_def::builder;
 
+#if 0 // TODO update or delete this
+
 #define DEFINE_TYPE(NAME) \
   struct NAME##_t {}; constexpr auto NAME = hana::type_c<NAME##_t>; \
   struct NAME##_key {};
@@ -164,3 +166,4 @@ int main()
     );
   }
 }
+#endif

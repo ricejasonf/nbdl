@@ -13,6 +13,7 @@
 #include <nbdl/def/builder/context.hpp>
 #include <nbdl/def/directives.hpp>
 #include <nbdl/entity.hpp>
+#include <nbdl/message_api.hpp>
 #include <nbdl/null_store.hpp>
 
 #include <boost/hana.hpp>
@@ -263,10 +264,10 @@ namespace test_context {
   {
     using hana_tag = test_context::producer_tag;
 
-    // If there are other producers the variants supplied by the PushApi
-    // will probably not be sufficient.
-    using MessageVariant = typename decltype(std::declval<PushApi>().message_api()
-      .template get_upstream_variant_type<null_system_message>())::type;
+    using MessageVariant = typename nbdl::message_api<
+      typename PushApi::tag
+    , null_system_message  
+    >::upstream_variant;
 
     PushApi push_api;
     std::vector<MessageVariant> recorded_messages;
@@ -283,8 +284,10 @@ namespace test_context {
   {
     using hana_tag = test_context::consumer_tag;
 
-    using MessageVariant = typename decltype(std::declval<PushApi>().message_api()
-      .template get_downstream_variant_type<null_system_message>())::type;
+    using MessageVariant = typename nbdl::message_api<
+      typename PushApi::tag
+    , null_system_message  
+    >::downstream_variant;
 
     PushApi push_api;
     T t_;
@@ -303,8 +306,11 @@ namespace test_context {
   {
     using hana_tag = test_context::consumer_tag;
 
-    using MessageVariant = typename decltype(std::declval<PushApi>().message_api()
-      .template get_downstream_variant_type<null_system_message>())::type;
+    using MessageVariant = typename nbdl::message_api<
+      typename PushApi::tag
+    , null_system_message  
+    >::downstream_variant;
+
 
     PushApi push_api;
     std::vector<MessageVariant> recorded_messages;

@@ -49,7 +49,7 @@ namespace nbdl
       {
         if constexpr(message::is_create<Message> || message::is_update<Message>)
         {
-          map[message::get_path(m)] = *message::get_maybe_payload(m);
+          map[message::get_path(m)] = message::get_payload(m);
           return true;
         }
         else if constexpr(message::is_delete<Message>)
@@ -63,7 +63,7 @@ namespace nbdl
           map[message::get_path(m)].match(
             [&](nbdl::unresolved)
             {
-               map[message::get_path(m)] = *message::get_maybe_payload(m);
+               map[message::get_path(m)] = message::get_payload(m);
                result = true;
             },
             [](auto const&) { }
@@ -124,16 +124,12 @@ namespace nbdl
   struct match_impl<map_store_tag>
   {
     template <typename Store, typename Key, typename Fn>
-    static constexpr auto apply(Store&& s, Key&& k, Fn&& fn)
-      ->  nbdl::detail::common_type_t<
-            decltype((*(s.map.find(std::forward<Key>(k)))).match(std::forward<Fn>(fn))),
-            decltype(std::forward<Fn>(fn)(nbdl::uninitialized{}))
-          >
+    static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
     {
       auto node = s.map.find(std::forward<Key>(k));
       if (node != s.map.end())
       {
-        return (*node).match(std::forward<Fn>(fn));
+        return (*node).second.match(std::forward<Fn>(fn));
       }
       else
       {

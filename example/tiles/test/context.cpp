@@ -30,6 +30,7 @@ TEST_CASE(".", "[tiles][tiles_context]")
         2, 5, 7
       }}
     };
+
     CHECK(g.board == expected.board);
   });
 }

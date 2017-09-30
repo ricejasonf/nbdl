@@ -54,8 +54,8 @@ namespace nbdl_def::builder
 
   struct context_fn
   {
-    template <typename TagType, typename ArgTypes>
-    constexpr auto operator()(TagType, ArgTypes) const
+    template <typename TagType>
+    constexpr auto operator()(TagType) const
     {
       using Def = decltype(::nbdl::make_def(TagType{}));
 
@@ -73,7 +73,7 @@ namespace nbdl_def::builder
                                           )
                                         );
       constexpr auto listener_lookup  = hana::type_c<builder::listener_lookup<decltype(producers_meta)>>;
-      constexpr auto message_api      = builder::make_message_api(producers_meta);
+      constexpr auto message_api      = hana::typeid_(builder::make_message_api(producers_meta));
       constexpr auto params = hana::concat(
         cell_info,
         mpdef::make_list(store_map, message_api, listener_lookup)
@@ -85,8 +85,8 @@ namespace nbdl_def::builder
 
   constexpr context_fn context{};
 
-  template <typename Tag, typename ArgTypes>
-  using make_context_meta_t = typename decltype(builder::context(hana::type_c<Tag>, ArgTypes{}))::type;
+  template <typename Tag>
+  using make_context_meta_t = typename decltype(builder::context(hana::type_c<Tag>))::type;
 }
 
 #endif

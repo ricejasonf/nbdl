@@ -14,6 +14,7 @@
 
 #include <boost/hana/equal.hpp>
 #include <boost/hana/value.hpp>
+#include <boost/mp11/list.hpp>
 #include <catch.hpp>
 
 namespace hana    = boost::hana;
@@ -21,6 +22,7 @@ namespace entity  = test_context::entity;
 namespace message = nbdl::message;
 namespace channel = nbdl::message::channel;
 namespace action  = nbdl::message::action;
+using namespace boost::mp11;
 
 namespace test_context_
 {
@@ -49,28 +51,15 @@ namespace
 {
   struct check_message_equal_fn
   {
-    template <typename Message, typename Orig>
-    constexpr auto operator()(Message const& m, Orig const& o) const
+    template <typename MessageVariant, typename Orig>
+    constexpr auto operator()(MessageVariant const& m, Orig const& o) const
     {
       bool result = false;
       m.match(
         [&](auto const& m)
-          -> std::enable_if_t<std::is_same<std::decay_t<decltype(m)>, std::decay_t<Orig>>::value, void>
+          -> std::enable_if_t<std::is_same<std::decay_t<decltype(m)>, std::decay_t<Orig>>::value>
         {
-          CHECK(hana::equal(
-            hana::decltype_(message::get_channel(m)),
-            hana::decltype_(message::get_channel(o))
-          ));
-          CHECK(hana::equal(
-            hana::decltype_(message::get_action(m)),
-            hana::decltype_(message::get_action(o))
-          ));
-          CHECK(hana::equal(message::get_path(m), message::get_path(o)));
-          CHECK(hana::equal(message::get_maybe_payload(m), message::get_maybe_payload(o)));
-          CHECK(hana::equal(message::get_maybe_private_payload(m), message::get_maybe_private_payload(o)));
-          CHECK(hana::equal(message::get_maybe_is_from_root(m), message::get_maybe_is_from_root(o)));
-          // TODO compare nbdl::uids
-          result = true;
+          result = hana::equal(m.storage, o.storage);
         },
         [&](auto const&) { result = false; }
       );
@@ -91,9 +80,10 @@ TEST_CASE("Dispatch Downstream Read Message", "[context]")
   auto& consumer3 = context->cell<3>();
 
   // Send downstream read to consumers.
-  auto msg = producer0.push_api.message_api().make_downstream_read_message(
-    test_context::path1(1, 2),
-    entity::my_entity<1>{2, 1}
+  auto msg = message::make_downstream_read(
+    test_context::path1(1, 2)
+  , message::no_uid
+  , entity::my_entity<1>{2, 1}
   );
   producer0.push_api.push(msg);
 
@@ -118,7 +108,7 @@ TEST_CASE("Dispatch Upstream Read Message", "[context]")
   auto& consumer3 = context->cell<3>();
 
   // Send upstream read to producer0.
-  auto msg = consumer2.push_api.message_api().make_upstream_read_message(test_context::path1(1, 2));
+  auto msg = message::make_upstream_read(test_context::path1(1, 2));
   consumer2.push_api.push(msg);
 
   // producer1 should not receive the message.
@@ -152,9 +142,11 @@ TEST_CASE("Dispatch Downstream Create Message", "[context]")
     auto& consumer3 = context->cell<3>();
 
     // Send downstream create to consumers.
-    auto msg = producer0.push_api.message_api().make_downstream_create_message(
-      Path(1, 2),
-      Entity{2, 1}
+    auto msg = message::make_downstream_create(
+      Path(1, 2)
+    , message::no_uid
+    , Entity{2, 1}
+    , message::no_is_confirmed
     );
     producer0.push_api.push(msg);
 
@@ -178,7 +170,6 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
   ), [](auto types)
   {
     using Path = typename decltype(+hana::first(types))::type;
-    using CreatePath = typename decltype(nbdl::detail::make_create_path_type(hana::type_c<Path>))::type;
     using Entity = typename decltype(+hana::second(types))::type;
 
     auto context = nbdl::make_unique_context<test_context_::my_context>();
@@ -189,9 +180,10 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
     auto& consumer3 = context->cell<3>();
 
     // Send upstream create to producer0.
-    auto msg = consumer2.push_api.message_api().make_upstream_create_message(
-      CreatePath(1, decltype(hana::back(std::declval<CreatePath>())){}),
-      Entity{2, 1}
+    auto msg = message::make_upstream_create(
+      message::make_create_path<mp_second<Path>>(hana::tuple<mp_first<Path>>{1})
+    , message::no_uid
+    , Entity{2, 1}
     );
     consumer2.push_api.push(msg);
 
@@ -214,7 +206,6 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
   ), [](auto types)
   {
     using Path = typename decltype(+hana::first(types))::type;
-    using CreatePath = typename decltype(nbdl::detail::make_create_path_type(hana::type_c<Path>))::type;
     using Entity = typename decltype(+hana::second(types))::type;
 
     auto context = nbdl::make_unique_context<test_context_::my_context>();
@@ -225,9 +216,10 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
     auto& consumer3 = context->cell<3>();
 
     // Send upstream create to producer0.
-    auto msg = consumer2.push_api.message_api().make_upstream_create_message(
-      CreatePath(1, decltype(hana::back(std::declval<CreatePath>())){}),
-      Entity{2, 1}
+    auto msg = message::make_upstream_create(
+      message::make_create_path<mp_second<Path>>(hana::tuple<mp_first<Path>>{1})
+    , message::no_uid
+    , Entity{2, 1}
     );
     consumer2.push_api.push(msg);
 
@@ -263,9 +255,11 @@ TEST_CASE("Dispatch Downstream Update Message", "[context]")
     auto& consumer3 = context->cell<3>();
 
     // Send downstream update to consumers.
-    auto msg = producer0.push_api.message_api().make_downstream_update_message(
-      Path(1, 2),
-      Entity{2, 1}
+    auto msg = message::make_downstream_update(
+      Path(1, 2)
+    , message::no_uid
+    , Entity{2, 1}
+    , message::no_is_confirmed
     );
     producer0.push_api.push(msg);
 
@@ -299,9 +293,10 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
     auto& consumer3 = context->cell<3>();
 
     // Send upstream update to producer0.
-    auto msg = consumer2.push_api.message_api().make_upstream_update_message(
-      Path(1, 2),
-      Entity{2, 1}
+    auto msg = message::make_upstream_update(
+      Path(1, 2)
+    , message::no_uid
+    , Entity{2, 1}
     );
     consumer2.push_api.push(msg);
 
@@ -334,9 +329,10 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
     auto& consumer3 = context->cell<3>();
 
     // Send upstream update to producer0.
-    auto msg = consumer2.push_api.message_api().make_upstream_update_message(
-      Path(1, 2),
-      Entity{2, 1}
+    auto msg = message::make_upstream_update(
+      Path(1, 2)
+    , message::no_uid
+    , Entity{2, 1}
     );
     consumer2.push_api.push(msg);
 

@@ -70,17 +70,21 @@ namespace nbdl
     {
       if constexpr(message::is_create<Message>)
       {
-        p.push_api.push(p.push_api.message_api().to_downstream_from_root(
-          m,
-          echo_producer_detail::make_unique_key(m)
-        ));
+        p.push_api.push(
+          message::to_downstream_with_key(
+            m,
+            echo_producer_detail::make_unique_key(m)
+          )
+        );
       }
       else
       {
-        p.push_api.push(p.push_api.to_downstream_from_root(m));
+        p.push_api.push(
+          message::to_downstream(m, true)
+        );
       }
     }
   };
-} // nbdl
+}
 
 #endif
