@@ -16,4 +16,8 @@ template<> struct entity_members_impl<RECORD>                                 \
 { using type = mpdef::list<NBDL_MEMBERS(RECORD, __VA_ARGS__)>; };   \
 NBDL_MEMBER_NAMES(RECORD, __VA_ARGS__)
 
+#define NBDL_EMPTY(RECORD) \
+template<> struct entity_members_impl<RECORD> \
+{ using type = mpdef::list<>; };
+
 #endif
