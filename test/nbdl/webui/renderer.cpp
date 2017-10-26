@@ -5,14 +5,17 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <nbdl/message.hpp>
 #include <nbdl/variant.hpp>
 #include <nbdl/webui/detail/dom_manips.hpp>
 #include <nbdl/webui/html.hpp>
+#include <nbdl_test/network_store.hpp>
 
 #include <boost/hana.hpp>
 #include <emscripten/val.h>
 #include <catch.hpp>
 
+namespace message = nbdl::message;
 namespace hana = boost::hana;
 using namespace hana::literals;
 using namespace std::string_literals;
@@ -149,7 +152,7 @@ TEST_CASE("Render dynamic attributes", "[webui][renderer]")
   CHECK(check_dom_equals());
 }
 
-TEST_CASE("Match value using list of predicates", "[webui][renderer][ui_spec][match_if")
+TEST_CASE("Match value using list of predicates", "[webui][renderer][ui_spec][match_if]")
 {
   using namespace nbdl::webui::html;
   using namespace nbdl::ui_spec;
@@ -183,6 +186,48 @@ TEST_CASE("Match value using list of predicates", "[webui][renderer][ui_spec][ma
   auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
 
   my_store["key_1"_s] = std::string("hello");
+
+  nbdl::notify_state_change(renderer, hana::type_c<void>);
+
+  CHECK(check_dom_equals());
+}
+
+TEST_CASE("Handle click events.", "[webui][renderer][event_attribute]")
+{
+  using namespace nbdl::webui::html;
+  using namespace nbdl::ui_spec;
+
+  auto target = make_dom_test_equality(R"HTML(<div id="click_me">clicked: 1</div>)HTML");
+
+  auto my_store = nbdl_test::make_network_store(hana::make_map(
+    hana::make_pair("click_count"_s, int{0})
+  ));
+
+  constexpr auto handle_click = [](auto send, int click_count)
+  {
+    send(message::make_upstream_update(
+      hana::make_tuple("click_count"_s)
+    , message::no_uid
+    , click_count + 1
+    ));
+  };
+
+  auto spec =
+    div(
+      attribute("id"_s, "click_me"_s)
+    , on_click(handle_click, get("click_count"_s))
+    , text_node("clicked: "_s)
+    , text_node(get("click_count"_s))
+    );
+
+  using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
+  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+
+  // trigger click
+  emscripten::val::global("triggerEvent")(
+    emscripten::val("click")
+  , emscripten::val("click_me")
+  );
 
   nbdl::notify_state_change(renderer, hana::type_c<void>);
 

@@ -6,6 +6,7 @@ var ws      = require('ws');
 global.initDom = initDom;
 global.initDomEquality = initDomEquality;
 global.checkDomEquals = checkDomEquals;
+global.triggerEvent = triggerEvent;
 initDom('')
 
 var Module = {
@@ -66,4 +67,12 @@ function checkDomEquals()
 
   // Note that `isEqualNode` was returning false in the case of multiple textNodes
   //return s[0].isEqualNode(s[1]);
+}
+
+function triggerEvent(event_name, id)
+{
+  var el = test_target.querySelector('#' + id);
+  var event = global.document.createEvent('Event');
+  event.initEvent(event_name, true, true);
+  el.dispatchEvent(event);
 }

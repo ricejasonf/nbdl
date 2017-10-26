@@ -25,7 +25,7 @@
 namespace nbdl::webui::detail
 {
   namespace hana = boost::hana;
-  namespace mp11 = boost::mp11;
+  using namespace boost::mp11;
 
   template <typename FlattenSpecFn>
   struct flatten_named_node_fn
@@ -37,10 +37,10 @@ namespace nbdl::webui::detail
       using Nodes = decltype(hana::drop_front(ChildNodes{}));
       constexpr auto children = hana::unpack(Nodes{}, [](auto ...x)
       {
-        return mp11::mp_append<decltype(FlattenSpecFn{}(x))...>{};
+        return mp_append<decltype(FlattenSpecFn{}(x))...>{};
       });
 
-      return mp11::mp_append<
+      return mp_append<
         mpdef::list<action_fn<begin, typename Tag::type, Name>>
       , std::decay_t<decltype(children)>
       , mpdef::list<action_fn<end, typename Tag::type, Name>>
@@ -80,6 +80,13 @@ namespace nbdl::webui::detail
         );
         return mpdef::list<action_fn<
           typename decltype(current_tag)::type
+        , std::decay_t<decltype(child_nodes)>
+        >>{};
+      }
+      else if constexpr(hana::equal(current_tag, html::tag::event_attribute))
+      {
+        return mpdef::list<mp_append<
+          action_fn<typename decltype(current_tag)::type>
         , std::decay_t<decltype(child_nodes)>
         >>{};
       }

@@ -15,10 +15,11 @@ namespace nbdl::webui
 
   namespace html
   {
-    MPDEF_DIRECTIVE_LIST(element)
-    MPDEF_DIRECTIVE_LIST(attribute)
     MPDEF_DIRECTIVE_LEAF(text_node)
     MPDEF_DIRECTIVE_LEAF(unsafe_set_inner_html)
+    MPDEF_DIRECTIVE_LIST(attribute)
+    MPDEF_DIRECTIVE_LIST(element)
+    MPDEF_DIRECTIVE_LIST(event_attribute)
 
     template <typename ...Args>
     constexpr auto div(Args ...args)
@@ -51,6 +52,10 @@ namespace nbdl::webui
     template <typename ...Args>
     constexpr auto attr_href(Args ...args)
     { return attribute(hana::string<'h', 'r', 'e', 'f'>{}, args...); }
+
+    template <typename ...Args>
+    constexpr auto on_click(Args ...args)
+    { return event_attribute(hana::string<'c', 'l', 'i', 'c', 'k'>{}, args...); }
   }
 }
 

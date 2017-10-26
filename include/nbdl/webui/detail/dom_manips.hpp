@@ -7,12 +7,14 @@
 #ifndef NBDL_WEBUI_DETAIL_DOM_MANIPS_HPP
 #define NBDL_WEBUI_DETAIL_DOM_MANIPS_HPP
 
+#include <mpdef/list.hpp>
 #include <nbdl/catch.hpp>
 #include <nbdl/detail/match_if.hpp>
 #include <nbdl/fwd/webui/detail/dom_manips.hpp>
 #include <nbdl/ui_helper/params_concat.hpp>
 #include <nbdl/ui_helper/path.hpp>
 #include <nbdl/ui_spec.hpp>
+#include <nbdl/webui/detail/event_receiver.hpp>
 #include <nbdl/webui/html.hpp>
 #include <nbdl/webui/renderer.hpp>
 
@@ -22,6 +24,8 @@
 
 namespace nbdl::webui::detail
 {
+  using js_val = nbdl::detail::js_val;
+
   // converts a Constant or string to js val
   template <typename T>
   emscripten::val to_json_val(T t)
@@ -358,6 +362,41 @@ namespace nbdl::webui::detail
       p.set("innerHTML", emscripten::val(hana::to<char const*>(String{})));
       return std::forward<ParentElement>(p);
     }
+  };
+
+  /*
+   * event_attribute
+   */
+  template <typename AttributeName, typename Handler, typename ...Params>
+  struct action_fn<html::tag::event_attribute_t, AttributeName, Handler, Params...>
+  {
+    action_fn() = delete;
+  };
+
+  template <typename Store, typename AttributeName, typename Handler, typename ...Params>
+  struct mut_action_fn<html::tag::event_attribute_t, Store, AttributeName, Handler, Params...>
+  {
+    using ReceiverImpl = event_receiver_impl<Store, Handler, Params...>;
+    std::unique_ptr<event_receiver> receiver;
+
+    mut_action_fn(Store s)
+      : receiver(make_event_receiver(ReceiverImpl(s)))
+    { }
+
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p) const
+    {
+      p.template call<void>(
+        "addEventListener"
+      , emscripten::val(hana::to<char const*>(AttributeName{}))
+      , receiver->virtual_(handler_s)(*receiver).as_val()
+      );
+
+      return std::forward<ParentElement>(p);
+    }
+
+    void update()
+    { }
   };
 }
 #endif

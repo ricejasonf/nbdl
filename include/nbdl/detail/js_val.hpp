@@ -7,12 +7,13 @@
 #ifndef NBDL_DETAIL_JS_VAL_HPP
 #define NBDL_DETAIL_JS_VAL_HPP
 
-#include<emscripten.h>
+#include <emscripten.h>
+#include <emscripten/val.h>
 
 namespace nbdl::detail
 {
   // Simple way to associate an object to a value in javascript
-  // It is not the mose efficient as it simply uses a hash table
+  // It is not the most efficient as it simply uses a hash table
   struct js_val
   {
     static void init_registry()
@@ -46,6 +47,11 @@ namespace nbdl::detail
     {
       static_assert(sizeof(int) == sizeof(void*));
       return reinterpret_cast<int>(this);
+    }
+
+    emscripten::val as_val() const
+    {
+      return emscripten::val::module_property("nbdl_detail_json_val")[handle()];
     }
   };
 }
