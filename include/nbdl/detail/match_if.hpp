@@ -8,28 +8,30 @@
 #define NBDL_DETAIL_MATCH_IF_HPP
 
 #include <mpdef/list.hpp>
-#include <nbdl/run_sync.hpp>
+#include <nbdl/catch.hpp>
 #include <nbdl/pipe.hpp>
 #include <nbdl/promise.hpp>
-#include <nbdl/catch.hpp>
+#include <nbdl/run_sync.hpp>
 
 #include <boost/hana/and.hpp>
 #include <boost/hana/bool.hpp>
 #include <boost/hana/concept/constant.hpp>
 #include <boost/hana/transform.hpp>
+#include <boost/mp11/algorithm.hpp>
 #include <utility>
 
 namespace nbdl::detail
 {
   namespace hana = boost::hana;
+  using namespace boost::mp11;
 
-    template <typename Pred>
+  template <typename Pred>
   struct predicate_promise
   {
     using hana_tag = nbdl::promise_tag;
 
-    template <typename Resolver, typename Value, typename I>
-    void resolve(Resolver& resolver, Value const& value, I i) const
+    template <typename Resolver, typename Value>
+    void resolve(Resolver& resolver, Value const& value, std::size_t i) const
     {
       using Result = std::decay_t<decltype(Pred{}(value))>;
 
@@ -39,7 +41,7 @@ namespace nbdl::detail
         if constexpr(Result::value)
           resolver.reject(i);
         else
-          resolver.resolve(value, hana::size_c<I::value + 1>);
+          resolver.resolve(value, i + 1);
       }
       else
       {
@@ -49,7 +51,7 @@ namespace nbdl::detail
         }
         else
         {
-          resolver.resolve(value, hana::size_c<I::value + 1>);
+          resolver.resolve(value, i + 1);
         }
       }
     }
@@ -69,6 +71,8 @@ namespace nbdl::detail
     {
       return nbdl::promise([](auto& resolve, auto&& value)
       {
+        std::size_t index;
+
         nbdl::run_sync(
           hana::make_tuple(
             predicate_promise<Preds>{}...
@@ -80,11 +84,13 @@ namespace nbdl::detail
                 "that returns compile-time Logical that is true."
               );
             }
-          , nbdl::catch_([&](auto index) { resolve(index); })
+          , nbdl::catch_([&](std::size_t result) { index = result; })
           )
         , std::forward<decltype(value)>(value)
         , hana::size_c<0>
         );
+
+        mp_with_index<sizeof...(Preds)>(index, resolve);
       });
     }
   };
