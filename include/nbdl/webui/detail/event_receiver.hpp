@@ -82,9 +82,6 @@ namespace nbdl::webui::detail
       , std::ref(store).get()
       );
     }
-
-    js_val const& event_data() const { return vals->event_data; }
-    js_val const& handler()    const { return vals->handler; }
   };
 
   using event_receiver = dyno::poly<EventReceiver, dyno::local_storage<8>>;
@@ -94,11 +91,11 @@ namespace nbdl::webui::detail
     js_val::init_registry();
     EM_ASM_(
       {
-        window.NBDL_DETAIL_JS_SET(
+        Module.NBDL_DETAIL_JS_SET(
           $0
         , function(event)
           {
-            window.NBDL_DETAIL_JS_SET(
+            Module.NBDL_DETAIL_JS_SET(
               $1
             , event
             );
@@ -141,11 +138,11 @@ constexpr auto ::dyno::default_concept_map<nbdl::webui::detail::EventReceiver, T
     )
   , boost::hana::make_pair(
       nbdl::webui::detail::event_data_s
-    , [](T const& self) -> nbdl::detail::js_val const& { return self.event_data(); }
+    , [](T const& self) -> nbdl::detail::js_val const& { return self.vals->event_data; }
     )
   , boost::hana::make_pair(
       nbdl::webui::detail::handler_s
-    , [](T const& self) -> nbdl::detail::js_val const& { return self.handler(); }
+    , [](T const& self) -> nbdl::detail::js_val const& { return self.vals->handler; }
     )
   );
 

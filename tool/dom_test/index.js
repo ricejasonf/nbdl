@@ -29,9 +29,21 @@ if (!Module.noExitRuntime)
 
 function initDom(body)
 {
-  global.document = jsdom.jsdom('<!doctype html><html><body>' + body + '</body></html>');
+  global.document = jsdom.jsdom('<!doctype html><html><body>' + body + '</body></html>', {
+    url: 'http://foo.com'
+  });
   global.window   = global.document.defaultView;
   global.window.WebSocket = ws;
+
+  var originalPushState = global.window.history.pushState;
+  global.window.history.pushState = function(_1, _2, loc)
+  {
+    originalPushState.call(global.window.history, _1, _2, loc);
+    if (global.window.onpopstate)
+    {
+      global.window.onpopstate({ target: global.window });
+    }
+  }
 
   for (var prop in global.window)
   {

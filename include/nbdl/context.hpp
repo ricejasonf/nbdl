@@ -38,6 +38,8 @@ namespace nbdl
     struct context_store_tag { };
   }
 
+  struct context_tag { };
+
   template <typename Tag, typename ArgTypes>
   class context
   {
@@ -47,6 +49,9 @@ namespace nbdl
     using CellTagTypes    = typename ContextMeta::cell_tag_types;
     using StoreMap        = typename ContextMeta::store_map;
     using ListenerLookup  = typename ContextMeta::listener_lookup;
+
+    friend apply_message_impl<context_tag>;
+    friend match_impl<context_tag>;
 
     // calling the push functions after
     // the context is destroyed will result
@@ -347,7 +352,7 @@ namespace nbdl
           static_assert(
             decltype(
               hana::equal(
-                hana::traits::decay(hana::decltype_(path))
+                hana::typeid_(path)
               , listener_path_type
               )
             )::value
@@ -384,6 +389,8 @@ namespace nbdl
 
     public:
 
+    using hana_tag = context_tag;
+
     template <typename Arg1, typename ...Args,
       typename = std::enable_if_t<(
         (sizeof...(Args) + 1 == cell_count)
@@ -416,6 +423,29 @@ namespace nbdl
     auto& cell()
     {
       return hana::at_c<i>(cells);
+    }
+  };
+
+  // Store
+
+  template <>
+  struct apply_message_impl<context_tag>
+  {
+    template <typename Store, typename Message>
+    static constexpr auto apply(Store& s, Message&& m)
+    {
+      s.push_message(std::forward<Message>(m));
+      return hana::true_c;
+    }
+  };
+
+  template <>
+  struct match_impl<context_tag>
+  {
+    template <typename Store, typename Key, typename Fn>
+    static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
+    {
+      s.match(std::forward<Key>(k), std::forward<Fn>(fn));
     }
   };
 

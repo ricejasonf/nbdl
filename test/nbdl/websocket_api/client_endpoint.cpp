@@ -55,7 +55,7 @@ namespace
     // superfluous copy
     int ptr = EM_ASM_INT(
       {
-        var str = window.NBDL_DETAIL_JS_GET($0);
+        var str = Module.NBDL_DETAIL_JS_GET($0);
         var ptr = Module._malloc(str.length + 1);
         if (!ptr)
         {
@@ -80,7 +80,7 @@ namespace
   {
     EM_ASM_(
       {
-        window.NBDL_DETAIL_JS_SET($0, Pointer_stringify($1, $2));
+        Module.NBDL_DETAIL_JS_SET($0, Pointer_stringify($1, $2));
       }
     , p.handle()
     , str.data()

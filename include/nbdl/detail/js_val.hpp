@@ -21,10 +21,10 @@ namespace nbdl::detail
       EM_ASM({
         if (!Module.nbdl_detail_json_val)
         {
-          window.NBDL_DETAIL_JS_GET = function(handle) {
+          Module.NBDL_DETAIL_JS_GET = function(handle) {
             return Module.nbdl_detail_json_val[handle];
           };
-          window.NBDL_DETAIL_JS_SET = function(handle, value) {
+          Module.NBDL_DETAIL_JS_SET = function(handle, value) {
             Module.nbdl_detail_json_val[handle] = value;
             return Module.nbdl_detail_json_val[handle];
           };

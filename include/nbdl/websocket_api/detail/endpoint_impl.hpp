@@ -120,7 +120,7 @@ namespace nbdl::websocket_api::detail
 
         s.addEventListener('message', function(event)
         {
-          window.NBDL_DETAIL_JS_SET(
+          Module.NBDL_DETAIL_JS_SET(
             Module.__nbdl_endpoint_value_handle($2)
           , event.data
           );
@@ -129,14 +129,14 @@ namespace nbdl::websocket_api::detail
 
         s.addEventListener('close', function(event)
         {
-          window.NBDL_DETAIL_JS_SET(
+          Module.NBDL_DETAIL_JS_SET(
             Module.__nbdl_endpoint_value_handle($2)
           , event.code
           );
           Module.__nbdl_endpoint_close($2); 
         });
 
-        window.NBDL_DETAIL_JS_SET($3, s);
+        Module.NBDL_DETAIL_JS_SET($3, s);
       }
     , str.data()
     , str.size()
@@ -151,7 +151,7 @@ namespace nbdl::websocket_api::detail
     int result = EM_ASM_INT(
       {
         // readyState 1 is OPEN
-        return window.NBDL_DETAIL_JS_GET($0).readyState == 1;
+        return Module.NBDL_DETAIL_JS_GET($0).readyState == 1;
       }
     , websocket.handle()
     );
@@ -170,7 +170,7 @@ namespace nbdl::websocket_api::detail
   {
     EM_ASM_(
       {
-        window.NBDL_DETAIL_JS_GET($0).close();
+        Module.NBDL_DETAIL_JS_GET($0).close();
       }
     , websocket.handle()
     );
@@ -202,8 +202,8 @@ namespace nbdl::websocket_api::detail
     {
       EM_ASM_(
         {
-          window.NBDL_DETAIL_JS_GET($0).send(JSON.stringify(
-            window.NBDL_DETAIL_JS_GET($1)));
+          Module.NBDL_DETAIL_JS_GET($0).send(JSON.stringify(
+            Module.NBDL_DETAIL_JS_GET($1)));
         }
       , websocket.handle()
       , p.handle()
@@ -213,7 +213,7 @@ namespace nbdl::websocket_api::detail
     {
       EM_ASM_(
         {
-          window.NBDL_DETAIL_JS_GET($0).send(Module.HEAPU8.subarray($1, $2).buffer);
+          Module.NBDL_DETAIL_JS_GET($0).send(Module.HEAPU8.subarray($1, $2).buffer);
         }
       , websocket.handle()
       , p.data()

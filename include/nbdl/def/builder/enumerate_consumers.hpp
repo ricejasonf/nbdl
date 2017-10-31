@@ -42,10 +42,7 @@ struct enumerate_consumers_fn
     constexpr auto single_consumer = hana::transform(hana::find(children, tag::Consumer),
         hana::partial(mpdef::make_pair, tag::Consumer));
     constexpr auto consumers = hana::find(children, tag::Consumers);
-    static_assert(hana::value(
-      ((single_consumer == hana::nothing) || (consumers == hana::nothing))
-      && hana::not_(single_consumer == hana::nothing && consumers == hana::nothing)
-    ), "A definition of a Consumer or Consumers is required.");
+
     return decltype(
       helper(consumers.value_or(
           hana::maybe(mpdef::make_list(), mpdef::make_list, single_consumer)

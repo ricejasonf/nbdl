@@ -30,7 +30,7 @@ namespace nbdl::websocket_api::detail
     {
       int len = EM_ASM_INT(
         {
-          return window.NBDL_DETAIL_JS_GET($0).length;
+          return Module.NBDL_DETAIL_JS_GET($0).length;
         }
       , val.handle()
       );
@@ -38,7 +38,7 @@ namespace nbdl::websocket_api::detail
       p.clear();
       EM_ASM_(
         {
-          var v = window.NBDL_DETAIL_JS_GET($0);
+          var v = Module.NBDL_DETAIL_JS_GET($0);
           if (typeof v === 'string')
           {
             Module.stringToAscii(v, $1);
@@ -62,10 +62,10 @@ namespace nbdl::websocket_api::detail
     {
       EM_ASM_(
         {
-          var v = window.NBDL_DETAIL_JS_GET($0);
+          var v = Module.NBDL_DETAIL_JS_GET($0);
           if (typeof v === 'string')
           {
-            window.NBDL_DETAIL_JS_SET($1, JSON.parse(v));
+            Module.NBDL_DETAIL_JS_SET($1, JSON.parse(v));
           }
           else
           {

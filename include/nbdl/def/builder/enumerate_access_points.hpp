@@ -61,17 +61,22 @@ namespace nbdl_def::builder
     inline constexpr auto make_access_point_meta_helper(mpdef::list<PathNode...>
                                                       , NodeChildren node_children)
     {
-      constexpr auto actions = hana::find(node_children, tag::Actions).value_or(mpdef::make_list());
-      constexpr auto listen_paths = hana::find(node_children, tag::ListenPaths).value_or(mpdef::list<>{});
-
       if constexpr(has_actions(node_children))
       {
+        constexpr auto actions = hana::find(node_children, tag::Actions)
+          .value_or(mpdef::make_list());
+        constexpr auto listen_paths = hana::find(node_children, tag::ListenPaths)
+          .value_or(mpdef::list<>{});
+        constexpr auto store = hana::find(node_children, tag::Store)
+          .value_or(hana::type_c<nbdl::null_store>);
+        constexpr auto entity = hana::find(node_children, tag::Entity)
+          .value_or(store);
         return mpdef::make_list(builder::make_access_point_meta(
           hana::find(node_children, tag::Name).value_or(hana::type_c<void>)
         , actions
-        , hana::find(node_children, tag::Store).value_or(hana::type_c<nbdl::null_store>)
-        , mpdef::make_list(node_children[tag::Entity])
-        , hana::type_c<hana::tuple<typename PathNode::type...>>
+        , store
+        , mpdef::make_list(entity)
+        , hana::type_c<hana::tuple<std::decay_t<typename PathNode::type>...>>
         , transform_listen_paths_fn{}(listen_paths)
         ));
       }

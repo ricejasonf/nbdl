@@ -30,9 +30,6 @@ namespace nbdl
     using Tag = hana::tag_of_t<Store>;
     using Impl = apply_action_impl<Tag>;
 
-    static_assert(nbdl::Store<Store>::value,
-      "nbdl::apply_action(store, message) requires 'store' to be a Store");
-
 #if 0 // TODO This would make a useful early error message
     static_assert(
       !hana::is_convertible<
