@@ -18,6 +18,7 @@
 #include <boost/hana/fwd/map.hpp>
 #include <boost/hana/fwd/string.hpp>
 #include <functional>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -52,8 +53,11 @@ namespace nbdl
       {
         return f(
           hana::make_pair(
-            nbdl::member_name<decltype(m)>,
-            std::ref(nbdl::get_member<decltype(m)>(e))
+            std::string_view{
+              nbdl::member_name<decltype(m)>{}.c_str()
+            , hana::size(nbdl::member_name<decltype(m)>{})
+            }
+          , std::ref(nbdl::get_member<decltype(m)>(e))
           )...
         );
       });

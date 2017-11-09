@@ -10,8 +10,9 @@
 #include <nbdl/fwd/entity_members.hpp>
 
 #include <boost/hana/core/default.hpp>
-#include <boost/hana/core/to.hpp>
 #include <boost/hana/string.hpp>
+#include <boost/mp11/algorithm.hpp>
+#include <boost/mp11/list.hpp>
 #include <mpdef/map.hpp>
 #include <mpdef/pair.hpp>
 #include <type_traits>
@@ -19,41 +20,19 @@
 namespace nbdl
 {
   namespace hana = boost::hana;
+  using namespace boost::mp11;
 
   namespace detail
   {
-    template <typename Name, std::size_t ...N>
-    constexpr hana::string<Name::value[N]...>
-    member_name_to_string_helper(std::index_sequence<N...>)
-    { return {}; }
+    template <typename Member>
+    using entity_member_map_pair = mpdef::pair<member_name<Member>, Member>;
 
-    template <typename MemberName>
-    struct member_name_to_string
-    {
-      //using Foo = typename hana::size_t<MemberName::length>::foo;
-      using type = decltype(member_name_to_string_helper<MemberName>(
-        std::make_index_sequence<MemberName::length>{}
-      ));
-    };
-
-    struct make_entity_name_map_pair_fn
-    {
-      template <typename Member>
-      constexpr auto operator()(Member m) const
-      {
-        return mpdef::make_pair(
-          typename member_name_to_string<nbdl::member_name_impl<Member>>::type{}
-        , m
-        );
-      }
-    };
-
-    // map hana::String : nbdl::member
     template <typename Entity>
-    constexpr auto entity_member_name_map = hana::unpack(
-      nbdl::entity_members<Entity>
-    , hana::on(mpdef::make_map, make_entity_name_map_pair_fn{})
-    );
+    constexpr auto entity_member_name_map = 
+      mp_apply<mpdef::map,
+      mp_transform<entity_member_map_pair,
+        typename nbdl::entity_members_impl<Entity>::type
+      >>{};
   }
 
   template <typename E>
@@ -77,6 +56,6 @@ namespace nbdl
       return std::forward<Entity>(e).*Member::ptr;
     }
   };
-} // nbdl
+}
 
 #endif

@@ -58,16 +58,6 @@ namespace nbdl
 
 TEST_CASE("Map route to string", "[webui][route_map]")
 {
-  // TODO remove these warning suppressions :(
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&foo::id)>::value;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&foo::id)>::length;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&bar::name)>::value;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&bar::name)>::length;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&baz::id)>::value;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&baz::id)>::length;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&baz::name)>::value;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&baz::name)>::length;
-
   CHECK(route_map.to_string(root{})             == nbdl::string("/"));
   CHECK(route_map.to_string(foo{42})            == nbdl::string("/foo/42"));
   CHECK(route_map.to_string(bar{"hello"})       == nbdl::string("/bar/hello"));

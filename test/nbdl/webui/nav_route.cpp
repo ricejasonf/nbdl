@@ -71,14 +71,6 @@ namespace nbdl
 
 TEST_CASE("Update and check the nav location using a nbdl::context", "[webui][nav_route]")
 {
-  // TODO remove these warning suppressions :(
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&my_route_1::id_1)>::value;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&my_route_1::id_1)>::length;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&my_route_1::id_2)>::value;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&my_route_1::id_2)>::length;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&my_route_2::id_1)>::value;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&my_route_2::id_1)>::length;
-
   auto ctx = nbdl::make_unique_context<context>();
 
   nbdl::apply_message(

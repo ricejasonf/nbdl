@@ -229,7 +229,7 @@ namespace nbdl { namespace binder { namespace jsoncpp
         {
           (
             binder.bind_named_member(
-              hana::to<char const*>(hana::first(pair))
+              hana::first(pair).data()
             , hana::second(pair).get()
             )
           , ...

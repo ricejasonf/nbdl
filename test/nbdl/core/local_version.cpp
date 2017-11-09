@@ -40,12 +40,6 @@ namespace nbdl
 TEST_CASE("Changes are applied immediately and not reverted in any intermediate state when confirmed"
         , "[local_version]")
 {
-  // TODO remove these warning suppressions :(
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&payload::value)>::value;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&payload::value)>::length;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&fake_uid::value)>::value;
-  (void)nbdl::member_name_impl<NBDL_MEMBER(&fake_uid::value)>::length;
-
   nbdl::local_version<payload> store{};
   auto gen_uid = nbdl::detail::make_uid_generator();
 
