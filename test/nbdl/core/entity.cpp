@@ -14,9 +14,9 @@
 #include <boost/hana/string.hpp>
 #include <catch.hpp>
 #include <string>
-#include <string_view>
 
 namespace hana = boost::hana;
+using namespace hana::literals;
 
 namespace entity_test
 {
@@ -87,8 +87,8 @@ TEST_CASE("Entity bind_map", "[entity][bind_map]")
         })...
       ),
       hana::make_tuple(
-        hana::make_pair(std::string_view{"name"}, "Skippy"),
-        hana::make_pair(std::string_view{"age"}, 42)
+        hana::make_pair("name"_s, "Skippy"),
+        hana::make_pair("age"_s, 42)
       )
     );
   });
@@ -109,8 +109,8 @@ TEST_CASE("Entity bind_map... again", "[entity][bind_map]")
         })...
       ),
       hana::make_tuple(
-        hana::make_pair(std::string_view{"username"}, "@skippy"),
-        hana::make_pair(std::string_view{"person"}, person_t{"Skippy", 42})
+        hana::make_pair("username"_s, "@skippy"),
+        hana::make_pair("person"_s, person_t{"Skippy", 42})
       )
     );
   });

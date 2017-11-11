@@ -15,10 +15,19 @@
 namespace nbdl
 {
   template <typename E>
+  struct entity_name_impl;
+
+  template <typename E>
+  using entity_name = decltype(entity_name_impl<std::decay_t<E>>::apply());
+
+  template <typename E>
   struct entity_members_impl;
 
   template <typename E>
-  constexpr typename entity_members_impl<std::decay_t<E>>::type entity_members{};
+  using entity_members_t = typename entity_members_impl<std::decay_t<E>>::type;
+
+  template <typename E>
+  constexpr entity_members_t<E> entity_members{};
 
   template <typename Member>
   struct get_member_fn
@@ -108,7 +117,7 @@ namespace nbdl
 template <> \
 struct member_name_impl<NBDL_MEMBER(&Owner::MemberName)> { \
   static auto apply() { return BOOST_HANA_STRING(#MemberName); }; \
-}
+};
 
 #define NBDL_MEMBER_DEFAULT(mptr, val) template <> struct member_default<NBDL_MEMBER(mptr)> \
 { static constexpr decltype(val) value = val; }; \

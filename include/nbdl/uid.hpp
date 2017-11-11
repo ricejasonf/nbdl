@@ -8,6 +8,7 @@
 #define NBDL_UID_HPP
 
 #include <nbdl/entity.hpp>
+#include <nbdl/key.hpp>
 
 #include <array>
 #include <boost/hana/ext/std/array.hpp>
@@ -29,6 +30,9 @@ namespace nbdl
 
     uid_storage value;
   };
+
+  template <typename T>
+  using unique_key = key<T, uid>;
 
   NBDL_ENTITY(uid, value);
 

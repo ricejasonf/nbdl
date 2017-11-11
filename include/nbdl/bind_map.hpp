@@ -53,10 +53,7 @@ namespace nbdl
       {
         return f(
           hana::make_pair(
-            std::string_view{
-              nbdl::member_name<decltype(m)>{}.c_str()
-            , hana::size(nbdl::member_name<decltype(m)>{})
-            }
+            nbdl::member_name<decltype(m)>{}
           , std::ref(nbdl::get_member<decltype(m)>(e))
           )...
         );
