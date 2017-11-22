@@ -13,6 +13,8 @@
 
 #include <boost/mp11/algorithm.hpp>
 #include <boost/hana/core/when.hpp>
+#include <boost/hana/plus.hpp>
+#include <boost/hana/string.hpp>
 #include <boost/mp11/function.hpp>
 #include <type_traits>
 
@@ -82,6 +84,12 @@ namespace nbdl::sql_db
 
   template <typename Entity>
   using members_value = mp_copy_if<nbdl::entity_members_t<Entity>, is_member_value>;
+
+  template <typename T>
+  using table_key_name = decltype(hana::plus(table_name<T>{}, hana::string<'_', 'i', 'd'>{}));
+
+  template <typename T>
+  using member_key_name = decltype(hana::plus(nbdl::member_name<T>{}, hana::string<'_', 'i', 'd'>{}));
 }
 
 #endif

@@ -8,4 +8,5 @@
 nbdl_catch_test_suite(build_targets "test.nbdl.sql_db"
   insert.cpp
   statement/insert.cpp
+  update.cpp
 )

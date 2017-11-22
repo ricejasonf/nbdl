@@ -7,10 +7,12 @@
 #ifndef NBDL_SQL_DB_CONCEPT_TABLE_ENTITY_HPP
 #define NBDL_SQL_DB_CONCEPT_TABLE_ENTITY_HPP
 
-#include<nbdl/fwd/sql_db/concept/TableEntity.hpp>
+#include <nbdl/fwd/sql_db/concept/TableEntity.hpp>
+#include <nbdl/sql_db/insert.hpp>
+#include <nbdl/sql_db/update.hpp>
 
-#include<boost/hana/core/default.hpp>
-#include<type_traits>
+#include <boost/hana/core/default.hpp>
+#include <type_traits>
 
 namespace nbdl::sql_db
 {
@@ -22,7 +24,8 @@ namespace nbdl::sql_db
     using Tag = hana::tag_of_t<T>;
     static constexpr bool value = (
         !hana::is_default<nbdl::sql_db::insert_impl<Tag>>::value
-        // TODO create_table, update, delete_ ...
+    and !hana::is_default<nbdl::sql_db::update_impl<Tag>>::value
+        // TODO create_table, delete_ ...
     );
   };
 }

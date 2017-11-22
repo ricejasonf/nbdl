@@ -58,18 +58,18 @@ namespace nbdl::sql_db
     // the keys in a path from a nbdl::Message
     template <typename DbInsert, typename Entity, typename ForeignKeys>
     static auto apply(DbInsert db_insert, Entity&& e, ForeignKeys&& keys)
-      -> primary_key<Entity>
+      -> primary_key<T>
     {
-      using ChildMembers = members_child<Entity>;
-      using MultiMembers = members_multirow<Entity>;
-      using ValueMembers = members_value<Entity>;
+      using ChildMembers = members_child<T>;
+      using MultiMembers = members_multirow<T>;
+      using ValueMembers = members_value<T>;
 
       // insert children (one-to-one)
       auto child_ids = hana::unpack(ChildMembers{}, [&](auto ...member)
       {
         return hana::make_tuple(
           hana::make_pair(
-            nbdl::member_name<decltype(member)>{} + hana::string_c<'_', 'i', 'd'>
+            member_key_name<decltype(member)>{}
           , insert(db_insert, nbdl::get_member<decltype(member)>(std::forward<Entity>(e)))
           )...
         );
@@ -87,8 +87,8 @@ namespace nbdl::sql_db
       });
 
       // insert self
-      primary_key<Entity> insert_id{db_insert(
-        table_name<Entity>{}
+      primary_key<T> insert_id{db_insert(
+        table_name<T>{}
       , hana::concat(
           hana::concat(
             std::forward<ForeignKeys>(keys)
@@ -106,7 +106,7 @@ namespace nbdl::sql_db
         , nbdl::get_member<decltype(member)>(std::forward<Entity>(e))
         , hana::make_tuple(
             hana::make_pair(
-              table_name<Entity>{} + hana::string_c<'_', 'i', 'd'>
+              table_key_name<T>{}
             , insert_id
             )
           )

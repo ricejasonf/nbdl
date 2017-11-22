@@ -19,6 +19,14 @@ namespace nbdl
     Key value;
 
     key_impl() = delete;
+
+    constexpr auto operator=(Key key) const
+    {
+      return hana::make_pair(
+        hana::typeid_(key)
+      , std::move(key)
+      );
+    }
   };
 
   template <typename T, typename Key = uint32_t>
