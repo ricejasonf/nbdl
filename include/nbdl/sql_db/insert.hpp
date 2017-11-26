@@ -10,7 +10,6 @@
 #include <nbdl/concept/Entity.hpp>
 #include <nbdl/concept/EntityContainer.hpp>
 #include <nbdl/fwd/sql_db/insert.hpp>
-#include <nbdl/sql_db/concept/TableEntity.hpp>
 #include <nbdl/sql_db/traits.hpp>
 
 #include <boost/hana/concat.hpp>

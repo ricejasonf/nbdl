@@ -9,6 +9,7 @@
 
 #include <nbdl/entity_members.hpp>
 #include <nbdl/key.hpp>
+#include <nbdl/concept/EntityContainer.hpp>
 #include <nbdl/sql_db/concept/TableEntity.hpp>
 
 #include <boost/mp11/algorithm.hpp>
@@ -77,7 +78,7 @@ namespace nbdl::sql_db
   using is_member_value = mp_not<TableEntity<typename T::member_type>>;
 
   template <typename Entity>
-  using members_child = mp_copy_if<entity_members_t<Entity>, is_member_child>;
+  using members_child = mp_copy_if<nbdl::entity_members_t<Entity>, is_member_child>;
 
   template <typename Entity>
   using members_multirow = mp_copy_if<nbdl::entity_members_t<Entity>, is_member_multirow>;

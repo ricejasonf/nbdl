@@ -7,9 +7,9 @@
 #ifndef NBDL_SQL_DB_CONCEPT_TABLE_ENTITY_HPP
 #define NBDL_SQL_DB_CONCEPT_TABLE_ENTITY_HPP
 
+#include <nbdl/concept/Entity.hpp>
+#include <nbdl/concept/EntityContainer.hpp>
 #include <nbdl/fwd/sql_db/concept/TableEntity.hpp>
-#include <nbdl/sql_db/insert.hpp>
-#include <nbdl/sql_db/update.hpp>
 
 #include <boost/hana/core/default.hpp>
 #include <type_traits>
@@ -18,16 +18,24 @@ namespace nbdl::sql_db
 {
   namespace hana = boost::hana;
 
-  template<typename T>
+  // TableEntity represents a type that purports
+  // database operation support for ops such as
+  // select, insert, update, delete
+  // This is currently used to distinguish between
+  // types that represent a column or a row(s)
+  // TODO: This could stand to be improved or broken apart
+  // into Selectable, Insertable, Deletable, Updateable
+  // concepts
+  // See also: is_multirow<T> (traits.hpp)
+  template <typename T, typename>
   struct TableEntity
-  {
-    using Tag = hana::tag_of_t<T>;
-    static constexpr bool value = (
-        !hana::is_default<nbdl::sql_db::insert_impl<Tag>>::value
-    and !hana::is_default<nbdl::sql_db::update_impl<Tag>>::value
-        // TODO create_table, delete_ ...
-    );
-  };
+    : std::false_type
+  { };
+
+  template <typename T>
+  struct TableEntity<T, std::enable_if_t<nbdl::Entity<T>::value or nbdl::EntityContainer<T>::value>>
+    : std::true_type
+  { };
 }
 
 #endif

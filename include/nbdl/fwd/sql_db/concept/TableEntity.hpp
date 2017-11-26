@@ -9,7 +9,7 @@
 
 namespace nbdl::sql_db
 {
-  template<typename T>
+  template<typename T, typename = void>
   struct TableEntity;
 }
 
