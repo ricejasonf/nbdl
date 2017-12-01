@@ -45,19 +45,25 @@ namespace nbdl::sql_db::mariadb
 
   namespace detail
   {
-    constexpr auto bind_column_to = [](...)
+    constexpr auto bind_column_input = [](...)
     {
 
     };
 
-    constexpr auto bind_column_from = [](...)
+    constexpr auto bind_column_output = [](...)
     {
 
     };
+
+    template <std::size_t s> enum_field_types integral_type = -1;
+    template <> enum_field_types integral_type<1> = MYSQL_TYPE_TINY;
+    template <> enum_field_types integral_type<2> = MYSQL_TYPE_SHORT;
+    template <> enum_field_types integral_type<4> = MYSQL_TYPE_LONG;
+    template <> enum_field_types integral_type<8> = MYSQL_TYPE_LONGLONG;
   }
 
   template <typename Tag, bool condition>
-  struct bind_column_to_impl<Tag, hana::when<condition>>
+  struct bind_column_input_impl<Tag, hana::when<condition>>
     : hana::default_
   {
     template <typename T>
@@ -65,7 +71,7 @@ namespace nbdl::sql_db::mariadb
   };
 
   template <typename Tag, bool condition>
-  struct bind_column_from_impl<Tag, hana::when<condition>>
+  struct bind_column_output_impl<Tag, hana::when<condition>>
     : hana::default_
   {
     template <typename T>
@@ -85,51 +91,95 @@ namespace nbdl::sql_db::mariadb
   // DynamicBuffer (includes strings)
 
   template <typename Tag>
-  struct bind_column_to_impl<Tag, hana::when<nbdl::DynamicBuffer<Tag>::value>>
+  struct bind_column_input_impl<Tag, hana::when<nbdl::DynamicBuffer<Tag>::value>>
   {
     template <typename T>
-    static void apply(T& e, MYSQL_BIND& b)
+    static void apply(T& e, input_column_info& info)
     {
-      b.buffer_type   = hana::if_(nbdl::String<Tag>{}, MYSQL_TYPE_VAR_STRING , MYSQL_BLOB);
-      b.buffer        = e.data();
-      b.buffer_length = e.size();
+      info.bind.buffer_type   = hana::if_(nbdl::String<Tag>{}, MYSQL_TYPE_VAR_STRING, MYSQL_TYPE_BLOB);
+      info.bind.buffer        = e.data();
+      info.bind.buffer_length = e.size();
     }
   };
 
   template <typename Tag>
-  struct bind_column_from_impl<Tag, hana::when<nbdl::DynamicBuffer<Tag>::value>>
+  struct bind_column_output_impl<Tag, hana::when<nbdl::DynamicBuffer<Tag>::value>>
   {
     template <typename T>
-    static void apply(T& e, MYSQL_BIND& b)
+    static void apply(T& e, output_column_info& info)
     {
-      b.buffer_type = hana::if_(nbdl::String<Tag>{}, MYSQL_TYPE_VAR_STRING , MYSQL_BLOB);
-      b.buffer = e.data();
-      b.buffer_length = e.size();
+      if (not info.is_truncated)
+      {
+        info.bind.buffer_type = hana::if_(nbdl::String<Tag>{}, MYSQL_TYPE_VAR_STRING, MYSQL_TYPE_BLOB);
+        info.bind.buffer      = e.data();
+        info.bind.length      = &info.length;
+        info.bind.error       = info.is_truncated;
+      }
+      else
+      {
+        // rebind once we know the length of the field
+        e.resize(info.length, '\0');
+        mysql_stmt_fetch_column(stmt, bind, info.column_index, 0);
+      }
     }
   };
 
   // Buffer
 
   template <typename Tag>
-  struct bind_column_to_impl<Tag, hana::when<(nbdl::Buffer<Tag>::value)>>
+  struct bind_column_input_impl<Tag, hana::when<(nbdl::Buffer<Tag>::value)>>
   {
-    // TODO
+    template <typename T>
+    static void apply(T& e, input_column_info& info)
+    {
+      info.bind.buffer_type   = hana::if_(nbdl::String<Tag>{}, MYSQL_TYPE_VAR_STRING, MYSQL_TYPE_BLOB);
+      info.bind.buffer        = e.data();
+      info.bind.buffer_length = e.size();
+    }
+  };
+
+  template <typename Tag>
+  struct bind_column_output_impl<Tag, hana::when<nbdl::Buffer<Tag>::value>>
+  {
+    template <typename T>
+    static void apply(T& e, output_column_info& info)
+    {
+      if (not info.is_truncated)
+      {
+        info.bind.buffer_type = hana::if_(nbdl::String<Tag>{}, MYSQL_TYPE_VAR_STRING, MYSQL_TYPE_BLOB);
+        info.bind.buffer      = e.data();
+        info.bind.length      = &info.length;
+        info.bind.error       = info.is_truncated;
+      }
+      else
+      {
+        mysql_stmt_fetch_column(stmt, bind, info.column_index, 0);
+      }
+    }
   };
 
   // Integral
 
   template <typename Tag>
-  struct bind_column_to_impl<Tag, hana::when<std::is_integral<Tag>::value>>
+  struct bind_column_input_impl<Tag, hana::when<std::is_integral<Tag>::value>>
   {
-    // TODO
+    template <typename T, typename ColumnInfo>
+    static void apply(T& e, ColumnInfo& info)
+    {
+      using Integer = std::decay_t<T>;
+      info.bind.buffer_type   = detail::integral_type<sizeof(Integer)>;
+      info.bind.buffer        = e.data();
+      info.bind.buffer_length = e.size();
+      info.bind.is_unsigned   = std::is_unsigned<Integer>::value;
+    }
   };
 
   // FloatingPoint (float, double, long double, double double w/cheese)
 
   template <typename Tag>
-  struct bind_column_to_impl<Tag, hana::when<std::is_floating_point<Tag>::value>>
+  struct bind_column_input_impl<Tag, hana::when<std::is_floating_point<Tag>::value>>
   {
-    // TODO
+    static void apply(...) = delete;
   };
 }
 

@@ -7,7 +7,8 @@
 #ifndef NBDL_FWD_SQL_DB_MARIA_DB_HPP
 #define NBDL_FWD_SQL_DB_MARIA_DB_HPP
 
-#include<boost/hana/core/when.hpp>
+#include <boost/hana/core/when.hpp>
+#include <mysql.h>
 
 namespace nbdl::sql_db::mariadb
 {
@@ -25,11 +26,26 @@ namespace nbdl::sql_db::mariadb
     void insert(Entity&&);
   };
 
-  template<typename T, typename = void>
-  struct bind_column_to_impl : bind_column_to_impl<T, hana::when<true>> { };
+  struct input_column_info
+  {
+    MYSQL_BIND& bind;
+    my_bool is_null;
+  };
+
+  struct output_column_info
+  {
+    MYSQL_BIND& bind;
+    unsigned long length;
+    int column_index;
+    my_bool is_null;
+    my_bool is_truncated;
+  };
 
   template<typename T, typename = void>
-  struct bind_column_from_impl : bind_column_from_impl<T, hana::when<true>> { };
+  struct bind_column_input_impl : bind_column_input_impl<T, hana::when<true>> { };
+
+  template<typename T, typename = void>
+  struct bind_column_output_impl : bind_column_output_impl<T, hana::when<true>> { };
 }
 
 #endif
