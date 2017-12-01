@@ -4,17 +4,12 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_SQL_DB_MARIA_DB_HPP
-#define NBDL_SQL_DB_MARIA_DB_HPP
+#ifndef NBDL_SQL_DB_MARIA_DB_BIND_COLUMN_HPP
+#define NBDL_SQL_DB_MARIA_DB_BIND_COLUMN_HPP
 
-#include <nbdl/sql_db/insert.hpp>
-#include <nbdl/sql_db/select.hpp>
-#include <nbdl/sql_db/statement/insert.hpp>
-#include <nbdl/sql_db/statement/select.hpp>
-#include <nbdl/sql_db/statement/update.hpp>
-#include <nbdl/sql_db/update.hpp>
-#include <nbdl/concept/String.hpp>
 #include <nbdl/concept/Buffer.hpp>
+#include <nbdl/concept/DynamicBuffer.hpp>
+#include <nbdl/concept/String.hpp>
 
 #include <boost/hana/if.hpp>
 #include <mysql.h>
@@ -24,24 +19,6 @@
 namespace nbdl::sql_db::mariadb
 {
   namespace hana = boost::hana;
-
-  template <typename Entity, typename Keys>
-  auto connection::select(Keys&& keys)
-  {
-    // TODO
-  };
-
-  template <typename Keys>
-  void connection::insert(Keys&& keys)
-  {
-    // TODO
-  };
-
-  template <typename Entity, typename Keys>
-  void connection::update(Entity&& entity, Keys&& keys)
-  {
-    // TODO
-  };
 
   namespace detail
   {
