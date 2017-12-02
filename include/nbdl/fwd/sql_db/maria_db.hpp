@@ -41,11 +41,14 @@ namespace nbdl::sql_db::mariadb
     my_bool is_truncated;
   };
 
-  template<typename T, typename = void>
-  struct bind_column_input_impl : bind_column_input_impl<T, hana::when<true>> { };
+  template<typename Tag, typename = void>
+  struct bind_column_input_impl : bind_column_input_impl<Tag, hana::when<true>> { };
 
-  template<typename T, typename = void>
-  struct bind_column_output_impl : bind_column_output_impl<T, hana::when<true>> { };
+  template<typename Tag, typename = void>
+  struct bind_column_output_impl : bind_column_output_impl<Tag, hana::when<true>> { };
+
+  template<typename Tag, typename = void>
+  constexpr auto column_type_name_impl = column_type_impl<Tag, hana::when<true>>{};
 }
 
 #endif

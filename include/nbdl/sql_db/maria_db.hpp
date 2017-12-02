@@ -8,13 +8,13 @@
 #define NBDL_SQL_DB_MARIA_DB_HPP
 
 #include <nbdl/sql_db/insert.hpp>
+#include <nbdl/sql_db/maria_db/bind_column.hpp>
+#include <nbdl/sql_db/maria_db/column_type.hpp>
 #include <nbdl/sql_db/select.hpp>
 #include <nbdl/sql_db/statement/insert.hpp>
 #include <nbdl/sql_db/statement/select.hpp>
 #include <nbdl/sql_db/statement/update.hpp>
 #include <nbdl/sql_db/update.hpp>
-#include <nbdl/concept/String.hpp>
-#include <nbdl/concept/Buffer.hpp>
 
 #include <boost/hana/if.hpp>
 #include <mysql.h>

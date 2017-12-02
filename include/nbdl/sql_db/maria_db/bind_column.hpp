@@ -10,7 +10,10 @@
 #include <nbdl/concept/Buffer.hpp>
 #include <nbdl/concept/DynamicBuffer.hpp>
 #include <nbdl/concept/String.hpp>
+#include <nbdl/fwd/sql_db/maria_db.hpp>
 
+#include <boost/hana/core/when.hpp>
+#include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/if.hpp>
 #include <mysql.h>
 #include <type_traits>
