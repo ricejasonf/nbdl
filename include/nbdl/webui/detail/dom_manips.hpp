@@ -245,7 +245,8 @@ namespace nbdl::webui::detail
     mut_action_fn(Store s)
       : store(s)
       , parent_el(emscripten::val::undefined())
-      , container_el(emscripten::val::undefined())
+      , container_el(emscripten::val::global("document").template
+          call<emscripten::val>("createElement", emscripten::val("span")))
       , branch_id(-1)
       , renderers(construct_branch_renderers<Renderers>::apply(s))
     { }
@@ -273,8 +274,6 @@ namespace nbdl::webui::detail
     decltype(auto) operator()(ParentElement&& p)
     {
       parent_el = p;
-      container_el = emscripten::val::global("document").template
-        call<emscripten::val>("createElement", emscripten::val("span"));
       update();
       parent_el.template call<void>("appendChild", container_el);
       return std::forward<ParentElement>(p);
@@ -314,7 +313,8 @@ namespace nbdl::webui::detail
     mut_action_fn(Store s)
       : store(s)
       , parent_el(emscripten::val::undefined())
-      , container_el(emscripten::val::undefined())
+      , container_el(emscripten::val::global("document").template
+          call<emscripten::val>("createElement", emscripten::val("span")))
       , branch_id(-1)
       , renderers(construct_branch_renderers<Renderers>::apply(s))
     { }
@@ -345,8 +345,6 @@ namespace nbdl::webui::detail
     decltype(auto) operator()(ParentElement&& p)
     {
       parent_el = p;
-      container_el = emscripten::val::global("document").template
-        call<emscripten::val>("createElement", emscripten::val("span"));
       update();
       parent_el.template call<void>("appendChild", container_el);
       return std::forward<ParentElement>(p);
