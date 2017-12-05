@@ -36,6 +36,10 @@ namespace nbdl::webui::detail
     }
     else
     {
+      static_assert(
+        not hana::is_a<char const*, T>
+      , "String literals not allowed. Please use constexpr alternative like hana::string."
+      );
       return emscripten::val(hana::value(t));
     }
   }
@@ -57,7 +61,7 @@ namespace nbdl::webui::detail
     decltype(auto) operator()(ParentElement&& p) const
     {
       auto el = emscripten::val::global("document").template
-        call<emscripten::val>("createElement", emscripten::val(hana::to<char const*>(HtmlTagName{})));
+        call<emscripten::val>("createElement", to_json_val(HtmlTagName{}));
       std::forward<ParentElement>(p).template
         call<void>("appendChild", el);
       return el;
@@ -83,8 +87,8 @@ namespace nbdl::webui::detail
     {
       p.template call<void>(
         "setAttribute"
-      , emscripten::val(hana::to<char const*>(AttributeName{}))
-      , emscripten::val(hana::to<char const*>(hana::string<Cs...>{}))
+      , to_json_val(AttributeName{})
+      , to_json_val(hana::string<Cs...>{})
       );
       return std::forward<ParentElement>(p);
     }
@@ -121,7 +125,7 @@ namespace nbdl::webui::detail
         .to_string();
       el.template call<void>(
         "setAttribute"
-      , emscripten::val(hana::to<char const*>(AttributeName{}))
+      , to_json_val(AttributeName{})
       , emscripten::val(std::move(text_value))
       );
     }
@@ -359,7 +363,7 @@ namespace nbdl::webui::detail
     template <typename ParentElement>
     decltype(auto) operator()(ParentElement&& p) const
     {
-      p.set("innerHTML", emscripten::val(hana::to<char const*>(String{})));
+      p.set("innerHTML", to_json_val(String{}));
       return std::forward<ParentElement>(p);
     }
   };
@@ -388,7 +392,7 @@ namespace nbdl::webui::detail
     {
       p.template call<void>(
         "addEventListener"
-      , emscripten::val(hana::to<char const*>(AttributeName{}))
+      , to_json_val(AttributeName{})
       , receiver->virtual_(handler_s)(*receiver).as_val()
       );
 
