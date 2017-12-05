@@ -46,9 +46,9 @@ namespace nbdl_def
         PathKey<nav_route_s_t>
       , Store<nav_route_store<RouteMap>>
       , Actions(Update())
-      , ListenPaths(Path<nav_route_s_t, hana::type<nbdl::string>>)
+      , ListenPaths(Path<nav_route_s_t, boost::hana::type<nbdl::string>>)
       , AccessPoint(
-          PathKey<hana::type<nbdl::string>>
+          PathKey<boost::hana::type<nbdl::string>>
         , Store<nbdl::context_store<nbdl::string>>
         , Actions(Update())
         , ListenPaths(Path<nav_route_s_t>)

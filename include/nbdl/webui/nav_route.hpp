@@ -10,7 +10,6 @@
 #include <nbdl/fwd/webui/nav_route.hpp>
 #include <nbdl/message.hpp>
 #include <nbdl/string.hpp>
-#include <nbdl/variant.hpp>
 #include <nbdl/webui/detail/event_receiver.hpp>
 #include <nbdl/webui/route_map.hpp>
 
@@ -144,7 +143,18 @@ namespace nbdl
       }
       else if constexpr(nbdl::webui::detail::is_nav_route_path<Message>)
       {
-        webui::detail::web_route_update(RouteMap{}.to_string(message::get_payload(m)));
+        nbdl::match(
+          typename RouteMap::variant(message::get_payload(std::forward<Message>(m)))
+        , hana::overload_linearly(
+            [](webui::route_not_found) { }
+          , [](auto&& payload)
+            {
+              webui::detail::web_route_update(RouteMap{}.to_string(
+                std::forward<decltype(payload)>(payload)
+              ));
+            }
+          )
+        );
       }
     }
   };
