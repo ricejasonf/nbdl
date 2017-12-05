@@ -12,6 +12,7 @@
 #include <nbdl/entity.hpp>
 #include <nbdl/string.hpp>
 #include <cstddef>
+#include <utility>
 
 namespace hana = boost::hana;
 using namespace hana::literals;
@@ -45,6 +46,8 @@ namespace
   , nbdl::webui::route_pair<baz>("baz"_s)
   , nbdl::webui::route_pair<boo_moo>("boo-moo"_s)
   );
+
+  using RouteMap = std::decay_t<decltype(route_map)>;
 }
 
 namespace nbdl
@@ -54,6 +57,14 @@ namespace nbdl
   NBDL_ENTITY(bar, name);
   NBDL_ENTITY(baz, id, name);
   NBDL_EMPTY(boo_moo);
+}
+
+TEST_CASE("Map route to variant", "[webui][route_map]")
+{
+  CHECK(hana::equal(route_map.to_variant(root{})           , RouteMap::variant(root{})));
+  CHECK(hana::equal(route_map.to_variant(foo{42})          , RouteMap::variant(foo{42})));
+  CHECK(hana::equal(route_map.to_variant(bar{"hello"})     , RouteMap::variant(bar{"hello"})));
+  CHECK(hana::equal(route_map.to_variant(baz{42, "world"}) , RouteMap::variant(baz{42, "world"})));
 }
 
 TEST_CASE("Map route to string", "[webui][route_map]")

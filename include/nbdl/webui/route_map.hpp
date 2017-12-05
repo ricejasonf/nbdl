@@ -185,6 +185,12 @@ namespace nbdl::webui
     public:
 
     template <typename T>
+    Variant to_variant(T&& t) const
+    {
+      return Variant(std::forward<T>(t));
+    }
+
+    template <typename T>
     nbdl::string to_string(T&& t) const
     {
       using String = mp_second<mp_map_find<ReverseMap, std::decay_t<T>>>;

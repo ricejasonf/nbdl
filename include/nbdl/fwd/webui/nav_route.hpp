@@ -12,10 +12,13 @@
 #include <nbdl/string.hpp>
 
 #include <boost/hana/string.hpp>
+#include <boost/hana/type.hpp>
 #include <type_traits>
 
 namespace nbdl::webui
 {
+  namespace hana = boost::hana;
+
   constexpr hana::string<'n', 'a', 'v', '_', 'r', 'o', 'u', 't', 'e'> nav_route_s{};
 
   // tag
