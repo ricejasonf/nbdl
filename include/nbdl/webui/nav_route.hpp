@@ -103,10 +103,7 @@ namespace nbdl::webui
     nav_route_producer_impl(Context c)
       : context(c)
       , receiver(detail::make_event_receiver(detail::popstate_event_receiver<Context>{c}))
-    {
-      // load the store with the initial value
-      receiver->virtual_(detail::receive_event_s)(*receiver);
-    }
+    { }
   };
 
   template <typename RouteMap>
@@ -128,6 +125,17 @@ namespace nbdl
     template <typename Context, typename ...Args>
     static nbdl::webui::nav_route_producer_impl<Context, RouteMap> apply(Context c, Args&&...)
     { return {c}; }
+  };
+
+  template <typename RouteMap>
+  struct producer_init_impl<nbdl::webui::nav_route_producer<RouteMap>>
+  {
+    template <typename Producer>
+    static void apply(Producer& p)
+    {
+      // load the store with the initial value
+      p.receiver->virtual_(webui::detail::receive_event_s)(*p.receiver);
+    }
   };
 
   template <typename RouteMap>

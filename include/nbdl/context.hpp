@@ -17,7 +17,11 @@
 #include <nbdl/detail/concept_pred.hpp>
 #include <nbdl/detail/normalize_path_type.hpp>
 #include <nbdl/match.hpp>
+#include <nbdl/make_consumer.hpp>
+#include <nbdl/make_producer.hpp>
+#include <nbdl/make_state_consumer.hpp>
 #include <nbdl/message.hpp>
+#include <nbdl/producer_init.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>
 #include <nbdl/variant.hpp>
@@ -33,9 +37,22 @@ namespace nbdl
   namespace hana  = boost::hana;
   namespace hanax = boost::hana::experimental;
 
-  namespace detail
+  namespace context_detail
   {
-    struct context_store_tag { };
+    struct store_tag { };
+
+    constexpr auto init_producers = [](auto& cells)
+    {
+      hana::for_each(cells, [](auto& cell)
+      {
+        using Cell = std::decay_t<decltype(cell)>;
+
+        if constexpr(nbdl::Producer<Cell>::value)
+        {
+          nbdl::producer_init(cell);
+        }
+      });
+    };
   }
 
   struct context_tag { };
@@ -118,7 +135,7 @@ namespace nbdl
         ctx.match(std::forward<Path>(path), std::forward<Fns>(fns)...);
       }
 
-      using hana_tag = detail::context_store_tag;
+      using hana_tag = context_detail::store_tag;
     };
 
     static constexpr std::size_t cell_count = decltype(hana::size(CellTagTypes{}))::value;
@@ -404,12 +421,16 @@ namespace nbdl
           std::forward<Arg1>(arg1),
           std::forward<Args>(args)...
         )
-    { }
+    {
+      context_detail::init_producers(cells);
+    }
 
     // default constructor
     context()
       : context(cell_index_sequence)
-    { }
+    {
+      context_detail::init_producers(cells);
+    }
 
     // Push functions contain references to self
     // another option is to use shared_from_this,
@@ -452,7 +473,7 @@ namespace nbdl
   // As a Store for StateConsumers
 
   template <>
-  struct apply_message_impl<detail::context_store_tag>
+  struct apply_message_impl<context_detail::store_tag>
   {
     template <typename Store, typename Message>
     static constexpr auto apply(Store& s, Message&& m)
@@ -463,7 +484,7 @@ namespace nbdl
   };
 
   template <>
-  struct match_impl<detail::context_store_tag>
+  struct match_impl<context_detail::store_tag>
   {
     template <typename Store, typename Key, typename Fn>
     static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
