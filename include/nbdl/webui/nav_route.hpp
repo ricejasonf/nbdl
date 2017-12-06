@@ -142,7 +142,7 @@ namespace nbdl
   struct send_upstream_message_impl<nbdl::webui::nav_route_producer<RouteMap>>
   {
     template <typename Producer, typename Message>
-    static void apply(Producer&, Message&& m)
+    static void apply(Producer& p, Message&& m)
     {
       static_assert(message::is_update<Message>);
       if constexpr(nbdl::webui::detail::is_nav_route_string_path<Message>)
@@ -163,6 +163,7 @@ namespace nbdl
             }
           )
         );
+        p.receiver->virtual_(webui::detail::receive_event_s)(*p.receiver);
       }
     }
   };
