@@ -41,11 +41,13 @@ namespace nbdl
       int type_id;
       Storage value_;
 
+      public:
       template <typename T>
-      constexpr int type_id_from_type() const
+      static constexpr auto type_id_from_type()
       {
-        return *hana::index_if(Types{}, hana::equal.to(hana::type_c<T>));
+        return hana::index_if(Types{}, hana::equal.to(hana::type_c<T>));
       }
+      private:
 
       template <typename Fn>
       void call_by_type(int value_type_id, Fn const& fn) const
@@ -77,15 +79,6 @@ namespace nbdl
         call_by_type(value_type_id, [&](auto matched) {
           using T = typename decltype(matched)::type;
           reinterpret_cast<T*>(value)->~T();
-        });
-      }
-
-      template <typename Fn>
-      void match_by_type_helper(int value_type_id, Fn&& fn) const
-      {
-        call_by_type(value_type_id, [&](auto matched) {
-          using T = typename decltype(matched)::type;
-          std::forward<Fn>(fn)(*reinterpret_cast<T const*>(&value_));
         });
       }
 
@@ -124,7 +117,7 @@ namespace nbdl
 
       template <typename T>
       variant(T val)
-        : type_id(type_id_from_type<T>())
+        : type_id(*type_id_from_type<T>())
       {
         // Do not destroy because this should
         // only be called from a constructor.
@@ -144,14 +137,31 @@ namespace nbdl
         call_by_type(type_id_x, std::forward<Fn>(fn));
       }
 
+      template <typename T, typename Fn>
+      void unsafe_match_as(Fn&& fn) const
+      {
+        // not even checking T here
+        std::forward<Fn>(fn)(*reinterpret_cast<T const*>(&value_));
+      }
+
+      template <typename T, typename Fn>
+      void unsafe_match_as(Fn&& fn)
+      {
+        // not even checking T here
+        std::forward<Fn>(fn)(*reinterpret_cast<T*>(&value_));
+      }
+
       template <typename T>
       bool is()
       {
-        return (type_id == type_id_from_type<T>());
+        return (type_id == int{*type_id_from_type<T>()});
       }
 
+      template <typename T>
+      using has = decltype(hana::is_just(type_id_from_type<T>()));
+
       template <typename... Fns>
-      auto match(Fns&&... fns) const
+      void match(Fns&&... fns) const
       {
         call_by_type(type_id, [&](auto matched) {
           using T = typename decltype(matched)::type;
@@ -160,9 +170,63 @@ namespace nbdl
           );
         });
       }
+
+      template <typename... Fns>
+      void match(Fns&&... fns)
+      {
+        call_by_type(type_id, [&](auto matched) {
+          using T = typename decltype(matched)::type;
+          hana::overload_linearly(std::forward<Fns>(fns)...)(
+            *reinterpret_cast<T*>(&value_)
+          );
+        });
+      }
     };
 
-  }//detail
+    template <typename VisitorTag>
+    struct variant_visit_impl
+    {
+      template <typename Variant, typename Visitor, typename Fn>
+      static constexpr void apply(Variant&& v, Visitor const&, Fn&& fn)
+      {
+        std::forward<Variant>(v).match(std::forward<Fn>(fn));
+      }
+    };
+
+    template <>
+    struct variant_visit_impl<match_when_tag>
+    {
+      template <typename Variant, typename Visitor, typename Fn>
+      static constexpr void apply(Variant&& v, Visitor const&, Fn&& fn)
+      {
+        using T = typename Visitor::type;
+
+        if constexpr(std::decay_t<Variant>::template has<T>::value)
+        {
+          if (v.template is<T>())
+          {
+            std::forward<Variant>(v).template unsafe_match_as<T>(std::forward<Fn>(fn));
+          }
+        }
+      }
+    };
+
+#if 0 // not sure if this would really be a benefit
+    template <>
+    struct variant_visit_impl<mapped_overload_tag>
+    {
+      template <typename Variant, typename Visitor, typename Fn>
+      static constexpr void apply(Variant&& v, Visitor const& visitor, Fn&& fn)
+      {
+        using Keys = decltype(hana::keys(visitor.map));
+        hana::unpack(Keys{}, [&](auto ...keys)
+        {
+          // ???
+        });
+      }
+    };
+#endif
+  }
 
   //useful for match catch all
   auto noop = [](auto){};
@@ -246,40 +310,48 @@ namespace nbdl
     template <typename Store, typename Fn>
     static constexpr void apply(Store&& s, Fn&& fn)
     {
-      std::forward<Store>(s).match([&](auto&& value)
-      {
-        if constexpr(nbdl::Store<decltype(value)>::value)
+      detail::variant_visit_impl<hana::tag_of_t<Fn>>::apply(
+        std::forward<Store>(s)
+      , fn
+      , [&](auto&& value)
         {
-          nbdl::match(
-            std::forward<decltype(value)>(value)
-          , std::forward<Fn>(fn)
-          );
+          if constexpr(nbdl::Store<decltype(value)>::value)
+          {
+            nbdl::match(
+              std::forward<decltype(value)>(value)
+            , std::forward<Fn>(fn)
+            );
+          }
+          else
+          {
+            std::forward<Fn>(fn)(std::forward<decltype(value)>(value));
+          }
         }
-        else
-        {
-          std::forward<Fn>(fn)(std::forward<decltype(value)>(value));
-        }
-      });
+      );
     }
 
     template <typename Store, typename Key, typename Fn>
     static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
     {
-      std::forward<Store>(s).match([&](auto&& value)
-      {
-        if constexpr(nbdl::Store<decltype(value)>::value)
+      detail::variant_visit_impl<hana::tag_of_t<Fn>>::apply(
+        std::forward<Store>(s)
+      , fn
+      , [&](auto&& value)
         {
-          nbdl::match(
-            std::forward<decltype(value)>(value)
-          , std::forward<Key>(k)
-          , std::forward<Fn>(fn)
-          );
+          if constexpr(nbdl::Store<decltype(value)>::value)
+          {
+            nbdl::match(
+              std::forward<decltype(value)>(value)
+            , std::forward<Key>(k)
+            , std::forward<Fn>(fn)
+            );
+          }
+          else
+          {
+            std::forward<Fn>(fn)(std::forward<decltype(value)>(value));
+          }
         }
-        else
-        {
-          std::forward<Fn>(fn)(std::forward<decltype(value)>(value));
-        }
-      });
+      );
     }
   };
 }

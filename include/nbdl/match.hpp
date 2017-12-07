@@ -12,8 +12,11 @@
 #include <nbdl/get.hpp>
 #include <nbdl/variant.hpp>
 
+#include <boost/hana/bool.hpp>
 #include <boost/hana/core/default.hpp>
-#include <boost/hana/functional/overload_linearly.hpp>
+#include <boost/hana/core/tag_of.hpp>
+#include <boost/hana/core/when.hpp>
+#include <boost/hana/type.hpp>
 #include <type_traits>
 #include <utility>
 
@@ -101,6 +104,38 @@ namespace nbdl
       );
     }
   };
+
+  //
+  // Visitors
+  //
+
+  template <typename T>
+  template <typename F>
+  constexpr auto match_when_fn<T>::operator()(F&& f) const
+  { return match_when_t<T, std::decay_t<F>>{std::forward<F>(f)}; }
+
+  template <typename T, typename F>
+  template <typename X>
+  constexpr void match_when_t<T, F>::operator()(X&& x) const
+  {
+    if constexpr(std::is_same<T, std::decay_t<X>>::value)
+    {
+      f(std::forward<X>(x));
+    }
+  }
+
+  template <typename Searchable, typename Otherwise>
+  constexpr auto mapped_overload_fn::operator()(Searchable&& s, Otherwise&& o) const
+  {
+    return mapped_overload_t<std::decay_t<Searchable>, std::decay_t<Otherwise>>{
+      std::forward<Searchable>(s), std::forward<Otherwise>(o)
+    };
+  }
+
+  template <typename Searchable, typename Otherwise>
+  template <typename X>
+  constexpr void mapped_overload_t<Searchable, Otherwise>::operator()(X&& x) const
+  { hana::find(map, hana::typeid_(x)).value_or(otherwise)(std::forward<X>(x)); }
 }
 
 #endif

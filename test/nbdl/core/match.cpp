@@ -136,3 +136,171 @@ TEST_CASE("Match on values nested in a variant.", "[match][Store]")
 
   CHECK(result == std::string{"John"});
 }
+
+TEST_CASE("Match with visitor match_when", "[match]")
+{
+  auto store = hana::make_map(
+    hana::make_pair(hana::type_c<int>, 5)
+  , hana::make_pair(hana::type_c<char>, 'x')
+  );
+
+  {
+    bool result = false;
+    nbdl::match(
+      store
+    , hana::type_c<int>
+    , nbdl::match_when<int>([&](auto x)
+      {
+        CHECK(x == 5);
+        result = true;
+      })
+    );
+
+    CHECK(result);
+  }
+
+  {
+    bool result = false;
+    nbdl::match(
+      std::move(store)
+    , hana::type_c<int>
+    , nbdl::match_when<void>([&](auto&&) { result = true; })
+    );
+
+    CHECK(not result);
+  }
+}
+
+TEST_CASE("Match nbdl::variant with visitor match_when", "[match]")
+{
+  auto store = nbdl::variant<int, float, double, char>{int{42}};
+
+  {
+    bool result = false;
+
+    nbdl::match(
+      store
+    , nbdl::match_when<int>([&](auto x)
+      {
+        CHECK(x == 42);
+        result = true;
+      })
+    );
+
+    CHECK(result);
+  }
+
+  {
+    bool result = false;
+
+    nbdl::match(
+      store
+    , nbdl::match_when<float>([&](auto) { result = true; })
+    );
+
+    CHECK(not result);
+  }
+
+  { // something not on the list
+    bool result = false;
+
+    nbdl::match(
+      std::move(store)
+    , nbdl::match_when<void>([&](auto&&) { result = true; })
+    );
+
+    CHECK(not result);
+  }
+}
+
+TEST_CASE("Match with vistor mapped_overload", "[match]")
+{
+  auto store = hana::make_map(
+    hana::make_pair(hana::type_c<int>, int{82})
+  , hana::make_pair(hana::type_c<char>, 'x')
+  );
+
+  {
+    std::string result = "FAIL";
+
+    nbdl::match(
+      store
+    , hana::type_c<int>
+    , nbdl::mapped_overload(
+        hana::make_map(
+          hana::make_pair(hana::type_c<int>, [&](auto x)
+          {
+            CHECK(x == 82);
+            result = "int";
+          })
+        , hana::make_pair(hana::type_c<float>, [&](auto) { result = "float"; })
+        , hana::make_pair(hana::type_c<double>, [&](auto) { result = "double"; })
+        )
+      , [&](auto) { result = "otherwise"; }
+      )
+    );
+
+    CHECK(result == "int");
+  }
+
+  {
+    std::string result = "FAIL";
+
+    nbdl::match(
+      store
+    , nbdl::mapped_overload(
+        hana::make_map(
+          hana::make_pair(hana::type_c<float>, [&](auto) { result = "float"; })
+        , hana::make_pair(hana::type_c<double>, [&](auto) { result = "double"; })
+        )
+      , [&](auto) { result = "otherwise"; }
+      )
+    );
+
+    CHECK(result == "otherwise");
+  }
+}
+
+TEST_CASE("Match variant with vistor mapped_overload", "[match]")
+{
+  auto store = nbdl::variant<int, float, double, char>{int{101}};
+
+  {
+    std::string result = "FAIL";
+
+    nbdl::match(
+      store
+    , nbdl::mapped_overload(
+        hana::make_map(
+          hana::make_pair(hana::type_c<int>, [&](auto x)
+          {
+            CHECK(x == 101);
+            result = "int";
+          })
+        , hana::make_pair(hana::type_c<float>, [&](auto) { result = "float"; })
+        , hana::make_pair(hana::type_c<double>, [&](auto) { result = "double"; })
+        )
+      , [&](auto) { result = "otherwise"; }
+      )
+    );
+
+    CHECK(result == "int");
+  }
+
+  {
+    std::string result = "FAIL";
+
+    nbdl::match(
+      store
+    , nbdl::mapped_overload(
+        hana::make_map(
+          hana::make_pair(hana::type_c<float>, [&](auto) { result = "float"; })
+        , hana::make_pair(hana::type_c<double>, [&](auto) { result = "double"; })
+        )
+      , [&](auto) { result = "otherwise"; }
+      )
+    );
+
+    CHECK(result == "otherwise");
+  }
+}
