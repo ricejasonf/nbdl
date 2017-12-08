@@ -11,7 +11,7 @@
 
 namespace nbdl::webui
 {
-  namespace hana  = boost::hana;
+  namespace hana = boost::hana;
 
   namespace html
   {
@@ -20,6 +20,7 @@ namespace nbdl::webui
     MPDEF_DIRECTIVE_LIST(attribute)
     MPDEF_DIRECTIVE_LIST(element)
     MPDEF_DIRECTIVE_LIST(event_attribute)
+    MPDEF_DIRECTIVE_LIST(add_class_if)
 
     template <typename ...Args>
     constexpr auto div(Args ...args)
@@ -56,6 +57,24 @@ namespace nbdl::webui
     template <typename ...Args>
     constexpr auto on_click(Args ...args)
     { return event_attribute(hana::string<'c', 'l', 'i', 'c', 'k'>{}, args...); }
+
+    namespace tag
+    {
+      template <typename T>
+      struct add_class_when_t {};
+
+      template <typename T>
+      constexpr auto add_class_when = hana::type_c<add_class_when_t<T>>;
+    }
+
+    template <typename T>
+    constexpr auto add_class_when = [](auto class_name, auto path)
+    {
+      return mpdef::tree_node<
+        decltype(tag::add_class_when<T>)
+      , mpdef::list<decltype(class_name), decltype(path)>
+      >{};
+    };
   }
 }
 

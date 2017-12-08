@@ -18,12 +18,25 @@
 #include <nbdl/webui/html.hpp>
 #include <nbdl/webui/renderer.hpp>
 
+#include <boost/hana/core/is_a.hpp>
+#include <boost/hana/core/to.hpp>
+#include <boost/hana/first.hpp>
+#include <boost/hana/index_if.hpp>
+#include <boost/hana/or.hpp>
+#include <boost/hana/string.hpp>
+#include <boost/hana/transform.hpp>
+#include <boost/hana/tuple.hpp>
+#include <boost/hana/type.hpp>
+#include <boost/hana/unpack.hpp>
+#include <boost/hana/value.hpp>
 #include <emscripten/val.h>
 #include <functional>
 #include <utility>
 
 namespace nbdl::webui::detail
 {
+  namespace hana = boost::hana;
+  using namespace hana::literals;
   using js_val = nbdl::detail::js_val;
 
   // converts a Constant or string to js val
@@ -399,6 +412,93 @@ namespace nbdl::webui::detail
 
     void update()
     { }
+  };
+
+  /*
+   * add_class_if
+   */
+  template <typename ClassName, typename PathSpec, typename Pred>
+  struct action_fn<html::tag::add_class_if_t, ClassName, PathSpec, Pred>
+  {
+    action_fn() = delete;
+  };
+
+  template <typename Store, typename ClassName, typename PathSpec, typename Pred>
+  struct mut_action_fn<html::tag::add_class_if_t, Store, ClassName, PathSpec, Pred>
+  {
+    Store store;
+    emscripten::val el;
+
+
+    mut_action_fn(Store s)
+      : store(s)
+      , el(emscripten::val::undefined())
+    { }
+
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p)
+    {
+      el = p;
+      update();
+      return std::forward<ParentElement>(p);
+    }
+
+    void update()
+    {
+      ui_helper::path(PathSpec{}, std::ref(store).get(), [&](auto const& value)
+      {
+        el["classList"].template call<void>(
+          Pred{}(value) ? "add" : "remove"
+        , to_json_val("class"_s)
+        , to_json_val(ClassName{})
+        );
+      });
+    }
+  };
+
+  /*
+   * add_class_when
+   */
+  template <typename T, typename ClassName, typename PathSpec>
+  struct action_fn<html::tag::add_class_when_t<T>, ClassName, PathSpec>
+  {
+    action_fn() = delete;
+  };
+
+  template <typename Store, typename T, typename ClassName, typename PathSpec>
+  struct mut_action_fn<html::tag::add_class_when_t<T>, Store, ClassName, PathSpec>
+  {
+    Store store;
+    emscripten::val el;
+
+    mut_action_fn(Store s)
+      : store(s)
+      , el(emscripten::val::undefined())
+    { }
+
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p)
+    {
+      el = p;
+      update();
+      return std::forward<ParentElement>(p);
+    }
+
+    void update()
+    {
+      bool result = false;
+
+      ui_helper::path(PathSpec{}, std::ref(store).get(), nbdl::match_when<T>([&](auto const&)
+      {
+        result = true;
+      }));
+
+      el["classList"].template call<void>(
+        result ? "add" : "remove"
+      , to_json_val("class"_s)
+      , to_json_val(ClassName{})
+      );
+    }
   };
 }
 #endif

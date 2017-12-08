@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#define CONSOLE_LOG(x) emscripten::val::global("console").template call<void>("log", emscripten::val(x));
 #include <nbdl/message.hpp>
 #include <nbdl/variant.hpp>
 #include <nbdl/webui/detail/dom_manips.hpp>
@@ -230,6 +231,52 @@ TEST_CASE("Handle click events.", "[webui][renderer][event_attribute]")
   );
 
   nbdl::notify_state_change(renderer, hana::type_c<void>);
+
+  CHECK(check_dom_equals());
+}
+
+TEST_CASE("Add/Remove class based on predicate.", "[webui]")
+{
+  using namespace nbdl::webui::html;
+  using namespace nbdl::ui_spec;
+
+  auto target = make_dom_test_equality(R"HTML(<div class="hello">whoa</div>)HTML");
+
+  auto my_store = hana::make_map(
+    hana::make_pair("has_stuff"_s, bool{true})
+  );
+
+  auto spec =
+    div(
+      add_class_if("hello"_s, get("has_stuff"_s), hana::id)
+    , add_class_if("FAIL"_s,  get("has_stuff"_s), hana::not_)
+    , text_node("whoa"_s)
+    );
+
+  using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
+  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+
+  CHECK(check_dom_equals());
+}
+
+TEST_CASE("Add/Remove class based on matching a type.", "[webui]")
+{
+  using namespace nbdl::webui::html;
+  using namespace nbdl::ui_spec;
+
+  auto target = make_dom_test_equality(R"HTML(<div class="hello">whoa</div>)HTML");
+
+  auto my_store = nbdl::variant<float, int>{int{42}};
+
+  auto spec =
+    div(
+      add_class_when<int>("hello"_s, get())
+    , add_class_when<float>("FAIL"_s,  get())
+    , text_node("whoa"_s)
+    );
+
+  using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
+  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
 
   CHECK(check_dom_equals());
 }

@@ -152,7 +152,7 @@ namespace nbdl
       }
 
       template <typename T>
-      bool is()
+      bool is() const
       {
         return (type_id == int{*type_id_from_type<T>()});
       }

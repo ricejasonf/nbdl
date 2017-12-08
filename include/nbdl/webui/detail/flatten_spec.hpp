@@ -27,6 +27,12 @@ namespace nbdl::webui::detail
   namespace hana = boost::hana;
   using namespace boost::mp11;
 
+  template <typename T>
+  constexpr auto is_add_class_when_tag = hana::false_c;
+
+  template <typename T>
+  constexpr auto is_add_class_when_tag<html::tag::add_class_when_t<T>> = hana::true_c;
+
   template <typename FlattenSpecFn>
   struct flatten_named_node_fn
   {
@@ -83,12 +89,20 @@ namespace nbdl::webui::detail
         , std::decay_t<decltype(child_nodes)>
         >>{};
       }
-      else if constexpr(hana::equal(current_tag, html::tag::event_attribute))
+      else if constexpr(decltype(hana::or_(
+        hana::equal(current_tag, html::tag::add_class_if)
+      , hana::equal(current_tag, html::tag::event_attribute)
+      , is_add_class_when_tag<typename decltype(current_tag)::type>
+      ))::value)
       {
         return mpdef::list<mp_append<
           action_fn<typename decltype(current_tag)::type>
         , std::decay_t<decltype(child_nodes)>
         >>{};
+      }
+      else
+      {
+        static_assert(std::is_void<decltype(current_tag)>::value);
       }
     }
     else if constexpr(   hana::is_a<ui_spec::match_tag, Node>()
