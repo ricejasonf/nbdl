@@ -11,6 +11,7 @@
 #include <nbdl/catch.hpp>
 #include <nbdl/detail/match_if.hpp>
 #include <nbdl/fwd/webui/detail/dom_manips.hpp>
+#include <nbdl/store_range.hpp>
 #include <nbdl/ui_helper/params_concat.hpp>
 #include <nbdl/ui_helper/path.hpp>
 #include <nbdl/ui_spec.hpp>
@@ -182,6 +183,7 @@ namespace nbdl::webui::detail
       nbdl::ui_helper::path(ui_spec::path_t<PathNodes...>{}
                           , std::ref(store).get() , [&](auto const& value)
       {
+        // TODO assert the value is something that can be converted to emscripten::val
         el = emscripten::val::global("document").template
           call<emscripten::val>("createTextNode", emscripten::val(value));
         p.template call<void>("appendChild", el);
@@ -498,6 +500,55 @@ namespace nbdl::webui::detail
       , to_json_val("class"_s)
       , to_json_val(ClassName{})
       );
+    }
+  };
+
+  /*
+   * for_each
+   */
+  template <typename PathSpec, typename ItrKey, typename NodeFnList>
+  struct action_fn<ui_spec::for_each_tag, PathSpec, ItrKey, NodeFnList>
+  {
+    action_fn() = delete;
+  };
+
+  template <typename Store, typename PathSpec, typename ItrKey, typename NodeFnList>
+  struct mut_action_fn<ui_spec::for_each_tag, Store, PathSpec, ItrKey, NodeFnList>
+  {
+    Store store;
+    emscripten::val el;
+    // TODO We should be able to get the type of the container from the PathSpec.
+    // There just isn't currently a tool to do that. It would use nbdl::get from the
+    // last matched type.
+
+    mut_action_fn(Store s)
+      : store(s)
+      , el(emscripten::val::undefined())
+    { }
+
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p)
+    {
+      el = p;
+      update();
+      return std::forward<ParentElement>(p);
+    }
+
+    void update()
+    {
+      // This is currently very naive.
+      el.set("innerHTML", emscripten::val(""));
+      ui_helper::path(PathSpec{}, std::ref(store).get(), [&](auto const& container)
+      {
+        auto range = store_range(ItrKey{}, container, store);
+        using Renderer = renderer_impl<decltype(range.begin()), NodeFnList, hana::true_>;
+
+        for (auto x : range)
+        {
+          Renderer temp_renderer{x};
+          temp_renderer.render(el);
+        }
+      });
     }
   };
 }

@@ -16,6 +16,7 @@
 #include <boost/hana/index_if.hpp>
 #include <boost/hana/equal.hpp>
 #include <boost/hana/functional/compose.hpp>
+#include <functional>
 #include <utility>
 
 namespace nbdl
@@ -51,6 +52,22 @@ namespace nbdl
     : hana::default_
   {
     static constexpr auto apply(...) = delete;
+  };
+
+  template<typename T>
+  struct get_impl<std::reference_wrapper<T>, hana::when<nbdl::State<T>::value>>
+  {
+    template <typename State>
+    static constexpr decltype(auto) apply(State s)
+    {
+      return s.get();
+    }
+
+    template <typename State, typename Key>
+    static constexpr decltype(auto) apply(State s, Key&& k)
+    {
+      return nbdl::get(s.get(), std::forward<Key>(k));
+    }
   };
 
   template<typename Tag>

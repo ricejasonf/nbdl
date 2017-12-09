@@ -52,6 +52,12 @@ namespace nbdl::ui_spec
     using type = path_t<get_t<Xs...>>;
   };
 
+  template <typename ...GetArgs, typename ...Ys, typename ...Xs>
+  struct make_path<path_t<get_t<GetArgs...>, Ys...>, Xs...>
+  {
+    using type = path_t<get_t<GetArgs..., Xs...>, Ys...>;
+  };
+
   template <typename ...MatchTypeArgs, typename ...Ys, typename ...Xs>
   struct make_path<path_t<match_type<MatchTypeArgs...>, Ys...>, Xs...>
   {
@@ -228,6 +234,28 @@ namespace nbdl::ui_spec
   constexpr match_if_fn match_if{};
 
   /*
+   * for_each - for_each(path, fn(iterator_path))
+   */
+
+  struct for_each_tag { };
+
+  template <typename ...> 
+  struct for_each_t { };
+
+  struct for_each_fn
+  {
+    template <typename ...Xs, typename SpecFn>
+    constexpr auto operator()(path_t<Xs...>, SpecFn) const
+      -> for_each_t<
+        path_t<Xs...>
+      , SpecFn 
+      >
+    { return {}; }
+  };
+
+  constexpr for_each_fn for_each{};
+
+  /*
    * equal
    */
 
@@ -277,6 +305,12 @@ namespace boost::hana
   struct tag_of<nbdl::ui_spec::path_t<T...>>
   {
     using type = nbdl::ui_spec::path_tag;
+  };
+
+  template <typename ...T>
+  struct tag_of<nbdl::ui_spec::for_each_t<T...>>
+  {
+    using type = nbdl::ui_spec::for_each_tag;
   };
 }
 

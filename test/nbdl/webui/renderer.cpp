@@ -35,6 +35,7 @@ namespace
   }
 }
 
+#if 0
 TEST_CASE("Render store data then update", "[webui][renderer]")
 {
   using namespace nbdl::webui::html;
@@ -277,6 +278,50 @@ TEST_CASE("Add/Remove class based on matching a type.", "[webui]")
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
   auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+
+  CHECK(check_dom_equals());
+}
+
+#endif
+TEST_CASE("Render a Container in a Store with for_each", "[webui]")
+{
+  using namespace nbdl::webui::html;
+  using namespace nbdl::ui_spec;
+
+  auto target = make_dom_test_equality(R"HTML(<div><div class="row">Row #1</div><div class="row">Row #2</div><div class="row">Row #3</div><div class="row">Row #4</div><div class="row">Row #5</div><div class="row">Row #6</div><div class="row">Row #7</div><div class="row">Row #8</div></div>)HTML");
+
+  constexpr auto make_row = [](std::string text)
+  {
+    return hana::make_map(hana::make_pair("text"_s, text));
+  };
+
+  using Vector = std::vector<decltype(make_row(std::string{}))>;
+
+  auto my_store = hana::make_map(hana::make_pair("column"_s, Vector{
+    make_row("Row #1")
+  , make_row("Row #2")
+  , make_row("Row #3")
+  , make_row("Row #4")
+  , make_row("Row #5")
+  , make_row("Row #6")
+  , make_row("Row #7")
+  , make_row("FAIL")
+  }));
+
+  auto spec =
+    div(
+      for_each(get("column"_s), [](auto x)
+      {
+        return div(attr_class("row"_s) , text_node(get(x, "text"_s)));
+      })
+    );
+
+  using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
+  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+
+  my_store["column"_s][7]["text"_s] = "Row #8";
+
+  nbdl::notify_state_change(renderer, hana::type_c<void>);
 
   CHECK(check_dom_equals());
 }

@@ -7,6 +7,7 @@
 #ifndef NBDL_UI_HELPER_HPP
 #define NBDL_UI_HELPER_HPP
 
+#include <nbdl/detail/default_constructible_lambda.hpp>
 #include <nbdl/ui_spec.hpp>
 
 #include <boost/hana/transform.hpp>
@@ -127,6 +128,28 @@ namespace nbdl::ui_helper
   };
 
   constexpr flatten_param_node_fn flatten_param_node{};
+
+  struct flatten_for_each_node_fn
+  {
+    template <typename Template, typename FlattenSpecFn, typename Path, typename SpecFn>
+    constexpr auto operator()(Template
+                            , FlattenSpecFn const&
+                            , ui_spec::for_each_t<Path, SpecFn>) const
+    {
+      using ItrKey = hana::type<SpecFn>;
+      using ItrPath = decltype(ui_spec::get(ItrKey{}));
+      using Spec = decltype(nbdl::detail::default_constructible_lambda<SpecFn>{}(ItrPath{}));
+
+      return mpdef::list<typename Template::template apply<
+        ui_spec::for_each_tag
+      , Path
+      , ItrKey
+      , decltype(std::declval<FlattenSpecFn>()(Spec{}))
+      >::type>{};
+    }
+  };
+
+  constexpr flatten_for_each_node_fn flatten_for_each_node{};
 }
 
 namespace boost::hana
