@@ -35,7 +35,6 @@ namespace
   }
 }
 
-#if 0
 TEST_CASE("Render store data then update", "[webui][renderer]")
 {
   using namespace nbdl::webui::html;
@@ -282,7 +281,6 @@ TEST_CASE("Add/Remove class based on matching a type.", "[webui]")
   CHECK(check_dom_equals());
 }
 
-#endif
 TEST_CASE("Render a Container in a Store with for_each", "[webui]")
 {
   using namespace nbdl::webui::html;
