@@ -11,6 +11,7 @@
 #include<nbdl/fwd/concept/Container.hpp>
 
 #include <array> // for std::tuple_size
+#include <boost/hana/integral_constant.hpp>
 #include <boost/hana/type.hpp>
 #include <iterator>
 #include <utility>
@@ -39,12 +40,14 @@ namespace nbdl
   }
 
 
-  template<typename T>
+  template <typename T>
   struct Container
-  {
-    using Tag = typename std::decay<T>::type;
-    static constexpr bool value = decltype(detail::is_container(std::declval<T>()))::value;
-  };
+    : decltype(detail::is_container(std::declval<T>()))
+  { };
+
+  template <>
+  struct Container<void> : hana::false_
+  { };
 }
 
 #endif

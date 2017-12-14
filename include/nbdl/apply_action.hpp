@@ -18,13 +18,14 @@
 #include <boost/hana/core/when.hpp>
 #include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/integral_constant.hpp>
+#include <functional>
 #include <utility>
 
 namespace nbdl
 {
   namespace hana = boost::hana;
 
-  template<typename Store, typename Message>
+  template <typename Store, typename Message>
   constexpr auto apply_action_fn::operator()(Store&& s, Message&& m) const
   {
     using Tag = hana::tag_of_t<Store>;
@@ -42,7 +43,7 @@ namespace nbdl
     return Impl::apply(std::forward<Store>(s), std::forward<Message>(m));
   };
 
-  template<typename Tag, bool condition>
+  template <typename Tag, bool condition>
   struct apply_action_impl<Tag, hana::when<condition>>
     : hana::default_
   {
@@ -63,6 +64,16 @@ namespace nbdl
     static constexpr auto apply(Store& s, Action&& a)
     {
       return nbdl::apply_message(s , std::forward<Action>(a));
+    }
+  };
+
+  template <typename T>
+  struct apply_action_impl<std::reference_wrapper<T>>
+  {
+    template <typename Store, typename Action>
+    static constexpr auto apply(Store s, Action&& a)
+    {
+      return nbdl::apply_action(s.get(), std::forward<Action>(a));
     }
   };
 }

@@ -27,6 +27,10 @@ namespace nbdl::webui
     { return element(hana::string<'d', 'i', 'v'>{}, args...); }
 
     template <typename ...Args>
+    constexpr auto span(Args ...args)
+    { return element(hana::string<'s', 'p', 'a', 'n'>{}, args...); }
+
+    template <typename ...Args>
     constexpr auto pre(Args ...args)
     { return element(hana::string<'p', 'r', 'e'>{}, args...); }
 

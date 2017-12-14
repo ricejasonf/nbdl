@@ -8,7 +8,7 @@
 #define NBDL_WEBUI_DETAIL_JS_EVENT_RECEIVER_HPP
 
 #include <mpdef/list.hpp>
-#include <nbdl/apply_message.hpp>
+#include <nbdl/apply_action.hpp>
 #include <nbdl/catch.hpp>
 #include <nbdl/detail/default_constructible_lambda.hpp>
 #include <nbdl/detail/js_val.hpp>
@@ -53,8 +53,7 @@ namespace nbdl::webui::detail
     event_receiver_impl(Store s)
       : store(s)
       , vals(new event_receiver_vals{})
-    {
-    }
+    { }
 
     void receive_event()
     {
@@ -65,8 +64,8 @@ namespace nbdl::webui::detail
           {
             auto send = [&](auto&& message)
             {
-              nbdl::apply_message(
-                std::ref(store).get()
+              nbdl::apply_action(
+                store
               , std::forward<decltype(message)>(message)
               );
             };
@@ -79,12 +78,12 @@ namespace nbdl::webui::detail
           }
         , nbdl::catch_([](auto&&...) { })
         )
-      , std::ref(store).get()
+      , store
       );
     }
   };
 
-  using event_receiver = dyno::poly<EventReceiver, dyno::local_storage<8>>;
+  using event_receiver = dyno::poly<EventReceiver>;
 
   inline void init_event_receiver(event_receiver const& receiver)
   {
@@ -113,7 +112,6 @@ namespace nbdl::webui::detail
   std::unique_ptr<event_receiver> make_event_receiver(Impl&& impl)
   {
     static_assert(dyno::models<EventReceiver, Impl>);
-    static_assert(sizeof(impl) == 8);
     event_receiver* temp = new event_receiver{std::forward<Impl>(impl)};
     init_event_receiver(*temp);
     return std::unique_ptr<event_receiver>{temp};

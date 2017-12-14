@@ -9,6 +9,7 @@
 
 #include <mpdef/MPDEF_DIRECTIVE.hpp>
 #include <mpdef/list.hpp>
+#include <nbdl/get_path.hpp>
 #include <nbdl/match_path.hpp>
 #include <nbdl/pipe.hpp>
 #include <nbdl/promise.hpp>
@@ -29,6 +30,8 @@ namespace nbdl::ui_spec
   namespace hana = boost::hana;
 
   MPDEF_DIRECTIVE_LIST(concat);
+
+  struct noop_t { }; // used implicitly in otherwise() et al
 
   struct path_tag { };
 
@@ -177,6 +180,10 @@ namespace nbdl::ui_spec
 
   struct otherwise_fn
   {
+    constexpr auto operator()() const
+      -> when_t<decltype(hana::always(hana::true_c)), noop_t>
+    { return {}; }
+
     template <typename Spec>
     constexpr auto operator()(Spec) const
       -> when_t<decltype(hana::always(hana::true_c)), Spec>
@@ -285,6 +292,28 @@ namespace nbdl::ui_spec
   };
 
   constexpr equal_fn equal{};
+
+  namespace detail
+  {
+    template <typename ...>
+    struct get_type_at_path_impl { };
+
+    template <typename T, typename ...Xs>
+    struct get_type_at_path_impl<T, path_t<get_t<Xs...>>>
+    {
+      // arg what is T in this context
+      using type = decltype(nbdl::get_path(std::declval<T>(), hana::make_tuple(std::declval<Xs>()...)));
+    };
+
+    template <typename Store, typename T, typename ...MatchTypeArgs, typename ...Xs, typename ...Ys>
+    struct get_type_at_path_impl<Store, path_t<get_t<Xs...>, match_type<T, MatchTypeArgs...>, Ys...>>
+    {
+      using type = decltype(nbdl::get_path(std::declval<T>(), hana::make_tuple(std::declval<Xs>()...)));
+    };
+
+    template <typename Store, typename PathSpec>
+    using get_type_at_path = typename get_type_at_path_impl<Store, PathSpec>::type;
+  }
 }
 
 namespace boost::hana

@@ -32,6 +32,7 @@
 #include <nbdl/entity.hpp>
 #include <nbdl/entity_members.hpp>
 #include <nbdl/get.hpp>
+#include <nbdl/get_path.hpp>
 #include <nbdl/macros/NBDL_ENTITY.hpp>
 #include <nbdl/make_consumer.hpp>
 #include <nbdl/make_context.hpp>
@@ -54,6 +55,7 @@
 #include <nbdl/run_sync.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>
+#include <nbdl/string.hpp>
 #include <nbdl/try.hpp>
 #include <nbdl/uid.hpp>
 #include <nbdl/util/base64_decode.hpp>

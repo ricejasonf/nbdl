@@ -112,8 +112,9 @@ namespace tiles
   template <typename StateConsumer, typename Index>
   void create_game_move(StateConsumer& c, Index i)
   {
-    c.push_api.push(
-      message::make_upstream_create(
+    nbdl::apply_message(
+      c.push_api
+    , message::make_upstream_create(
         message::make_create_path<int>(hana::make_tuple(0))
       , message::no_uid
       , game_move{i}

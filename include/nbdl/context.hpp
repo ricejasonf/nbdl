@@ -68,7 +68,10 @@ namespace nbdl
     using ListenerLookup  = typename ContextMeta::listener_lookup;
 
     friend apply_message_impl<context_tag>;
+    friend get_impl<context_tag>;
     friend match_impl<context_tag>;
+    friend apply_message_impl<context_detail::store_tag>;
+    friend match_impl<context_detail::store_tag>;
 
     // calling the push functions after
     // the context is destroyed will result
@@ -118,24 +121,12 @@ namespace nbdl
       public:
 
       using tag = tag;
+      using hana_tag = context_detail::store_tag;
+      friend apply_message_impl<hana_tag>;
+      friend match_impl<hana_tag>;
+      friend get_impl<hana_tag>;
 
       push_upstream_api_state_consumer(context& c) : ctx(c) { }
-
-      template <typename Message>
-      void push(Message&& m) const
-      {
-        static_assert(nbdl::UpstreamMessage<Message>::value,
-          "nbdl::context::push_upstream_api_state_consumer requires an UpstreamMessage");
-         ctx.push_message(std::forward<Message>(m));
-      }
-
-      template <typename Path, typename ...Fns>
-      void match(Path&& path, Fns&& ...fns) const
-      {
-        ctx.match(std::forward<Path>(path), std::forward<Fns>(fns)...);
-      }
-
-      using hana_tag = context_detail::store_tag;
     };
 
     static constexpr std::size_t cell_count = decltype(hana::size(CellTagTypes{}))::value;
@@ -258,35 +249,6 @@ namespace nbdl
         if constexpr(nbdl::StateConsumer<decltype(cell)>::value)
         {
           nbdl::notify_state_change(cell, p);
-        }
-      });
-    }
-
-    // called inside push_upstream_api_state_consumer
-    template <typename Path, typename ...Fns>
-    void match(Path&& p, Fns&& ...fns)
-    {
-      constexpr auto path_type = decltype(hana::traits::decay(hana::decltype_(p))){};
-      nbdl::match(stores[path_type], p, [&](auto const& value)
-      {
-        if constexpr(
-          decltype(hana::equal(hana::typeid_(value), hana::type_c<nbdl::uninitialized>)){}
-        )
-        {
-          // Trigger upstream read request.
-          // This is a special case that stores can use to trigger
-          // read requests automatically.
-          // The store's value should be set to `nbdl::unresolved`
-          [&](auto d1, auto d2) // makes dependent
-          {
-            push_message(message::make_upstream_read(p, d1));
-            hana::overload_linearly(std::forward<Fns>(fns)...)(d2);
-          }(message::no_uid, nbdl::unresolved{});
-        }
-        else
-        {
-          // Users should not be allowed to modify values directly.
-          hana::overload_linearly(std::forward<Fns>(fns)...)(value);
         }
       });
     }
@@ -461,12 +423,45 @@ namespace nbdl
   };
 
   template <>
+  struct get_impl<context_tag>
+  {
+    template <typename Store, typename Key, typename Fn>
+    static constexpr decltype(auto) apply(Store const& s, Key&& k)
+    {
+      constexpr auto path_type = decltype(hana::typeid_(k)){};
+      return nbdl::get(s.stores[path_type], std::forward<Key>(k));
+    }
+  };
+
+  template <>
   struct match_impl<context_tag>
   {
     template <typename Store, typename Key, typename Fn>
-    static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
+    static constexpr void apply(Store& s, Key&& k, Fn&& fn)
     {
-      s.match(std::forward<Key>(k), std::forward<Fn>(fn));
+      constexpr auto path_type = decltype(hana::typeid_(k)){};
+      nbdl::match(s.stores[path_type], k, [&](auto const& value)
+      {
+        if constexpr(
+          decltype(hana::equal(hana::typeid_(value), hana::type_c<nbdl::uninitialized>)){}
+        )
+        {
+          // Trigger upstream read request.
+          // This is a special case that stores can use to trigger
+          // read requests automatically.
+          // The store's value should be set to `nbdl::unresolved`
+          [&](auto d1, auto d2) // makes dependent
+          {
+            s.push_message(message::make_upstream_read(k, d1));
+            std::forward<Fn>(fn)(d2);
+          }(message::no_uid, nbdl::unresolved{});
+        }
+        else
+        {
+          // Users should not be allowed to modify values directly.
+          std::forward<Fn>(fn)(value);
+        }
+      });
     }
   };
 
@@ -478,8 +473,20 @@ namespace nbdl
     template <typename Store, typename Message>
     static constexpr auto apply(Store& s, Message&& m)
     {
-      s.push(std::forward<Message>(m));
+      static_assert(nbdl::UpstreamMessage<Message>::value,
+        "nbdl::context::push_upstream_api requires an UpstreamMessage");
+      s.ctx.push_message(std::forward<Message>(m));
       return hana::true_c;
+    }
+  };
+
+  template <>
+  struct get_impl<context_detail::store_tag>
+  {
+    template <typename Store, typename Key>
+    static constexpr decltype(auto) apply(Store&& s, Key&& k)
+    {
+      return nbdl::get(s.ctx, std::forward<Key>(k));
     }
   };
 
@@ -489,7 +496,7 @@ namespace nbdl
     template <typename Store, typename Key, typename Fn>
     static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
     {
-      s.match(std::forward<Key>(k), std::forward<Fn>(fn));
+      nbdl::match(s.ctx, std::forward<Key>(k), std::forward<Fn>(fn));
     }
   };
 }

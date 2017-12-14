@@ -23,19 +23,21 @@ namespace nbdl
 {
   namespace hana = boost::hana;
 
-  template<typename State, typename Key>
+  template <typename State, typename Key>
   constexpr decltype(auto) get_fn::operator()(State&& s, Key&& k) const
   {
     using Tag = hana::tag_of_t<State>;
     using Impl = get_impl<Tag>;
 
-    static_assert(nbdl::State<State>::value,
-      "nbdl::get(store, path) requires 'store' to be State");
+    static_assert(
+      nbdl::State<State>::value
+    , "nbdl::get(store, path) requires 'store' to be State"
+    );
 
     return Impl::apply(std::forward<State>(s), std::forward<Key>(k));
   };
 
-  template<typename State>
+  template <typename State>
   constexpr decltype(auto) get_fn::operator()(State&& s) const
   {
     using Tag = hana::tag_of_t<State>;
@@ -47,14 +49,14 @@ namespace nbdl
     return Impl::apply(std::forward<State>(s));
   };
 
-  template<typename Tag, bool condition>
+  template <typename Tag, bool condition>
   struct get_impl<Tag, hana::when<condition>>
     : hana::default_
   {
     static constexpr auto apply(...) = delete;
   };
 
-  template<typename T>
+  template <typename T>
   struct get_impl<std::reference_wrapper<T>, hana::when<nbdl::State<T>::value>>
   {
     template <typename State>
@@ -70,7 +72,7 @@ namespace nbdl
     }
   };
 
-  template<typename Tag>
+  template <typename Tag>
   struct get_impl<Tag, hana::when<hana::Searchable<Tag>::value>>
   {
     template <typename State>

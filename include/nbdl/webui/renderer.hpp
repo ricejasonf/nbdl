@@ -14,11 +14,15 @@
 #include <nbdl/webui/detail/dom_manips.hpp>
 #include <nbdl/webui/detail/flatten_spec.hpp>
 
+#include <boost/hana/integral_constant.hpp>
+#include <boost/hana/type.hpp>
 #include <emscripten/val.h>
 #include <utility>
 
 namespace nbdl
 {
+  namespace hana = boost::hana;
+
   namespace webui
   {
     namespace detail
@@ -31,6 +35,11 @@ namespace nbdl
         : std::true_type
       { };
 
+      constexpr auto destroy_render_node = [](auto&& node)
+        -> decltype(node.destroy())
+      { node.destroy(); };
+
+      constexpr auto can_destroy_render_node = hana::is_valid(destroy_render_node);
 
       template <typename ...>
       struct construct_render_node;
@@ -82,6 +91,8 @@ namespace nbdl
       }
 
       Store store;
+      bool is_rendered;
+      bool is_destroyed;
 
       using FnList = decltype(get_fn_list());
       using RenderPipe = decltype(hana::unpack(
@@ -93,6 +104,8 @@ namespace nbdl
 
       renderer_impl(Store s)
         : store(s)
+        , is_rendered(false)
+        , is_destroyed(false)
         , render_pipe(hana::unpack(
             FnList{}
           , detail::construct_pipe_helper_fn<Store>{store}
@@ -102,6 +115,7 @@ namespace nbdl
       template <typename Parent>
       void render(Parent&& parent)
       {
+        is_rendered = true;
         emscripten::val current = std::forward<Parent&&>(parent);
         hana::for_each(render_pipe, [&](auto& fn)
         {
@@ -111,11 +125,33 @@ namespace nbdl
 
       void update()
       {
+        if (!is_rendered or is_destroyed)
+        {
+          return;
+        }
+
         hana::for_each(render_pipe, [&](auto& x)
         {
           if constexpr(detail::can_update<decltype(x)>::value)
           {
             x.update();
+          }
+        });
+      }
+
+      void destroy()
+      {
+        if (!is_rendered or is_destroyed)
+        {
+          return;
+        }
+        is_destroyed = true;
+
+        hana::for_each(render_pipe, [&](auto& x)
+        {
+          if constexpr(decltype(detail::can_destroy_render_node(x))::value)
+          {
+            detail::destroy_render_node(x);
           }
         });
       }

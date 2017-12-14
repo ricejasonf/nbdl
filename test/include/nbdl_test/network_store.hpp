@@ -25,6 +25,9 @@ namespace nbdl_test
     using hana_tag = network_store<Store>;
 
     Store store;
+
+    network_store_t(network_store_t const&) = delete;
+    network_store_t(Store s) : store(s) { }
   };
 
   struct make_network_store_fn
@@ -59,21 +62,15 @@ namespace nbdl
   };
 
   template <typename S>
-  struct match_impl<nbdl_test::network_store<S>>
+  struct get_impl<nbdl_test::network_store<S>>
   {
-    template <typename Store, typename Fn>
-    static constexpr void apply(Store&& s, Fn&& fn)
-    {
-      std::forward<Fn>(fn)(std::forward<Store>(s).store);
-    }
 
-    template <typename Store, typename Key, typename Fn>
-    static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
+    template <typename Store, typename Key>
+    static constexpr decltype(auto) apply(Store&& s, Key&& k)
     {
-      nbdl::match(
+      return nbdl::get(
         std::forward<Store>(s).store
       , std::forward<Key>(k)
-      , std::forward<Fn>(fn)
       );
     }
   };

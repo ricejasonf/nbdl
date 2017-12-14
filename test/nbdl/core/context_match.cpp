@@ -101,13 +101,13 @@ TEST_CASE("Match a value in the stores.", "[context]")
 
   bool result = false;
 
-  state_consumer.push_api.match(path<1>(1, 49),
+  nbdl::match(state_consumer.push_api, path<1>(1, 49), hana::overload_linearly(
     [&](my_entity<1> const& e)
     {
       result = hana::equal(e, my_entity<1>{1, 49});
     },
     [&](auto const&) { }
-  );
+  ));
 
   CHECK(result);
 }
@@ -120,10 +120,10 @@ TEST_CASE("Matching nbdl::uninitialized triggers upstream read message.", "[cont
 
   bool result = false;
 
-  state_consumer.push_api.match(path<1>(1, 13),
+  nbdl::match(state_consumer.push_api, path<1>(1, 13), hana::overload_linearly(
     [&](nbdl::unresolved)  { result = true; },
     [&](auto const&)       { result = false; }
-  );
+  ));
 
   CHECK(result);
 

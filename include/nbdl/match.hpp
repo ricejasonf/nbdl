@@ -17,6 +17,7 @@
 #include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/core/when.hpp>
 #include <boost/hana/type.hpp>
+#include <functional>
 #include <type_traits>
 #include <utility>
 
@@ -102,6 +103,17 @@ namespace nbdl
       std::forward<Fn>(fn)(
         nbdl::get(std::forward<Store>(s), std::forward<Key>(k))
       );
+    }
+  };
+
+  template<typename T>
+  struct match_impl<std::reference_wrapper<T>
+                  , hana::when<(nbdl::Store<T>::value and not nbdl::State<T>::value)>>
+  {
+    template <typename Store, typename ...Args>
+    static constexpr void apply(Store s, Args&& ...args)
+    {
+      nbdl::match(s.get(), std::forward<Args>(args)...);
     }
   };
 

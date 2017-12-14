@@ -7,6 +7,7 @@
 #ifndef NBDL_STORE_RANGE_HPP
 #define NBDL_STORE_RANGE_HPP
 
+#include <nbdl/apply_action.hpp>
 #include <nbdl/concept/Container.hpp>
 #include <nbdl/concept/Store.hpp>
 #include <nbdl/fwd/store_range.hpp>
@@ -55,6 +56,24 @@ namespace nbdl
 
 namespace nbdl
 {
+  template <>
+  struct apply_action_impl<store_iterator_tag>
+  {
+    template <typename Store, typename Action>
+    static constexpr auto apply(Store& s, Action&& a)
+    {
+      if constexpr(hana::is_a<store_iterator_action_tag, Action>
+      )
+      {
+        return nbdl::apply_action(*(s.itr_pos), std::forward<Action>(a).value);
+      }
+      else
+      {
+        return nbdl::apply_action(s.store, std::forward<Action>(a));
+      }
+    }
+  };
+
   template <>
   struct match_impl<store_iterator_tag>
   {

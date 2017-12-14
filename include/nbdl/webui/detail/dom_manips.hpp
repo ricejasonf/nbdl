@@ -11,6 +11,7 @@
 #include <nbdl/catch.hpp>
 #include <nbdl/detail/match_if.hpp>
 #include <nbdl/fwd/webui/detail/dom_manips.hpp>
+#include <nbdl/get_path.hpp>
 #include <nbdl/store_range.hpp>
 #include <nbdl/ui_helper/params_concat.hpp>
 #include <nbdl/ui_helper/path.hpp>
@@ -33,6 +34,7 @@
 #include <emscripten/val.h>
 #include <functional>
 #include <utility>
+#include <vector>
 
 namespace nbdl::webui::detail
 {
@@ -285,6 +287,11 @@ namespace nbdl::webui::detail
       });
     }
 
+    void destroy()
+    {
+      hana::for_each(renderers, [](auto& x) { x.destroy(); });
+    }
+
     template <typename ParentElement>
     decltype(auto) operator()(ParentElement&& p)
     {
@@ -322,7 +329,7 @@ namespace nbdl::webui::detail
     Store store;
     emscripten::val parent_el;
     emscripten::val container_el;
-    std::size_t branch_id;
+    int branch_id;
     Renderers renderers;
 
     mut_action_fn(Store s)
@@ -340,20 +347,32 @@ namespace nbdl::webui::detail
 
       ui_helper::path(PathSpec{}, std::ref(store).get(), [&](auto const& value)
       {
-        nbdl::detail::match_if(preds).resolve(nbdl::detail::wrap_promise([&](auto index)
-        {
-          if (index != branch_id)
-          {
-            // Something changed! :D
-            if (branch_id != -1)
+        auto pipe = nbdl::detail::promise_join(
+          nbdl::detail::match_if(preds)
+        , nbdl::detail::promise_join(
+            nbdl::tap([&](auto index)
             {
-              container_el.template call<void>("removeChild", container_el["firstChild"]);
-            }
-            branch_id = index;
-            renderers[index].render(container_el);
-          }
-        }), value);
+              if (index != branch_id)
+              {
+                // Something changed! :D
+                if (branch_id != -1)
+                {
+                  container_el.template call<void>("removeChild", container_el["firstChild"]);
+                }
+                branch_id = index;
+                renderers[index].render(container_el);
+              }
+            })
+          , nbdl::detail::promise_end_sync{}
+          )
+        );
+        pipe.resolve(value);
       });
+    }
+
+    void destroy()
+    {
+      hana::for_each(renderers, [](auto& x) { x.destroy(); });
     }
 
     template <typename ParentElement>
@@ -395,18 +414,35 @@ namespace nbdl::webui::detail
   {
     using ReceiverImpl = event_receiver_impl<Store, Handler, Params...>;
     std::unique_ptr<event_receiver> receiver;
+    emscripten::val handler;
+    emscripten::val el;
 
     mut_action_fn(Store s)
       : receiver(make_event_receiver(ReceiverImpl(s)))
+      , handler(receiver->virtual_(handler_s)(*receiver).as_val())
+      , el(emscripten::val::undefined())
     { }
 
-    template <typename ParentElement>
-    decltype(auto) operator()(ParentElement&& p) const
+    mut_action_fn(mut_action_fn const&) = default;
+    mut_action_fn(mut_action_fn&&) = default;
+
+    void destroy()
     {
-      p.template call<void>(
+      el.template call<void>(
+        "removeEventListener"
+      , to_json_val(AttributeName{})
+      , handler
+      );
+    }
+
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p)
+    {
+      el = p;
+      el.template call<void>(
         "addEventListener"
       , to_json_val(AttributeName{})
-      , receiver->virtual_(handler_s)(*receiver).as_val()
+      , handler
       );
 
       return std::forward<ParentElement>(p);
@@ -515,15 +551,23 @@ namespace nbdl::webui::detail
   template <typename Store, typename PathSpec, typename ItrKey, typename NodeFnList>
   struct mut_action_fn<ui_spec::for_each_tag, Store, PathSpec, ItrKey, NodeFnList>
   {
+    using Container = ui_spec::detail::get_type_at_path<Store, PathSpec>;
+    static_assert( nbdl::Container<Container>::value, "ui_spec::for_each supports only nbdl::Containers");
+    using Range = decltype(store_range(
+      ItrKey{}
+    , std::declval<Container&>()
+    , std::declval<Store&>()
+    ));
+    using NodeRenderer = renderer_impl<decltype(std::declval<Range>().begin()), NodeFnList, hana::true_>;
+
     Store store;
     emscripten::val el;
-    // TODO We should be able to get the type of the container from the PathSpec.
-    // There just isn't currently a tool to do that. It would use nbdl::get from the
-    // last matched type.
+    std::vector<NodeRenderer> renderers;
 
     mut_action_fn(Store s)
       : store(s)
       , el(emscripten::val::undefined())
+      , renderers()
     { }
 
     template <typename ParentElement>
@@ -538,17 +582,36 @@ namespace nbdl::webui::detail
     {
       // This is currently very naive.
       el.set("innerHTML", emscripten::val(""));
-      ui_helper::path(PathSpec{}, std::ref(store).get(), [&](auto const& container)
+      ui_helper::path(PathSpec{}, store, [&](auto& container)
       {
-        auto range = store_range(ItrKey{}, container, store);
-        using Renderer = renderer_impl<decltype(range.begin()), NodeFnList, hana::true_>;
+        Range range = store_range(ItrKey{}, container, store);
+        //using Renderer = renderer_impl<decltype(range.begin()), NodeFnList, hana::true_>;
+
+        // just destroy existing renderers :'(
+        for(auto& x : renderers)
+        {
+          x.destroy();
+        }
+
+        std::vector<NodeRenderer> temp_renderers{};
+        temp_renderers.reserve(container.size());
 
         for (auto x : range)
         {
-          Renderer temp_renderer{x};
+          NodeRenderer temp_renderer{x};
           temp_renderer.render(el);
+          temp_renderers.push_back(std::move(temp_renderer));
         }
+        renderers = std::move(temp_renderers);
       });
+    }
+
+    void destroy()
+    {
+      for(auto& x : renderers)
+      {
+        x.destroy();
+      }
     }
   };
 }

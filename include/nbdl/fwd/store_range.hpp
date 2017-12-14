@@ -35,6 +35,18 @@ namespace nbdl
     { return itr_pos != x.itr_pos; }
   };
 
+  // store_iterator_action
+
+  struct store_iterator_action_tag { };
+
+  template <typename T>
+  struct store_iterator_action
+  {
+    using hana_tag = store_iterator_action_tag;
+
+    T value;
+  };
+
   // store_range
 
   template <typename Key, typename Container, typename Store>

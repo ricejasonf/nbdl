@@ -5,7 +5,9 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <emscripten/val.h>
 #define CONSOLE_LOG(x) emscripten::val::global("console").template call<void>("log", emscripten::val(x));
+
 #include <nbdl/message.hpp>
 #include <nbdl/variant.hpp>
 #include <nbdl/webui/detail/dom_manips.hpp>
@@ -286,7 +288,8 @@ TEST_CASE("Render a Container in a Store with for_each", "[webui]")
   using namespace nbdl::webui::html;
   using namespace nbdl::ui_spec;
 
-  auto target = make_dom_test_equality(R"HTML(<div><div class="row">Row #1</div><div class="row">Row #2</div><div class="row">Row #3</div><div class="row">Row #4</div><div class="row">Row #5</div><div class="row">Row #6</div><div class="row">Row #7</div><div class="row">Row #8</div></div>)HTML");
+  //auto target = make_dom_test_equality(R"HTML(<div><div class="row">Row #1</div><div class="row">Row #2</div><div class="row">Row #3</div><div class="row">Row #4</div><div class="row">Row #5</div><div class="row">Row #6</div><div class="row">Row #7</div><div class="row">Row #8</div></div>)HTML");
+  auto target = make_dom_test_equality(R"HTML(<div><div><span><div class="row">Row #1</div></span><span><div class="row">Row #2</div></span><span><div class="row">Row #3</div></span><span><div class="row">Row #4</div></span><span><div class="row">Row #5</div></span><span><div class="row">Row #6</div></span><span><div class="row">Row #7</div></span><span><div class="row">Row #8</div></span></div><div>CLICK THIS BEFORE IT CHANGES!!</div></div>)HTML");
 
   constexpr auto make_row = [](std::string text)
   {
@@ -295,30 +298,71 @@ TEST_CASE("Render a Container in a Store with for_each", "[webui]")
 
   using Vector = std::vector<decltype(make_row(std::string{}))>;
 
-  auto my_store = hana::make_map(hana::make_pair("column"_s, Vector{
-    make_row("Row #1")
-  , make_row("Row #2")
-  , make_row("Row #3")
-  , make_row("Row #4")
-  , make_row("Row #5")
-  , make_row("Row #6")
-  , make_row("Row #7")
-  , make_row("FAIL")
-  }));
+  auto my_store = nbdl_test::make_network_store(hana::make_map(
+    hana::make_pair("last_clicked"_s, std::string{"FAIL"})
+  , hana::make_pair("column"_s, Vector{
+      make_row("Row #1")
+    , make_row("Row #2")
+    , make_row("Row #3")
+    , make_row("Row #4")
+    , make_row("Row #5")
+    , make_row("Row #6")
+    , make_row("Row #7")
+    , make_row("CLICK THIS BEFORE IT CHANGES!!")
+    })
+  ));
 
-  auto spec =
+  static constexpr auto handle_click = [](auto send, std::string text)
+  {
+    send(message::make_upstream_update(
+      hana::make_tuple("last_clicked"_s)
+    , message::no_uid
+    , text
+    ));
+  };
+
+  static constexpr auto click_row = [](auto x)
+  {
+    return div(
+      attr_class("row"_s)
+    , attribute("id"_s, "click_me"_s)
+    , on_click(handle_click, get(x, "text"_s))
+    , text_node(get(x, "text"_s))
+    );
+  };
+
+  static constexpr auto row = [](auto x) {
+    return div(
+      attr_class("row"_s)
+    , text_node(get(x, "text"_s))
+    );
+  };
+
+  constexpr auto spec = div(
     div(
       for_each(get("column"_s), [](auto x)
       {
-        return div(attr_class("row"_s) , text_node(get(x, "text"_s)));
+        return match_if(
+          get(x, "text"_s)
+        , cond(equal("CLICK THIS BEFORE IT CHANGES!!"_s), click_row)
+        , otherwise(row)
+        );
       })
-    );
+    )
+  , div(text_node(get("last_clicked"_s)))
+  );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
   auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
 
-  my_store["column"_s][7]["text"_s] = "Row #8";
+  // trigger click
+  emscripten::val::global("triggerEvent")(
+    emscripten::val("click")
+  , emscripten::val("click_me")
+  );
+  nbdl::notify_state_change(renderer, hana::type_c<void>);
 
+  my_store.store["column"_s][7]["text"_s] = "Row #8";
   nbdl::notify_state_change(renderer, hana::type_c<void>);
 
   CHECK(check_dom_equals());

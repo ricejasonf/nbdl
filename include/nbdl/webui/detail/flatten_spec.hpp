@@ -125,6 +125,10 @@ namespace nbdl::webui::detail
       , Node{}
       );
     }
+    else if constexpr(hana::is_a<ui_spec::noop_t, Node>())
+    {
+      return mpdef::list<>{};
+    }
     else
     {
       return mpdef::list<Node>{};
