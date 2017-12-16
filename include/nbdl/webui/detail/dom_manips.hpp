@@ -60,6 +60,20 @@ namespace nbdl::webui::detail
     }
   }
 
+  template <typename T>
+  emscripten::val to_text_val(T&& t)
+  {
+    // TODO This should be generic and it should be possible to specialize for user types
+    if constexpr (std::is_integral<std::decay_t<T>>::value)
+    {
+      return emscripten::val(std::to_string(t));
+    }
+    else
+    {
+      return emscripten::val(std::string{std::forward<T>(t)});
+    }
+  }
+
   template <typename Store>
   struct make_nested_renderer_impl_type_from_pair_fn
   {
@@ -187,7 +201,7 @@ namespace nbdl::webui::detail
       {
         // TODO assert the value is something that can be converted to emscripten::val
         el = emscripten::val::global("document").template
-          call<emscripten::val>("createTextNode", emscripten::val(value));
+          call<emscripten::val>("createTextNode", to_text_val(value));
         p.template call<void>("appendChild", el);
         parent_el = p;
       });
@@ -200,7 +214,7 @@ namespace nbdl::webui::detail
                           , std::ref(store).get(), [&](auto const& value)
       {
         auto new_el = emscripten::val::global("document").template
-          call<emscripten::val>("createTextNode", emscripten::val(value));
+          call<emscripten::val>("createTextNode", to_text_val(value));
         parent_el.template call<void>("replaceChild", new_el, el);
         el = new_el;
       });
@@ -553,11 +567,11 @@ namespace nbdl::webui::detail
   {
     using Container = ui_spec::detail::get_type_at_path<Store, PathSpec>;
     static_assert( nbdl::Container<Container>::value, "ui_spec::for_each supports only nbdl::Containers");
-    using Range = decltype(store_range(
-      ItrKey{}
-    , std::declval<Container&>()
-    , std::declval<Store&>()
-    ));
+    using Range = store_range_t<
+      ItrKey
+    , typename std::add_const<typename std::remove_reference<Container>::type>::type
+    , Store
+    >;
     using NodeRenderer = renderer_impl<decltype(std::declval<Range>().begin()), NodeFnList, hana::true_>;
 
     Store store;
@@ -582,7 +596,7 @@ namespace nbdl::webui::detail
     {
       // This is currently very naive.
       el.set("innerHTML", emscripten::val(""));
-      ui_helper::path(PathSpec{}, store, [&](auto& container)
+      ui_helper::path(PathSpec{}, store, [&](auto const& container)
       {
         Range range = store_range(ItrKey{}, container, store);
         //using Renderer = renderer_impl<decltype(range.begin()), NodeFnList, hana::true_>;

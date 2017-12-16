@@ -72,7 +72,7 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
       , text_node(get("key_4"_s))
       , match(
           get("key_3"_s)
-        , when<std::string>(text_node(get("key_3"_s)))
+        , when<std::string>([](auto p) { return text_node(p); })
         , when<>(div())
         )
       )

@@ -12,7 +12,7 @@ namespace nbdl
   struct get_path_fn
   {
     template<typename Store, typename Path>
-    constexpr auto operator()(Store&&, Path&&) const;
+    constexpr decltype(auto) operator()(Store&&, Path&&) const;
   };
 
   // get_path - not to be confused with nbdl::message::get_path

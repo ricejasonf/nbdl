@@ -24,6 +24,7 @@
 #include <nbdl/producer_init.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>
+#include <nbdl/ui_spec.hpp>
 #include <nbdl/variant.hpp>
 
 #include <boost/hana.hpp>
@@ -52,6 +53,22 @@ namespace nbdl
           nbdl::producer_init(cell);
         }
       });
+    };
+
+    template <typename Tag, typename Context>
+    class store_handle
+    {
+      Context& ctx;
+
+      public:
+
+      using tag = Tag;
+      using hana_tag = context_detail::store_tag;
+      friend apply_message_impl<hana_tag>;
+      friend match_impl<hana_tag>;
+      friend get_impl<hana_tag>;
+
+      store_handle(Context& c) : ctx(c) { }
     };
   }
 
@@ -114,21 +131,6 @@ namespace nbdl
       }
     };
 
-    class push_upstream_api_state_consumer
-    {
-      context& ctx;
-
-      public:
-
-      using tag = tag;
-      using hana_tag = context_detail::store_tag;
-      friend apply_message_impl<hana_tag>;
-      friend match_impl<hana_tag>;
-      friend get_impl<hana_tag>;
-
-      push_upstream_api_state_consumer(context& c) : ctx(c) { }
-    };
-
     static constexpr std::size_t cell_count = decltype(hana::size(CellTagTypes{}))::value;
     static constexpr auto cell_index_sequence = std::make_index_sequence<cell_count>{};
 
@@ -151,7 +153,7 @@ namespace nbdl
       if constexpr(nbdl::Producer<CellTag>::value)
         return hana::type_c<push_downstream_api>;
       else if constexpr(nbdl::StateConsumer<CellTag>::value)
-        return hana::type_c<push_upstream_api_state_consumer>;
+        return hana::type_c<context_detail::store_handle<tag, context>>;
       else // if Consumer
         return hana::type_c<push_upstream_api>;
     }
@@ -368,8 +370,6 @@ namespace nbdl
 
     public:
 
-    using hana_tag = context_tag;
-
     template <typename Arg1, typename ...Args,
       typename = std::enable_if_t<(
         (sizeof...(Args) + 1 == cell_count)
@@ -425,7 +425,7 @@ namespace nbdl
   template <>
   struct get_impl<context_tag>
   {
-    template <typename Store, typename Key, typename Fn>
+    template <typename Store, typename Key>
     static constexpr decltype(auto) apply(Store const& s, Key&& k)
     {
       constexpr auto path_type = decltype(hana::typeid_(k)){};
@@ -484,7 +484,7 @@ namespace nbdl
   struct get_impl<context_detail::store_tag>
   {
     template <typename Store, typename Key>
-    static constexpr decltype(auto) apply(Store&& s, Key&& k)
+    static constexpr decltype(auto) apply(Store const& s, Key&& k)
     {
       return nbdl::get(s.ctx, std::forward<Key>(k));
     }
@@ -494,10 +494,33 @@ namespace nbdl
   struct match_impl<context_detail::store_tag>
   {
     template <typename Store, typename Key, typename Fn>
-    static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
+    static constexpr void apply(Store& s, Key&& k, Fn&& fn)
     {
       nbdl::match(s.ctx, std::forward<Key>(k), std::forward<Fn>(fn));
     }
+  };
+}
+
+namespace nbdl::ui_spec::detail
+{
+  template <typename ContextTag, typename T, typename X, typename ...Xs>
+  struct get_type_at_path_impl<context_detail::store_handle<ContextTag, T>, path_t<get_t<X, Xs...>>>
+  {
+    using S = typename nbdl_def::builder::make_context_meta_t<ContextTag>::store_map;
+    using type = decltype(
+      nbdl::get_path(std::declval<S const&>()[
+        hana::type_c<X>
+      ], std::declval<hana::tuple<X, Xs...>>())
+    );
+  };
+}
+
+namespace boost::hana
+{
+  template <typename ...T>
+  struct tag_of<nbdl::context<T...>>
+  {
+    using type = nbdl::context_tag;
   };
 }
 

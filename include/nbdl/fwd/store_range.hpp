@@ -23,7 +23,7 @@ namespace nbdl
 
     using store_key_t = Key;
 
-    inline void operator++() { ++itr_pos; }
+    inline void operator++() { itr_pos++; }
 
     // The contained iterator is accessed via nbdl::match(*this, key, fn)
     inline store_iterator& operator*() { return *this; }
