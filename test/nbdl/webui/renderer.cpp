@@ -219,8 +219,7 @@ TEST_CASE("Handle click events.", "[webui][renderer][event_attribute]")
     div(
       attribute("id"_s, "click_me"_s)
     , on_click(handle_click, get("click_count"_s))
-    , text_node("clicked: "_s)
-    , text_node(get("click_count"_s))
+    , text_node(concat("clicked: "_s, get("click_count"_s)))
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;

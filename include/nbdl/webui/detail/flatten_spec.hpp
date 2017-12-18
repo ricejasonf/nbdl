@@ -54,6 +54,34 @@ namespace nbdl::webui::detail
     }
   };
 
+  template <typename Child>
+  constexpr auto flatten_text_node(Child child)
+  {
+    if constexpr(hana::Product<Child>::value)
+    {
+      if constexpr(hana::equal(ui_spec::tag::concat, hana::typeid_(hana::first(child))))
+      {
+        return hana::unpack(hana::second(child), [](auto ...xs)
+        {
+          return mp_append<decltype(flatten_text_node(xs))...>{};
+        });
+      }
+      else
+      {
+        // invalid argument to text node
+        return mpdef::list<
+          action_fn<html::tag::text_node_t, void>
+        >{};
+      }
+    }
+    else
+    {
+      return mpdef::list<
+        action_fn<html::tag::text_node_t , decltype(child)>
+      >{};
+    }
+  }
+
   template <typename Node>
   constexpr auto flatten_spec_fn::operator()(Node node) const
   {
@@ -75,15 +103,12 @@ namespace nbdl::webui::detail
         , decltype(ui_helper::flatten_param_node(hana::at_c<1>(child_nodes)))
         >>{};
       }
-      else if constexpr(decltype(hana::or_(
-        hana::equal(current_tag, html::tag::text_node)
-      , hana::equal(current_tag, html::tag::unsafe_set_inner_html)
-      ))::value)
+      else if constexpr(decltype(hana::equal(current_tag, html::tag::text_node))::value)
       {
-        static_assert(
-          hana::not_(hana::is_a<char const*>(child_nodes))
-        , "Raw string literals cannot be used at compile-time"
-        );
+        return flatten_text_node(child_nodes);
+      }
+      else if constexpr(decltype(hana::equal(current_tag, html::tag::unsafe_set_inner_html))::value)
+      {
         return mpdef::list<action_fn<
           typename decltype(current_tag)::type
         , std::decay_t<decltype(child_nodes)>
