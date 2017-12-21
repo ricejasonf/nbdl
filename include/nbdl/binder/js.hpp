@@ -10,12 +10,14 @@
 #include <nbdl/concept/BindableMap.hpp>
 #include <nbdl/concept/BindableSequence.hpp>
 #include <nbdl/concept/BindableVariant.hpp>
-#include <nbdl/concept/Container.hpp>
+#include <nbdl/concept/NonbyteContainer.hpp>
 #include <nbdl/concept/String.hpp>
 #include <nbdl/bind_map.hpp>
 #include <nbdl/bind_sequence.hpp>
 #include <nbdl/detail/js_val.hpp>
 #include <nbdl/string.hpp>
+#include <nbdl/util/base64_encode.hpp>
+#include <nbdl/util/base64_decode.hpp>
 #include <nbdl/variant.hpp>
 
 #include <boost/hana/core/when.hpp>
@@ -24,6 +26,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace nbdl::binder::js
 {
@@ -161,8 +164,7 @@ namespace nbdl::binder::js
     };
 
     template <typename T>
-    struct bind_to_impl<T, hana::when<nbdl::Container<T>::value
-                              and not nbdl::String<T>::value>>
+    struct bind_to_impl<T, hana::when<nbdl::NonbyteContainer<T>::value>>
     {
       template <typename Xs>
       static void apply(js_val& val, Xs const& xs)
@@ -182,6 +184,17 @@ namespace nbdl::binder::js
           , child_val.handle()
           );
         };
+      }
+    };
+
+    template <>
+    struct bind_to_impl<std::vector<unsigned char>>
+    {
+      template <typename Xs>
+      static void apply(js_val& val, Xs const& xs)
+      {
+        nbdl::string temp = nbdl::util::base64_encode(xs);
+        bind_from(val, temp);
       }
     };
 
@@ -319,8 +332,7 @@ namespace nbdl::binder::js
     };
 
     template <typename T>
-    struct bind_from_impl<T, hana::when<nbdl::Container<T>::value
-                                and not nbdl::String<T>::value>>
+    struct bind_from_impl<T, hana::when<nbdl::NonbyteContainer<T>::value>>
     {
       template <typename Xs>
       static void apply(js_val const& val, Xs& xs)
@@ -357,6 +369,18 @@ namespace nbdl::binder::js
         };
 
         xs = std::move(container);
+      }
+    };
+
+    template <>
+    struct bind_from_impl<std::vector<unsigned char>>
+    {
+      template <typename Xs>
+      static void apply(js_val const& val, Xs& xs)
+      {
+        nbdl::string temp{};
+        bind_from(val, temp);
+        xs = nbdl::util::base64_decode(temp);
       }
     };
 

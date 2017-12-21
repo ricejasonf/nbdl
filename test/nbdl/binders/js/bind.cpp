@@ -10,6 +10,8 @@
 #include <nbdl/match.hpp>
 #include <nbdl/string.hpp>
 #include <nbdl/variant.hpp>
+#include <nbdl/util/base64_decode.hpp>
+#include <nbdl/util/base64_encode.hpp>
 
 #include <boost/hana/equal.hpp>
 #include <boost/hana/pair.hpp>
@@ -27,12 +29,13 @@ namespace
     nbdl::string name_last;
     int age;
     std::vector<hana::pair<unsigned, nbdl::string>> some_list;
+    std::vector<unsigned char> buf;
   };
 }
 
 namespace nbdl
 {
-  NBDL_ENTITY(account, name_first, name_last, age, some_list);
+  NBDL_ENTITY(account, name_first, name_last, age, some_list, buf);
 }
 
 TEST_CASE("Entity can read and write to and from js_val.", "[binder][js]") 
@@ -57,6 +60,7 @@ TEST_CASE("Entity can read and write to and from js_val.", "[binder][js]")
         , [101, "bar"]
         , [102, "baz"]
         ]
+      , buf: "cGxlYXN1cmUu"
       }])
     }
   , input_val.handle()
@@ -85,6 +89,7 @@ TEST_CASE("Entity can read and write to and from js_val.", "[binder][js]")
       , hana::make_pair(101, nbdl::string{"bar"})
       , hana::make_pair(102, nbdl::string{"baz"})
       }
+    , nbdl::util::base64_decode(std::string("pleasure."))
     })
   ));
 }
