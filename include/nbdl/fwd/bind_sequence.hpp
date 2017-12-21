@@ -7,7 +7,7 @@
 #ifndef NBDL_FWD_BIND_SEQUENCE_HPP
 #define NBDL_FWD_BIND_SEQUENCE_HPP
 
-#include<boost/hana/core/when.hpp>
+#include <boost/hana/core/when.hpp>
 
 namespace nbdl
 {
@@ -23,6 +23,6 @@ namespace nbdl
   };
 
   constexpr bind_sequence_fn bind_sequence{};
-} // nbdl
+}
 
 #endif

@@ -9,6 +9,7 @@ if (EMSCRIPTEN)
   add_subdirectory(core)
   add_subdirectory(webui)
   add_subdirectory(websocket_api)
+  add_subdirectory(binders/js)
   return()
 endif (EMSCRIPTEN)
 
