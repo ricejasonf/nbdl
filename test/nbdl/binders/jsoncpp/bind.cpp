@@ -5,10 +5,10 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <nbdl/binder/jsoncpp.hpp>
 #include <assets/AccountEntity.hpp>
+#include <nbdl/binder/jsoncpp.hpp>
+#include <nbdl/util/base64_decode.hpp>
 
-#include <boost/hana.hpp>
 #include <catch.hpp>
 #include <string>
 #include <vector>
@@ -18,10 +18,10 @@ using Account = account;
 using nbdl::binder::jsoncpp::from_string;
 using nbdl::binder::jsoncpp::to_string;
 
-TEST_CASE("Entity can read and write to and from JSON.", "[bind][json]") 
+TEST_CASE("Entity can read and write to and from JSON.", "[binder][jsoncpp]") 
 {
   Account account{};
-  std::string input_json, output_json;
+  std::string input_json;
 
   input_json = account_entity_json_test_string;
 
@@ -29,14 +29,36 @@ TEST_CASE("Entity can read and write to and from JSON.", "[bind][json]")
   CHECK(account.name_first == "Jason");
   CHECK(account.name_last == "Rice");
   CHECK(account.age == 34);
-  CHECK(to_string(account) == "{\n   \"address\" : {\n      \"city\" : \"Las Vegas\",\n      \"line1\" : \"  123 Spork Rd.  \",\n      \"line2\" : \"\",\n      \"state\" : \"NV\",\n      \"zip_code\" : \"89015\"\n   },\n   \"age\" : 34,\n   \"email\" : \"ricejasonf@gmail.com\",\n   \"food\" : {\n      \"food_group\" : {\n         \"name\" : \"Fruits\"\n      },\n      \"id\" : 1,\n      \"name\" : \"Banana\"\n   },\n   \"name_first\" : \"Jason\",\n   \"name_last\" : \"Rice\",\n   \"phone_number\" : \"7024569874\"\n}\n");
+  CHECK(to_string(account) == R"mmm({
+   "address" : {
+      "city" : "Las Vegas",
+      "line1" : "  123 Spork Rd.  ",
+      "line2" : "",
+      "state" : "NV",
+      "zip_code" : "89015"
+   },
+   "age" : 34,
+   "email" : "ricejasonf@gmail.com",
+   "food" : {
+      "food_group" : {
+         "name" : "Fruits"
+      },
+      "id" : 1,
+      "name" : "Banana"
+   },
+   "name_first" : "Jason",
+   "name_last" : "Rice",
+   "phone_number" : "7024569874"
+}
+)mmm");
 }
 
 TEST_CASE("Container can read and write to and from JSON.", "[bind][json]") 
 {
-  std::string input_json, output_json;
+  std::string input_json;
 
-  input_json = "[ \"C++\", \"Haskell\", \"Rust\", \"Javascript\", \"PHP\" ]\n";
+  input_json = R"mmm([ "C++", "Haskell", "Rust", "Javascript", "PHP" ]
+)mmm";
 
   std::vector<nbdl::string> languages;
 
@@ -49,4 +71,19 @@ TEST_CASE("Container can read and write to and from JSON.", "[bind][json]")
   CHECK(languages[4] == "PHP");
 
   CHECK(to_string(languages) == input_json);
+}
+
+TEST_CASE("std::vector<unsigned char> is automatcally base64 encoded/decoded.", "[binder][jsoncpp]") 
+{
+  std::string input_json =  R"mmm([ "cGxlYXN1cmUu", "bGVhc3VyZS4=" ]
+)mmm";
+
+  std::vector<std::vector<unsigned char>> subject{};
+
+  from_string(input_json, subject);
+  REQUIRE(subject.size() == 2);
+  CHECK(subject[0] == nbdl::util::base64_decode(std::string{"cGxlYXN1cmUu"}));
+  CHECK(subject[1] == nbdl::util::base64_decode(std::string{"bGVhc3VyZS4="}));
+
+  CHECK(to_string(subject) == input_json);
 }

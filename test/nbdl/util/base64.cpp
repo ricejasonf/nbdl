@@ -8,7 +8,6 @@
 #include <nbdl/util/base64_encode.hpp>
 #include <nbdl/util/base64_decode.hpp>
 
-#include <boost/hana.hpp>
 #include <catch.hpp>
 #include <string>
 #include <vector>

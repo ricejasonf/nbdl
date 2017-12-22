@@ -15,6 +15,8 @@
 #include<nbdl/bind_map.hpp>
 #include<nbdl/bind_sequence.hpp>
 #include<nbdl/string.hpp>
+#include<nbdl/util/base64_decode.hpp>
+#include<nbdl/util/base64_encode.hpp>
 
 #include<json/json.h>
 #include<string>
@@ -93,6 +95,14 @@ namespace nbdl { namespace binder { namespace jsoncpp
         }
       }
 
+      template <typename Buffer>
+      void bind_buffer(Buffer& b)
+      {
+        nbdl::string temp{};
+        bind_string(temp);
+        b = nbdl::util::base64_decode(temp);
+      }
+
       template <typename String>
       void bind_string(String& field)
       {
@@ -168,6 +178,13 @@ namespace nbdl { namespace binder { namespace jsoncpp
       void bind_member(X&& x)
       {
         json_val = std::forward<X>(x);
+      }
+
+      template <typename Buffer>
+      void bind_buffer(Buffer const& b)
+      {
+        nbdl::string temp = nbdl::util::base64_encode(b);
+        bind_string(temp);
       }
 
       template <typename Container>
@@ -284,6 +301,10 @@ namespace nbdl { namespace binder { namespace jsoncpp
         if constexpr(nbdl::String<T>::value)
         {
           binder.bind_string(std::forward<T>(t));
+        }
+        else if constexpr(decltype(hana::type_c<std::vector<unsigned char>> == hana::typeid_(t))::value)
+        {
+          binder.bind_buffer(std::forward<T>(t));
         }
         else if constexpr(nbdl::Container<T>::value)
         {
