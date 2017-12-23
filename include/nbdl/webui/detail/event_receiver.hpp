@@ -14,6 +14,8 @@
 #include <nbdl/detail/js_val.hpp>
 #include <nbdl/params_promise.hpp>
 #include <nbdl/run_sync.hpp>
+#include <nbdl/store_compose.hpp>
+#include <nbdl/webui/html.hpp> // for event_data key
 
 #include <boost/hana/pair.hpp>
 #include <boost/hana/string.hpp>
@@ -57,6 +59,8 @@ namespace nbdl::webui::detail
 
     void receive_event()
     {
+      auto store_with_event = nbdl::store_compose(html::event_data, std::ref(vals->event_data), store);
+
       nbdl::run_sync(
         hana::make_tuple(
           nbdl::params_promise(mpdef::list<Params...>{})
@@ -78,7 +82,7 @@ namespace nbdl::webui::detail
           }
         , nbdl::catch_([](auto&&...) { })
         )
-      , store
+      , store_with_event
       );
     }
   };

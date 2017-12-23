@@ -21,6 +21,7 @@ namespace nbdl::webui
     MPDEF_DIRECTIVE_LIST(element)
     MPDEF_DIRECTIVE_LIST(event_attribute)
     MPDEF_DIRECTIVE_LIST(add_class_if)
+    MPDEF_DIRECTIVE_LIST(hidden_file_input)
 
     template <typename ...Args>
     constexpr auto div(Args ...args)
@@ -79,6 +80,11 @@ namespace nbdl::webui
       , mpdef::list<decltype(class_name), decltype(path)>
       >{};
     };
+
+    // Key used to lookup event object in store
+    // for use in relevant event handlers.
+    struct event_data_t { };
+    constexpr event_data_t event_data{};
   }
 }
 

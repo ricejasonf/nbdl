@@ -117,6 +117,7 @@ namespace nbdl::webui::detail
       else if constexpr(decltype(hana::or_(
         hana::equal(current_tag, html::tag::add_class_if)
       , hana::equal(current_tag, html::tag::event_attribute)
+      , hana::equal(current_tag, html::tag::hidden_file_input)
       , is_add_class_when_tag<typename decltype(current_tag)::type>
       ))::value)
       {

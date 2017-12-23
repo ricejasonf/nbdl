@@ -16,6 +16,7 @@
 #include <nbdl/ui_helper/params_concat.hpp>
 #include <nbdl/ui_helper/path.hpp>
 #include <nbdl/ui_spec.hpp>
+#include <nbdl/webui/detail/dom_event_listener.hpp>
 #include <nbdl/webui/detail/event_receiver.hpp>
 #include <nbdl/webui/html.hpp>
 #include <nbdl/webui/renderer.hpp>
@@ -427,36 +428,22 @@ namespace nbdl::webui::detail
   struct mut_action_fn<html::tag::event_attribute_t, Store, AttributeName, Handler, Params...>
   {
     using ReceiverImpl = event_receiver_impl<Store, Handler, Params...>;
-    std::unique_ptr<event_receiver> receiver;
-    emscripten::val handler;
-    emscripten::val el;
+
+    Store store;
+    std::unique_ptr<dom_event_listener> event_listener;
 
     mut_action_fn(Store s)
-      : receiver(make_event_receiver(ReceiverImpl(s)))
-      , handler(receiver->virtual_(handler_s)(*receiver).as_val())
-      , el(emscripten::val::undefined())
+      : store(s)
+      , event_listener()
     { }
-
-    mut_action_fn(mut_action_fn const&) = default;
-    mut_action_fn(mut_action_fn&&) = default;
-
-    void destroy()
-    {
-      el.template call<void>(
-        "removeEventListener"
-      , to_json_val(AttributeName{})
-      , handler
-      );
-    }
 
     template <typename ParentElement>
     decltype(auto) operator()(ParentElement&& p)
     {
-      el = p;
-      el.template call<void>(
-        "addEventListener"
+      event_listener = make_dom_event_listener(
+        ReceiverImpl(store)
+      , p
       , to_json_val(AttributeName{})
-      , handler
       );
 
       return std::forward<ParentElement>(p);
@@ -627,6 +614,77 @@ namespace nbdl::webui::detail
         x.destroy();
       }
     }
+  };
+
+  /*
+   * hidden_file_input
+   */
+  template <typename Handler, typename ...Params>
+  struct action_fn<html::tag::hidden_file_input_t, Handler, Params...>
+  {
+    action_fn() = delete;
+  };
+
+  template <typename Store, typename Handler, typename ...Params>
+  struct mut_action_fn<html::tag::hidden_file_input_t, Store, Handler, Params...>
+  {
+    using ChangeReceiverImpl = event_receiver_impl<Store, Handler, Params...>;
+
+    Store store;
+    std::unique_ptr<dom_event_listener> click_listener;
+    std::unique_ptr<dom_event_listener> change_listener;
+
+    mut_action_fn(Store s)
+      : store(s)
+      , click_listener()
+      , change_listener()
+    { }
+
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p)
+    {
+      js_val file_input{};
+      js_val click_handler{};
+
+      EM_ASM_(
+        {
+          var file_input = document.createElement("input");
+          file_input.setAttribute("type", "file");
+          file_input.style.display = "none";
+
+          var click_handler = function(ev)
+          {
+            file_input.click();
+          };
+
+          Module.NBDL_DETAIL_JS_SET($0, file_input);
+          Module.NBDL_DETAIL_JS_SET($1, click_handler);
+        }
+      , file_input.handle()
+      , click_handler.handle()
+      );
+
+      emscripten::val file_input_el = file_input.as_val();
+      p.template call<void>("appendChild", file_input_el);
+
+      // parent click listener
+      click_listener = make_dom_event_listener(
+        p
+      , emscripten::val("click")
+      , click_handler.as_val()
+      );
+
+      change_listener = make_dom_event_listener(
+        ChangeReceiverImpl(store)
+      , std::move(file_input_el)
+      , emscripten::val("change")
+      );
+
+      return std::forward<ParentElement>(p);
+    }
+
+    void update()
+    { }
   };
 }
 #endif

@@ -9,13 +9,13 @@
 
 #include <nbdl/fwd/webui/renderer.hpp>
 #include <nbdl/make_state_consumer.hpp>
-#include <nbdl/promise.hpp>
 #include <nbdl/notify_state_change.hpp>
 #include <nbdl/webui/detail/dom_manips.hpp>
 #include <nbdl/webui/detail/flatten_spec.hpp>
 
 #include <boost/hana/integral_constant.hpp>
 #include <boost/hana/type.hpp>
+#include <boost/hana/tuple.hpp>
 #include <emscripten/val.h>
 #include <utility>
 
@@ -69,7 +69,7 @@ namespace nbdl
         template <typename ...Node>
         auto operator()(Node ...) const
         {
-          return nbdl::pipe(detail::construct_render_node<Node>::apply(store)...);
+          return hana::make_tuple(detail::construct_render_node<Node>::apply(store)...);
         }
       };
     }
