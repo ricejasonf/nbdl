@@ -32,6 +32,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   pipe.cpp
   run_async_loop.cpp
   run_sync.cpp
+  store_compose.cpp
   uid.cpp
   variant.cpp
 )

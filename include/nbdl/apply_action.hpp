@@ -19,6 +19,7 @@
 #include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/integral_constant.hpp>
 #include <functional>
+#include <type_traits>
 #include <utility>
 
 namespace nbdl
@@ -47,13 +48,19 @@ namespace nbdl
   struct apply_action_impl<Tag, hana::when<condition>>
     : hana::default_
   {
-    template <typename Store, typename Other>
-    static constexpr auto apply(Store& s, Other&& o)
+    template <typename Store, typename Action>
+    static constexpr auto apply(Store& s, Action&& a)
     {
-      s = std::forward<Other>(o);
-
-      // Do the cheapest, laziest assumption here
-      return hana::true_c;
+      if constexpr(std::is_assignable<Store, Action>::value)
+      {
+        s = std::forward<Action>(a);
+        return hana::true_c;
+      }
+      else
+      {
+        std::forward<Action>(a)(s);
+        return hana::true_c;
+      }
     }
   };
 

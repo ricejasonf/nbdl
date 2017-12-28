@@ -55,6 +55,7 @@
 #include <nbdl/run_sync.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>
+#include <nbdl/store_compose.hpp>
 #include <nbdl/string.hpp>
 #include <nbdl/try.hpp>
 #include <nbdl/uid.hpp>
