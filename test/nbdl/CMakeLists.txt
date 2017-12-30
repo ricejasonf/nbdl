@@ -6,10 +6,11 @@
 #
 
 if (EMSCRIPTEN)
-  add_subdirectory(core)
-  add_subdirectory(webui)
-  add_subdirectory(websocket_api)
   add_subdirectory(binders/js)
+  add_subdirectory(core)
+  add_subdirectory(js)
+  add_subdirectory(websocket_api)
+  add_subdirectory(webui)
   return()
 endif (EMSCRIPTEN)
 

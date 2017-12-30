@@ -34,8 +34,7 @@ namespace nbdl::webui::detail
   constexpr auto handler_s        = BOOST_HANA_STRING("handler");
 
   struct EventReceiver : decltype(dyno::requires(
-    dyno::MoveConstructible{}
-  , hana::make_pair(receive_event_s,  dyno::function<void(dyno::T&)>)
+    hana::make_pair(receive_event_s,  dyno::function<void(dyno::T&)>)
   , hana::make_pair(event_data_s,     dyno::function<js_val const&(dyno::T const&)>)
   , hana::make_pair(handler_s,        dyno::function<js_val const&(dyno::T const&)>)
   )) { };
