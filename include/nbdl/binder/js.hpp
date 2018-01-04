@@ -7,14 +7,15 @@
 #ifndef NBDL_BINDER_JS_HPP
 #define NBDL_BINDER_JS_HPP
 
+#include <nbdl/bind_map.hpp>
+#include <nbdl/bind_sequence.hpp>
 #include <nbdl/concept/BindableMap.hpp>
 #include <nbdl/concept/BindableSequence.hpp>
 #include <nbdl/concept/BindableVariant.hpp>
 #include <nbdl/concept/NonbyteContainer.hpp>
 #include <nbdl/concept/String.hpp>
-#include <nbdl/bind_map.hpp>
-#include <nbdl/bind_sequence.hpp>
 #include <nbdl/detail/js_val.hpp>
+#include <nbdl/js.hpp>
 #include <nbdl/string.hpp>
 #include <nbdl/util/base64_encode.hpp>
 #include <nbdl/util/base64_decode.hpp>
@@ -36,7 +37,10 @@ namespace nbdl::binder::js
   struct bind_to_fn
   {
     template <typename X>
-    void operator()(js_val& val, X const& x) const;
+    void operator()(nbdl::js::val&, X const&) const;
+
+    template <typename X>
+    void operator()(js_val&, X const&) const;
   };
 
   constexpr bind_to_fn bind_to{};
@@ -44,7 +48,10 @@ namespace nbdl::binder::js
   struct bind_from_fn
   {
     template <typename X>
-    void operator()(js_val const& val, X& x) const;
+    void operator()(nbdl::js::val const&, X&) const;
+
+    template <typename X>
+    void operator()(js_val const&, X&) const;
   };
 
   constexpr bind_from_fn bind_from{};
@@ -60,12 +67,24 @@ namespace nbdl::binder::js
   }
 
   template <typename X>
+  void bind_to_fn::operator()(nbdl::js::val& v, X const& x) const
+  {
+    (*this)(reinterpret_cast<js_val&>(v), x);
+  }
+
+  template <typename X>
   void bind_to_fn::operator()(js_val& val, X const& x) const
   {
     using Tag = hana::tag_of_t<X>;
     using Impl = detail::bind_to_impl<Tag>;
 
     Impl::apply(val, x);
+  }
+
+  template <typename X>
+  void bind_from_fn::operator()(nbdl::js::val const& v, X& x) const
+  {
+    (*this)(reinterpret_cast<js_val const&>(v), x);
   }
 
   template <typename X>

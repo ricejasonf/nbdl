@@ -7,11 +7,12 @@
 
 #include <nbdl/binder/js.hpp>
 #include <nbdl/entity.hpp>
+#include <nbdl/js.hpp>
 #include <nbdl/match.hpp>
 #include <nbdl/string.hpp>
-#include <nbdl/variant.hpp>
 #include <nbdl/util/base64_decode.hpp>
 #include <nbdl/util/base64_encode.hpp>
+#include <nbdl/variant.hpp>
 
 #include <boost/hana/equal.hpp>
 #include <boost/hana/pair.hpp>
@@ -38,16 +39,16 @@ namespace nbdl
   NBDL_ENTITY(account, name_first, name_last, age, some_list, buf);
 }
 
-TEST_CASE("Entity can read and write to and from js_val.", "[binder][js]") 
+TEST_CASE("Entity can read and write to and from js::val.", "[binder][js]") 
 {
   using nbdl::binder::js::bind_from;
   using nbdl::binder::js::bind_to;
 
-  nbdl::detail::js_val::init_registry();
+  nbdl::js::init();
 
   nbdl::optional<account> subject1{};
   nbdl::optional<account> subject2{};
-  nbdl::binder::js::js_val input_val, output_val;
+  nbdl::js::val input_val, output_val;
 
   EM_ASM_(
     {
@@ -63,7 +64,7 @@ TEST_CASE("Entity can read and write to and from js_val.", "[binder][js]")
       , buf: "cGxlYXN1cmUu"
       }])
     }
-  , input_val.handle()
+  , nbdl::js::detail::get_handle(input_val)
   );
 
   bind_from(input_val, subject1);
