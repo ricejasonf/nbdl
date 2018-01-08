@@ -27,16 +27,12 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   match.cpp
   match_path.cpp
   message.cpp
-  params_promise.cpp
-  path_promise.cpp
   pipe.cpp
   run_async_loop.cpp
-  run_sync.cpp
   store_compose.cpp
   uid.cpp
   variant.cpp
 )
-#message_api.cpp
 
 # compile-time tests
 

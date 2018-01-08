@@ -109,16 +109,18 @@ int main()
     constexpr auto expected = hana::type_c<decltype(mpdef::make_list(
       begin(tag::element_t{}, div_s),
         action_fn<tag::attribute_t, decltype("class"_s), mpdef::list<decltype("foo"_s)>>{}
-      , action_fn<match_tag, path_t<get_t<decltype("key"_s)>>
+      , action_fn<branch_spec<
+          match_tag
+        , path_t<get_t<decltype("key"_s)>>
         , mpdef::list<
-            mpdef::pair<hana::type<int>, mpdef::list<
+            mpdef::pair<int, mpdef::list<
               action_fn<tag::text_node_t, decltype("Hello, int!"_s)>
             >>
-          , mpdef::pair<hana::type<void>, mpdef::list<
+          , mpdef::pair<void, mpdef::list<
               action_fn<tag::text_node_t, decltype("Hello, everything else!"_s)>
             >>
           >
-        >{}
+        >>{}
     , end(tag::element_t{}, div_s)
     ))>;
 

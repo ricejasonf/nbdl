@@ -11,6 +11,7 @@ if (EMSCRIPTEN)
   add_subdirectory(js)
   add_subdirectory(websocket_api)
   add_subdirectory(webui)
+  add_subdirectory(ui_helper)
   return()
 endif (EMSCRIPTEN)
 

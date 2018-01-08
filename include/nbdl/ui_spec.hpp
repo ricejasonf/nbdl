@@ -7,8 +7,8 @@
 #ifndef NBDL_UI_SPEC_HPP
 #define NBDL_UI_SPEC_HPP
 
-#include <mpdef/MPDEF_DIRECTIVE.hpp>
 #include <mpdef/list.hpp>
+#include <nbdl/fwd/ui_spec.hpp>
 #include <nbdl/get_path.hpp>
 #include <nbdl/match_path.hpp>
 #include <nbdl/pipe.hpp>
@@ -28,23 +28,6 @@
 namespace nbdl::ui_spec
 {
   namespace hana = boost::hana;
-
-  MPDEF_DIRECTIVE_LIST(concat);
-
-  struct noop_t { }; // used implicitly in otherwise() et al
-
-  struct path_tag { };
-
-  template <typename ...>
-  struct path_t
-  { };
-
-  template <typename ...>
-  struct get_t
-  { };
-
-  template <typename T, typename ...P>
-  struct match_type { };
 
   template <typename T, typename Spec>
   struct when_t { };
@@ -67,7 +50,7 @@ namespace nbdl::ui_spec
     using type = path_t<get_t<Xs...>, match_type<MatchTypeArgs...>, Ys...>;
   };
 
-  template <typename T, typename Path>
+  template <typename T, typename PathSpec>
   struct make_path_match_type;
 
   template <typename T, typename ...P, typename ...Xs>
@@ -76,18 +59,33 @@ namespace nbdl::ui_spec
     using type = path_t<match_type<T, P...>, Xs...>;
   };
 
-  template <typename T, typename ...WhenArgs, typename ...P, typename ...Xs>
-  struct make_path_match_type<when_t<T, WhenArgs...>, path_t<get_t<P...>, Xs...>>
+  /*
+   * apply(fn)
+   */
+
+  struct apply_tag { };
+
+  template <typename Fn, typename ParamsSpec>
+  struct apply_t { };
+
+  template <typename Fn>
+  struct apply_fn_fn
   {
-    using type = path_t<match_type<T, P...>, Xs...>;
+    template <typename ...Params>
+    constexpr auto operator()(Params...) const
+      -> apply_t<Fn, mpdef::list<Params...>>
+    { return {}; }
   };
 
-  template <typename T, typename ...WhenArgs, typename ...P, typename ...Xs>
-  struct make_path_match_type<when_t<T, WhenArgs...>, const path_t<get_t<P...>, Xs...>>
+  struct apply_fn
   {
-    using type = path_t<match_type<T, P...>, Xs...>;
+    template <typename Fn>
+    constexpr auto operator()(Fn) const
+      -> apply_fn_fn<Fn>
+    { return {}; }
   };
 
+  constexpr apply_fn apply{};
 
   /*
    * get
@@ -102,6 +100,35 @@ namespace nbdl::ui_spec
   };
 
   constexpr get_fn get{};
+
+  /*
+   * match_when<T>
+   */
+
+  template <typename T>
+  struct match_when_fn
+  {
+    template <typename PathSpec>
+    constexpr auto operator()(PathSpec) const
+      -> typename make_path_match_type<T, PathSpec>::type
+    { return {}; }
+  };
+
+  template <typename T>
+  constexpr match_when_fn<T> match_when{};
+
+  /*
+   * key_at - Use key from value at location in store
+   */
+  struct key_at_fn
+  {
+    template <typename PathSpec>
+    constexpr auto operator()(PathSpec) const
+      -> key_at_t<PathSpec>
+    { return {}; }
+  };
+
+  constexpr key_at_fn key_at{};
 
   /*
    * when<T>
@@ -128,16 +155,16 @@ namespace nbdl::ui_spec
 
     struct make_cond_pair_fn
     {
-      template <typename T, typename Spec, typename Path>
-      constexpr auto operator()(when_t<T, Spec>, Path) const
+      template <typename Pred, typename Spec, typename Path>
+      constexpr auto operator()(when_t<Pred, Spec>, Path) const
       {
         if constexpr(std::__invokable<Spec, Path>::value)
         {
-          return mpdef::pair<T, decltype(std::declval<Spec>()(Path{}))>{};
+          return mpdef::pair<Pred, decltype(std::declval<Spec>()(Path{}))>{};
         }
         else
         {
-          return mpdef::pair<T, Spec>{};
+          return mpdef::pair<Pred, Spec>{};
         }
       }
     };
@@ -153,6 +180,10 @@ namespace nbdl::ui_spec
     template <typename Spec>
     constexpr auto operator()(Spec) const
       -> when_t<T, Spec>
+    { return {}; }
+
+    inline constexpr auto operator()() const
+      -> when_t<T, noop_t>
     { return {}; }
   };
 
@@ -193,6 +224,15 @@ namespace nbdl::ui_spec
   constexpr otherwise_fn otherwise{};
 
   /*
+   * branch_spec
+   */
+
+  struct branch_spec_tag;
+
+  template <typename Tag, typename PathSpec, typename Branches>
+  struct branch_spec { };
+
+  /*
    * match
    */
 
@@ -205,8 +245,9 @@ namespace nbdl::ui_spec
   {
     template <typename ...Xs, typename ...Whens>
     constexpr auto operator()(path_t<Xs...>, Whens...) const
-      -> match_t<
-        path_t<Xs...>
+      -> branch_spec<
+        match_tag
+      , path_t<Xs...>
       , mpdef::list<
           decltype(detail::make_when_pair_fn{}(std::declval<Whens>(), path_t<Xs...>{}))...
         >
@@ -229,8 +270,9 @@ namespace nbdl::ui_spec
   {
     template <typename ...Xs, typename ...Whens>
     constexpr auto operator()(path_t<Xs...>, Whens...) const
-      -> match_if_t<
-        path_t<Xs...>
+      -> branch_spec<
+        match_if_tag
+      , path_t<Xs...>
       , mpdef::list<
           decltype(detail::make_cond_pair_fn{}(std::declval<Whens>(), path_t<Xs...>{}))...
         >
@@ -318,6 +360,24 @@ namespace nbdl::ui_spec
 
 namespace boost::hana
 {
+  template <typename Fn, typename ParamsSpec>
+  struct tag_of<nbdl::ui_spec::apply_t<Fn, ParamsSpec>>
+  {
+    using type = nbdl::ui_spec::apply_tag;
+  };
+
+  template <typename ParamsSpec>
+  struct tag_of<nbdl::ui_spec::key_at_t<ParamsSpec>>
+  {
+    using type = nbdl::ui_spec::key_at_tag;
+  };
+
+  template <typename Tag, typename PathSpec, typename Branches>
+  struct tag_of<nbdl::ui_spec::branch_spec<Tag, PathSpec, Branches>>
+  {
+    using type = nbdl::ui_spec::branch_spec_tag;
+  };
+
   template <typename ...T>
   struct tag_of<nbdl::ui_spec::match_t<T...>>
   {

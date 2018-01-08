@@ -12,7 +12,8 @@
 #include <nbdl/run_sync.hpp>
 #include <nbdl/tap.hpp>
 #include <nbdl/ui_helper.hpp>
-#include <nbdl/ui_helper/path.hpp>
+#include <nbdl/ui_helper/match_branch.hpp>
+#include <nbdl/ui_helper/match_path_spec.hpp>
 #include <nbdl/ui_spec.hpp>
 
 #include <boost/hana/at.hpp>
@@ -55,9 +56,9 @@ namespace nbdl::ui_helper
       // If the path does not resolve to the Param then the result
       // will be an empty string_concat_view which, theoretically, should
       // never happen anyways.
-      string_concat_view result;
+      string_concat_view result{};
 
-      path(nbdl::ui_spec::path_t<PathNodes...>{}, store, [&](auto const& param)
+      match_path_spec(store, nbdl::ui_spec::path_t<PathNodes...>{}, [&](auto const& param)
       {
         result = nbdl::detail::to_string_concat_view(param);
       });
@@ -65,66 +66,17 @@ namespace nbdl::ui_helper
       return result;
     };
 
-    // param_action match
+    // param_action branch
 
-    template <typename T>
-    struct match_branch_pred_fn
-    {
-      template <typename U, typename Spec>
-      constexpr auto operator()(mpdef::pair<U, Spec>) const
-      {
-        return hana::or_(
-          hana::type_c<T>    == U{}
-        , hana::type_c<void> == U{}
-        );
-      }
-    };
-
-    template <typename PathSpec, typename Branches>
-    constexpr auto param_to_string_view<param_action_t<
-      ui_spec::match_tag, PathSpec, Branches>> = [](auto const& store) -> string_concat_view
+    template <typename ...T>
+    constexpr auto param_to_string_view<param_action_t<ui_spec::branch_spec<T...>>>
+      = [](auto const& store) -> string_concat_view
     {
       string_concat_view result;
 
-      path(PathSpec{}, store, [&](auto const& value)
+      match_branch<ui_spec::branch_spec<T...>>(store, [&](auto, auto branch)
       {
-        using T = typename decltype(hana::typeid_(value))::type;
-        constexpr auto params_pair = hana::find_if(Branches{}, match_branch_pred_fn<T>{});
-        static_assert(
-          hana::is_just(params_pair)
-        , "`ui_spec::match` has no matching branch"
-        );
-
-        result = params_concat(hana::second(*params_pair), store);
-      });
-
-      return result;
-    };
-
-    // param_action match_if
-
-    template <typename PathSpec, typename Branches>
-    constexpr auto param_to_string_view<param_action_t<
-      ui_spec::match_if_tag, PathSpec, Branches>> = [](auto const& store) -> string_concat_view
-    {
-      string_concat_view result;
-
-      path(PathSpec{}, store, [&](auto const& param_at_path)
-      {
-        auto pipe = nbdl::detail::promise_join(
-          nbdl::detail::match_if(hana::transform(Branches{}, hana::first))
-        , nbdl::detail::promise_join(
-            nbdl::tap([&](auto index)
-            {
-              using Param = typename decltype(
-                hana::typeid_(hana::second(hana::at(Branches{}, index)))
-              )::type;
-              result = params_concat(Param{}, store);
-            })
-          , nbdl::detail::promise_end_sync{}
-          )
-        );
-        pipe.resolve(param_at_path);
+        result = params_concat(branch, store);
       });
 
       return result;

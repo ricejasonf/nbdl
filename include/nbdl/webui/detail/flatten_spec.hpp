@@ -131,13 +131,9 @@ namespace nbdl::webui::detail
         static_assert(std::is_void<decltype(current_tag)>::value);
       }
     }
-    // TODO match, match_if, for_each could all use the same tag dispatch
-    // without relying on member function overloading
-    else if constexpr(   hana::is_a<ui_spec::match_tag, Node>()
-                      || hana::is_a<ui_spec::match_if_tag, Node>()
-                     )
+    else if constexpr(hana::is_a<ui_spec::branch_spec_tag, Node>())
     {
-      return ui_helper::flatten_match_node(
+      return ui_helper::flatten_branch_node(
         hana::template_<action_fn>
       , flatten_spec_fn{}
       , Node{}

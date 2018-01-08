@@ -11,16 +11,16 @@
 #include <nbdl/catch.hpp>
 #include <nbdl/detail/match_if.hpp>
 #include <nbdl/fwd/webui/detail/dom_manips.hpp>
-#include <nbdl/get_path.hpp>
 #include <nbdl/store_range.hpp>
 #include <nbdl/ui_helper/params_concat.hpp>
-#include <nbdl/ui_helper/path.hpp>
+#include <nbdl/ui_helper/match_path_spec.hpp>
 #include <nbdl/ui_spec.hpp>
 #include <nbdl/webui/detail/dom_event_listener.hpp>
 #include <nbdl/webui/detail/event_receiver.hpp>
 #include <nbdl/webui/html.hpp>
 #include <nbdl/webui/renderer.hpp>
 
+#include <boost/hana/basic_tuple.hpp>
 #include <boost/hana/core/is_a.hpp>
 #include <boost/hana/core/to.hpp>
 #include <boost/hana/first.hpp>
@@ -28,12 +28,11 @@
 #include <boost/hana/or.hpp>
 #include <boost/hana/string.hpp>
 #include <boost/hana/transform.hpp>
-#include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
 #include <boost/hana/value.hpp>
+#include <boost/mp11/algorithm.hpp>
 #include <emscripten/val.h>
-#include <functional>
 #include <utility>
 #include <vector>
 
@@ -41,6 +40,7 @@ namespace nbdl::webui::detail
 {
   namespace hana = boost::hana;
   using namespace hana::literals;
+  using namespace boost::mp11;
   using js_val = nbdl::detail::js_val;
 
   // converts a Constant or string to js val
@@ -75,15 +75,25 @@ namespace nbdl::webui::detail
     }
   }
 
-  template <typename Store>
-  struct make_nested_renderer_impl_type_from_pair_fn
+  //
+  // make_nested_renderer_tuple
+  //
+
+  template <typename Store, typename List>
+  struct make_nested_renderer_tuple_impl;
+
+  template <typename Store, typename ...FnList>
+  struct make_nested_renderer_tuple_impl<Store, mpdef::list<FnList...>>
   {
-    template <typename Key, typename FnList>
-    constexpr auto operator()(mpdef::pair<Key, FnList>) const
-    {
-      return hana::type_c<renderer_impl<Store, FnList, hana::true_>>;
-    }
+    using type = hana::basic_tuple<renderer_impl<Store, FnList, hana::true_>...>;
   };
+
+  template <typename Store, typename List>
+  using make_nested_renderer_tuple = typename make_nested_renderer_tuple_impl<Store, List>::type;
+
+  //
+  // action_fn specializations
+  //
 
   template <typename HtmlTagName>
   struct action_fn<begin, html::tag::element_t, HtmlTagName>
@@ -152,7 +162,7 @@ namespace nbdl::webui::detail
 
     void update()
     {
-      std::string text_value = ui_helper::params_concat(StringParams{}, std::ref(store).get())
+      std::string text_value = ui_helper::params_concat(StringParams{}, store)
         .to_string();
       el.template call<void>(
         "setAttribute"
@@ -197,10 +207,8 @@ namespace nbdl::webui::detail
     template <typename ParentElement>
     decltype(auto) operator()(ParentElement&& p)
     {
-      nbdl::ui_helper::path(ui_spec::path_t<PathNodes...>{}
-                          , std::ref(store).get() , [&](auto const& value)
+      nbdl::ui_helper::match_path_spec(store, ui_spec::path_t<PathNodes...>{}, [&](auto const& value)
       {
-        // TODO assert the value is something that can be converted to emscripten::val
         el = emscripten::val::global("document").template
           call<emscripten::val>("createTextNode", to_text_val(value));
         p.template call<void>("appendChild", el);
@@ -211,8 +219,7 @@ namespace nbdl::webui::detail
 
     void update()
     {
-      nbdl::ui_helper::path(ui_spec::path_t<PathNodes...>{}
-                          , std::ref(store).get(), [&](auto const& value)
+      nbdl::ui_helper::match_path_spec(store, ui_spec::path_t<PathNodes...>{}, [&](auto const& value)
       {
         auto new_el = emscripten::val::global("document").template
           call<emscripten::val>("createTextNode", to_text_val(value));
@@ -222,129 +229,41 @@ namespace nbdl::webui::detail
     }
   };
 
-  template <typename T>
-  struct match_branch_pred_fn
-  {
-    template <typename U, typename Spec>
-    constexpr auto operator()(mpdef::pair<U, Spec>) const
-    {
-      return hana::or_(
-        hana::type_c<T>    == U{}
-      , hana::type_c<void> == U{}
-      );
-    }
-  };
-
-  template <typename ...>
+  template <typename>
   struct construct_branch_renderers;
 
   template <typename ...X>
-  struct construct_branch_renderers<hana::tuple<X...>>
+  struct construct_branch_renderers<hana::basic_tuple<X...>>
   {
     template <typename Store>
     static auto apply(Store store)
     {
-      return hana::make_tuple(X(store)...);
-    }
-  };
-
-  template <typename PathSpec, typename Branches>
-  struct action_fn<ui_spec::match_tag, PathSpec, Branches>
-  {
-    action_fn() = delete;
-  };
-
-  //  Branches - list<pair<T, list<action...>>...>
-  template <typename Store, typename PathSpec, typename Branches>
-  struct mut_action_fn<ui_spec::match_tag, Store, PathSpec, Branches>
-  {
-    using Renderers = typename decltype(
-      hana::unpack(
-        hana::transform(
-          Branches{}
-        , make_nested_renderer_impl_type_from_pair_fn<Store>{}
-        )
-      , hana::template_<hana::tuple>
-      )
-    )::type;
-
-    Store store;
-    emscripten::val parent_el;
-    emscripten::val container_el;
-    int branch_id;
-    Renderers renderers;
-
-    mut_action_fn(Store s)
-      : store(s)
-      , parent_el(emscripten::val::undefined())
-      , container_el(emscripten::val::global("document").template
-          call<emscripten::val>("createElement", emscripten::val("span")))
-      , branch_id(-1)
-      , renderers(construct_branch_renderers<Renderers>::apply(s))
-    { }
-
-    void update()
-    {
-      ui_helper::path(PathSpec{}, std::ref(store).get(), [&](auto const& value)
-      {
-        using T = typename decltype(hana::typeid_(value))::type;
-        constexpr auto index = *hana::index_if(Branches{}, match_branch_pred_fn<T>{});
-        if (hana::value(index) != branch_id)
-        {
-          // Something changed! :D
-          if (branch_id != -1)
-          {
-            container_el.template call<void>("removeChild", container_el["firstChild"]);
-          }
-          branch_id = hana::value(index);
-          renderers[index].render(container_el);
-        }
-      });
-    }
-
-    void destroy()
-    {
-      hana::for_each(renderers, [](auto& x) { x.destroy(); });
-    }
-
-    template <typename ParentElement>
-    decltype(auto) operator()(ParentElement&& p)
-    {
-      parent_el = p;
-      update();
-      parent_el.template call<void>("appendChild", container_el);
-      return std::forward<ParentElement>(p);
+      return hana::make_basic_tuple(X(store)...);
     }
   };
 
   /*
-   * match_if
+   * branch_spec
    */
 
-  template <typename PathSpec, typename Branches>
-  struct action_fn<ui_spec::match_if_tag, PathSpec, Branches>
+  template <typename Tag, typename PathSpec, typename Branches>
+  struct action_fn<ui_spec::branch_spec<Tag, PathSpec, Branches>>
   {
     action_fn() = delete;
   };
 
   //  Branches - list<pair<T, list<action...>>...>
-  template <typename Store, typename PathSpec, typename Branches>
-  struct mut_action_fn<ui_spec::match_if_tag, Store, PathSpec, Branches>
+  template <typename Store, typename Tag, typename PathSpec, typename Branches>
+  struct mut_action_fn<ui_spec::branch_spec<Tag, PathSpec, Branches>, Store>
   {
-    using Renderers = typename decltype(
-      hana::unpack(
-        hana::transform(
-          Branches{}
-        , make_nested_renderer_impl_type_from_pair_fn<Store>{}
-        )
-      , hana::template_<hana::tuple>
-      )
-    )::type;
+    using BranchSpec = ui_spec::branch_spec<Tag, PathSpec, Branches>;
+    using FnLists = mp_transform<mp_second, mp_third<BranchSpec>>;
+    using Renderers = make_nested_renderer_tuple<Store, FnLists>;
 
     Store store;
     emscripten::val parent_el;
     emscripten::val container_el;
-    int branch_id;
+    std::size_t branch_id;
     Renderers renderers;
 
     mut_action_fn(Store s)
@@ -358,31 +277,22 @@ namespace nbdl::webui::detail
 
     void update()
     {
-      constexpr auto preds = hana::transform(Branches{}, hana::first);
-
-      ui_helper::path(PathSpec{}, std::ref(store).get(), [&](auto const& value)
+      std::size_t index = nbdl::ui_helper::get_branch_index<BranchSpec>(store);
+      if (index != branch_id)
       {
-        auto pipe = nbdl::detail::promise_join(
-          nbdl::detail::match_if(preds)
-        , nbdl::detail::promise_join(
-            nbdl::tap([&](auto index)
-            {
-              if (index != branch_id)
-              {
-                // Something changed! :D
-                if (branch_id != -1)
-                {
-                  container_el.template call<void>("removeChild", container_el["firstChild"]);
-                }
-                branch_id = index;
-                renderers[index].render(container_el);
-              }
-            })
-          , nbdl::detail::promise_end_sync{}
-          )
-        );
-        pipe.resolve(value);
-      });
+        // Something changed! :D
+        if (branch_id != static_cast<std::size_t>(-1))
+        {
+          container_el.template call<void>("removeChild", container_el["firstChild"]);
+        }
+        branch_id = index;
+
+        // TODO this could use type erasure
+        nbdl::ui_helper::match_branch_index<BranchSpec>(branch_id, [&](auto index_c)
+        {
+          hana::at(renderers, index_c).render(container_el);
+        });
+      }
     }
 
     void destroy()
@@ -484,7 +394,7 @@ namespace nbdl::webui::detail
 
     void update()
     {
-      ui_helper::path(PathSpec{}, std::ref(store).get(), [&](auto const& value)
+      ui_helper::match_path_spec(store, PathSpec{}, [&](auto const& value)
       {
         el["classList"].template call<void>(
           Pred{}(value) ? "add" : "remove"
@@ -527,7 +437,7 @@ namespace nbdl::webui::detail
     {
       bool result = false;
 
-      ui_helper::path(PathSpec{}, std::ref(store).get(), nbdl::match_when<T>([&](auto const&)
+      ui_helper::match_path_spec(store, PathSpec{}, nbdl::match_when<T>([&](auto const&)
       {
         result = true;
       }));
@@ -583,7 +493,7 @@ namespace nbdl::webui::detail
     {
       // This is currently very naive.
       el.set("innerHTML", emscripten::val(""));
-      ui_helper::path(PathSpec{}, store, [&](auto const& container)
+      ui_helper::match_path_spec(store, PathSpec{}, [&](auto const& container)
       {
         Range range = store_range(ItrKey{}, container, store);
         //using Renderer = renderer_impl<decltype(range.begin()), NodeFnList, hana::true_>;

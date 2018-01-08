@@ -64,7 +64,7 @@ namespace nbdl::detail
     }
   };
 
-  struct match_if_fn
+  struct match_if_promise_fn
   {
     template <typename ...Preds>
     auto operator()(mpdef::list<Preds...>) const
@@ -92,6 +92,36 @@ namespace nbdl::detail
 
         mp_with_index<sizeof...(Preds)>(index, resolve);
       });
+    }
+  };
+
+  constexpr match_if_promise_fn match_if_promise{};
+
+  struct match_if_fn
+  {
+    template <typename ...Preds, typename Value>
+    int operator()(mpdef::list<Preds...>, Value&& value) const
+    {
+      int index;
+
+      nbdl::run_sync(
+        hana::make_tuple(
+          predicate_promise<Preds>{}...
+        , [](auto const& ...args)
+          {
+            static_assert(
+              sizeof...(args) > 9000
+            , "nbdl::detail::match_if must have at least one predicate "
+              "that returns compile-time Logical that is true."
+            );
+          }
+        , nbdl::catch_([&](std::size_t result) { index = result; })
+        )
+      , std::forward<Value>(value)
+      , hana::size_c<0>
+      );
+
+      return index;
     }
   };
 

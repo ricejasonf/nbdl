@@ -47,8 +47,6 @@
 #include <nbdl/message_api.hpp>
 #include <nbdl/notify_state_change.hpp>
 #include <nbdl/null_store.hpp>
-#include <nbdl/params_promise.hpp>
-#include <nbdl/path_promise.hpp>
 #include <nbdl/pipe.hpp>
 #include <nbdl/promise.hpp>
 #include <nbdl/run_async.hpp>

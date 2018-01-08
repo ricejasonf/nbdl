@@ -40,7 +40,7 @@ TEST_CASE("Match first element in a tuple that satisfies a predicate.", "[detail
     std::size_t result = 9000;
     nbdl::run_sync(
       nbdl::pipe(
-        nbdl::detail::match_if(preds)
+        nbdl::detail::match_if_promise(preds)
       , [&](auto index) { result = index; }
       )
     , value

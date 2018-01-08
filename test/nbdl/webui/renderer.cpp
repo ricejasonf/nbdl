@@ -119,7 +119,7 @@ TEST_CASE("Render dynamic attributes", "[webui][renderer]")
   using namespace nbdl::ui_spec;
 
   auto target = make_dom_test_equality(
-    "<div class=\"foo foo bar baz boo\" >"
+    "<div class=\"foo doo bar baz boo\" >"
     "</div>"
   );
 
@@ -147,7 +147,7 @@ TEST_CASE("Render dynamic attributes", "[webui][renderer]")
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
   auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
 
-  my_store["key_1"_s] = std::string("foo");
+  my_store["key_1"_s] = std::string("doo");
   my_store["key_2"_s] = std::string("baz");
 
   nbdl::notify_state_change(renderer, hana::type_c<void>);

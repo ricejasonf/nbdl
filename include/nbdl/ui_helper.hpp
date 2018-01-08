@@ -20,67 +20,37 @@
 namespace nbdl::ui_helper
 {
   namespace hana = boost::hana;
-  namespace mp11 = boost::mp11;
+  using namespace boost::mp11;
 
   /*
-   * flatten_match_node
+   * flatten_branch_node
    */
   template <typename FlattenSpecFn>
-  struct flatten_match_node_helper_fn
+  struct flatten_branch_node_helper_fn
   {
     template <typename T, typename Spec>
     constexpr auto operator()(mpdef::pair<T, Spec>) const
     {
       using Flattened = decltype(std::declval<FlattenSpecFn>()(Spec{}));
-      return mpdef::pair<hana::type<T>, Flattened>{};
+      return mpdef::pair<T, Flattened>{};
     }
   };
 
-  template <typename FlattenSpecFn>
-  struct flatten_match_if_node_helper_fn
+  struct flatten_branch_node_fn
   {
-    template <typename Pred, typename Spec>
-    constexpr auto operator()(mpdef::pair<Pred, Spec>) const
-    {
-      using Flattened = decltype(std::declval<FlattenSpecFn>()(Spec{}));
-      return mpdef::pair<Pred, Flattened>{};
-                      // ^ doesn't wrap in hana::type
-    }
-  };
-
-  struct flatten_match_node_fn
-  {
-    template <typename Template, typename FlattenSpecFn, typename Path, typename Map>
+    template <typename Template, typename FlattenSpecFn, typename Tag, typename PathSpec, typename Map>
     constexpr auto operator()(Template tpl
                             , FlattenSpecFn const&
-                            , ui_spec::match_t<Path, Map>) const
+                            , ui_spec::branch_spec<Tag, PathSpec, Map>) const
     {
+      using FnList = decltype(hana::transform(Map{}, flatten_branch_node_helper_fn<FlattenSpecFn>{}));
       return mpdef::list<typename decltype(tpl(
-        hana::type_c<ui_spec::match_tag>
-      , hana::type_c<Path>
-      , hana::type_c<
-          decltype(hana::transform(Map{}, flatten_match_node_helper_fn<FlattenSpecFn>{}))
-        >
-      ))::type>{};
-    }
-
-    // TODO fix duplication for match_if :/
-    template <typename Template, typename FlattenSpecFn, typename Path, typename Map>
-    constexpr auto operator()(Template tpl
-                            , FlattenSpecFn const&
-                            , ui_spec::match_if_t<Path, Map>) const
-    {
-      return mpdef::list<typename decltype(tpl(
-        hana::type_c<ui_spec::match_if_tag>
-      , hana::type_c<Path>
-      , hana::type_c<
-          decltype(hana::transform(Map{}, flatten_match_if_node_helper_fn<FlattenSpecFn>{}))
-        >
+        hana::type_c<ui_spec::branch_spec<Tag, PathSpec, FnList>>
       ))::type>{};
     }
   };
 
-  constexpr flatten_match_node_fn flatten_match_node{};
+  constexpr flatten_branch_node_fn flatten_branch_node{};
 
   /*
    * flatten_param
@@ -105,7 +75,7 @@ namespace nbdl::ui_helper
         {
           return hana::unpack(child_nodes, [](auto ...x)
           {
-            return mp11::mp_append<decltype(flatten_param_node_fn{}(x))...>{};
+            return mp_append<decltype(flatten_param_node_fn{}(x))...>{};
           });
         }
         else
@@ -113,12 +83,22 @@ namespace nbdl::ui_helper
           static_assert(hana::type_c<Node> == hana::type_c<void>);
         }
       }
-      else if constexpr(hana::or_(
-            hana::is_a<ui_spec::match_if_tag, Node>()
-         || hana::is_a<ui_spec::match_tag, Node>()
-      ))
+      else if constexpr(hana::is_a<ui_spec::branch_spec_tag, Node>())
       {
-        return flatten_match_node(hana::template_<param_action_t>, flatten_param_node_fn{}, Node{});
+        return flatten_branch_node(hana::template_<param_action_t>, flatten_param_node_fn{}, Node{});
+      }
+      else if constexpr(hana::is_a<ui_spec::apply_tag, Node>())
+      {
+        using FlatParamsSpec = mp_apply<
+          mp_append
+        , decltype(hana::transform(mp_second<Node>{}, flatten_param_node_fn{}))
+        >;
+        return mpdef::list<param_action_t<ui_spec::apply_t<mp_first<Node>, FlatParamsSpec>>>{};
+      }
+      else if constexpr(hana::is_a<ui_spec::key_at_tag, Node>())
+      {
+        // just unwrap the PathSpec
+        return mpdef::list<mp_first<Node>>{};
       }
       else
       {

@@ -12,9 +12,9 @@
 #include <nbdl/catch.hpp>
 #include <nbdl/detail/default_constructible_lambda.hpp>
 #include <nbdl/detail/js_val.hpp>
-#include <nbdl/params_promise.hpp>
 #include <nbdl/run_sync.hpp>
 #include <nbdl/store_compose.hpp>
+#include <nbdl/ui_helper/match_params_spec.hpp>
 #include <nbdl/webui/html.hpp> // for event_data key
 
 #include <boost/hana/pair.hpp>
@@ -59,30 +59,19 @@ namespace nbdl::webui::detail
     void receive_event()
     {
       auto store_with_event = nbdl::store_compose(html::event_data, std::ref(vals->event_data), store);
+      auto send = [&](auto&& message)
+      {
+        nbdl::apply_action(
+          store
+        , std::forward<decltype(message)>(message)
+        );
+      };
 
-      nbdl::run_sync(
-        hana::make_tuple(
-          nbdl::params_promise(mpdef::list<Params...>{})
-        , [&](auto const& params)
-          {
-            auto send = [&](auto&& message)
-            {
-              nbdl::apply_action(
-                store
-              , std::forward<decltype(message)>(message)
-              );
-            };
-
-            hana::unpack(params, [&](auto const& ...xs)
-            {
-              // handler(send, xs...)
-              ::nbdl::detail::default_constructible_lambda<Handler>{}(send, std::ref(xs).get()...);
-            });
-          }
-        , nbdl::catch_([](auto&&...) { })
-        )
-      , store_with_event
-      );
+      ui_helper::match_params_spec(store_with_event, mpdef::list<Params...>{}, [&](auto const& ...xs)
+      {
+        // handler(send, xs...)
+        ::nbdl::detail::default_constructible_lambda<Handler>{}(send, std::ref(xs).get()...);
+      });
     }
   };
 

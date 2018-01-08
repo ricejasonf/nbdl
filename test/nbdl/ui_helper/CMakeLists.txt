@@ -7,5 +7,6 @@
 
 nbdl_catch_test_suite(build_targets "test.nbdl.ui_helper"
   params_concat.cpp
-  path.cpp
+  match_params_spec.cpp
+  match_path_spec.cpp
 )
