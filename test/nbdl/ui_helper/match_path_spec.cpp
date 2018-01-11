@@ -128,8 +128,6 @@ TEST_CASE("Use key_at to use a value in the store as a key in a path.", "[ui_hel
   using map_store = nbdl::map_store<std::string, int>;
   using namespace nbdl::ui_spec;
 
-  constexpr auto path = match_when<int>(get(hana::int_c<0>));
-
   auto store = hana::make_map(
     hana::make_pair(hana::int_c<0>, std::string("foo"))
   , hana::make_pair(hana::int_c<1>, map_store())
@@ -137,11 +135,13 @@ TEST_CASE("Use key_at to use a value in the store as a key in a path.", "[ui_hel
 
   store[hana::int_c<1>].map[std::string("foo")] = 142;
 
-  int result{0};
+  int result{1};
 
   nbdl::ui_helper::match_path_spec(
     store
-  , get(hana::int_c<1>, key_at(path))
+  , match_when<int>(get(hana::int_c<1>, key_at(get(hana::int_c<0>))))
   , [&](int value) { result = value; }
   );
+
+  CHECK(result == 142);
 }

@@ -13,6 +13,8 @@
 #include <nbdl/match_path.hpp>
 #include <nbdl/ui_spec.hpp>
 
+#include <boost/hana/basic_tuple.hpp>
+#include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
 #include <boost/mp11/algorithm.hpp>
@@ -44,12 +46,36 @@ namespace nbdl::ui_helper::detail
     template <typename Store>
     void operator()(Store const& store) const
     {
-      nbdl::match_path(store, mpdef::list<P...>{}, [&](auto const& result)
+      if constexpr(contains_key_at<P...>{})
       {
-        if constexpr(decltype(hana::type_c<T> == hana::typeid_(result)){})
-          fn(result);
-        // else do nothing 
-      });
+        // use params as path
+        match_params_spec(store, mpdef::list<P...>{}, [&](auto const& ...x)
+        {
+          nbdl::match_path(
+            store
+          , hana::make_basic_tuple(x...)
+          , [&](auto const& result)
+            {
+              if constexpr(decltype(hana::type_c<T> == hana::typeid_(result)){})
+                fn(result);
+              // else do nothing 
+            }
+          );
+        });
+      }
+      else
+      {
+        nbdl::match_path(
+          store
+        , mpdef::list<P...>{}
+        , [&](auto const& result)
+          {
+            if constexpr(decltype(hana::type_c<T> == hana::typeid_(result)){})
+              fn(result);
+            // else do nothing 
+          }
+        );
+      }
     }
   };
 
@@ -68,7 +94,7 @@ namespace nbdl::ui_helper::detail
         {
           nbdl::match_path(
             store
-          , hana::make_tuple(x...)
+          , hana::make_basic_tuple(x...).foo
           , fn
           );
         });
