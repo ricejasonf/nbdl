@@ -113,8 +113,11 @@ namespace nbdl::ui_helper
   void match_params_spec_fn::operator()(Store store, ParamsSpec, Fn&& fn) const
   {
     using FlatParamsSpec = mp_apply<
-      mp_append
-    , decltype(hana::transform(ParamsSpec{}, flatten_param_node))
+      mpdef::list
+    , mp_apply<
+        mp_append
+      , decltype(hana::transform(ParamsSpec{}, flatten_param_node))
+      >
     >;
 
     auto done = hana::fuse([&](auto ...x) { std::forward<Fn>(fn)(std::ref(x).get()...); });
