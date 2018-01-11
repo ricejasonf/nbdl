@@ -11,6 +11,7 @@
 
 #include <boost/hana/equal.hpp>
 #include <boost/hana/map.hpp>
+#include <boost/hana/pair.hpp>
 #include <boost/hana/string.hpp>
 #include <boost/hana/tuple.hpp>
 #include <catch.hpp>
@@ -77,23 +78,50 @@ TEST_CASE("Match on values in a nbdl::Entity.", "[match][Store]")
   CHECK(result == std::string{"John"});
 }
 
-TEST_CASE("Match on values in a hana::tuple.", "[match][Store]")
+TEST_CASE("Match on values in a hana::tuple.", "[core]")
 {
-  std::string result("FAIL!");
-
-  auto name_first = hana::type_c<name_first_t>;
+  std::string result_1("FAIL!");
+  std::string result_2("FAIL!");
 
   auto store = hana::make_tuple(name_first_t{"John"}, name_last_t{"Smith"});
 
   nbdl::match(
     store
-  , name_first
-  , [&](name_first_t const& x) { result = x.value; }
+  , hana::type<name_first_t>{}
+  , [&](name_first_t const& x) { result_1 = x.value; }
   );
 
-  // John
+  nbdl::match(
+    store
+  , hana::type<name_last_t>{}
+  , [&](name_last_t const& x) { result_2 = x.value; }
+  );
 
-  CHECK(result == std::string{"John"});
+  CHECK(result_1 == std::string{"John"});
+  CHECK(result_2 == std::string{"Smith"});
+}
+
+TEST_CASE("Match on values in a hana::Product.", "[core]")
+{
+  std::string result_1("FAIL!");
+  std::string result_2("FAIL!");
+
+  auto store = hana::make_pair(name_first_t{"John"}, name_last_t{"Smith"});
+
+  nbdl::match(
+    store
+  , hana::first
+  , [&](name_first_t const& x) { result_1 = x.value; }
+  );
+
+  nbdl::match(
+    store
+  , hana::second
+  , [&](name_last_t const& x) { result_2 = x.value; }
+  );
+
+  CHECK(result_1 == std::string{"John"});
+  CHECK(result_2 == std::string{"Smith"});
 }
 
 TEST_CASE("Match on values in a variant.", "[match][Store]")

@@ -96,6 +96,29 @@ namespace nbdl
       }
     }
   };
+
+  template <typename Tag>
+  struct get_impl<Tag, hana::when<hana::Product<Tag>::value and not hana::Searchable<Tag>::value>>
+  {
+    template <typename State>
+    static constexpr decltype(auto) apply(State&& s)
+    {
+      return std::forward<State>(s);
+    }
+
+    template <typename State>
+    static constexpr decltype(auto) apply(State&& s, hana::first_t)
+    {
+      return hana::first(std::forward<State>(s));
+    }
+
+    template <typename State>
+    static constexpr decltype(auto) apply(State&& s, hana::second_t)
+    {
+      return hana::second(std::forward<State>(s));
+    }
+  };
+
 }
 
 #endif
