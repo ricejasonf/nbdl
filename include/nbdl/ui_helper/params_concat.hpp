@@ -24,6 +24,7 @@
 #include <boost/hana/transform.hpp>
 #include <boost/hana/type.hpp>
 #include <functional>
+#include <type_traits>
 #include <utility>
 
 namespace nbdl::ui_helper
@@ -47,6 +48,12 @@ namespace nbdl::ui_helper
       -> string_concat_view
     {
       return nbdl::detail::to_string_concat_view(ParamSpec{});
+    };
+
+    template <>
+    constexpr auto param_to_string_view<char const*> = [](auto const& value)
+    {
+      static_assert(std::is_void<decltype(value)>::value, "Raw string literals are prohibited.");
     };
 
     template <typename ...PathNodes>
