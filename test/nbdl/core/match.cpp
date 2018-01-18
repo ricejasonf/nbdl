@@ -174,14 +174,14 @@ TEST_CASE("Match with visitor match_when", "[match]")
 
   {
     bool result = false;
-    nbdl::match(
+    nbdl::match_when<int>(
       store
     , hana::type_c<int>
-    , nbdl::match_when<int>([&](auto x)
+    , [&](auto x)
       {
         CHECK(x == 5);
         result = true;
-      })
+      }
     );
 
     CHECK(result);
@@ -221,9 +221,9 @@ TEST_CASE("Match nbdl::variant with visitor match_when", "[match]")
   {
     bool result = false;
 
-    nbdl::match(
+    nbdl::match_when<float>(
       store
-    , nbdl::match_when<float>([&](auto) { result = true; })
+    , [&](auto) { result = true; }
     );
 
     CHECK(not result);

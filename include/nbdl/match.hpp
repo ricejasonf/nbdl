@@ -126,6 +126,27 @@ namespace nbdl
   constexpr auto match_when_fn<T>::operator()(F&& f) const
   { return match_when_t<T, std::decay_t<F>>{std::forward<F>(f)}; }
 
+  template <typename T>
+  template <typename Store, typename F>
+  constexpr auto match_when_fn<T>::operator()(Store&& s, F&& f) const
+  {
+    return nbdl::match(
+      std::forward<Store>(s)
+    , nbdl::match_when<T>(std::forward<F>(f))
+    );
+  }
+
+  template <typename T>
+  template <typename Store, typename Key, typename F>
+  constexpr auto match_when_fn<T>::operator()(Store&& s, Key&& k, F&& f) const
+  {
+    return nbdl::match(
+      std::forward<Store>(s)
+    , std::forward<Key>(k)
+    , nbdl::match_when<T>(std::forward<F>(f))
+    );
+  }
+
   template <typename T, typename F>
   template <typename X>
   constexpr void match_when_t<T, F>::operator()(X&& x) const

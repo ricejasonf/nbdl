@@ -56,6 +56,12 @@ namespace nbdl
   {
     template <typename F>
     constexpr auto operator()(F&&) const;
+
+    template <typename Store, typename F>
+    constexpr auto operator()(Store&&, F&&) const;
+
+    template <typename Store, typename Key, typename F>
+    constexpr auto operator()(Store&&, Key&&, F&&) const;
   };
 
   template <typename T>
