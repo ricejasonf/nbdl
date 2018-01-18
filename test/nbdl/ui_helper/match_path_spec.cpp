@@ -5,8 +5,9 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <nbdl/ui_helper/match_path_spec.hpp>
+#include <nbdl/ext/std/unordered_map.hpp>
 #include <nbdl/map_store.hpp>
+#include <nbdl/ui_helper/match_path_spec.hpp>
 
 #include <boost/hana/equal.hpp>
 #include <boost/hana/integral_constant.hpp>
@@ -144,4 +145,31 @@ TEST_CASE("Use key_at to use a value in the store as a key in a path.", "[ui_hel
   );
 
   CHECK(result == 142);
+}
+
+TEST_CASE("Use ui_spec::apply in a path spec.", "[ui_helper]")
+{
+  using namespace nbdl::ui_spec;
+
+  constexpr auto append_z = [](std::string const& str)
+  {
+    return str + 'z';
+  };
+
+  auto store = hana::make_map(
+    hana::make_pair(hana::int_c<0>, std::string("foo"))
+  , hana::make_pair(hana::int_c<1>, std::unordered_map<std::string, int>{})
+  );
+
+  store[hana::int_c<1>][std::string("fooz")] = 242;
+
+  int result{1};
+
+  nbdl::ui_helper::match_path_spec(
+    store
+  , get(hana::int_c<1>, apply(append_z)(get(hana::int_c<0>)))
+  , nbdl::match_when<int>([&](int value) { result = value; })
+  );
+
+  CHECK(result == 242);
 }

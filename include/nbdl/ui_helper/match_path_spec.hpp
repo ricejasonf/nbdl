@@ -46,28 +46,12 @@ namespace nbdl::ui_helper::detail
     template <typename Store>
     void operator()(Store const& store) const
     {
-      if constexpr(contains_key_at<P...>{})
-      {
-        // use params as path
-        match_params_spec(store, mpdef::list<P...>{}, [&](auto const& ...x)
-        {
-          nbdl::match_path(
-            store
-          , hana::make_basic_tuple(x...)
-          , [&](auto const& result)
-            {
-              if constexpr(decltype(hana::type_c<T> == hana::typeid_(result)){})
-                fn(result);
-              // else do nothing 
-            }
-          );
-        });
-      }
-      else
+      // use params as path
+      match_params_spec(store, mpdef::list<P...>{}, [&](auto const& ...x)
       {
         nbdl::match_path(
           store
-        , mpdef::list<P...>{}
+        , hana::make_basic_tuple(x...)
         , [&](auto const& result)
           {
             if constexpr(decltype(hana::type_c<T> == hana::typeid_(result)){})
@@ -75,7 +59,7 @@ namespace nbdl::ui_helper::detail
             // else do nothing 
           }
         );
-      }
+      });
     }
   };
 
@@ -87,26 +71,15 @@ namespace nbdl::ui_helper::detail
     template <typename Store>
     void operator()(Store const& store) const
     {
-      if constexpr(contains_key_at<P...>{})
-      {
-        // use params as path
-        match_params_spec(store, mpdef::list<P...>{}, [&](auto const& ...x)
-        {
-          nbdl::match_path(
-            store
-          , hana::make_basic_tuple(x...).foo
-          , fn
-          );
-        });
-      }
-      else
+      // use params as path
+      match_params_spec(store, mpdef::list<P...>{}, [&](auto const& ...x)
       {
         nbdl::match_path(
           store
-        , mpdef::list<P...>{} 
+        , hana::make_basic_tuple(x...)
         , fn
         );
-      }
+      });
     }
   };
 
