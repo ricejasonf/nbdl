@@ -7,7 +7,7 @@
 #ifndef NBDL_FWD_MAKE_STORE_HPP
 #define NBDL_FWD_MAKE_STORE_HPP
 
-#include<boost/hana/core/when.hpp>
+#include <boost/hana/core/when.hpp>
 
 namespace nbdl
 {
@@ -28,10 +28,6 @@ namespace nbdl
 
   template <typename T>
   constexpr make_store_fn<T> make_store{};
-
-  // tags used for possible store values
-  struct uninitialized { };
-  struct not_found { };
-} // nbdl
+}
 
 #endif

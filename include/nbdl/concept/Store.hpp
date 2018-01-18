@@ -9,7 +9,7 @@
 
 #include <nbdl/fwd/concept/Store.hpp>
 
-#include <nbdl/match.hpp>
+#include <nbdl/fwd/match.hpp>
 
 #include <boost/hana/core/default.hpp>
 #include <boost/hana/core/tag_of.hpp>
