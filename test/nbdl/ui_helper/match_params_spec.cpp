@@ -97,6 +97,49 @@ TEST_CASE("Match values by type in match_params_spec.", "[ui_helper]")
   CHECK(result == std::string("something"));
 }
 
+TEST_CASE("Match values by type in match_params_spec using match_when.", "[ui_helper]")
+{
+  using nbdl::ui_spec::get;
+  using nbdl::ui_spec::match_when;
+  using nbdl::ui_spec::when;
+
+  constexpr auto make_nested_map = []
+  {
+    return hana::make_map(hana::make_pair(hana::int_c<1>, std::string("woof123")));
+  };
+
+  using nested_map = decltype(make_nested_map());
+  using map_option = nbdl::optional<nested_map>;
+
+  auto store = hana::make_map(hana::make_pair(hana::int_c<0>, map_option{make_nested_map()}));
+
+  constexpr auto matcher = get(match_when<nested_map>(get(hana::int_c<0>)), hana::int_c<1>);
+
+  std::string result("Fail!");
+
+  auto run = [&]
+  {
+    ui_helper::match_params_spec(
+      std::ref(store)
+    , mpdef::make_list(matcher)
+    , [&](auto value)
+      {
+        if constexpr(hana::is_a<hana::string_tag, decltype(value)>)
+        {
+          result = std::string(hana::to<char const*>(value));
+        }
+        else
+        {
+          result = value;
+        }
+      }
+    );
+  };
+ 
+  run();
+  CHECK(result == std::string("woof123"));
+}
+
 TEST_CASE("Apply params to a user function.", "[ui_helper]")
 {
   using nbdl::ui_spec::get;

@@ -167,9 +167,47 @@ TEST_CASE("Use ui_spec::apply in a path spec.", "[ui_helper]")
 
   nbdl::ui_helper::match_path_spec(
     store
-  , get(hana::int_c<1>, apply(append_z)(get(hana::int_c<0>)))
-  , nbdl::match_when<int>([&](int value) { result = value; })
+  , match_when<int>(get(hana::int_c<1>, apply(append_z)(get(hana::int_c<0>))))
+  , [&](int value) { result = value; }
   );
 
   CHECK(result == 242);
+}
+
+TEST_CASE("Use ui_spec::apply in a matched type in a path spec.", "[ui_helper]")
+{
+  using namespace nbdl::ui_spec;
+
+  constexpr auto append_z = [](std::string const& str)
+  {
+    return str + 'z';
+  };
+
+  auto store = hana::make_map(
+    hana::make_pair(hana::int_c<0>, std::unordered_map<int, std::string>{})
+  , hana::make_pair(hana::int_c<1>, std::unordered_map<std::string, int>{})
+  , hana::make_pair(hana::int_c<2>, int{1001})
+  );
+
+  store[hana::int_c<0>][1001] = std::string("foo");
+  store[hana::int_c<1>][std::string("fooz")] = 2420;
+
+  int result{1};
+
+  auto path = match_when<int>(
+    get(
+      hana::int_c<1>
+    , apply(append_z)(
+        match_when<std::string>(get(hana::int_c<0>, key_at(get(hana::int_c<2>))))
+      )
+    )
+  );
+
+  nbdl::ui_helper::match_path_spec(
+    store
+  , path
+  , [&](int value) { result = value; }
+  );
+
+  CHECK(result == 2420);
 }
