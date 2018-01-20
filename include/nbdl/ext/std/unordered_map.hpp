@@ -7,6 +7,7 @@
 #ifndef NBDL_EXT_STD_UNORDERED_MAP
 #define NBDL_EXT_STD_UNORDERED_MAP
 
+#include <nbdl/concept/Store.hpp>
 #include <nbdl/match.hpp>
 
 #include <unordered_map>
@@ -36,7 +37,14 @@ namespace nbdl
       }
       else
       {
-        std::forward<Fn>(fn)(itr->second);
+        if constexpr(nbdl::Store<decltype(itr->second)>::value)
+        {
+          nbdl::match(itr->second, std::forward<Fn>(fn));
+        }
+        else
+        {
+          std::forward<Fn>(fn)(itr->second);
+        }
       }
     }
   };

@@ -11,10 +11,13 @@
 
 #include <nbdl/apply_message.hpp>
 #include <nbdl/binder/hash.hpp>
+#include <nbdl/ext/std/unordered_map.hpp>
 #include <nbdl/get.hpp>
 #include <nbdl/make_store.hpp>
 #include <nbdl/variant.hpp>
 
+#include <boost/hana/bool.hpp>
+#include <boost/hana/equal.hpp>
 #include <unordered_map>
 #include <utility>
 
@@ -24,59 +27,89 @@ namespace nbdl
 
   namespace detail
   {
-    template <typename Message, typename Map>
-    auto handle_map_store_action(Message&& m, Map&& map)
+    template <typename Message>
+    struct handle_map_store_action
     {
-      if constexpr(message::is_upstream<Message>)
+      template <typename Map, typename Message_>
+      static hana::false_ apply(Map&&, Message_&&)
+      { return {}; }
+    };
+
+    template <typename ...T>
+    struct handle_map_store_action<message::upstream_read<T...>>
+    {
+      template <typename Map, typename Message>
+      static hana::false_ apply(Map&& map, Message&& m)
       {
-        if constexpr(message::is_read<Message>)
+        static_assert(
+          message::is_upstream<Message> &&
+          message::is_read<Message>
+        );
+        // Create `nbdl::unresolved` placeholder to signify that,
+        // when the message comes downstream, it is stored.
+        if (map.find(message::get_path(m)) == map.end())
         {
-          // Create `nbdl::unresolved` placeholder to signify that,
-          // when the message comes downstream, it is stored.
-          if (map.find(message::get_path(m)) == map.end())
-          {
-            map[message::get_path(m)] = nbdl::unresolved{};
-          }
-          // Adding the placeholder does not mean that state changed.
-          return hana::false_c;
+          map[message::get_path(std::forward<Message>(m))] = nbdl::unresolved{};
         }
-        else
-        {
-          return hana::false_c;
-        }
-      }
-      else // if downstream
-      {
-        if constexpr(message::is_create<Message> || message::is_update<Message>)
-        {
-          map[message::get_path(m)] = message::get_payload(m);
-          return true;
-        }
-        else if constexpr(message::is_delete<Message>)
-        {
-          map.erase(message::get_path(m));
-          return true;
-        }
-        else if constexpr(message::is_read<Message>)
-        {
-          bool result = false;
-          map[message::get_path(m)].match(
-            [&](nbdl::unresolved)
-            {
-               map[message::get_path(m)] = message::get_payload(m);
-               result = true;
-            },
-            [](auto const&) { }
-          );
-          return result;
-        }
-        else
-        {
-          return hana::false_c;
-        }
+        // Adding the placeholder does not mean that state changed.
+        return {};
       }
     };
-  } // detail
+
+    template <typename ...T>
+    struct handle_map_store_action<message::downstream_create<T...>>
+    {
+      template <typename Map, typename Message>
+      static bool apply(Map&& map, Message&& m)
+      {
+        auto path = message::get_path(m);
+        map[path] = message::get_payload(std::forward<Message>(m));
+
+        return true;
+      }
+    };
+
+    template <typename ...T>
+    struct handle_map_store_action<message::downstream_update<T...>>
+    {
+      template <typename Map, typename Message>
+      static bool apply(Map&& map, Message&& m)
+      {
+        auto path = message::get_path(m);
+        map[std::move(path)] = message::get_payload(std::forward<Message>(m));
+        return true;
+      }
+    };
+
+    template <typename ...T>
+    struct handle_map_store_action<message::downstream_read<T...>>
+    {
+      template <typename Map, typename Message>
+      static bool apply(Map&& map, Message&& m)
+      {
+        bool result = false;
+        nbdl::match_when<nbdl::unresolved>(map[message::get_path(m)], [&](nbdl::unresolved)
+        {
+          auto path = message::get_path(m);
+          map[std::move(path)] = message::get_payload(std::forward<Message>(m));
+          result = true;
+        });
+
+        return result;
+      }
+    };
+
+    template <typename ...T>
+    struct handle_map_store_action<message::downstream_delete<T...>>
+    {
+      template <typename Map, typename Message>
+      static bool apply(Map&& map, Message&& m)
+      {
+        map.erase(message::get_path(m));
+        return true;
+      }
+    };
+  }
 
   template <typename Path, typename Entity>
   struct map_store
@@ -116,7 +149,8 @@ namespace nbdl
     template <typename Store, typename Message>
     static constexpr auto apply(Store&& s, Message&& m)
     {
-      return handle_map_store_action(std::forward<Message>(m), std::forward<Store>(s).map);
+      return detail::handle_map_store_action<std::decay_t<Message>>
+        ::apply(std::forward<Store>(s).map ,std::forward<Message>(m));
     }
   };
 
@@ -126,17 +160,9 @@ namespace nbdl
     template <typename Store, typename Key, typename Fn>
     static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
     {
-      auto node = s.map.find(std::forward<Key>(k));
-      if (node != s.map.end())
-      {
-        return (*node).second.match(std::forward<Fn>(fn));
-      }
-      else
-      {
-        return std::forward<Fn>(fn)(nbdl::uninitialized{});
-      }
+      nbdl::match(s.map, std::forward<Key>(k), std::forward<Fn>(fn));
     }
   };
-} // nbdl
+}
 
 #endif
