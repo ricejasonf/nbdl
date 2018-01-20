@@ -111,28 +111,34 @@ namespace nbdl
     };
   }
 
-  template <typename Path, typename Entity>
-  struct map_store
+  template <typename Key, typename Value, typename Tag>
+  struct basic_map_store
   {
     private:
 
-    using Variant = nbdl::variant<Entity, nbdl::not_found>;
     using HashFn = nbdl::binder::hash_fn;
     using PredFn = hana::equal_t;
-    using Container = std::unordered_map<Path, Variant, HashFn, PredFn>;
+    using Container = std::unordered_map<Key, Value, HashFn, PredFn>;
 
     public:
 
-    using hana_tag = nbdl::map_store_tag;
-    using path = Path;
+    using hana_tag = Tag;
 
     Container map;
 
-    map_store()
+    basic_map_store()
       : map()
     { }
   };
 
+  template <>
+  struct make_store_impl<basic_map_store_tag>
+  {
+    template <typename PathType, typename EntityType>
+    static constexpr auto apply(PathType, EntityType)
+      -> nbdl::basic_map_store<typename PathType::type, typename EntityType::type>
+    { return {}; }
+  };
 
   template <>
   struct make_store_impl<map_store_tag>
@@ -144,6 +150,17 @@ namespace nbdl
   };
 
   template <>
+  struct apply_message_impl<basic_map_store_tag>
+  {
+    template <typename Store, typename Message>
+    static constexpr auto apply(Store&& s, Message&& m)
+    {
+      return detail::handle_map_store_action<std::decay_t<Message>>
+        ::apply(std::forward<Store>(s).map ,std::forward<Message>(m));
+    }
+  };
+
+  template <>
   struct apply_message_impl<map_store_tag>
   {
     template <typename Store, typename Message>
@@ -151,6 +168,16 @@ namespace nbdl
     {
       return detail::handle_map_store_action<std::decay_t<Message>>
         ::apply(std::forward<Store>(s).map ,std::forward<Message>(m));
+    }
+  };
+
+  template <>
+  struct match_impl<basic_map_store_tag>
+  {
+    template <typename Store, typename Key, typename Fn>
+    static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
+    {
+      nbdl::match(s.map, std::forward<Key>(k), std::forward<Fn>(fn));
     }
   };
 

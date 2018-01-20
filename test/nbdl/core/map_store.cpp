@@ -411,3 +411,69 @@ TEST_CASE("Apply message downstream delete.", "[map_store][apply_message]")
   CHECK(did_state_change == true);
   CHECK(store.map.size() == 0);
 }
+
+TEST_CASE("Apply messages to basic_store_map.", "[core]")
+{
+  auto store = nbdl::basic_map_store<int, int>{};
+  nbdl::apply_message(store, message::make_downstream_update(
+    42
+  , message::no_uid
+  , 421
+  , true
+  ));
+
+  nbdl::apply_message(store, message::make_downstream_update(
+    29
+  , message::no_uid
+  , 291
+  , true
+  ));
+
+  nbdl::apply_message(store, message::make_downstream_update(
+    14
+  , message::no_uid
+  , 141
+  , true
+  ));
+
+  nbdl::apply_message(store, message::make_downstream_delete(
+    14
+  , message::no_uid
+  , true
+  ));
+
+  {
+    bool result = false;
+
+    nbdl::match_when<int>(store, 42, [&](int x)
+    {
+      result = x == 421;
+    });
+
+    CHECK(result);
+  }
+
+  {
+    bool result = false;
+
+    nbdl::match_when<int>(store, 29, [&](int x)
+    {
+      result = x == 291;
+    });
+
+    CHECK(result);
+  }
+
+  {
+    bool result = false;
+
+    nbdl::match_when<nbdl::uninitialized>(store, 14, [&](nbdl::uninitialized)
+    {
+      result = true;
+    });
+
+    CHECK(result);
+  }
+
+  CHECK(store.map.size() == 2);
+}
