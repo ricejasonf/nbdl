@@ -467,7 +467,7 @@ TEST_CASE("Apply messages to basic_store_map.", "[core]")
   {
     bool result = false;
 
-    nbdl::match_when<nbdl::uninitialized>(store, 14, [&](nbdl::uninitialized)
+    nbdl::match_when<nbdl::not_in_set>(store, 14, [&](nbdl::not_in_set)
     {
       result = true;
     });

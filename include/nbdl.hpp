@@ -55,6 +55,7 @@
 #include <nbdl/send_upstream_message.hpp>
 #include <nbdl/store_compose.hpp>
 #include <nbdl/string.hpp>
+#include <nbdl/tags.hpp>
 #include <nbdl/try.hpp>
 #include <nbdl/uid.hpp>
 #include <nbdl/util/base64_decode.hpp>

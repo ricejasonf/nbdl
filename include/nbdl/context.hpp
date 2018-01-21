@@ -24,6 +24,7 @@
 #include <nbdl/producer_init.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>
+#include <nbdl/tags.hpp>
 #include <nbdl/ui_spec.hpp>
 #include <nbdl/variant.hpp>
 
@@ -270,7 +271,7 @@ namespace nbdl
         nbdl::apply_message(store, m);
         // send response message
         nbdl::match(store, message::get_path(m), hana::overload_linearly(
-          [&](nbdl::uninitialized)
+          [&](nbdl::trigger_read)
           {
             // The Store should create an 'unresolved'
             // placeholder to prevent duplicate upstream
@@ -443,7 +444,7 @@ namespace nbdl
       nbdl::match(s.stores[path_type], k, [&](auto const& value)
       {
         if constexpr(
-          decltype(hana::equal(hana::typeid_(value), hana::type_c<nbdl::uninitialized>)){}
+          decltype(hana::equal(hana::typeid_(value), hana::type_c<nbdl::trigger_read>)){}
         )
         {
           // Trigger upstream read request.

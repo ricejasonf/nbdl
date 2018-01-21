@@ -95,11 +95,6 @@ namespace nbdl
   };
 
   constexpr mapped_overload_fn mapped_overload{};
-
-  // tags used for possible store values
-
-  struct uninitialized { };
-  struct not_found { };
 }
 
 #endif

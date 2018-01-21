@@ -7,19 +7,28 @@
 #ifndef NBDL_FWD_MAP_STORE_HPP
 #define NBDL_FWD_MAP_STORE_HPP
 
-#include <nbdl/match.hpp>
+#include <nbdl/tags.hpp>
 #include <nbdl/variant.hpp>
 
 namespace nbdl
 {
   struct basic_map_store_tag { };
-  struct map_store_tag { };
 
-  template <typename Key, typename Value, typename Tag = basic_map_store_tag>
+  template <typename Key
+          , typename Value
+          , typename NotInSetTag = nbdl::not_in_set
+          , typename Tag = basic_map_store_tag>
   struct basic_map_store;
 
+  struct map_store_tag { };
+
   template <typename Path, typename Entity>
-  using map_store = basic_map_store<Path, nbdl::variant<Entity, nbdl::not_found>, map_store_tag>;
+  using map_store = basic_map_store<
+    Path
+  , nbdl::detail::variant<nbdl::unresolved, Entity, nbdl::not_found>
+  , nbdl::trigger_read
+  , map_store_tag
+  >;
 }
 
 #endif

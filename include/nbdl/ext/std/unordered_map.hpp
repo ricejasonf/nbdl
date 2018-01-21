@@ -9,6 +9,7 @@
 
 #include <nbdl/concept/Store.hpp>
 #include <nbdl/match.hpp>
+#include <nbdl/tags.hpp>
 
 #include <unordered_map>
 
@@ -33,7 +34,7 @@ namespace nbdl
       auto itr = s.find(std::forward<Key>(k));
       if (itr == s.end())
       {
-        std::forward<Fn>(fn)(nbdl::uninitialized{});
+        std::forward<Fn>(fn)(nbdl::not_in_set{});
       }
       else
       {

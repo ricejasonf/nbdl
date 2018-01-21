@@ -7,11 +7,11 @@
 #ifndef NBDL_NULL_STORE_HPP
 #define NBDL_NULL_STORE_HPP
 
-#include <nbdl/fwd/make_store.hpp> // nbdl::uninitialized
 #include <nbdl/fwd/null_store.hpp>
 
 #include <nbdl/apply_message.hpp>
 #include <nbdl/get.hpp>
+#include <nbdl/tags.hpp>
 
 namespace nbdl
 {
@@ -37,9 +37,13 @@ namespace nbdl
   struct get_impl<null_store>
   {
     template <typename Store, typename Key>
-    static constexpr auto apply(Store&&, Key&&)
-      -> nbdl::uninitialized
-    { return {}; }
+    static constexpr void apply(Store&&, Key&&)
+    {
+      static_assert(
+        std::is_void<Store>::value
+      , "Unable to match value in nbdl::null_store"
+      );
+    }
   };
 }
 

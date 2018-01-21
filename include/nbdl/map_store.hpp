@@ -111,7 +111,7 @@ namespace nbdl
     };
   }
 
-  template <typename Key, typename Value, typename Tag>
+  template <typename Key, typename Value, typename NotInSetTag, typename Tag>
   struct basic_map_store
   {
     private:

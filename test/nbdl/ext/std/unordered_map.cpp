@@ -25,7 +25,7 @@ TEST_CASE("Match on values in an std::unordered_map.", "[ext]")
   {
     bool result = false;
     nbdl::match(map, 42, hana::overload_linearly(
-      [](nbdl::uninitialized) { }
+      [](nbdl::not_in_set) { }
     , [&](std::string& x)
       {
         result = x == map[42];
@@ -36,7 +36,7 @@ TEST_CASE("Match on values in an std::unordered_map.", "[ext]")
   {
     bool result = false;
     nbdl::match(map, 101, hana::overload_linearly(
-      [](nbdl::uninitialized) { }
+      [](nbdl::not_in_set) { }
     , [&](std::string& x)
       {
         result = x == map[101];
@@ -49,7 +49,7 @@ TEST_CASE("Match on values in an std::unordered_map.", "[ext]")
   {
     bool result = false;
     nbdl::match(map, 1234, hana::overload_linearly(
-      [&](nbdl::uninitialized) { result = true; }
+      [&](nbdl::not_in_set) { result = true; }
     , [](std::string&) { }
     ));
     CHECK(result);

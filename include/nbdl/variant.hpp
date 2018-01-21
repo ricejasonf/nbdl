@@ -13,6 +13,7 @@
 #include <nbdl/detail/common_type.hpp>
 #include <nbdl/fwd/bind_variant.hpp>
 #include <nbdl/match.hpp>
+#include <nbdl/tags.hpp>
 
 #include <boost/hana.hpp>
 #include <boost/hana/experimental/types.hpp>
@@ -231,9 +232,8 @@ namespace nbdl
   //useful for match catch all
   auto noop = [](auto){};
 
-  //tags for empty variant value (always has type_id of 0)
-  struct unresolved {};
-  struct nothing {};
+  // tag for empty variant value (always has type_id of 0)
+  struct nothing { };
 
   template <typename... Tn>
   using variant = detail::variant<unresolved, Tn...>;

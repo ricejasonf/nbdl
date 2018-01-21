@@ -73,12 +73,12 @@ namespace nbdl
         }
         else
         {
-          std::forward<Fn>(fn)(nbdl::uninitialized{});
+          std::forward<Fn>(fn)(nbdl::trigger_read{});
         }
       }
       else
       {
-        std::forward<Fn>(fn)(nbdl::uninitialized{});
+        std::forward<Fn>(fn)(nbdl::trigger_read{});
       }
     }
   };
@@ -112,7 +112,7 @@ TEST_CASE("Match a value in the stores.", "[context]")
   CHECK(result);
 }
 
-TEST_CASE("Matching nbdl::uninitialized triggers upstream read message.", "[context]")
+TEST_CASE("Matching nbdl::trigger_read triggers upstream read message.", "[context]")
 {
   auto context = nbdl::make_unique_context<test_context_match::my_context>();
   auto& producer1       = context->cell<1>();
