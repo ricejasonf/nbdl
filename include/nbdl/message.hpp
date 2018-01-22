@@ -43,10 +43,13 @@ namespace nbdl::message
 
   namespace detail
   {
+    struct create_path_tag { };
+
     template <typename Key, typename ParentPath>
     struct create_path
     {
       using key = Key;
+      using hana_tag = create_path_tag;
 
       ParentPath parent_path;
     };
@@ -670,10 +673,17 @@ namespace nbdl::message
     }
     else
     {
-      using Key = typename std::decay_t<decltype(get_path(m))>::key;
-      return hana::type_c<
-        decltype(hana::append(get_path(m).parent_path, std::declval<Key>()))
-      >;
+      if constexpr(hana::is_a<detail::create_path_tag, decltype(get_path(m))>)
+      {
+        using Key = typename std::decay_t<decltype(get_path(m))>::key;
+        return hana::type_c<
+          decltype(hana::append(get_path(m).parent_path, std::declval<Key>()))
+        >;
+      }
+      else
+      {
+        return decltype(hana::typeid_(get_path(m))){};
+      }
     }
   }
 }
@@ -688,12 +698,13 @@ namespace boost::hana
     { return {}; };
   };
 
-  template <typename Key, typename ParentPath>
-  struct equal_impl<nbdl::message::detail::create_path<Key, ParentPath>
-                  , nbdl::message::detail::create_path<Key, ParentPath>>
+  template <>
+  struct equal_impl<nbdl::message::detail::create_path_tag
+                  , nbdl::message::detail::create_path_tag>
   {
-    template <typename X, typename Y>
-    static constexpr auto apply(X const& x, Y const& y)
+    template <typename Key, typename ParentPath>
+    static constexpr auto apply(nbdl::message::detail::create_path<Key, ParentPath> const& x
+                              , nbdl::message::detail::create_path<Key, ParentPath> const& y)
     {
       return hana::equal(x.parent_path, y.parent_path);
     }
