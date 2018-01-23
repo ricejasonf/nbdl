@@ -199,7 +199,7 @@ namespace nbdl::detail
 
     template <typename String>
     auto operator()(String const& str) const
-      -> std::enable_if_t<nbdl::String<String>::value>
+      -> std::enable_if_t<nbdl::String<String>::value, string_concat_view>
     {
       return string_view(str.data(), str.size());
     }

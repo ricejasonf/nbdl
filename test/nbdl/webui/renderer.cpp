@@ -50,6 +50,7 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
     " More dynamic text."
     " More static text.1242"
     "<span> Here is some optional text.</span>"
+    "<span>42</span>"
     "</div>"
     "</div>"
   );
@@ -74,6 +75,10 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
           get("key_3"_s)
         , when<std::string>([](auto p) { return text_node(p); })
         , when<>(div())
+        )
+      , match(
+          get("key_1"_s) // a branch that doesn't change
+        , when<std::string>(text_node(get("key_4"_s)))
         )
       )
     );

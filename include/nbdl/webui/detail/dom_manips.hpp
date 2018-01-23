@@ -293,6 +293,13 @@ namespace nbdl::webui::detail
           hana::at(renderers, index_c).render(container_el);
         });
       }
+      else
+      {
+        nbdl::ui_helper::match_branch_index<BranchSpec>(branch_id, [&](auto index_c)
+        {
+          hana::at(renderers, index_c).update();
+        });
+      }
     }
 
     void destroy()
