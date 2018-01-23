@@ -100,10 +100,17 @@ namespace nbdl::message
   template <typename ...T>
   constexpr auto get_action_impl<upstream_create<T...>> = action::create{};
 
+  template <typename M>
+  constexpr bool requires_key_for_downstream_impl<M,
+    std::enable_if_t<hana::is_a<detail::create_path_tag, decltype(get_path(std::declval<M>()))>
+                 and not detail::is_create_path_normalizable<M>
+                  >> = true;
+
   template <typename ...T>
   constexpr auto get_normalized_path_impl<
     upstream_create<T...>
-  , std::enable_if_t<!detail::is_create_path_normalizable<upstream_create<T...>>>
+  , std::enable_if_t<requires_key_for_downstream<upstream_create<T...>>
+  >
   > = no_impl{};
 
   template <typename ...T>
@@ -118,7 +125,8 @@ namespace nbdl::message
   template <typename ...T>
   constexpr auto to_downstream_impl<
     upstream_create<T...>
-  , std::enable_if_t<is_path_normalizable<upstream_create<T...>>>
+  , std::enable_if_t<is_path_normalizable<upstream_create<T...>>
+             and not requires_key_for_downstream<upstream_create<T...>>>
   > = [](auto&& m, auto is_confirmed)
   {
     using M = decltype(m);

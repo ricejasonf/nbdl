@@ -68,7 +68,7 @@ namespace nbdl
     template <typename Producer, typename Message>
     static constexpr void apply(Producer const& p, Message const& m)
     {
-      if constexpr(message::is_create<Message>)
+      if constexpr(message::requires_key_for_downstream<Message>)
       {
         p.push_api.push(
           message::to_downstream_with_key(

@@ -87,6 +87,8 @@ namespace nbdl::message
   template <typename Message, typename = void> constexpr auto to_downstream_read_impl     = no_impl{};
   template <typename Message, typename = void>
   constexpr auto get_normalized_path_impl = get_path_impl<Message>;
+  template <typename Message, typename = void>
+  constexpr bool requires_key_for_downstream_impl = false;
 
   // traits
 
@@ -109,6 +111,9 @@ namespace nbdl::message
   template <typename Message>
   constexpr bool is_path_normalizable = !std::is_same<const no_impl,
     decltype(get_normalized_path_impl<std::decay_t<Message>>)>::value;
+
+  template <typename Message>
+  constexpr bool requires_key_for_downstream = requires_key_for_downstream_impl<std::decay_t<Message>>;
 
   struct get_channel_fn
   {
