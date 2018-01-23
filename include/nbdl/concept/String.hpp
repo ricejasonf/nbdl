@@ -9,6 +9,7 @@
 
 #include <nbdl/fwd/concept/String.hpp>
 
+#include <boost/hana/core/tag_of.hpp>
 #include <type_traits>
 
 namespace nbdl
