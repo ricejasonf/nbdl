@@ -319,6 +319,12 @@ namespace nbdl::webui::detail
     action_fn() = delete;
   };
 
+  template <typename NodeContainers, std::size_t ...i>
+  NodeContainers make_branch_node_containers(std::index_sequence<i...>)
+  {
+    return NodeContainers{{(static_cast<void>(i), emscripten::val::undefined())...}};
+  }
+
   //  Branches - list<pair<T, list<action...>>...>
   template <typename Store, typename Tag, typename PathSpec, typename Branches>
   struct mut_action_fn<ui_spec::branch_spec<Tag, PathSpec, Branches>, Store>
@@ -326,48 +332,63 @@ namespace nbdl::webui::detail
     using BranchSpec = ui_spec::branch_spec<Tag, PathSpec, Branches>;
     using FnLists = mp_transform<mp_second, mp_third<BranchSpec>>;
     using Renderers = make_nested_renderer_tuple<Store, FnLists>;
+    using NodeContainers = std::array<emscripten::val, mp_size<FnLists>::value>;
 
     Store store;
     emscripten::val parent_el;
-    emscripten::val container_el;
     std::size_t branch_id;
+    NodeContainers node_containers;
     Renderers renderers;
 
     mut_action_fn(Store s)
       : store(s)
       , parent_el(emscripten::val::undefined())
-      , container_el(emscripten::val::global("document").template
-          call<emscripten::val>("createElement", emscripten::val("span")))
       , branch_id(-1)
+      , node_containers(make_branch_node_containers<NodeContainers>(
+          std::make_index_sequence<mp_size<FnLists>::value>{}
+        ))
       , renderers(construct_branch_renderers<Renderers>::apply(s))
     { }
 
-    void update()
+    void update_branch()
     {
+      // FIXME
+      // How do we know if the child is a branch and its element changes??
+      // Options:
+      // 1. We could flatten composed branches to prevent nesting.
+      // 2. Nested renderers could have a get_element function that refers
+      //    to this node's current element.
+
       std::size_t index = nbdl::ui_helper::get_branch_index<BranchSpec>(store);
       if (index != branch_id)
       {
         // Something changed! :D
         if (branch_id != static_cast<std::size_t>(-1))
         {
-          container_el.template call<void>("removeChild", container_el["firstChild"]);
+          parent_el.template call<void>(
+            "replaceChild"
+          , node_containers[index]
+          , node_containers[branch_id]
+          );
         }
-        branch_id = index;
+        else
+        {
+          parent_el.template call<void>("appendChild", node_containers[index]);
+        }
 
-        // TODO this could use type erasure
-        nbdl::ui_helper::match_branch_index<BranchSpec>(branch_id, [&](auto index_c)
-        {
-          hana::at(renderers, index_c).render(container_el);
-        });
       }
-      else
+      branch_id = index;
+    }
+
+    void update()
+    {
+      update_branch();
+
+      // update children
+      hana::for_each(renderers, [](auto& x)
       {
-        branch_id = index;
-        nbdl::ui_helper::match_branch_index<BranchSpec>(branch_id, [&](auto index_c)
-        {
-          hana::at(renderers, index_c).update();
-        });
-      }
+        x.update();
+      });
     }
 
     void destroy()
@@ -379,8 +400,18 @@ namespace nbdl::webui::detail
     decltype(auto) operator()(ParentElement&& p)
     {
       parent_el = p;
-      update();
-      parent_el.template call<void>("appendChild", container_el);
+
+      auto temp_span = emscripten::val::global("document").template
+        call<emscripten::val>("createElement", emscripten::val("span"));
+
+      constexpr auto range = hana::make_range(hana::size_c<0>, mp_size<FnLists>{}); 
+      hana::for_each(range, [&](auto index)
+      {
+        hana::at(renderers, index).render(temp_span);
+        node_containers[decltype(index)::value] = temp_span["lastChild"];
+      });
+
+      update_branch();
       return std::forward<ParentElement>(p);
     }
   };

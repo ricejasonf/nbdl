@@ -49,8 +49,8 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
     " Here is some updated dynamic text."
     " More dynamic text."
     " More static text.1242"
-    "<span> Here is some optional text.</span>"
-    "<span>42</span>"
+    " Here is some optional text."
+    "42"
     "</div>"
     "</div>"
   );
@@ -295,7 +295,7 @@ TEST_CASE("Render a Container in a Store with for_each", "[webui]")
   using namespace nbdl::ui_spec;
 
   //auto target = make_dom_test_equality(R"HTML(<div><div class="row">Row #1</div><div class="row">Row #2</div><div class="row">Row #3</div><div class="row">Row #4</div><div class="row">Row #5</div><div class="row">Row #6</div><div class="row">Row #7</div><div class="row">Row #8</div></div>)HTML");
-  auto target = make_dom_test_equality(R"HTML(<div><div><span><div class="row">Row #1</div></span><span><div class="row">Row #2</div></span><span><div class="row">Row #3</div></span><span><div class="row">Row #4</div></span><span><div class="row">Row #5</div></span><span><div class="row">Row #6</div></span><span><div class="row">Row #7</div></span><span><div class="row">Row #8</div></span></div><div>CLICK THIS BEFORE IT CHANGES!!</div></div>)HTML");
+  auto target = make_dom_test_equality(R"HTML(<div><div><div class="row">Row #1</div><div class="row">Row #2</div><div class="row">Row #3</div><div class="row">Row #4</div><div class="row">Row #5</div><div class="row">Row #6</div><div class="row">Row #7</div><div class="row">Row #8</div></div><div>CLICK THIS BEFORE IT CHANGES!!</div></div>)HTML");
 
   constexpr auto make_row = [](std::string text)
   {
