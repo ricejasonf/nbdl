@@ -95,7 +95,10 @@ namespace nbdl::webui::detail
       {
         return decltype(flatten_named_node_fn<flatten_spec_fn>{}(current_tag, child_nodes)){};
       }
-      else if constexpr(decltype(hana::equal(current_tag, html::tag::attribute))::value)
+      else if constexpr(
+            decltype(hana::equal(current_tag, html::tag::attribute))::value
+         or decltype(hana::equal(current_tag, html::tag::set_property))::value
+      )
       {
         return mpdef::list<action_fn<
           typename decltype(current_tag)::type

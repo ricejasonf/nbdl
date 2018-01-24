@@ -18,6 +18,7 @@ namespace nbdl::webui
     MPDEF_DIRECTIVE_LEAF(text_node)
     MPDEF_DIRECTIVE_LEAF(unsafe_set_inner_html)
     MPDEF_DIRECTIVE_LIST(attribute)
+    MPDEF_DIRECTIVE_LIST(set_property)
     MPDEF_DIRECTIVE_LIST(element)
     MPDEF_DIRECTIVE_LIST(event_attribute)
     MPDEF_DIRECTIVE_LIST(add_class_if)
@@ -52,6 +53,14 @@ namespace nbdl::webui
     { return element(hana::string<'p'>{}, args...); }
 
     template <typename ...Args>
+    constexpr auto form(Args ...args)
+    { return element(hana::string<'f', 'o', 'r', 'm'>{}, args...); }
+
+    template <typename ...Args>
+    constexpr auto text_area(Args ...args)
+    { return element(hana::string<'t', 'e', 'x', 't', 'a', 'r', 'e', 'a'>{}, args...); }
+
+    template <typename ...Args>
     constexpr auto attr_class(Args ...args)
     { return attribute(hana::string<'c', 'l', 'a', 's', 's'>{}, args...); }
 
@@ -62,6 +71,14 @@ namespace nbdl::webui
     template <typename ...Args>
     constexpr auto on_click(Args ...args)
     { return event_attribute(hana::string<'c', 'l', 'i', 'c', 'k'>{}, args...); }
+
+    template <typename ...Args>
+    constexpr auto on_key_down(Args ...args)
+    { return event_attribute(hana::string<'k', 'e', 'y', 'd', 'o', 'w', 'n'>{}, args...); }
+
+    template <typename ...Args>
+    constexpr auto on_key_up(Args ...args)
+    { return event_attribute(hana::string<'k', 'e', 'y', 'u', 'p'>{}, args...); }
 
     namespace tag
     {

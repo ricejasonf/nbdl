@@ -119,6 +119,10 @@ namespace nbdl::webui::detail
     }
   };
 
+  //
+  // attribute
+  //
+
   // For one string constant
   template <typename AttributeName, char ...Cs>
   struct action_fn<html::tag::attribute_t, AttributeName, mpdef::list<hana::string<Cs...>>>
@@ -171,6 +175,65 @@ namespace nbdl::webui::detail
       );
     }
   };
+
+  //
+  // set_property
+  //
+
+  // For one string constant
+  template <typename AttributeName, char ...Cs>
+  struct action_fn<html::tag::set_property_t, AttributeName, mpdef::list<hana::string<Cs...>>>
+  {
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p) const
+    {
+      p.set(
+        to_json_val(AttributeName{})
+      , to_json_val(hana::string<Cs...>{})
+      );
+      return std::forward<ParentElement>(p);
+    }
+  };
+
+  template <typename AttributeName, typename StringParams>
+  struct action_fn<html::tag::set_property_t, AttributeName, StringParams>
+  {
+    action_fn() = delete;
+  };
+
+  template <typename Store, typename AttributeName, typename StringParams>
+  struct mut_action_fn<html::tag::set_property_t, Store, AttributeName, StringParams>
+  {
+    Store store;
+    emscripten::val el;
+
+    mut_action_fn(Store s)
+      : store(s)
+      , el(emscripten::val::undefined())
+    { }
+
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p)
+    {
+      el = p;
+      update();
+      return std::forward<ParentElement>(p);
+    }
+
+    void update()
+    {
+      std::string text_value = ui_helper::params_concat(StringParams{}, store)
+        .to_string();
+      el.set(
+        to_json_val(AttributeName{})
+      , emscripten::val(std::move(text_value))
+      );
+    }
+  };
+
+  //
+  // text_node
+  //
 
   template <typename Value>
   struct action_fn<html::tag::text_node_t, Value>
