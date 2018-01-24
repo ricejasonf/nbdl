@@ -200,20 +200,27 @@ namespace nbdl::webui::detail
 
     mut_action_fn(Store s)
       : store(s)
-      , el(emscripten::val::undefined())
+      , el(init_el())
       , parent_el(emscripten::val::undefined())
     { }
+
+    emscripten::val init_el()
+    {
+      return emscripten::val::global("document").template
+        call<emscripten::val>("createTextNode", emscripten::val(""));
+    }
 
     template <typename ParentElement>
     decltype(auto) operator()(ParentElement&& p)
     {
+      p.template call<void>("appendChild", el);
+      parent_el = p;
+
       nbdl::ui_helper::match_path_spec(store, ui_spec::path_t<PathNodes...>{}, [&](auto const& value)
       {
-        el = emscripten::val::global("document").template
-          call<emscripten::val>("createTextNode", to_text_val(value));
-        p.template call<void>("appendChild", el);
-        parent_el = p;
+        el.set("nodeValue", to_text_val(value));
       });
+
       return std::forward<ParentElement>(p);
     }
 
@@ -221,10 +228,7 @@ namespace nbdl::webui::detail
     {
       nbdl::ui_helper::match_path_spec(store, ui_spec::path_t<PathNodes...>{}, [&](auto const& value)
       {
-        auto new_el = emscripten::val::global("document").template
-          call<emscripten::val>("createTextNode", to_text_val(value));
-        parent_el.template call<void>("replaceChild", new_el, el);
-        el = new_el;
+        el.set("nodeValue", to_text_val(value));
       });
     }
   };
@@ -295,6 +299,7 @@ namespace nbdl::webui::detail
       }
       else
       {
+        branch_id = index;
         nbdl::ui_helper::match_branch_index<BranchSpec>(branch_id, [&](auto index_c)
         {
           hana::at(renderers, index_c).update();

@@ -60,6 +60,7 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
   , hana::make_pair("key_2"_s, std::string(" More dynamic text."))
   , hana::make_pair("key_3"_s, nbdl::optional<std::string>{})
   , hana::make_pair("key_4"_s, 5)
+  , hana::make_pair("key_6"_s, nbdl::optional<std::string>{std::string("Don't change me, bro.")})
   );
 
   constexpr auto spec =
@@ -77,8 +78,9 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
         , when<>(div())
         )
       , match(
-          get("key_1"_s) // a branch that doesn't change
+          get("key_6"_s) // a branch that doesn't change
         , when<std::string>(text_node(get("key_4"_s)))
+        , when<>(text_node("FAIL"_s))
         )
       )
     );
