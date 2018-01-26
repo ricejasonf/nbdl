@@ -25,8 +25,8 @@ namespace nbdl
 {
   namespace hana = boost::hana;
 
-  template <typename SendMessageImpl>
-  struct endpoint_open_impl<nbdl::websocket::server_endpoint_impl<SendMessageImpl>>
+  template <typename SendMessageImpl, typename Derived>
+  struct endpoint_open_impl<nbdl::websocket::server_endpoint_impl<SendMessageImpl, Derived>>
   {
     using tcp = asio::ip::tcp;
 
@@ -38,7 +38,8 @@ namespace nbdl
 
       return websocket::detail::endpoint_impl<DecayedQueue
                                             , DecayedHandler
-                                            , SendMessageImpl>(
+                                            , SendMessageImpl
+                                            , Derived>(
         std::forward<Endpoint>(endpoint).socket
       , std::forward<Queue>(queue)
       , std::forward<Handler>(handler)
