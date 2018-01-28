@@ -14,14 +14,12 @@
 namespace nbdl::websocket::event
 {
   namespace hana = boost::hana;
+  using namespace nbdl::endpoint_event;
 
   struct bad_request_t { };
 
   constexpr hana::type<bad_request_t> bad_request{};
-
-  constexpr auto ready    = endpoint_event::ready;
-  constexpr auto message  = endpoint_event::message;
-  constexpr auto close    = endpoint_event::close;
+  constexpr auto on_bad_request = on<bad_request_t>;
 }
 
 #endif

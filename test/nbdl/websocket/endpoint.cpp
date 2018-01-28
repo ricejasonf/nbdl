@@ -110,31 +110,25 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
             nbdl::websocket::server_endpoint{socket}
           , std::queue<std::string>{}
           , nbdl::endpoint_handler(
-              hana::make_pair(event::ready, [&](auto& self, nbdl::auth_token_t const& token)
+              event::on_ready = [&](auto& self, nbdl::auth_token_t const& token)
               {
                 save_event(event_kind::READY)(token.value);
                 for (auto& msg : server_to_client_messages)
                 {
-                  nbdl::endpoint_send_message(self, msg); 
+                  nbdl::endpoint_send_message(self, msg);
                 }
-              })
-            , hana::make_pair(event::message, [&](auto& self, auto const& message)
+              }
+            , event::on_message = [&](auto& self, auto const& message)
               {
                 save_event(event_kind::MESSAGE)(message);
                 if (message == "close")
                 {
                   nbdl::endpoint_send_close(self);
                 }
-              })
-            , hana::make_pair(event::close, save_and_close(save_event(event_kind::CLOSE), resolver))
-            , hana::make_pair(
-                event::bad_request
-              , save_and_close(save_event(event_kind::BAD_REQUEST), resolver)
-              )
-            , hana::make_pair(
-                hana::type_c<asio::error_code>
-              , save_and_close(save_event(event_kind::ERROR), resolver)
-              )
+              }
+            , event::on_close             = save_and_close(save_event(event_kind::CLOSE), resolver)
+            , event::on_bad_request       = save_and_close(save_event(event_kind::BAD_REQUEST), resolver)
+            , event::on<asio::error_code> = save_and_close(save_event(event_kind::ERROR), resolver)
             )
           );
         }
@@ -156,31 +150,25 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
             nbdl::websocket::client_endpoint{socket, {"Ima_auth_token"}, {}}
           , std::queue<std::string>{}
           , nbdl::endpoint_handler(
-              hana::make_pair(event::ready, [&](auto& self)
+              event::on_ready = [&](auto& self)
               {
                 save_event(event_kind::READY)();
                 for (auto& msg : client_to_server_messages)
                 {
-                  nbdl::endpoint_send_message(self, msg); 
+                  nbdl::endpoint_send_message(self, msg);
                 }
-              })
-            , hana::make_pair(event::message, [&](auto& self, auto const& message)
+              }
+            , event::on_message = [&](auto& self, auto const& message)
               {
                 save_event(event_kind::MESSAGE)(message);
                 if (message == "close")
                 {
                   nbdl::endpoint_send_close(self);
                 }
-              })
-            , hana::make_pair(event::close, save_and_close(save_event(event_kind::CLOSE), resolver))
-            , hana::make_pair(
-                event::bad_request
-              , save_and_close(save_event(event_kind::BAD_REQUEST), resolver)
-              )
-            , hana::make_pair(
-                hana::type_c<asio::error_code>
-              , save_and_close(save_event(event_kind::ERROR), resolver)
-              )
+              }
+            , event::on_close             = save_and_close(save_event(event_kind::CLOSE), resolver)
+            , event::on_bad_request       = save_and_close(save_event(event_kind::BAD_REQUEST), resolver)
+            , event::on<asio::error_code> = save_and_close(save_event(event_kind::ERROR), resolver)
             )
           );
         }

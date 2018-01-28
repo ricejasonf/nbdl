@@ -103,7 +103,7 @@ int main()
         nbdl::websocket_api::client_endpoint{"ws://127.0.0.1:8080", {"Ima_auth_token"}, {}}
       , std::queue<nbdl::websocket_api::json_payload>{}
       , nbdl::endpoint_handler(
-          hana::make_pair(event::ready, [&](auto& self)
+          event::on_ready([&](auto& self)
           {
             std::array<std::string_view, 6> outgoing_messages{{
               "message #1"sv
@@ -121,11 +121,11 @@ int main()
               self.send_message(payload);
             }
           })
-        , hana::make_pair(event::message, [&](auto&, auto const& payload)
+        , event::on_message([&](auto&, auto const& payload)
           {
             received_messages.push_back(to_string(payload));
           })
-        , hana::make_pair(event::close, [&](auto&, auto&&...)
+        , event::on_close([&](auto&, auto&&...)
           {
             if (received_messages == std::vector<std::string>{{
               "MESSAGE #1"s
