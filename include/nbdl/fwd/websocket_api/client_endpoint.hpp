@@ -19,12 +19,15 @@ namespace nbdl::websocket_api
     std::string value;
   };
 
-  struct client_endpoint
+  template <typename Derived>
+  struct client_endpoint_base
   {
     std::string url;
     auth_token_t auth_token;
     origin_t origin;
   };
+
+  using client_endpoint = client_endpoint_base<void>;
 }
 
 #endif

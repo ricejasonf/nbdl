@@ -75,7 +75,7 @@ namespace nbdl::websocket::detail
     using Payload = value_type;
     using Derived = boost::mp11::mp_if_c<std::is_void<Derived_>::value, endpoint_impl, Derived_>;
 
-    Derived& self()
+    inline Derived& self()
     {
       return static_cast<Derived&>(*this);
     }

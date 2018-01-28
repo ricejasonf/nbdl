@@ -13,6 +13,7 @@
 #include <nbdl/websocket_api/detail/event_receiver.hpp>
 #include <nbdl/websocket_api/json_payload.hpp>
 
+#include <boost/mp11/utility.hpp>
 #include <dyno.hpp>
 #include <emscripten.h>
 #include <memory>
@@ -27,16 +28,22 @@ namespace nbdl::websocket_api::detail
 
   struct endpoint_impl_tag { };
 
-  template <typename Queue, typename Handler>
+  template <typename Queue, typename Handler, typename Derived_ = void>
   struct endpoint_impl
   {
     using hana_tag = endpoint_impl_tag;
     using value_type = typename Queue::value_type;
     using Payload = value_type;
+    using Derived = boost::mp11::mp_if_c<std::is_void<Derived_>::value, endpoint_impl, Derived_>;
+
+    inline Derived& self()
+    {
+      return static_cast<Derived&>(*this);
+    }
 
     template <typename E, typename Q, typename H>
     endpoint_impl(E const& e, Q&& q, H&& h)
-      : receiver(event_receiver_impl<endpoint_impl>{*this})
+      : receiver(event_receiver_impl<Derived>{self()})
       , send_queue(std::forward<Q>(q))
       , handler(std::forward<H>(h))
       , payload()
@@ -100,9 +107,9 @@ namespace nbdl::websocket_api::detail
     }
   }
 
-  template <typename Queue, typename Handler>
+  template <typename Queue, typename Handler, typename Derived>
   template <typename String>
-  void endpoint_impl<Queue, Handler>::connect(String const& str)
+  void endpoint_impl<Queue, Handler, Derived>::connect(String const& str)
   {
     EM_ASM_(
       {
@@ -145,8 +152,8 @@ namespace nbdl::websocket_api::detail
     );
   }
 
-  template <typename Queue, typename Handler>
-  bool endpoint_impl<Queue, Handler>::is_connected()
+  template <typename Queue, typename Handler, typename Derived>
+  bool endpoint_impl<Queue, Handler, Derived>::is_connected()
   {
     int result = EM_ASM_INT(
       {
@@ -158,15 +165,15 @@ namespace nbdl::websocket_api::detail
     return result;
   }
 
-  template <typename Queue, typename Handler>
-  void endpoint_impl<Queue, Handler>::send_message(Payload const& p)
+  template <typename Queue, typename Handler, typename Derived>
+  void endpoint_impl<Queue, Handler, Derived>::send_message(Payload const& p)
   {
     // TODO actually use the send_queue
     send_impl(websocket, p);
   }
 
-  template <typename Queue, typename Handler>
-  void endpoint_impl<Queue, Handler>::send_close()
+  template <typename Queue, typename Handler, typename Derived>
+  void endpoint_impl<Queue, Handler, Derived>::send_close()
   {
     EM_ASM_(
       {
@@ -176,23 +183,23 @@ namespace nbdl::websocket_api::detail
     );
   }
 
-  template <typename Queue, typename Handler>
-  void endpoint_impl<Queue, Handler>::trigger(event::ready_t)
+  template <typename Queue, typename Handler, typename Derived>
+  void endpoint_impl<Queue, Handler, Derived>::trigger(event::ready_t)
   {
-    handler[event::ready](*this);  
+    handler[event::ready](self());  
   }
 
-  template <typename Queue, typename Handler>
-  void endpoint_impl<Queue, Handler>::trigger(event::message_t)
+  template <typename Queue, typename Handler, typename Derived>
+  void endpoint_impl<Queue, Handler, Derived>::trigger(event::message_t)
   {
     convert_payload<Payload>::apply(event_data, payload);
-    handler[event::message](*this, payload);
+    handler[event::message](self(), payload);
   }
 
-  template <typename Queue, typename Handler>
-  void endpoint_impl<Queue, Handler>::trigger(event::close_t)
+  template <typename Queue, typename Handler, typename Derived>
+  void endpoint_impl<Queue, Handler, Derived>::trigger(event::close_t)
   {
-    handler[event::close](*this);  
+    handler[event::close](self());  
   }
 
   template <typename Payload>
