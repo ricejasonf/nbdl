@@ -47,6 +47,30 @@ namespace nbdl::message
   template <typename...>
   struct downstream_delete;
 
+  // create_path
+
+  struct create_path_tag { };
+
+  template <typename Key, typename ParentPath>
+  struct create_path
+  {
+    using key = Key;
+    using hana_tag = create_path_tag;
+
+    ParentPath parent_path;
+  };
+
+  template <typename Key>
+  struct make_create_path_fn
+  {
+    template <typename ParentPath>
+    constexpr auto operator()(ParentPath&&) const
+      -> create_path<Key, std::decay_t<ParentPath>>;
+  };
+
+  template <typename Key>
+  constexpr make_create_path_fn<Key> make_create_path{};
+
   /*
    * The action and channel tags serve to
    * indicate how the message should be
@@ -299,18 +323,6 @@ namespace nbdl::message
   constexpr make_downstream_read_fn   make_downstream_read{};
   constexpr make_downstream_update_fn make_downstream_update{};
   constexpr make_downstream_delete_fn make_downstream_delete{};
-
-  // make_create_path<Key>
-
-  template <typename Key>
-  struct make_create_path_fn
-  {
-    template <typename ParentPath>
-    constexpr auto operator()(ParentPath&&) const;
-  };
-
-  template <typename Key>
-  constexpr make_create_path_fn<Key> make_create_path{};
 
   // get_path_type
 

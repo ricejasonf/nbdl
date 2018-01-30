@@ -76,6 +76,17 @@ namespace boost::hana
   };
 }
 
+TEST_CASE("create_path is a BindableSequence", "[core]")
+{
+  CHECK(hana::equal(
+    nbdl::bind_sequence(
+      message::make_create_path<PathKey<2>>(hana::make_tuple(PathKey<1>{1}))
+    , hana::make_basic_tuple
+    )
+  , hana::make_basic_tuple(PathKey<1>{1})
+  ));
+}
+
 TEST_CASE("upstream/downstream create message", "[core]")
 {
   auto m = message::make_upstream_create(
@@ -113,6 +124,7 @@ TEST_CASE("upstream/downstream create message", "[core]")
     , Payload<2>{42}
     )
   ));
+
 }
 
 TEST_CASE("upstream/downstream create message with uid", "[core]")

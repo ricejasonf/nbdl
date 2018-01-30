@@ -45,17 +45,6 @@ namespace nbdl::message
 
   namespace detail
   {
-    struct create_path_tag { };
-
-    template <typename Key, typename ParentPath>
-    struct create_path
-    {
-      using key = Key;
-      using hana_tag = create_path_tag;
-
-      ParentPath parent_path;
-    };
-
     constexpr auto get_normalized_create_path = [](auto&& m)
       -> decltype(hana::append(
            get_path(m).parent_path
@@ -104,7 +93,7 @@ namespace nbdl::message
 
   template <typename M>
   constexpr bool requires_key_for_downstream_impl<M,
-    std::enable_if_t<hana::is_a<detail::create_path_tag, decltype(get_path(std::declval<M>()))>
+    std::enable_if_t<hana::is_a<create_path_tag, decltype(get_path(std::declval<M>()))>
                  and not detail::is_create_path_normalizable<M>
                   >> = true;
 
@@ -668,10 +657,9 @@ namespace nbdl::message
   template <typename Key>
   template <typename ParentPath>
   constexpr auto make_create_path_fn<Key>::operator()(ParentPath&& p) const
+    -> create_path<Key, std::decay_t<ParentPath>>
   {
-    return detail::create_path<Key, std::decay_t<ParentPath>>{
-      std::forward<ParentPath>(p)
-    };
+    return {std::forward<ParentPath>(p)};
   }
 
   template <typename Message>
@@ -683,7 +671,7 @@ namespace nbdl::message
     }
     else
     {
-      if constexpr(hana::is_a<detail::create_path_tag, decltype(get_path(m))>)
+      if constexpr(hana::is_a<create_path_tag, decltype(get_path(m))>)
       {
         using Key = typename std::decay_t<decltype(get_path(m))>::key;
         return hana::type_c<
@@ -709,12 +697,12 @@ namespace boost::hana
   };
 
   template <>
-  struct equal_impl<nbdl::message::detail::create_path_tag
-                  , nbdl::message::detail::create_path_tag>
+  struct equal_impl<nbdl::message::create_path_tag
+                  , nbdl::message::create_path_tag>
   {
     template <typename Key, typename ParentPath>
-    static constexpr auto apply(nbdl::message::detail::create_path<Key, ParentPath> const& x
-                              , nbdl::message::detail::create_path<Key, ParentPath> const& y)
+    static constexpr auto apply(nbdl::message::create_path<Key, ParentPath> const& x
+                              , nbdl::message::create_path<Key, ParentPath> const& y)
     {
       return hana::equal(x.parent_path, y.parent_path);
     }
@@ -754,5 +742,17 @@ namespace nbdl
   NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(downstream_read);
   NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(downstream_update);
   NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(downstream_delete);
+
+  // create_path
+
+  template <>
+  struct bind_sequence_impl<message::create_path_tag>
+  {
+    template <typename S, typename F>
+    static constexpr auto apply(S&& s, F&& f)
+    {
+      return bind_sequence(std::forward<S>(s).parent_path, std::forward<F>(f));
+    }
+  };
 }
 #endif
