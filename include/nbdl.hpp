@@ -33,6 +33,8 @@
 #include <nbdl/entity_members.hpp>
 #include <nbdl/get.hpp>
 #include <nbdl/get_path.hpp>
+#include <nbdl/hold.hpp>
+#include <nbdl/hold_lazy.hpp>
 #include <nbdl/macros/NBDL_ENTITY.hpp>
 #include <nbdl/make_consumer.hpp>
 #include <nbdl/make_context.hpp>
@@ -50,6 +52,7 @@
 #include <nbdl/pipe.hpp>
 #include <nbdl/promise.hpp>
 #include <nbdl/run_async.hpp>
+#include <nbdl/run_async_loop.hpp>
 #include <nbdl/run_sync.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>

@@ -7,7 +7,7 @@
 #ifndef NBDL_WEBSOCKET_API_DETAIL_CONVERT_PAYLOAD_HPP
 #define NBDL_WEBSOCKET_API_DETAIL_CONVERT_PAYLOAD_HPP
 
-#include <nbdl/detail/js_val.hpp>
+#include <nbdl/js.hpp>
 #include <nbdl/websocket_api/json_payload.hpp>
 
 #include <emscripten.h>
@@ -32,7 +32,7 @@ namespace nbdl::websocket_api::detail
         {
           return Module.NBDL_DETAIL_JS_GET($0).length;
         }
-      , val.handle()
+      , js::detail::get_handle(val)
       );
       p.resize(len);
       p.clear();
@@ -49,7 +49,7 @@ namespace nbdl::websocket_api::detail
             heap.set(v);
           }
         }
-      , val.handle()
+      , js::detail::get_handle(val)
       , p.data()
       );
     }
@@ -72,8 +72,8 @@ namespace nbdl::websocket_api::detail
             throw 'JSON must be communicated as text.';
           }
         }
-      , val.handle()
-      , p.handle()
+      , js::detail::get_handle(val)
+      , js::detail::get_handle(p)
       );
     }
   };

@@ -64,7 +64,7 @@ namespace
         Module.stringToAscii(str, ptr);
         return ptr;
       }
-    , p.handle()
+    , nbdl::js::detail::get_handle(p)
     );
     std::string str{reinterpret_cast<char*>(ptr)};
     EM_ASM_(
@@ -82,7 +82,7 @@ namespace
       {
         Module.NBDL_DETAIL_JS_SET($0, Pointer_stringify($1, $2));
       }
-    , p.handle()
+    , nbdl::js::detail::get_handle(p)
     , str.data()
     , str.size()
     );

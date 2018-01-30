@@ -61,7 +61,7 @@ namespace nbdl::websocket_api::detail
 
   private:
 
-    friend event_receiver_impl<endpoint_impl>;
+    friend event_receiver_impl<Derived>;
 
     template <typename String>
     void connect(String const&);
@@ -148,7 +148,7 @@ namespace nbdl::websocket_api::detail
     , str.data()
     , str.size()
     , &receiver
-    , websocket.handle()
+    , js::detail::get_handle(websocket)
     );
   }
 
@@ -160,7 +160,7 @@ namespace nbdl::websocket_api::detail
         // readyState 1 is OPEN
         return Module.NBDL_DETAIL_JS_GET($0).readyState == 1;
       }
-    , websocket.handle()
+    , js::detail::get_handle(websocket)
     );
     return result;
   }
@@ -179,7 +179,7 @@ namespace nbdl::websocket_api::detail
       {
         Module.NBDL_DETAIL_JS_GET($0).close();
       }
-    , websocket.handle()
+    , js::detail::get_handle(websocket)
     );
   }
 
@@ -212,8 +212,8 @@ namespace nbdl::websocket_api::detail
           Module.NBDL_DETAIL_JS_GET($0).send(JSON.stringify(
             Module.NBDL_DETAIL_JS_GET($1)));
         }
-      , websocket.handle()
-      , p.handle()
+      , js::detail::get_handle(websocket)
+      , js::detail::get_handle(p)
       );
     }
     else
@@ -222,7 +222,7 @@ namespace nbdl::websocket_api::detail
         {
           Module.NBDL_DETAIL_JS_GET($0).send(Module.HEAPU8.subarray($1, $2).buffer);
         }
-      , websocket.handle()
+      , js::detail::get_handle(websocket)
       , p.data()
       , p.size()
       );
