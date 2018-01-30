@@ -13,6 +13,16 @@
 
 namespace nbdl::message
 {
+  struct upstream_create_tag { };
+  struct upstream_read_tag { };
+  struct upstream_update_tag { };
+  struct upstream_delete_tag { };
+
+  struct downstream_create_tag { };
+  struct downstream_read_tag { };
+  struct downstream_update_tag { };
+  struct downstream_delete_tag { };
+
   template <typename...>
   struct upstream_create;
 
@@ -220,6 +230,10 @@ namespace nbdl::message
   // no_is_confirmed - readable param for no_impl
 
   constexpr no_impl no_is_confirmed{};
+
+  // no_is_private_payload - readable param for no_impl
+
+  constexpr no_impl no_private_payload{};
 
   // make functions
 

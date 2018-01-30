@@ -76,7 +76,7 @@ namespace boost::hana
   };
 }
 
-TEST_CASE("upstream/downstream create message", "[message]")
+TEST_CASE("upstream/downstream create message", "[core]")
 {
   auto m = message::make_upstream_create(
     message::make_create_path<PathKey<2>>(hana::make_tuple(PathKey<1>{1}))
@@ -97,9 +97,25 @@ TEST_CASE("upstream/downstream create message", "[message]")
   CHECK(hana::equal(message::get_path(d1), hana::make_tuple(PathKey<1>{1}, PathKey<2>{2})));
   CHECK(hana::equal(message::get_path(d1), message::get_normalized_path(d1)));
   CHECK(hana::equal(message::get_payload(d1), Payload<2>{42}));
+
+  CHECK(hana::equal(
+    nbdl::bind_sequence(m, hana::make_tuple)
+  , hana::make_tuple(
+      message::make_create_path<PathKey<2>>(hana::make_tuple(PathKey<1>{1}))
+    , Payload<2>{42}
+    )
+  ));
+
+  CHECK(hana::equal(
+    nbdl::bind_sequence(d1, hana::make_tuple)
+  , hana::make_tuple(
+      message::get_path(d1)
+    , Payload<2>{42}
+    )
+  ));
 }
 
-TEST_CASE("upstream/downstream create message with uid", "[message]")
+TEST_CASE("upstream/downstream create message with uid", "[core]")
 {
   using Key = nbdl::variant<PathKey<2>, FakeUid>;
 
@@ -144,7 +160,7 @@ TEST_CASE("upstream/downstream create message with uid", "[message]")
   CHECK(not message::is_confirmed(d2));
 }
 
-TEST_CASE("upstream/downstream read", "[message]")
+TEST_CASE("upstream/downstream read", "[core]")
 {
   auto path = hana::make_tuple(PathKey<1>{1}, PathKey<2>{2});
   auto uid = FakeUid{242};
@@ -189,7 +205,7 @@ TEST_CASE("upstream/downstream read", "[message]")
   CHECK(hana::equal(message::get_payload(d2), payload));
 }
 
-TEST_CASE("upstream/downstream update", "[message]")
+TEST_CASE("upstream/downstream update", "[core]")
 {
   auto path = hana::make_tuple(PathKey<1>{1}, PathKey<2>{2});
   auto uid = FakeUid{242};
@@ -218,7 +234,7 @@ TEST_CASE("upstream/downstream update", "[message]")
   CHECK(not message::is_confirmed(d2));
 }
 
-TEST_CASE("upstream/downstream delete", "[message]")
+TEST_CASE("upstream/downstream delete", "[core]")
 {
   auto path = hana::make_tuple(PathKey<1>{1}, PathKey<2>{2});
   auto uid = FakeUid{242};

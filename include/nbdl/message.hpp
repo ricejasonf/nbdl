@@ -7,10 +7,12 @@
 #ifndef NBDL_MESSAGE_HPP
 #define NBDL_MESSAGE_HPP
 
+#include <nbdl/bind_sequence.hpp>
 #include <nbdl/detail/normalize_path_type.hpp>
 #include <nbdl/fwd/message.hpp>
 
 #include <boost/hana/append.hpp>
+#include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/basic_tuple.hpp>
 #include <boost/hana/optional.hpp>
 #include <type_traits>
@@ -717,6 +719,40 @@ namespace boost::hana
       return hana::equal(x.parent_path, y.parent_path);
     }
   };
+
+#define NBDL_DETAIL_MESSAGE_TAG_OF_IMPL(NAME) \
+  template <typename ...T> \
+  struct tag_of<nbdl::message::NAME<T...>> \
+  { using type = nbdl::message::NAME##_tag; }
+
+  NBDL_DETAIL_MESSAGE_TAG_OF_IMPL(upstream_create);
+  NBDL_DETAIL_MESSAGE_TAG_OF_IMPL(upstream_read);
+  NBDL_DETAIL_MESSAGE_TAG_OF_IMPL(upstream_update);
+  NBDL_DETAIL_MESSAGE_TAG_OF_IMPL(upstream_delete);
+
+  NBDL_DETAIL_MESSAGE_TAG_OF_IMPL(downstream_create);
+  NBDL_DETAIL_MESSAGE_TAG_OF_IMPL(downstream_read);
+  NBDL_DETAIL_MESSAGE_TAG_OF_IMPL(downstream_update);
+  NBDL_DETAIL_MESSAGE_TAG_OF_IMPL(downstream_delete);
 }
 
+namespace nbdl
+{
+#define NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(NAME) \
+  template <> struct bind_sequence_impl<message::NAME##_tag> { \
+    template <typename S, typename F> \
+    static constexpr auto apply(S&& s, F&& f) \
+    { return bind_sequence(std::forward<S>(s).storage, std::forward<F>(f)); } \
+  } \
+
+  NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(upstream_create);
+  NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(upstream_read);
+  NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(upstream_update);
+  NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(upstream_delete);
+
+  NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(downstream_create);
+  NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(downstream_read);
+  NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(downstream_update);
+  NBDL_DETAIL_MESSAGE_BIND_SEQUENCE_IMPL(downstream_delete);
+}
 #endif
