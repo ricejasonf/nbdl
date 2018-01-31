@@ -45,17 +45,31 @@ namespace nbdl::message
 
   namespace detail
   {
+    template <typename Message>
+    constexpr auto get_uid_or_empty_key(Message&& m)
+    {
+      if constexpr (has_uid<Message>)
+      {
+        return get_uid(std::forward<Message>(m));
+      }
+      else if constexpr (std::is_empty<typename std::decay_t<decltype(get_path(m))>::key>::value)
+      {
+        return typename std::decay_t<decltype(get_path(m))>::key{};
+      }
+      // else return void
+    }
+
     constexpr auto get_normalized_create_path = [](auto&& m)
       -> decltype(hana::append(
            get_path(m).parent_path
          , typename std::decay_t<decltype(get_path(m))>::key{
-            get_uid(m)
+            get_uid_or_empty_key(m)
            }
          ))
     {
       return hana::append(
         get_path(std::forward<decltype(m)>(m)).parent_path
-      , get_uid(std::forward<decltype(m)>(m))
+      , get_uid_or_empty_key(std::forward<decltype(m)>(m))
       );
     };
 
