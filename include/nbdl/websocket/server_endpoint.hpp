@@ -25,6 +25,30 @@ namespace nbdl
 {
   namespace hana = boost::hana;
 
+  namespace websocket::detail
+  {
+    using tcp = asio::ip::tcp;
+    constexpr auto server_endpoint_init = [](auto& self, tcp::socket& socket, auto& handler)
+    {
+      nbdl::run_async(
+        hana::make_tuple(
+          websocket::detail::parse_handshake_request()
+        , websocket::detail::send_handshake_response()
+        , [&](tcp::socket&, auto const& auth_token)
+          {
+            handler[endpoint_event::ready](self, auth_token);
+            self._start_reading();
+          }
+        , nbdl::catch_([&](auto&& error)
+          {
+            handler[hana::typeid_(error)](self, std::forward<decltype(error)>(error));
+          })
+        )
+      , socket
+      );
+    };
+  }
+
   template <typename SendMessageImpl, typename Derived>
   struct endpoint_open_impl<nbdl::websocket::server_endpoint_impl<SendMessageImpl, Derived>>
   {
@@ -43,25 +67,7 @@ namespace nbdl
         std::forward<Endpoint>(endpoint).socket
       , std::forward<Queue>(queue)
       , std::forward<Handler>(handler)
-      , [](auto& self, tcp::socket& socket, auto& handler)
-        {
-          nbdl::run_async(
-            hana::make_tuple(
-              websocket::detail::parse_handshake_request()
-            , websocket::detail::send_handshake_response()
-            , [&](tcp::socket&, auto const& auth_token)
-              {
-                handler[endpoint_event::ready](self, auth_token);
-                self._start_reading();
-              }
-            , nbdl::catch_([&](auto&& error)
-              {
-                handler[hana::typeid_(error)](self, std::forward<decltype(error)>(error));
-              })
-            )
-          , socket
-          );
-        }
+      , websocket::detail::server_endpoint_init
       );
     }
   };
