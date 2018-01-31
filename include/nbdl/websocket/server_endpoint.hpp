@@ -54,8 +54,8 @@ namespace nbdl
   {
     using tcp = asio::ip::tcp;
 
-    template <typename Endpoint, typename Queue, typename Handler>
-    static auto apply(Endpoint&& endpoint, Queue&& queue, Handler&& handler)
+    template <typename EndpointInfo, typename Queue, typename Handler>
+    static auto apply(EndpointInfo&& endpoint, Queue&& queue, Handler&& handler)
     {
       using DecayedQueue   = std::decay_t<Queue>;
       using DecayedHandler = std::decay_t<Handler>;
@@ -64,7 +64,7 @@ namespace nbdl
                                             , DecayedHandler
                                             , SendMessageImpl
                                             , Derived>(
-        std::forward<Endpoint>(endpoint).socket
+        std::move(endpoint.socket)
       , std::forward<Queue>(queue)
       , std::forward<Handler>(handler)
       , websocket::detail::server_endpoint_init

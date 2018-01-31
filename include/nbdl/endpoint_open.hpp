@@ -15,8 +15,8 @@ namespace nbdl
 {
   template <typename EndpointInfo, typename SendQueue, typename Handler>
   auto endpoint_open_fn::operator()(EndpointInfo&& info
-                                            , SendQueue&& send_queue
-                                            , Handler&& handler) const
+                                  , SendQueue&& send_queue
+                                  , Handler&& handler) const
   {
     using Tag = hana::tag_of_t<EndpointInfo>;
     using Impl = endpoint_open_impl<Tag>;

@@ -38,7 +38,7 @@ namespace nbdl
       return websocket::detail::endpoint_impl<DecayedQueue
                                             , DecayedHandler
                                             , SendMessageImpl>(
-        socket
+        std::move(socket)
       , std::forward<Queue>(queue)
       , std::forward<Handler>(handler)
       , [ origin = origin

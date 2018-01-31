@@ -107,7 +107,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
         [&, save_event](auto& resolver, tcp::socket& socket)
         {
           return nbdl::endpoint_open(
-            nbdl::websocket::server_endpoint{socket}
+            nbdl::websocket::server_endpoint{std::move(socket)}
           , std::queue<std::string>{}
           , nbdl::endpoint_handler(
               event::on_ready = [&](auto& self, nbdl::auth_token_t const& token)

@@ -81,8 +81,8 @@ namespace nbdl::websocket::detail
     }
 
     template <typename Q, typename H, typename InitFn>
-    endpoint_impl(tcp::socket& s, Q&& queue_, H&& handler_, InitFn&& init)
-      : socket(s)
+    endpoint_impl(tcp::socket&& s, Q&& queue_, H&& handler_, InitFn&& init)
+      : socket(std::move(s))
       , pending_control_frame()
       , handler(std::forward<H>(handler_))
       , reader(detail::make_message_reader(
@@ -108,7 +108,7 @@ namespace nbdl::websocket::detail
     bool is_sending_close();
     auto make_reader_handler(Handler&);
 
-    tcp::socket& socket;
+    tcp::socket socket;
     detail::control_frame<Payload> pending_control_frame;
     Handler handler;
 
