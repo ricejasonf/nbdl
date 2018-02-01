@@ -80,7 +80,7 @@ namespace nbdl
       else
       {
         p.push_api.push(
-          message::to_downstream(m, true)
+          message::to_downstream(m, message::no_is_confirmed)
         );
       }
     }

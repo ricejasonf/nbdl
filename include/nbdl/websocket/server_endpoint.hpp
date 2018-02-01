@@ -28,6 +28,7 @@ namespace nbdl
   namespace websocket::detail
   {
     using tcp = asio::ip::tcp;
+
     constexpr auto server_endpoint_init = [](auto& self, tcp::socket& socket, auto& handler)
     {
       nbdl::run_async(
@@ -39,6 +40,10 @@ namespace nbdl
             handler[endpoint_event::ready](self, auth_token);
             self._start_reading();
           }
+        , nbdl::catch_([&](hana::basic_type<event::bad_request_t>)
+          {
+            handler[event::bad_request](self);
+          })
         , nbdl::catch_([&](auto&& error)
           {
             handler[hana::typeid_(error)](self, std::forward<decltype(error)>(error));

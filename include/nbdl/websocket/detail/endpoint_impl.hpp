@@ -221,17 +221,17 @@ namespace nbdl::websocket::detail
            )
         {
           //expected socket close
-          handler[endpoint_event::close]();
+          handler[endpoint_event::close](self());
         }
         else
         {
-          handler[hana::type_c<std::error_code>](error);
+          handler[hana::type_c<std::error_code>](self(), error);
         }
       })
     , nbdl::catch_([this](auto&& error)
       {
         is_send_queue_running = false;
-        handler[hana::typeid_(error)](std::forward<decltype(error)>(error));
+        handler[hana::typeid_(error)](self(), std::forward<decltype(error)>(error));
       })
     ));
   }
