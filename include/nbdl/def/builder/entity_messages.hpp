@@ -17,8 +17,8 @@
 #include <nbdl/def/builder/entity_message_private_payload.hpp>
 #include <nbdl/def/builder/entity_message_uid.hpp>
 #include <nbdl/detail/make_create_path_type.hpp>
-#include <nbdl/make_store.hpp> // nbdl::not_found
 #include <nbdl/message.hpp>
+#include <nbdl/tags.hpp>
 
 #include <boost/hana.hpp>
 #include <boost/mp11/list.hpp>
@@ -60,10 +60,7 @@ struct make_upstream_messages<nbdl::message::action::create
     Length::value > 0
   , "Upstream message must have a path with at least one key."
   );
-  using CreatePath = decltype(nbdl::message::make_create_path
-    <std::decay_t<decltype(hana::at(std::declval<Path>(), Length{} - hana::size_c<1>))>>(
-      hana::drop_back(std::declval<Path>(), hana::size_c<1>)
-    ));
+  using CreatePath = nbdl::detail::make_create_path_t<Path>;
   using type = mpdef::list<nbdl::message::upstream_create<CreatePath, Uid, Payload, PrivatePayload>>;
 };
 
