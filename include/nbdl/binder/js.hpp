@@ -213,7 +213,7 @@ namespace nbdl::binder::js
       static void apply(js_val& val, Xs const& xs)
       {
         nbdl::string temp = nbdl::util::base64_encode(xs);
-        bind_from(val, temp);
+        bind_to(val, temp);
       }
     };
 

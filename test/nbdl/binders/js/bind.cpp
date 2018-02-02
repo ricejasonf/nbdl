@@ -90,7 +90,7 @@ TEST_CASE("Entity can read and write to and from js::val.", "[binder][js]")
       , hana::make_pair(101, nbdl::string{"bar"})
       , hana::make_pair(102, nbdl::string{"baz"})
       }
-    , nbdl::util::base64_decode(std::string("pleasure."))
+    , nbdl::util::base64_decode(std::string("cGxlYXN1cmUu"))
     })
   ));
 }
