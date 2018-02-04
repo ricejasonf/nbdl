@@ -22,6 +22,7 @@
 #include <boost/callable_traits/return_type.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/mp11/utility.hpp>
+#include <memory>
 #include <type_traits>
 
 namespace nbdl::websocket::detail
@@ -68,7 +69,10 @@ namespace nbdl::websocket::detail
   struct endpoint_impl_tag { };
 
   template <typename Queue, typename Handler, typename SendMessageImpl, typename Derived_ = void>
-  struct endpoint_impl
+  struct endpoint_impl : std::enable_shared_from_this<endpoint_impl<Queue
+                                                                  , Handler
+                                                                  , SendMessageImpl
+                                                                  , Derived_>>
   {
     using hana_tag = endpoint_impl_tag;
     using value_type = typename Queue::value_type;
@@ -93,6 +97,8 @@ namespace nbdl::websocket::detail
       , sender(socket)
       , send_queue(std::forward<Q>(queue_))
       , is_send_queue_running(false)
+      , is_started(false)
+      , is_stopped(false)
     {
       init(self(), socket, handler);
     }
@@ -101,12 +107,16 @@ namespace nbdl::websocket::detail
 
     void send_message(Payload const&);
     void send_close();
-    void _start_reading();
+    void start_messaging();
+    bool stop();
 
   private:
     void start_send_queue();
     bool is_sending_close();
     auto make_reader_handler(Handler&);
+
+    template <typename Key, typename ...Args>
+    void call_handler(Key, Args&& ...);
 
     tcp::socket socket;
     detail::control_frame<Payload> pending_control_frame;
@@ -120,15 +130,19 @@ namespace nbdl::websocket::detail
     detail::message_reader<Payload, ReaderHandler> reader;
     detail::message_sender<Payload> sender;
     Queue send_queue;
-    bool is_send_queue_running = false;
+    bool is_send_queue_running : 1;
+    bool is_started : 1;
+    bool is_stopped : 1;
   };
 
   template <typename Queue, typename Handler, typename SendMessageImpl, typename Derived>
   void endpoint_impl<Queue, Handler, SendMessageImpl, Derived>::send_message(Payload const& p)
   {
+    auto shared_this = this->shared_from_this();
+
     nbdl::run_async(
       hana::make_tuple(
-        nbdl::promise([this](auto& resolver, Payload const& payload)
+        nbdl::promise([this, shared_this](auto& resolver, Payload const& payload)
         {
           nbdl::async_enqueue(resolver, send_queue, payload);
         })
@@ -151,23 +165,37 @@ namespace nbdl::websocket::detail
   }
 
   template <typename Queue, typename Handler, typename SendMessageImpl, typename Derived>
-  void endpoint_impl<Queue, Handler, SendMessageImpl, Derived>::_start_reading()
+  void endpoint_impl<Queue, Handler, SendMessageImpl, Derived>::start_messaging()
   {
-    // Calling this function twice is UB
-    reader.keep_reading();
+    if (not is_started && not is_stopped)
+    {
+      is_started = true;
+
+      reader.keep_reading(this->shared_from_this());
+
+      if (send_queue.size() > 0)
+      {
+        start_send_queue();
+      }
+    }
   }
 
   template <typename Queue, typename Handler, typename SendMessageImpl, typename Derived>
   void endpoint_impl<Queue, Handler, SendMessageImpl, Derived>::start_send_queue()
   {
-    if (is_send_queue_running)
+    if (       is_send_queue_running
+            or is_stopped
+        or not is_started)
     {
       return;
     }
+
+    auto shared_this = this->shared_from_this();
     is_send_queue_running = true;
+
     // run_async_loop until queue is empty
     nbdl::run_async_loop(hana::make_tuple(
-      nbdl::promise([this](auto& resolver)
+      nbdl::promise([this, shared_this](auto& resolver)
       {
         if (is_sending_close())
         {
@@ -216,22 +244,23 @@ namespace nbdl::websocket::detail
     , nbdl::catch_([this](std::error_code error)
       {
         is_send_queue_running = false;
+
         if ( is_sending_close() 
          && (asio::error::eof == error || asio::error::connection_reset == error)
            )
         {
           //expected socket close
-          handler[endpoint_event::close](self());
+          call_handler(endpoint_event::close);
         }
         else
         {
-          handler[hana::type_c<std::error_code>](self(), error);
+          call_handler(hana::type_c<std::error_code>, error);
         }
       })
     , nbdl::catch_([this](auto&& error)
       {
         is_send_queue_running = false;
-        handler[hana::typeid_(error)](self(), std::forward<decltype(error)>(error));
+        call_handler(hana::typeid_(error), std::forward<decltype(error)>(error));
       })
     ));
   }
@@ -251,15 +280,14 @@ namespace nbdl::websocket::detail
       hana::make_pair(read_event::message, [this](auto, auto& frame_ctx)
       {
         // move from the payload object in the reader
-        //handler[endpoint_event::message](self(), std::move(frame_ctx.payload));
-        handler[endpoint_event::message](self(), frame_ctx.payload);
+        call_handler(endpoint_event::message, frame_ctx.payload);
       })
     , hana::make_pair(read_event::close, [this](auto, auto const&)
       {
         // TODO the handler should get some info on why it was closed
         if (is_sending_close())
         {
-          handler[endpoint_event::close](self());
+          call_handler(endpoint_event::close);
         }
         else
         {
@@ -273,13 +301,37 @@ namespace nbdl::websocket::detail
     , hana::make_pair(read_event::pong, [](auto&& ...) { })
     , hana::make_pair(read_event::bad_input, [this](auto&& ...)
       {
-        handler[event::bad_request](self());
+        call_handler(event::bad_request);
       })
     , hana::make_pair(hana::type_c<std::error_code>, [this](std::error_code error, auto const&)
       {
-        handler[hana::type_c<std::error_code>](self(), error);
+        call_handler(hana::type_c<std::error_code>, error);
       })
     );
+  }
+
+  template <typename Queue, typename Handler, typename SendMessageImpl, typename Derived>
+  template <typename Key, typename ...Args>
+  void endpoint_impl<Queue, Handler, SendMessageImpl, Derived>::call_handler(Key key, Args&& ...args)
+  {
+    if (is_stopped)
+    {
+      return;
+    }
+
+    handler[key](self(), std::forward<Args>(args)...);
+  }
+
+  template <typename Queue, typename Handler, typename SendMessageImpl, typename Derived>
+  bool endpoint_impl<Queue, Handler, SendMessageImpl, Derived>::stop()
+  {
+    is_stopped = true;
+    try {
+      socket.shutdown(tcp::socket::shutdown_both);
+    } catch(...) {
+      return false;
+    }
+    return true;
   }
 }
 

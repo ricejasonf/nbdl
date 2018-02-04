@@ -11,6 +11,9 @@ namespace nbdl
 {
   template<typename T>
   struct Endpoint;
+
+  template<typename T>
+  struct EndpointPtr;
 }
 
 #endif

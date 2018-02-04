@@ -47,6 +47,16 @@ namespace nbdl
       endpoint.send_message(std::forward<Message>(message));
     }
   };
+
+  template <typename Tag>
+  struct endpoint_send_message_impl<Tag, hana::when<nbdl::EndpointPtr<Tag>::value>>
+  {
+    template <typename Endpoint, typename Message>
+    static void apply(Endpoint& endpoint, Message&& message)
+    {
+      endpoint_send_message(*endpoint, std::forward<Message>(message));
+    }
+  };
 }
 
 #endif

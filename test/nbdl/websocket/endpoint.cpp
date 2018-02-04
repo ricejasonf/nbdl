@@ -30,7 +30,11 @@ namespace
   , ERROR
   };
 
-  using test_events = std::vector<hana::pair<event_kind, std::string>>;
+  using test_events = std::vector<std::string>;
+  constexpr auto make_test_event = [](event_kind kind, std::string str)
+  {
+    return std::string() + std::to_string(static_cast<int>(kind)) + " - " + str;
+  };
 
   constexpr auto save_test_message = [](auto& events)
   {
@@ -40,15 +44,15 @@ namespace
       return hana::overload_linearly(
         [&, kind](std::string const& value)
         {
-          events.push_back(hana::make_pair(kind, value));
+          events.push_back(make_test_event(kind, value));
         }
       , [&, kind](nbdl::auth_token_t const& token)
         {
-          events.push_back(hana::make_pair(kind, token.value));
+          events.push_back(make_test_event(kind, token.value));
         }
       , [&, kind](auto&& ...)
         {
-          events.push_back(hana::make_pair(kind, std::string{}));
+          events.push_back(make_test_event(kind, std::string{}));
         }
       );
     };
@@ -117,6 +121,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
                 {
                   nbdl::endpoint_send_message(self, msg);
                 }
+                self.start_messaging();
               }
             , event::on_message = [&](auto& self, auto const& message)
               {
@@ -157,6 +162,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
                 {
                   nbdl::endpoint_send_message(self, msg);
                 }
+                self.start_messaging();
               }
             , event::on_message = [&](auto& self, auto const& message)
               {
@@ -195,23 +201,23 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
   auto [server_events, client_events] = run_test(io, run_server_endpoint, run_client_endpoint);
 
   test_events expected_server_events{
-    hana::make_pair(event_kind::READY   , std::string("Ima_auth_token"))
-  , hana::make_pair(event_kind::MESSAGE , std::string("Hello, server! 1"))
-  , hana::make_pair(event_kind::MESSAGE , std::string("Hello, server! 2"))
-  , hana::make_pair(event_kind::MESSAGE , std::string("Hello, server! 3"))
-  , hana::make_pair(event_kind::MESSAGE , std::string("close"))
-  , hana::make_pair(event_kind::CLOSE   , std::string())
+    make_test_event(event_kind::READY   , std::string("Ima_auth_token"))
+  , make_test_event(event_kind::MESSAGE , std::string("Hello, server! 1"))
+  , make_test_event(event_kind::MESSAGE , std::string("Hello, server! 2"))
+  , make_test_event(event_kind::MESSAGE , std::string("Hello, server! 3"))
+  , make_test_event(event_kind::MESSAGE , std::string("close"))
+  , make_test_event(event_kind::CLOSE   , std::string())
   };
 
   CHECK(server_events == expected_server_events);
 
   test_events expected_client_events{
-    hana::make_pair(event_kind::READY   , std::string())
-  , hana::make_pair(event_kind::MESSAGE , std::string("Hello, client! 1"))
-  , hana::make_pair(event_kind::MESSAGE , std::string("Hello, client! 2"))
-  , hana::make_pair(event_kind::MESSAGE , std::string("Hello, client! 3"))
-  , hana::make_pair(event_kind::MESSAGE , std::string("close"))
-  , hana::make_pair(event_kind::CLOSE   , std::string())
+    make_test_event(event_kind::READY   , std::string())
+  , make_test_event(event_kind::MESSAGE , std::string("Hello, client! 1"))
+  , make_test_event(event_kind::MESSAGE , std::string("Hello, client! 2"))
+  , make_test_event(event_kind::MESSAGE , std::string("Hello, client! 3"))
+  , make_test_event(event_kind::MESSAGE , std::string("close"))
+  , make_test_event(event_kind::CLOSE   , std::string())
   };
 
   CHECK(client_events == expected_client_events);

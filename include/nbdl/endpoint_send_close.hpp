@@ -37,6 +37,16 @@ namespace nbdl
       endpoint.send_close();
     }
   };
+
+  template <typename Tag>
+  struct endpoint_send_close_impl<Tag, hana::when<EndpointPtr<Tag>::value>>
+  {
+    template <typename Endpoint>
+    static void apply(Endpoint& endpoint)
+    {
+      endpoint_send_close(*endpoint);
+    }
+  };
 }
 
 #endif

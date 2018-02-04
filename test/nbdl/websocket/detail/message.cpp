@@ -27,8 +27,12 @@ namespace
   };
 
   // string is the payload
-  using test_message  = hana::pair<message_kind, std::string>;
+  using test_message  = std::string;
   using test_messages = std::vector<test_message>;
+  constexpr auto make_test_message = [](message_kind kind, std::string str)
+  {
+    return std::string() + std::to_string(static_cast<int>(kind)) + " - " + str;
+  };
 
   // client sends inputs
   // returns messages received by server
@@ -51,7 +55,7 @@ namespace
           payload = std::string(ctx.payload.size(), 0);
           std::copy(ctx.payload.begin(), ctx.payload.end(), payload.begin());
         }
-        messages.push_back(hana::make_pair(kind, std::move(payload)));
+        messages.push_back(make_test_message(kind, std::move(payload)));
       };
     };
 
@@ -77,7 +81,7 @@ namespace
     nbdl::run_async(hana::make_tuple(
       std::ref(server_socket)
     , nbdl_test::accept()
-    , [&](auto&& ...) { reader.keep_reading(); }
+    , [&](auto&& ...) { reader.keep_reading(std::make_shared<int>(5)); }
     , nbdl::catch_([](auto) { CHECK(false); })
     ));
 
@@ -147,11 +151,11 @@ TEST_CASE("Send and receive messages with interjecting control frames.", "[webso
   test_messages result = run_test(input);
 
   test_messages expected{
-    hana::make_pair(message_kind::DATA , std::string("Hello, world!"))
-  , hana::make_pair(message_kind::DATA , std::string("Hello, world, again!"))
-  , hana::make_pair(message_kind::PING , std::string())
-  , hana::make_pair(message_kind::DATA , std::string("Hello, ping!"))
-  , hana::make_pair(message_kind::CLOSE, std::string())
+    make_test_message(message_kind::DATA , std::string("Hello, world!"))
+  , make_test_message(message_kind::DATA , std::string("Hello, world, again!"))
+  , make_test_message(message_kind::PING , std::string())
+  , make_test_message(message_kind::DATA , std::string("Hello, ping!"))
+  , make_test_message(message_kind::CLOSE, std::string())
   };
 
   CHECK(result == expected);
@@ -162,7 +166,7 @@ TEST_CASE("Handle bad input.", "[websocket]")
   test_messages result = run_test(send_partial_frame("Bad opcode!", 100));
 
   test_messages expected{
-    hana::make_pair(message_kind::BAD_INPUT , std::string())
+    make_test_message(message_kind::BAD_INPUT, std::string())
   };
 
   CHECK(result == expected);

@@ -14,6 +14,7 @@
 
 #include <boost/hana/core/default.hpp>
 #include <boost/hana/core/tag_of.hpp>
+#include <boost/mp11/utility.hpp>
 #include <type_traits>
 
 namespace nbdl
@@ -23,6 +24,8 @@ namespace nbdl
   // Allows opt-in just like hana::Sequence
   namespace detail
   {
+    using namespace boost::mp11;
+
     template <typename E, typename Tag = typename hana::tag_of<E>::type>
     struct endpoint_dispatch
       : std::integral_constant<bool, nbdl::Endpoint<Tag>::value>
@@ -32,16 +35,37 @@ namespace nbdl
     struct endpoint_dispatch<E, E>
       : std::false_type
     { };
+
+    // smart pointer
+
+    template <typename T>
+    using element_type = typename T::element_type;
+
+    template <typename T>
+    using element_type_or_void = mp_eval_if_c<
+      not mp_valid<element_type, T>::value
+    , void
+    , element_type
+    , T
+    >;
   }
 
-
-  template<typename T>
+  template <typename T>
   struct Endpoint
     : std::integral_constant<bool,
            detail::endpoint_dispatch<T>::value
-        || (!hana::is_default<nbdl::endpoint_send_message_impl<hana::tag_of_t<T>>>::value 
-        &&  !hana::is_default<nbdl::endpoint_send_close_impl  <hana::tag_of_t<T>>>::value)
+        or (!hana::is_default<nbdl::endpoint_send_message_impl<hana::tag_of_t<T>>>::value 
+       and  !hana::is_default<nbdl::endpoint_send_close_impl  <hana::tag_of_t<T>>>::value)
       >
+  { };
+
+  template <>
+  struct Endpoint<void>
+    : std::false_type
+  { };
+
+  template <typename T>
+  struct EndpointPtr : nbdl::Endpoint<detail::element_type_or_void<T>>
   { };
 }
 

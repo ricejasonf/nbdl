@@ -20,6 +20,7 @@
 #include <asio.hpp>
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
+#include <memory>
 
 namespace nbdl
 {
@@ -38,7 +39,6 @@ namespace nbdl
         , [&](tcp::socket&, auto const& auth_token)
           {
             handler[endpoint_event::ready](self, auth_token);
-            self._start_reading();
           }
         , nbdl::catch_([&](hana::basic_type<event::bad_request_t>)
           {
@@ -54,8 +54,8 @@ namespace nbdl
     };
   }
 
-  template <typename SendMessageImpl, typename Derived>
-  struct endpoint_open_impl<nbdl::websocket::server_endpoint_impl<SendMessageImpl, Derived>>
+  template <typename SendMessageImpl>
+  struct endpoint_open_impl<nbdl::websocket::server_endpoint_impl<SendMessageImpl, void>>
   {
     using tcp = asio::ip::tcp;
 
@@ -65,10 +65,11 @@ namespace nbdl
       using DecayedQueue   = std::decay_t<Queue>;
       using DecayedHandler = std::decay_t<Handler>;
 
-      return websocket::detail::endpoint_impl<DecayedQueue
-                                            , DecayedHandler
-                                            , SendMessageImpl
-                                            , Derived>(
+      using Impl = websocket::detail::endpoint_impl<DecayedQueue
+                                                  , DecayedHandler
+                                                  , SendMessageImpl>;
+
+      return std::make_shared<Impl>(
         std::move(endpoint.socket)
       , std::forward<Queue>(queue)
       , std::forward<Handler>(handler)

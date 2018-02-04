@@ -10,7 +10,6 @@
 #include <nbdl/websocket/detail/endpoint_impl.hpp>
 
 #include <asio/ip/tcp.hpp>
-#include <string>
 
 namespace nbdl::websocket
 {

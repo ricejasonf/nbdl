@@ -20,7 +20,7 @@ namespace nbdl::websocket
     std::string value;
   };
 
-  template <typename SendMessageImpl>
+  template <typename SendMessageImpl, typename Derived = void>
   struct client_endpoint_impl
   {
     asio::ip::tcp::socket& socket;
@@ -30,6 +30,11 @@ namespace nbdl::websocket
 
   using client_endpoint         = client_endpoint_impl<decltype(detail::send_binary)>;
   using client_endpoint_text    = client_endpoint_impl<decltype(detail::send_text)>;
+
+  template <typename Derived>
+  using client_endpoint_base         = client_endpoint_impl<decltype(detail::send_binary), Derived>;
+  template <typename Derived>
+  using client_endpoint_text_base    = client_endpoint_impl<decltype(detail::send_text), Derived>;
 }
 
 #endif

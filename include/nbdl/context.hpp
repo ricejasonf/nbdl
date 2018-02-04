@@ -143,8 +143,13 @@ namespace nbdl
         return nbdl::make_producer<CellTag>;
       else if constexpr(nbdl::StateConsumer<CellTag>::value)
         return nbdl::make_state_consumer<CellTag>;
-      else // if Consumer
+      else if constexpr(nbdl::Consumer<CellTag>::value)
         return nbdl::make_consumer<CellTag>;
+      else
+        static_assert(
+          std::is_void<CellTag>::value
+        , "Context requires cells to be Producer, Consumer, or StateConsumer"
+        );
     }
 
     template <std::size_t i>
@@ -177,22 +182,22 @@ namespace nbdl
     }
 
     // For default construction.
-    template < std::size_t ...i>
+    template <std::size_t ...i>
     static constexpr auto make_storage_helper(std::index_sequence<i...>, hanax::types<>)
     {
-      return hana::type_c<decltype(hana::make_tuple(
-        hana::traits::declval(make_cell_type<i>())...
-      ))>;
+      return hana::template_<hana::tuple>(
+        make_cell_type<i>()...
+      );
     }
 
     // For single argument construction
     template <std::size_t i1, std::size_t ...i, typename Arg1, typename ...Args>
     static constexpr auto make_storage_helper(std::index_sequence<i1, i...>, hanax::types<Arg1, Args...>)
     {
-      return hana::type_c<decltype(hana::make_tuple(
-        hana::traits::declval(make_cell_type<i1, Arg1>()),
-        hana::traits::declval(make_cell_type<i, Args>())...
-      ))>;
+      return hana::template_<hana::tuple>(
+        make_cell_type<i1, Arg1>(),
+        make_cell_type<i, Args>()...
+      );
     }
 
     using Cells = typename decltype(make_storage_helper(cell_index_sequence, ArgTypes{}))::type;

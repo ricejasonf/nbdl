@@ -82,7 +82,6 @@ namespace nbdl::websocket::detail
   {
     // TODO require continuation opcode
     // (not sure if it would matter)
-
     asio::async_read(
       frame_ctx.socket
     , asio::buffer(frame_ctx.buf_1, 2)
@@ -92,7 +91,9 @@ namespace nbdl::websocket::detail
 
   auto read_extended_length = nbdl::promise([](auto& resolver, auto& frame_ctx)
   {
-    if (frame_ctx.buf_1[1] == 126)
+    uint8_t length_code = frame_ctx.buf_1[1] & 0x7F; // Removes MASK bit
+
+    if (length_code == 126)
     {
       asio::async_read(
         frame_ctx.socket
@@ -100,7 +101,7 @@ namespace nbdl::websocket::detail
       , handle_next(resolver, frame_ctx)
       );
     }
-    else if (frame_ctx.buf_1[1] == 127)
+    else if (length_code == 127)
     {
       asio::async_read(
         frame_ctx.socket
@@ -135,26 +136,28 @@ namespace nbdl::websocket::detail
   inline uint64_t get_payload_length(FrameContext const& x)
   {
     uint64_t length = 0;
+    
+    uint8_t length_code = x.buf_1[1] & 0x7F; // Removes MASK bit
 
-    if (x.buf_1[1] == 126)
+    if (length_code == 126)
     {
       // 16 bit
       for (int i = 0; i < 2; i++)
       {
-        length |= (x.extended_length_buf[i] << (8 * i));
+        length |= (x.extended_length_buf[1 - i] << (8 * i));
       }
     }
-    else if(x.buf_1[1] == 127)
+    else if(length_code == 127)
     {
       // 64 bit
       for (int i = 0; i < 8; i++)
       {
-        length |= (x.extended_length_buf[i] << (8 * i));
+        length |= (x.extended_length_buf[7 - i] << (8 * i));
       }
     }
     else
     {
-      return x.buf_1[1];
+      return length_code;
     }
     return length;
   }
@@ -260,7 +263,8 @@ namespace nbdl::websocket::detail
 
     message_reader(message_reader const&) = delete;
 
-    void keep_reading()
+    template <typename Shared>
+    void keep_reading(Shared shared)
     {
       nbdl::run_async_loop(
         hana::make_tuple(
@@ -284,7 +288,7 @@ namespace nbdl::websocket::detail
             }
             return frame_ctx;
           }
-        , nbdl::catch_([this](auto event)
+        , nbdl::catch_([this, shared = std::move(shared)](auto event)
           {
             handler[hana::typeid_(event)](event, frame_ctx);
           })

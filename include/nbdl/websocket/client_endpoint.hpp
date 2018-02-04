@@ -25,7 +25,7 @@ namespace nbdl
   namespace hana = boost::hana;
 
   template <typename SendMessageImpl>
-  struct endpoint_open_impl<nbdl::websocket::client_endpoint_impl<SendMessageImpl>>
+  struct endpoint_open_impl<nbdl::websocket::client_endpoint_impl<SendMessageImpl, void>>
   {
     template <typename Endpoint, typename Queue, typename Handler>
     static auto apply(Endpoint&& endpoint, Queue&& queue, Handler&& handler)
@@ -35,9 +35,11 @@ namespace nbdl
 
       auto [socket, auth_token, origin] = std::forward<Endpoint>(endpoint);
 
-      return websocket::detail::endpoint_impl<DecayedQueue
-                                            , DecayedHandler
-                                            , SendMessageImpl>(
+      using Impl = websocket::detail::endpoint_impl<DecayedQueue
+                                                  , DecayedHandler
+                                                  , SendMessageImpl>;
+
+      return std::make_shared<Impl>(
         std::move(socket)
       , std::forward<Queue>(queue)
       , std::forward<Handler>(handler)
@@ -51,7 +53,6 @@ namespace nbdl
             , websocket::detail::parse_handshake_response()
             , [&](auto&&)
               {
-                self._start_reading();
                 handler[endpoint_event::ready](self);
               }
             , nbdl::catch_([&](auto&& error)
