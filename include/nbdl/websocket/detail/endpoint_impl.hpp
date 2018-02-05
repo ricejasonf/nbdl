@@ -103,6 +103,7 @@ namespace nbdl::websocket::detail
       , is_send_queue_running(false)
       , is_started(false)
       , is_stopped(false)
+      , is_close_received(false)
     {
       init(self(), socket, handler);
     }
@@ -117,6 +118,7 @@ namespace nbdl::websocket::detail
   private:
     void start_send_queue();
     bool is_sending_close();
+    void mark_is_close_received();
     auto make_reader_handler(Handler&);
 
     template <typename Key, typename ...Args>
@@ -137,6 +139,7 @@ namespace nbdl::websocket::detail
     bool is_send_queue_running : 1;
     bool is_started : 1;
     bool is_stopped : 1;
+    bool is_close_received : 1;
   };
 
   template <typename Queue, typename Handler, typename SendMessageImpl, typename Derived>
@@ -212,6 +215,13 @@ namespace nbdl::websocket::detail
               // after sending the close frame
               resolver.terminate();
             })
+          , [&](auto& /*sender*/)
+            {
+              if (is_close_received)
+              {
+                call_handler(endpoint_event::close);
+              }
+            }
           , nbdl::catch_([&](std::error_code error_code)
             {
               resolver.reject(error_code);
@@ -276,6 +286,12 @@ namespace nbdl::websocket::detail
   }
 
   template <typename Queue, typename Handler, typename SendMessageImpl, typename Derived>
+  void endpoint_impl<Queue, Handler, SendMessageImpl, Derived>::mark_is_close_received()
+  {
+    is_close_received = true;
+  }
+
+  template <typename Queue, typename Handler, typename SendMessageImpl, typename Derived>
   auto endpoint_impl<Queue, Handler, SendMessageImpl, Derived>::make_reader_handler(Handler&)
   {
     namespace read_event = detail::read_event;
@@ -288,7 +304,8 @@ namespace nbdl::websocket::detail
       })
     , hana::make_pair(read_event::close, [this](auto, auto const&)
       {
-        // TODO the handler should get some info on why it was closed
+        mark_is_close_received();
+
         if (is_sending_close())
         {
           call_handler(endpoint_event::close);
