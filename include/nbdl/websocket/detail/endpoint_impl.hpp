@@ -65,19 +65,23 @@ namespace nbdl::websocket::detail
       }
     }
   };
+
+  template <typename Derived, typename RawImpl>
+  using coalesce_derived_t = boost::mp11::mp_if_c<std::is_void<Derived>::value, RawImpl, Derived>;
   
   struct endpoint_impl_tag { };
 
   template <typename Queue, typename Handler, typename SendMessageImpl, typename Derived_ = void>
-  struct endpoint_impl : std::enable_shared_from_this<endpoint_impl<Queue
-                                                                  , Handler
-                                                                  , SendMessageImpl
-                                                                  , Derived_>>
+  struct endpoint_impl
+    : std::enable_shared_from_this<coalesce_derived_t<Derived_, endpoint_impl<Queue
+                                                                            , Handler
+                                                                            , SendMessageImpl
+                                                                            , Derived_>>>
   {
     using hana_tag = endpoint_impl_tag;
     using value_type = typename Queue::value_type;
     using Payload = value_type;
-    using Derived = boost::mp11::mp_if_c<std::is_void<Derived_>::value, endpoint_impl, Derived_>;
+    using Derived = coalesce_derived_t<Derived_, endpoint_impl>;
 
     inline Derived& self()
     {
