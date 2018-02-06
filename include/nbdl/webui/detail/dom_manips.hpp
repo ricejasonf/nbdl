@@ -9,6 +9,7 @@
 
 #include <mpdef/list.hpp>
 #include <nbdl/catch.hpp>
+#include <nbdl/detail/default_constructible_lambda.hpp>
 #include <nbdl/detail/match_if.hpp>
 #include <nbdl/fwd/webui/detail/dom_manips.hpp>
 #include <nbdl/store_range.hpp>
@@ -478,12 +479,12 @@ namespace nbdl::webui::detail
     action_fn() = delete;
   };
 
-  template <typename Store, typename ClassName, typename PathSpec, typename Pred>
-  struct mut_action_fn<html::tag::add_class_if_t, Store, ClassName, PathSpec, Pred>
+  template <typename Store, typename ClassName, typename PathSpec, typename Pred_>
+  struct mut_action_fn<html::tag::add_class_if_t, Store, ClassName, PathSpec, Pred_>
   {
     Store store;
     emscripten::val el;
-
+    using Pred = nbdl::detail::default_constructible_lambda<Pred_>;
 
     mut_action_fn(Store s)
       : store(s)
@@ -504,7 +505,6 @@ namespace nbdl::webui::detail
       {
         el["classList"].template call<void>(
           Pred{}(value) ? "add" : "remove"
-        , to_json_val("class"_s)
         , to_json_val(ClassName{})
         );
       });
