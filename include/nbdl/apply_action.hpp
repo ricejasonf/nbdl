@@ -51,7 +51,7 @@ namespace nbdl
     template <typename Store, typename Action>
     static constexpr auto apply(Store& s, Action&& a)
     {
-      if constexpr(std::is_assignable<Store, Action>::value)
+      if constexpr(std::is_assignable<Store&, Action>::value)
       {
         s = std::forward<Action>(a);
         return hana::true_c;
