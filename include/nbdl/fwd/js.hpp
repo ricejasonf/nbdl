@@ -20,16 +20,36 @@ namespace nbdl::js
 
   inline void init();
 
-  namespace detail
+  //
+  // is_js_val
+  //
+
+  template <typename T>
+  constexpr bool is_js_val_impl = false;
+
+  template <typename T>
+  constexpr bool is_js_val = is_js_val_impl<std::decay_t<T>>;
+
+  //
+  // get_handle - Used to get javascript handle
+  //
+
+  struct get_handle_fn
   {
-    struct get_handle_fn;
-  }
+    template <typename T>
+    auto operator()(T const& v) const
+      -> std::enable_if_t<is_js_val<T>, int>;
+  };
+
+  constexpr get_handle_fn get_handle{};
 
   //
   // val - This represents a handle to a value in javascript. The copy
   //       constructor creates new entries in the js hash table lookup
   //       so it is not good to copy it around much.
   //
+
+  struct callback_t;
 
   struct val : private ::nbdl::detail::js_val
   {
@@ -38,12 +58,13 @@ namespace nbdl::js
     val(val const& other)
     { copy(other); }
 
-    val(::nbdl::detail::js_val const& other)
+    template <typename JsVal>
+    val(JsVal const& other, std::enable_if_t<is_js_val<JsVal>, int> = 0)
     { copy(other); }
 
     private:
 
-    friend detail::get_handle_fn;
+    friend get_handle_fn;
 
     template <typename T>
     void copy(T const& other);
@@ -64,7 +85,7 @@ namespace nbdl::js
     private:
 
     friend callback_fn;
-    friend detail::get_handle_fn;
+    friend get_handle_fn;
     std::unique_ptr<webui::detail::event_receiver> receiver;
 
     explicit callback_t(int, std::unique_ptr<webui::detail::event_receiver>&& r)

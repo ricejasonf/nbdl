@@ -35,4 +35,16 @@ TEST_CASE("Create a callback and invoke it in javascript land.", "[js]")
   );
 
   CHECK(result);
+
+  // check copy to js::val
+  result = false;
+
+  EM_ASM_(
+    {
+      Module.NBDL_DETAIL_JS_GET($0)("moo");
+    }
+  , get_handle(nbdl::js::val{cb})
+  );
+
+  CHECK(result);
 }

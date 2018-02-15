@@ -23,6 +23,19 @@ namespace nbdl::js
   }
 
   //
+  // is_js_val
+  //
+
+  template <>
+  constexpr bool is_js_val_impl<val> = true;
+
+  template <>
+  constexpr bool is_js_val_impl<::nbdl::detail::js_val> = true;
+
+  template <>
+  constexpr bool is_js_val_impl<callback_t> = true;
+
+  //
   // val
   //
 
@@ -32,7 +45,7 @@ namespace nbdl::js
     EM_ASM_(
       { Module.NBDL_DETAIL_JS_SET($0, Module.NBDL_DETAIL_JS_GET($1)); }
     , handle()
-    , other.handle()
+    , nbdl::js::get_handle(other)
     );
   }
 
@@ -73,31 +86,14 @@ namespace nbdl::js
     return callback_t{int{}, std::move(receiver)};
   } 
 
+  template <typename T>
+  auto get_handle_fn::operator()(T const& v) const
+    -> std::enable_if_t<is_js_val<T>, int>
+  { return v.handle(); }
+
   namespace detail
   {
-    template <typename T>
-    constexpr bool is_js_val_impl = false;
-
-    template <>
-    constexpr bool is_js_val_impl<val> = true;
-
-    template <>
-    constexpr bool is_js_val_impl<::nbdl::detail::js_val> = true;
-
-    template <>
-    constexpr bool is_js_val_impl<callback_t> = true;
-
-    template <typename T>
-    constexpr bool is_js_val = is_js_val_impl<std::decay_t<T>>;
-
-    struct get_handle_fn
-    {
-      template <typename T>
-      auto operator()(T const& v) const
-        -> std::enable_if_t<is_js_val<T>, int>
-      { return v.handle(); }
-    };
-
+    // deprecated
     constexpr get_handle_fn get_handle{};
   }
 }
