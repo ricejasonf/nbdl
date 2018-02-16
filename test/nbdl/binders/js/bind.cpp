@@ -94,3 +94,30 @@ TEST_CASE("Entity can read and write to and from js::val.", "[binder][js]")
     })
   ));
 }
+
+TEST_CASE("BindableSequence does not yield array for nullary and unary sequences.", "[js]")
+{
+  using nbdl::binder::js::bind_from;
+  using nbdl::binder::js::bind_to;
+
+  using T = hana::tuple<hana::tuple<int, hana::type<void>>>;
+
+  nbdl::js::init();
+
+  auto js_val = nbdl::js::val{};
+  auto input = hana::make_tuple(hana::make_tuple(int{5}, hana::type_c<void>));
+  auto output = T{};
+
+  bind_to(js_val, input);
+  bind_from(js_val, output);
+
+  bool result = EM_ASM_INT(
+    {
+      return Module.NBDL_DETAIL_JS_GET($0) == 5;
+    }
+  , nbdl::js::get_handle(js_val)
+  );
+  CHECK(result);
+
+  CHECK(hana::equal(input, output));
+}

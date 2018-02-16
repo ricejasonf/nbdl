@@ -157,28 +157,39 @@ namespace nbdl::binder::js
     struct bind_to_impl<T, hana::when<nbdl::BindableSequence<T>::value
                               and not nbdl::BindableMap<T>::value>>
     {
-      template <typename Xs>
-      static void apply(js_val& val, Xs const& xs)
+      template <typename Sequence>
+      static void apply(js_val& val, Sequence const& sequence)
       {
         js_val child_val{};
         EM_ASM_({ Module.NBDL_DETAIL_JS_SET($0, []); }, val.handle());
 
-        nbdl::bind_sequence(xs, [&](auto& ...y)
-        {
-          hana::for_each(std::forward_as_tuple(y...),  [&](auto& x)
+        nbdl::bind_sequence(sequence, hana::overload(
+          []()
           {
-            bind_to(child_val, x);
-            EM_ASM_(
-              {
-                Module.NBDL_DETAIL_JS_GET($0).push(
-                  Module.NBDL_DETAIL_JS_GET($1)
-                );
-              }
-            , val.handle()
-            , child_val.handle()
-            );
-          });
-        });
+            // no members... do nothing
+          }
+        , [&](auto& x)
+          {
+            // singleton does not need to be wrapped in array
+            bind_to(val, x);
+          }
+        , [&](auto& x1, auto& x2, auto& ...xs)
+          {
+            hana::for_each(std::forward_as_tuple(x1, x2, xs...),  [&](auto& x)
+            {
+              bind_to(child_val, x);
+              EM_ASM_(
+                {
+                  Module.NBDL_DETAIL_JS_GET($0).push(
+                    Module.NBDL_DETAIL_JS_GET($1)
+                  );
+                }
+              , val.handle()
+              , child_val.handle()
+              );
+            });
+          }
+        ));
       }
     };
 
@@ -321,32 +332,43 @@ namespace nbdl::binder::js
     struct bind_from_impl<T, hana::when<nbdl::BindableSequence<T>::value
                                 and not nbdl::BindableMap<T>::value>>
     {
-      template <typename Xs>
-      static void apply(js_val const& val, Xs& xs)
+      template <typename Sequence>
+      static void apply(js_val const& val, Sequence& sequence)
       {
         js_val child_val{};
         int i = 0;
 
-        nbdl::bind_sequence(xs, [&](auto& ...y)
-        {
-          hana::for_each(std::forward_as_tuple(y...),  [&](auto& x)
+        nbdl::bind_sequence(sequence, hana::overload(
+          []()
           {
-            EM_ASM_(
-              {
-                Module.NBDL_DETAIL_JS_SET($1,
-                  Module.NBDL_DETAIL_JS_GET($0)[$2]
-                );
-              }
-            , val.handle()
-            , child_val.handle()
-            , i
-            );
+            // no members... do nothing
+          }
+        , [&](auto& x)
+          {
+            // singleton does not need to be wrapped in array
+            bind_from(val, x);
+          }
+        , [&](auto& x1, auto& x2, auto& ...xs)
+          {
+            hana::for_each(std::forward_as_tuple(x1, x2, xs...),  [&](auto& x)
+            {
+              EM_ASM_(
+                {
+                  Module.NBDL_DETAIL_JS_SET($1,
+                    Module.NBDL_DETAIL_JS_GET($0)[$2]
+                  );
+                }
+              , val.handle()
+              , child_val.handle()
+              , i
+              );
 
-            bind_from(child_val, x);
+              bind_from(child_val, x);
 
-            ++i;
-          });
-        });
+              ++i;
+            });
+          }
+        ));
       }
     };
 
