@@ -312,10 +312,6 @@ namespace nbdl
           if (nbdl::apply_message(store, m))
           {
             // the state changed
-            if constexpr(message::is_upstream<Message>)
-            {
-              propagate_downstream(m);
-            }
             notify_state_consumers(message::get_path(m));
           }
         }
