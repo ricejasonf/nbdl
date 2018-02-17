@@ -56,13 +56,7 @@ namespace nbdl
     , "nbdl::match_path(store, path, fns...) requires path must be a hana::Sequence"
     );
 
-    // When path is empty match behaves like an identity operation
-    // and does not require the `s` to be a Store
-    if constexpr(!nbdl::Store<Store>::value)
-    {
-      fn(std::forward<Store>(s));
-    }
-    else if constexpr(!decltype(hana::is_empty(p)){})
+    if constexpr(not decltype(hana::is_empty(p))::value)
     {
       auto helper = detail::match_path_helper_fn<Path, decltype(fn)>{p, std::move(fn)};
 
@@ -72,14 +66,23 @@ namespace nbdl
       , std::move(helper)
       );
     }
-    else if (nbdl::Store<Store>::value)
+    else if constexpr(nbdl::Store<Store>::value)
     {
       nbdl::match(
         std::forward<Store>(s)
       , std::move(fn)
       );
     }
+    else
+    {
+      // When path is empty match behaves like an identity operation
+      // and does not require the `s` to be a Store
+      // static_assert(not nbdl::Store<Store>::value);
+      // static_assert(decltype(hana::is_empty(p))::value);
+
+      fn(std::forward<Store>(s));
+    }
   };
-} // nbdl
+}
 
 #endif
