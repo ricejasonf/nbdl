@@ -248,6 +248,7 @@ namespace test_context {
   template<typename PushApi, typename T = void>
   struct producer
   {
+    static_assert(nbdl::Store<PushApi>::value);
     using hana_tag = test_context::producer_tag;
     PushApi push_api;
     T t_;
@@ -262,6 +263,7 @@ namespace test_context {
   template<typename PushApi>
   struct producer<PushApi, void>
   {
+    static_assert(nbdl::Store<PushApi>::value);
     using hana_tag = test_context::producer_tag;
 
     using MessageVariant = typename nbdl::message_api<
@@ -282,6 +284,7 @@ namespace test_context {
   template<typename PushApi, typename T = void>
   struct consumer
   {
+    static_assert(nbdl::Store<PushApi>::value);
     using hana_tag = test_context::consumer_tag;
 
     using MessageVariant = typename nbdl::message_api<
@@ -304,6 +307,7 @@ namespace test_context {
   template<typename PushApi>
   struct consumer<PushApi, void>
   {
+    static_assert(nbdl::Store<PushApi>::value);
     using hana_tag = test_context::consumer_tag;
 
     using MessageVariant = typename nbdl::message_api<

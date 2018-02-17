@@ -101,6 +101,10 @@ namespace nbdl
       public:
 
       using tag = tag;
+      using hana_tag = context_detail::store_tag;
+      friend apply_message_impl<hana_tag>;
+      friend match_impl<hana_tag>;
+      friend get_impl<hana_tag>;
 
       push_upstream_api(context& c) : ctx(c) { }
 
@@ -120,6 +124,10 @@ namespace nbdl
       public:
 
       using tag = tag;
+      using hana_tag = context_detail::store_tag;
+      friend apply_message_impl<hana_tag>;
+      friend match_impl<hana_tag>;
+      friend get_impl<hana_tag>;
 
       push_downstream_api(context& c) : ctx(c) { }
 
