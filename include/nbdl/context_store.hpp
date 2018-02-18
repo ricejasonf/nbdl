@@ -67,7 +67,14 @@ namespace nbdl
     static constexpr void apply(Store&& s, Key&&, Fn&& fn)
     {
       // just proxy to the contained store
-      std::forward<Fn>(fn)(std::forward<Store>(s).store);
+      if constexpr(nbdl::Store<S>::value)
+      {
+        nbdl::match(std::forward<Store>(s).store, std::forward<Fn>(fn));
+      }
+      else
+      {
+        std::forward<Fn>(fn)(std::forward<Store>(s).store);
+      }
     }
   };
 
