@@ -130,11 +130,16 @@ namespace nbdl
         return type_id;
       }
 
-      //calls overload function with type type
-      //used for serialization
+      // calls overload function with type type
+      // used for serialization
       template <typename Fn>
       void match_by_type(int type_id_x, Fn&& fn) const
       {
+        if (not (type_id_x >= 0 and type_id_x < static_cast<int>(sizeof...(Tn) + 1)))
+        {
+          return;
+        }
+
         call_by_type(type_id_x, std::forward<Fn>(fn));
       }
 
