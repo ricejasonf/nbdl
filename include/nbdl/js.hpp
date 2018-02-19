@@ -12,8 +12,17 @@
 #include <nbdl/macros/NBDL_JS_PROMISE.hpp>
 #include <nbdl/webui/detail/event_receiver.hpp>
 
+#include <boost/hana/core/when.hpp>
+#include <boost/hana/equal.hpp>
 #include <emscripten.h>
 #include <type_traits>
+
+//
+// NBDL_JS_TRANSFORM - transforms a nbdl::js::val
+//
+#define NBDL_JS_TRANSFORM(val, F) EM_ASM_({ \
+  Module.NBDL_DETAIL_JS_SET($0, F(Module.NBDL_DETAIL_JS_GET($0))); \
+  } , nbdl::js::get_handle(val))
 
 namespace nbdl::js
 {
@@ -84,7 +93,7 @@ namespace nbdl::js
     );
 
     return callback_t{int{}, std::move(receiver)};
-  } 
+  }
 
   template <typename T>
   auto get_handle_fn::operator()(T const& v) const
@@ -96,6 +105,25 @@ namespace nbdl::js
     // deprecated
     constexpr get_handle_fn get_handle{};
   }
+}
+
+namespace boost::hana
+{
+  // Comparable
+
+  template <typename T, typename U>
+  struct equal_impl<T, U, when<nbdl::js::is_js_val<T> and nbdl::js::is_js_val<U>>>
+  {
+    template <typename X, typename Y>
+    static bool apply(X const& x, Y const& y)
+    {
+      return EM_ASM_INT(
+        { return x == y; }
+      , nbdl::js::get_handle(x)
+      , nbdl::js::get_handle(y)
+      );
+    }
+  };
 }
 
 #endif
