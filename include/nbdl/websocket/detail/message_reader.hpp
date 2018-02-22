@@ -174,7 +174,7 @@ namespace nbdl::websocket::detail
     asio::async_read(
       frame_ctx.socket
     , asio::buffer(&payload[current_offset], length)
-    , [&](auto error_code, std::size_t)
+    , [&resolver, &payload, &frame_ctx, length](auto error_code, std::size_t)
       {
         if (error_code)
         {
@@ -207,7 +207,7 @@ namespace nbdl::websocket::detail
     asio::async_read(
       frame_ctx.socket
     , asio::buffer(payload)
-    , [&](auto error_code, std::size_t)
+    , [&resolver, &payload, &frame_ctx, length](auto error_code, std::size_t)
       {
         if (error_code)
         {
