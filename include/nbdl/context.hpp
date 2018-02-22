@@ -65,6 +65,7 @@ namespace nbdl
 
       using tag = Tag;
       using hana_tag = context_detail::store_tag;
+      using channel = message::channel::upstream;
       friend apply_message_impl<hana_tag>;
       friend match_impl<hana_tag>;
       friend get_impl<hana_tag>;
@@ -102,6 +103,7 @@ namespace nbdl
 
       using tag = tag;
       using hana_tag = context_detail::store_tag;
+      using channel = message::channel::upstream;
       friend apply_message_impl<hana_tag>;
       friend match_impl<hana_tag>;
       friend get_impl<hana_tag>;
@@ -125,6 +127,7 @@ namespace nbdl
 
       using tag = tag;
       using hana_tag = context_detail::store_tag;
+      using channel = message::channel::downstream;
       friend apply_message_impl<hana_tag>;
       friend match_impl<hana_tag>;
       friend get_impl<hana_tag>;
@@ -483,8 +486,10 @@ namespace nbdl
     template <typename Store, typename Message>
     static constexpr auto apply(Store& s, Message&& m)
     {
-      static_assert(nbdl::UpstreamMessage<Message>::value,
-        "nbdl::context::push_upstream_api requires an UpstreamMessage");
+      static_assert(
+        std::is_same_v<typename Store::channel, decltype(message::get_channel(m))>
+      , "nbdl::context::push_upstream_api requires an UpstreamMessage"
+      );
       s.ctx.push_message(std::forward<Message>(m));
       return hana::true_c;
     }
