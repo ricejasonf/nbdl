@@ -6,6 +6,7 @@
 //
 
 #include <nbdl/context_store.hpp>
+#include <nbdl/get_path.hpp>
 #include <nbdl/match_path.hpp>
 #include <nbdl/message.hpp>
 
@@ -28,6 +29,7 @@ TEST_CASE("Make a store for use in nbdl::context", "[context_store][make_store]"
   auto check_type = hana::typeid_(store) == hana::type_c<nbdl::context_store_t<hana::tuple<int>>>;
   bool check_1 = false;
   bool check_2 = false;
+  bool check_3 = false;
 
   static_assert(decltype(check_type)::value, "Expecting type nbdl::context_store_t<hana::tuple<int>>.");
 
@@ -53,6 +55,9 @@ TEST_CASE("Make a store for use in nbdl::context", "[context_store][make_store]"
     check_2 = value == 42;
   });
 
+  check_3 = nbdl::get_path(store, hana::make_tuple(hana::type_c<void>, hana::type_c<int>)) == 42;
+
   CHECK(check_1);
   CHECK(check_2);
+  CHECK(check_3);
 }
