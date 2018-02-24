@@ -118,7 +118,7 @@ namespace boost::hana
     static bool apply(X const& x, Y const& y)
     {
       return EM_ASM_INT(
-        { return x == y; }
+        { return Module.NBDL_DETAIL_JS_GET($0) === Module.NBDL_DETAIL_JS_GET($1); }
       , nbdl::js::get_handle(x)
       , nbdl::js::get_handle(y)
       );

@@ -56,11 +56,19 @@ namespace nbdl::js
     val() = default;
 
     val(val const& other)
-    { copy(other); }
+    {
+      copy(other);
+    }
 
     template <typename JsVal>
     val(JsVal const& other, std::enable_if_t<is_js_val<JsVal>, int> = 0)
     { copy(other); }
+
+    val& operator=(val const& other)
+    {
+      copy(other);
+      return *this;
+    }
 
     private:
 
