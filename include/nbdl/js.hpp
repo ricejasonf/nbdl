@@ -58,6 +58,11 @@ namespace nbdl::js
     );
   }
 
+  inline void val::unregister()
+  {
+    EM_ASM_({ delete Module.nbdl_detail_json_val[$0]; }, handle());
+  }
+
   //
   // callback
   //

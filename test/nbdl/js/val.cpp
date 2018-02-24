@@ -46,3 +46,23 @@ TEST_CASE("Copy val.", "[js]")
   CHECK(hana::equal(val1, expected1));
   CHECK(hana::equal(val2, expected2));
 }
+
+TEST_CASE("Move val should unregister js value before delete.", "[js]")
+{
+  nbdl::js::init();
+
+  nbdl::js::val val1;
+  nbdl::js::val val2;
+  nbdl::js::val expected1;
+  nbdl::js::val expected2;
+
+  NBDL_JS_TRANSFORM(val1, function(x) { return 42; });
+  val2 = std::move(val1);
+  NBDL_JS_TRANSFORM(val2, function(x) { return x + x; });
+
+  NBDL_JS_TRANSFORM(expected1, function(x) { return undefined; });
+  NBDL_JS_TRANSFORM(expected2, function(x) { return 84; });
+
+  CHECK(hana::equal(val1, expected1));
+  CHECK(hana::equal(val2, expected2));
+}

@@ -60,13 +60,28 @@ namespace nbdl::js
       copy(other);
     }
 
+    val(val&& other)
+    {
+      copy(other);
+      other.unregister();
+    }
+
     template <typename JsVal>
     val(JsVal const& other, std::enable_if_t<is_js_val<JsVal>, int> = 0)
-    { copy(other); }
+    {
+      copy(other);
+    }
 
     val& operator=(val const& other)
     {
       copy(other);
+      return *this;
+    }
+
+    val& operator=(val&& other)
+    {
+      copy(other);
+      other.unregister();
       return *this;
     }
 
@@ -76,6 +91,8 @@ namespace nbdl::js
 
     template <typename T>
     void copy(T const& other);
+
+    void unregister();
   };
 
   //
