@@ -8,6 +8,8 @@
 #define NBDL_UTIL_BASE64_ENCODE_HPP
 
 #include <array>
+#include <cassert>
+#include <iterator>
 #include <string>
 
 namespace nbdl::util
@@ -21,14 +23,20 @@ namespace nbdl::util
 
     static constexpr int const offsets[4]{ 26, 20, 14, 8 };
 
-    template <typename Output>
-    void encode_fragment(Output& output, uint32_t fragment, int byte_length)
+    template <typename OutputItr>
+    void encode_fragment(OutputItr& output_itr, uint32_t fragment, int byte_length)
     {
       if (byte_length == 0) return;
       for (int i = 0; i <= byte_length; i++)
       {
-        output.push_back(lookup[(fragment & (0x3F << offsets[i])) >> offsets[i]]);
+        *output_itr = lookup[(fragment & (0x3F << offsets[i])) >> offsets[i]];
+        ++output_itr;
       }
+    }
+
+    inline constexpr int encoding_length_padded(int n)
+    {
+      return 4*n/3 + ((4 - ((4*n/3) % 4)) % 4);
     }
   }
 
@@ -41,8 +49,8 @@ namespace nbdl::util
       static_assert(sizeof(buffer_value_t) == 1);
       static_assert(sizeof(uint32_t) == 4);
 
-      std::string output;
-      output.reserve(buffer.size() * (3 / 4));
+      std::string output(base64_detail::encoding_length_padded(buffer.size()), '=');
+      auto output_itr = output.begin();
 
       int const length          = buffer.size();
       int const extra_length    = length % 3;
@@ -56,7 +64,7 @@ namespace nbdl::util
           | buffer[i + 1] << 16
           | buffer[i + 2] << 8
           ;
-        base64_detail::encode_fragment(output, fragment, 3);
+        base64_detail::encode_fragment(output_itr, fragment, 3);
       }
 
       uint32_t extras = 0;
@@ -64,12 +72,9 @@ namespace nbdl::util
       {
         extras |= buffer[round_length + i] << (8 * (3 - i));
       }
-      base64_detail::encode_fragment(output, extras, extra_length);
+      base64_detail::encode_fragment(output_itr, extras, extra_length);
 
-      for (int i = 0; i < padding_length; i++)
-      {
-        output.push_back('=');
-      }
+      assert(output_itr + padding_length == output.end());
 
       return output;
     }

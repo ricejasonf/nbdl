@@ -10,6 +10,7 @@
 #include <nbdl/js.hpp>
 #include <nbdl/match.hpp>
 #include <nbdl/string.hpp>
+#include <nbdl/uid.hpp>
 #include <nbdl/util/base64_decode.hpp>
 #include <nbdl/util/base64_encode.hpp>
 #include <nbdl/variant.hpp>
@@ -118,6 +119,24 @@ TEST_CASE("BindableSequence does not yield array for nullary and unary sequences
   , nbdl::js::get_handle(js_val)
   );
   CHECK(result);
+
+  CHECK(hana::equal(input, output));
+}
+
+TEST_CASE("Bind nbdl::uid to from js", "[js]")
+{
+  using nbdl::binder::js::bind_from;
+  using nbdl::binder::js::bind_to;
+
+  auto gen = nbdl::make_uid_generator();
+
+  nbdl::uid input = gen();
+  nbdl::uid output{};
+
+  nbdl::js::val js_val;
+  
+  bind_to(js_val, input);
+  bind_from(js_val, output);
 
   CHECK(hana::equal(input, output));
 }

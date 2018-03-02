@@ -9,6 +9,8 @@
 #include <catch.hpp>
 #include <nbdl/uid.hpp>
 
+#include <unordered_set>
+
 namespace hana = boost::hana;
 
 # if 0
@@ -32,9 +34,11 @@ namespace
 }
 #endif
 
-TEST_CASE("Smoke test uid generation", "[uid]")
+static_assert(nbdl::Buffer<nbdl::uid>::value, "nbdl::uid is a nbdl::Buffer");
+
+TEST_CASE("Smoke test uid generation", "[core]")
 {
-  auto gen = nbdl::detail::make_uid_generator();
+  auto gen = nbdl::make_uid_generator();
 
   {
     nbdl::uid foo = gen();
@@ -79,4 +83,35 @@ TEST_CASE("Smoke test uid generation", "[uid]")
     nbdl::uid bar{foo};
     CHECK(hana::equal(foo, bar));
   }
+}
+
+TEST_CASE("nbdl::uid is Hashable", "[core]")
+{
+  auto gen = nbdl::make_uid_generator();
+
+  {
+    // DefaultConstructible
+    nbdl::uid x{};
+    nbdl::uid y{};
+
+    // CopyAssignable
+    x = gen();
+    y = gen();
+
+    // Swappable
+    std::swap(x, y);
+
+    // Descructible
+    x.~uid();
+
+    // Hashable
+    std::hash<nbdl::uid>{}(x);
+  }
+
+  std::unordered_set<nbdl::uid> set;
+  set.insert(gen());
+  set.insert(gen());
+  set.insert(gen());
+  set.insert(gen());
+  CHECK(set.size() == 4);
 }

@@ -7,9 +7,9 @@
 #ifndef NBDL_UTIL_BASE64_DECODE_HPP
 #define NBDL_UTIL_BASE64_DECODE_HPP
 
+#include <nbdl/concept/DynamicBuffer.hpp>
 #include <nbdl/util/base64_encode.hpp>
 
-#include <array>
 #include <vector>
 
 namespace nbdl::util
@@ -43,53 +43,137 @@ namespace nbdl::util
       64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,
       64,64,64,64,64,64,64,64,64,64,64,64,64,64,64,64
     };
+
+    constexpr auto is_invalid     = [](unsigned char c) { return reverse_lookup[c] == INVALID; };
+    constexpr auto is_not_padding = [](unsigned char c) { return reverse_lookup[c] != PADDING; };
+
+    template <typename Buffer>
+    bool validate(Buffer const& b)
+    {
+      if (b.size() % 4 != 0) return false;
+      if (std::any_of(b.begin(), b.end(), is_invalid)) return false;
+
+      auto pad_itr = std::find(b.begin(), b.end(), '=');
+
+      // no more than 2 PADDING bytes
+      if (std::distance(pad_itr, b.end()) > 2) return false;
+
+      // not non-PADDING bytes after first PADDING byte
+      if (std::any_of(pad_itr, b.end(), is_not_padding)) return false;
+
+      return true;
+    }
+
+    template <typename Buffer>
+    auto source_length_unpadded(Buffer const& b)
+    {
+      return std::count_if(b.begin(), b.end(), is_not_padding);
+    }
+
+    template <typename Buffer>
+    auto target_decoded_length(Buffer const& b)
+    {
+      int n = source_length_unpadded(b);
+      return (3 * n) / 4;
+    }
+
+    template <typename Buffer>
+    constexpr bool prepare_output_buffer(Buffer& buffer, int length)
+    {
+      if constexpr(nbdl::DynamicBuffer<Buffer>::value)
+      {
+        buffer.resize(length);
+        return true;
+      }
+      else
+      {
+        return buffer.size() == static_cast<std::size_t>(length);
+      }
+    }
+
+    template <typename Input, typename Output>
+    bool decode(Input&& input, Output& output)
+    {
+      using buffer_value_t = typename std::decay_t<Input>::value_type;
+      static_assert(sizeof(buffer_value_t) == 1);
+
+      using base64_detail::reverse_lookup;
+
+      int const length = source_length_unpadded(input);
+      int const round_length = length - (length % 4);
+      int const extra_length = length % 4;
+
+      auto output_itr = output.begin();
+      int i;
+      for (i = 0; i < round_length; i += 4)
+      {
+        uint32_t fragment = 0;
+
+        for (int j = 0; j < 4; j++)
+        {
+          unsigned char value = reverse_lookup[static_cast<unsigned char>(input[i + j])];
+          fragment |= value << base64_detail::offsets[j];
+        }
+
+        for (int k = 3; k > 0; k--)
+        {
+          *output_itr = fragment >> (k * 8);
+          ++output_itr;
+        }
+      }
+
+      if (extra_length > 0)
+      {
+        uint32_t fragment = 0;
+
+        for (int j = 0; j < extra_length; j++)
+        {
+          unsigned char value = reverse_lookup[static_cast<unsigned char>(input[i + j])];
+          fragment |= value << base64_detail::offsets[j];
+        }
+
+        static int const length_map[]{3, 2, 2, 1, 0};
+        for (int k = 3; k > length_map[extra_length]; k--)
+        {
+          *output_itr = fragment >> (k * 8);
+          ++output_itr;
+        }
+      }
+
+      assert(output_itr == output.end());
+
+      return true;
+    }
   }
 
   struct base64_decode_fn
   {
-    using output_t = std::vector<unsigned char>;
+    using default_output_t = std::vector<unsigned char>;
 
-    template <typename InputBuffer>
-    output_t operator()(InputBuffer&& buffer) const
+    template <typename Input>
+    default_output_t operator()(Input&& input) const
     {
-      using buffer_value_t = typename std::decay_t<InputBuffer>::value_type;
-      static_assert(sizeof(buffer_value_t) == 1);
+      if (input.size() == 0) return default_output_t{};
+      if (not base64_detail::validate(input)) return default_output_t{};
 
-      using base64_detail::reverse_lookup;
-      int const length = buffer.size();
-      output_t output{};
+      default_output_t output(base64_detail::target_decoded_length(input), '?');
 
-      if (length % 4 != 0)
-      {
-        return output;
-      }
+      return base64_detail::decode(std::forward<Input>(input), output) ? output : default_output_t{};
+    }
 
-      int j;
-      for (int i = 0; i < length; i += 4)
-      {
-        uint32_t fragment = 0;
-        for (j = 0; j < 4; )
-        {
-          unsigned char value = reverse_lookup[static_cast<unsigned char>(buffer[i + j])];
-          if (value == base64_detail::PADDING)
-          {
-            break;
-          }
-          if (value == base64_detail::INVALID)
-          {
-            // return empty buffer
-            return output_t{};
-          }
-          fragment |= value << base64_detail::offsets[j];
-          ++j;
-        }
-        static int const length_map[]{ 3, 2, 2, 1, 0 };
-        for (int k = 3; k > length_map[j]; k--)
-        {
-          output.push_back(fragment >> (k * 8));
-        }
-      }
-      return output;
+    template <typename Input, typename Output>
+    bool operator()(Input&& input, Output& output) const
+    {
+      using base64_detail::prepare_output_buffer;
+      using base64_detail::target_decoded_length;
+      using base64_detail::validate;
+      using base64_detail::decode;
+
+      if (not prepare_output_buffer(output, target_decoded_length(input))) return false;
+      if (output.size() == 0) return true;
+      if (not validate(input)) return false;
+
+      return decode(std::forward<Input>(input), output);
     }
   };
 

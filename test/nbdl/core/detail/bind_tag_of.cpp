@@ -49,7 +49,7 @@ int main()
     int
   , float
   , tag::container<tag::string>
-  , tag::container<tag::sequence<int, tag::container<char>>>
+  , tag::container<tag::sequence<int, tag::dynamic_buffer>>
   , tag::type<int>
   , tag::type<nbdl::string>
   , tag::type<std::decay_t<decltype(foo_s)>>

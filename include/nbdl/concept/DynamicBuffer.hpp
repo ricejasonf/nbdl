@@ -24,7 +24,7 @@ namespace nbdl
     static constexpr bool value = nbdl::Container<Tag>::value
                                && decltype(detail::is_contiguous(std::declval<Tag>()))::value
                                && decltype(detail::is_byte_container(std::declval<Tag>()))::value
-                               && !decltype(detail::is_size_fixed(std::declval<Tag>()))::value
+                               && not decltype(detail::is_size_fixed(std::declval<Tag>()))::value
                                ;
   };
 }

@@ -41,7 +41,7 @@ TEST_CASE("Changes are applied immediately and not reverted in any intermediate 
         , "[local_version]")
 {
   nbdl::local_version<payload> store{};
-  auto gen_uid = nbdl::detail::make_uid_generator();
+  auto gen_uid = nbdl::make_uid_generator();
 
   auto request = [&](payload p)
   {

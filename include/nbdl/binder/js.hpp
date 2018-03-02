@@ -27,7 +27,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 namespace nbdl::binder::js
 {
@@ -217,8 +216,9 @@ namespace nbdl::binder::js
       }
     };
 
-    template <>
-    struct bind_to_impl<std::vector<unsigned char>>
+    template <typename T>
+    struct bind_to_impl<T, hana::when<(nbdl::Buffer<T>::value or nbdl::DynamicBuffer<T>::value)
+                                  and not nbdl::String<T>::value>>
     {
       template <typename Xs>
       static void apply(js_val& val, Xs const& xs)
@@ -413,15 +413,17 @@ namespace nbdl::binder::js
       }
     };
 
-    template <>
-    struct bind_from_impl<std::vector<unsigned char>>
+    template <typename T>
+    struct bind_from_impl<T, hana::when<(nbdl::Buffer<T>::value or nbdl::DynamicBuffer<T>::value)
+                                and not nbdl::String<T>::value>>
     {
       template <typename Xs>
       static void apply(js_val const& val, Xs& xs)
       {
         nbdl::string temp{};
         bind_from(val, temp);
-        xs = nbdl::util::base64_decode(temp);
+        // TODO actually check for error
+        nbdl::util::base64_decode(temp, xs);
       }
     };
 

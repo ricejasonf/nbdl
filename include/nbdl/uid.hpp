@@ -7,12 +7,17 @@
 #ifndef NBDL_UID_HPP
 #define NBDL_UID_HPP
 
+#include <nbdl/concept/Buffer.hpp>
+#include <nbdl/detail/hash_combine.hpp>
 #include <nbdl/entity.hpp>
 #include <nbdl/key.hpp>
 
 #include <array>
 #include <boost/hana/ext/std/array.hpp>
 #include <cstdint>
+#include <iterator>
+#include <functional>
+#include <tuple>
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -22,55 +27,118 @@
 
 namespace nbdl
 {
-  using uid_storage = std::array<uint8_t, 16>;
+  struct make_uid_generator_fn
+  {
+    auto operator()() const;
+  };
+
+  constexpr make_uid_generator_fn make_uid_generator{};
 
   struct uid
   {
-    uid() = delete;
+    using value_type = uint8_t;
 
-    uid_storage value;
+    uid() = default;
+
+    constexpr auto size()         { return storage.size(); };
+    constexpr auto size() const   { return storage.size(); };
+    constexpr auto data()         { return storage.data(); };
+    constexpr auto data() const   { return storage.data(); };
+    constexpr auto begin()        { return storage.begin(); };
+    constexpr auto end()          { return storage.end(); };
+    constexpr auto begin() const  { return storage.begin(); };
+    constexpr auto end()   const  { return storage.end(); };
+
+    inline decltype(auto) operator[](std::size_t i) const { return storage[i]; };
+    inline decltype(auto) operator[](std::size_t i)       { return storage[i]; };
+
+    inline bool operator==(nbdl::uid const& o) const
+    { return storage == o.storage; }
+    inline bool operator!=(nbdl::uid const& o) const
+    { return storage != o.storage; }
+
+  private:
+    using storage_t = std::array<value_type, 16>;
+    friend make_uid_generator_fn;
+    friend void swap(nbdl::uid&, nbdl::uid&);
+
+    uid(storage_t&& s)
+      : storage(std::move(s))
+    { }
+
+    storage_t storage;
   };
+
+  // swap
+
+  inline void swap(nbdl::uid& x, nbdl::uid& y)
+  {
+    std::swap(x.storage, y.storage);
+  }
 
   template <typename T>
   using unique_key = key<T, uid>;
 
-  NBDL_ENTITY(uid, value);
-
-  namespace detail
-  {
 #ifdef EMSCRIPTEN
-    constexpr auto make_uid_generator = []
+  inline auto make_uid_generator_fn::operator()() const
+  {
+    return []
     {
-      return []
+      nbdl::uid xs{};
+      for (auto& x : xs)
       {
-        uid_storage bytes{};
-        for (int i = 0; i < 16; i++)
-        {
-          bytes[i] = (uint8_t) (emscripten_random() * 256);
-        }
-        return uid{std::move(bytes)};
-      };
+        x = (uint8_t) (emscripten_random() * 256);
+      }
+      return xs;
     };
+  };
 #else
-    constexpr auto make_uid_generator = []
-    {
-      static_assert(sizeof(uid_storage) == sizeof(std::array<uint32_t, 4>));
-      std::random_device rd{};
-      std::mt19937 mt_{rd()};
+  inline auto make_uid_generator_fn::operator()() const
+  {
+    static_assert(sizeof(typename uid::storage_t) == sizeof(std::array<uint32_t, 4>));
+    std::random_device rd{};
+    std::mt19937 mt_{rd()};
 
-      return [mt = std::move(mt_)]() mutable
-      {
-        std::array<uint32_t, 4> temp{{
-          (uint32_t) mt()
-        , (uint32_t) mt()
-        , (uint32_t) mt()
-        , (uint32_t) mt()
-        }};
-        return uid{std::move(*reinterpret_cast<uid_storage*>(temp.data()))};
-      };
+    return [mt = std::move(mt_)]() mutable
+    {
+      std::array<uint32_t, 4> temp{{
+        (uint32_t) mt()
+      , (uint32_t) mt()
+      , (uint32_t) mt()
+      , (uint32_t) mt()
+      }};
+      return uid{std::move(*reinterpret_cast<typename uid::storage_t*>(temp.data()))};
     };
+  };
 #endif
-  }
+}
+
+namespace std
+{
+  // hash
+
+  template <>
+  class hash<nbdl::uid>
+  {
+  public:
+    std::size_t operator()(nbdl::uid const& uid) const 
+    {
+      std::size_t digest = 0;
+      for (auto const& x : uid)
+      {
+        nbdl::detail::hash_combine(digest, x);
+      }
+      return digest;
+    }
+  };
+
+  // tuple_size
+  
+  template <>
+  class tuple_size<nbdl::uid>
+    : public std::integral_constant<std::size_t, 16>
+  { };
+
 }
 
 #endif

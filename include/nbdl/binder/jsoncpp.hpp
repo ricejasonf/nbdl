@@ -10,7 +10,9 @@
 #include<nbdl/concept/BindableMap.hpp>
 #include<nbdl/concept/BindableSequence.hpp>
 #include<nbdl/concept/BindableVariant.hpp>
+#include<nbdl/concept/Buffer.hpp>
 #include<nbdl/concept/Container.hpp>
+#include<nbdl/concept/DynamicBuffer.hpp>
 #include<nbdl/concept/String.hpp>
 #include<nbdl/bind_map.hpp>
 #include<nbdl/bind_sequence.hpp>
@@ -100,7 +102,7 @@ namespace nbdl { namespace binder { namespace jsoncpp
       {
         nbdl::string temp{};
         bind_string(temp);
-        b = nbdl::util::base64_decode(temp);
+        nbdl::util::base64_decode(temp, b);
       }
 
       template <typename String>
@@ -302,7 +304,8 @@ namespace nbdl { namespace binder { namespace jsoncpp
         {
           binder.bind_string(std::forward<T>(t));
         }
-        else if constexpr(decltype(hana::type_c<std::vector<unsigned char>> == hana::typeid_(t))::value)
+        //else if constexpr(decltype(hana::type_c<std::vector<unsigned char>> == hana::typeid_(t))::value)
+        else if constexpr(nbdl::Buffer<T>::value or nbdl::DynamicBuffer<T>::value)
         {
           binder.bind_buffer(std::forward<T>(t));
         }

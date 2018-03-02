@@ -7,14 +7,16 @@
 
 #include <assets/AccountEntity.hpp>
 #include <nbdl/binder/jsoncpp.hpp>
+#include <nbdl/uid.hpp>
 #include <nbdl/util/base64_decode.hpp>
 
+#include <boost/hana/equal.hpp>
 #include <catch.hpp>
 #include <string>
 #include <vector>
 
+namespace hana = boost::hana;
 using Account = account;
-
 using nbdl::binder::jsoncpp::from_string;
 using nbdl::binder::jsoncpp::to_string;
 
@@ -86,4 +88,17 @@ TEST_CASE("std::vector<unsigned char> is automatcally base64 encoded/decoded.", 
   CHECK(subject[1] == nbdl::util::base64_decode(std::string{"bGVhc3VyZS4="}));
 
   CHECK(to_string(subject) == input_json);
+}
+
+TEST_CASE("Bind nbdl::uid to from json", "[jsoncpp]")
+{
+  auto gen = nbdl::make_uid_generator();
+
+  nbdl::uid uid = gen();
+
+  std::string uid_json = to_string(uid);
+
+  nbdl::uid target{};
+  from_string(uid_json, target);
+  CHECK(hana::equal(target, uid));
 }

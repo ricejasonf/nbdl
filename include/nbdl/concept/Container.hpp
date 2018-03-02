@@ -31,11 +31,11 @@ namespace nbdl
     { return {}; });
 
     constexpr auto is_byte_container = hana::is_valid([](auto&& x)
-      -> std::enable_if_t<(sizeof(std::decay_t<decltype(x)>::value_type) == 1)>
+      -> std::enable_if_t<(sizeof(typename std::decay_t<decltype(x)>::value_type) == 1)>
     { return {}; });
 
     constexpr auto is_size_fixed = hana::is_valid([](auto&& x)
-      -> std::tuple_size<std::decay_t<decltype(x)>>
+      -> hana::size_t<std::tuple_size<std::decay_t<decltype(x)>>::value>
     { return {}; });
   }
 
