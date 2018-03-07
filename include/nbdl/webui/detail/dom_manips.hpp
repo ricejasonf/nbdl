@@ -471,6 +471,48 @@ namespace nbdl::webui::detail
   };
 
   /*
+   * add_attribute_if
+   */
+  template <typename AttributeName, typename PathSpec, typename Pred>
+  struct action_fn<html::tag::add_attribute_if_t, AttributeName, PathSpec, Pred>
+  {
+    action_fn() = delete;
+  };
+
+  template <typename Store, typename AttributeName, typename PathSpec, typename Pred_>
+  struct mut_action_fn<html::tag::add_attribute_if_t, Store, AttributeName, PathSpec, Pred_>
+  {
+    Store store;
+    emscripten::val el;
+    using Pred = nbdl::detail::default_constructible_lambda<Pred_>;
+
+    mut_action_fn(Store s)
+      : store(s)
+      , el(emscripten::val::undefined())
+    { }
+
+    template <typename ParentElement>
+    decltype(auto) operator()(ParentElement&& p)
+    {
+      el = p;
+      update();
+      return std::forward<ParentElement>(p);
+    }
+
+    void update()
+    {
+      ui_helper::match_path_spec(store, PathSpec{}, [&](auto const& value)
+      {
+        el.template call<void>(
+          Pred{}(value) ? "setAttribute" : "removeAttribute"
+        , to_json_val(AttributeName{})
+        , emscripten::val("")
+        );
+      });
+    }
+  };
+
+  /*
    * add_class_if
    */
   template <typename ClassName, typename PathSpec, typename Pred>

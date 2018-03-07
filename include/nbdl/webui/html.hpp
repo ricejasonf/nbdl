@@ -21,6 +21,7 @@ namespace nbdl::webui
     MPDEF_DIRECTIVE_LIST(set_property)
     MPDEF_DIRECTIVE_LIST(element)
     MPDEF_DIRECTIVE_LIST(event_attribute)
+    MPDEF_DIRECTIVE_LIST(add_attribute_if)
     MPDEF_DIRECTIVE_LIST(add_class_if)
     MPDEF_DIRECTIVE_LIST(hidden_file_input)
 

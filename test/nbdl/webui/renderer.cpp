@@ -243,6 +243,30 @@ TEST_CASE("Handle click events.", "[webui][renderer][event_attribute]")
   CHECK(check_dom_equals());
 }
 
+TEST_CASE("Add/Remove attribute based on predicate.", "[webui]")
+{
+  using namespace nbdl::webui::html;
+  using namespace nbdl::ui_spec;
+
+  auto target = make_dom_test_equality(R"HTML(<a disabled="">whoa</div>)HTML");
+
+  auto my_store = hana::make_map(
+    hana::make_pair("has_stuff"_s, bool{true})
+  );
+
+  auto spec =
+    a(
+      add_attribute_if("disabled"_s, get("has_stuff"_s), hana::id)
+    , add_attribute_if("FAIL"_s,  get("has_stuff"_s), hana::not_)
+    , text_node("whoa"_s)
+    );
+
+  using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
+  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+
+  CHECK(check_dom_equals());
+}
+
 TEST_CASE("Add/Remove class based on predicate.", "[webui]")
 {
   using namespace nbdl::webui::html;
