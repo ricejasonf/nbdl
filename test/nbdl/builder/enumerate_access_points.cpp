@@ -68,7 +68,7 @@ int main()
         Store<nbdl::null_store>,
         Producers(
           Producer(
-            Type(hana::type_c<void>),
+            Type<hana::type<void>>,
             Name(names::Producer1),
             AccessPoints(
               AccessPoint(
@@ -92,7 +92,7 @@ int main()
             )
           ),
           Producer(
-            Type(hana::type_c<void>),
+            Type<hana::type<void>>,
             Name(names::Producer2),
             AccessPoint(
               Name(names::Root3),

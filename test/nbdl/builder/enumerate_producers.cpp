@@ -60,12 +60,12 @@ int main()
         Producers(
           Producer(
             Name(names::Producer1Name),
-            Type(names::Producer1),
+            Type<names::Producer1_t>,
             access_points_def_1
           ),
           Producer(
             Name(names::Producer2Name),
-            Type(names::Producer2),
+            Type<names::Producer2_t>,
             access_points_def_2
           )
         )
@@ -103,7 +103,7 @@ int main()
       Context(
         Producer(
           Name(names::Producer1Name),
-          Type(names::Producer1),
+          Type<names::Producer1_t>,
           access_points_def_1
         )
       );

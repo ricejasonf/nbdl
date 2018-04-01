@@ -41,7 +41,7 @@ namespace nbdl_def
     using nav_route_s_t = std::decay_t<decltype(nbdl::webui::nav_route_s)>;
 
     return Producer(
-      Type(nav_route_producer<RouteMap>{})
+      Type<nav_route_producer<RouteMap>>
     , AccessPoint(
         PathKey<nav_route_s_t>
       , Store<nav_route_store<RouteMap>>

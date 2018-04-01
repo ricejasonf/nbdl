@@ -131,10 +131,10 @@ namespace test_context_def {
     typename Store_
   >
   constexpr auto make(
-      Producer1 const& p1,
-      Producer2 const& p2,
-      Consumer1 const& c1,
-      Consumer2 const& c2,
+      Producer1 const&,
+      Producer2 const&,
+      Consumer1 const&,
+      Consumer2 const&,
       Store_ const&
   ) {
     return
@@ -142,7 +142,7 @@ namespace test_context_def {
         Producers(
           Producer(
             Name(test_context::name::producer<1>),
-            Type(p1),
+            Type<Producer1>,
             AccessPoint(
               Name(hana::type_c<void>),
               Entity<entity::root1>,
@@ -158,7 +158,7 @@ namespace test_context_def {
           ),
           Producer(
             Name(test_context::name::producer<2>),
-            Type(p2),
+            Type<Producer2>,
             AccessPoints(
               AccessPoint(
                 Name(hana::type_c<void>),
@@ -220,11 +220,11 @@ namespace test_context_def {
         Consumers(
           Consumer(
             Name(test_context::name::consumer<1>),
-            Type(c1)
+            Type<Consumer1>
             ),
           Consumer(
             Name(test_context::name::consumer<2>),
-            Type(c2)
+            Type<Consumer2>
           )
         )
       );

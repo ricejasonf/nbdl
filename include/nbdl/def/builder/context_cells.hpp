@@ -46,7 +46,7 @@ struct context_cells_fn
     constexpr auto operator()(mpdef::list<ProducerTags...>, mpdef::list<ConsumerTags...>)
     {
       return hana::type_c<
-        hanax::types<hana::tag_of_t<ProducerTags>..., hana::tag_of_t<ConsumerTags>...>
+        hanax::types<typename ProducerTags::type..., typename ConsumerTags::type...>
       >;
     }
   };

@@ -132,7 +132,7 @@ namespace tiles
       return
         Context(
           Producer(
-            Type(ProducerTag{}),
+            Type<ProducerTag>,
             AccessPoint(
               Entity<game>,
               PathKey<int>,
@@ -145,7 +145,7 @@ namespace tiles
               )
             )
           ),
-          Consumer(Type(ConsumerTag{}))
+          Consumer(Type<ConsumerTag>)
         );
       }
   };

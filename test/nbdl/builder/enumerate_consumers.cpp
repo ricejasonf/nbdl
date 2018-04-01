@@ -37,11 +37,11 @@ int main()
         Consumers(
           Consumer(
             Name(names::Consumer1Name),
-            Type(names::Consumer1)
+            Type<names::Consumer1_t>
           ),
           Consumer(
             Name(names::Consumer2Name),
-            Type(names::Consumer2)
+            Type<names::Consumer2_t>
           )
         )
       );
@@ -68,7 +68,7 @@ int main()
       Context(
         Consumer(
           Name(names::Consumer1Name),
-          Type(names::Consumer1)
+          Type<names::Consumer1_t>
         )
       );
 

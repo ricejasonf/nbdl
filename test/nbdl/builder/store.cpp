@@ -46,7 +46,7 @@ int main()
     constexpr auto def =
       Context(
         Producer(
-          Type(hana::type_c<void>),
+          Type<hana::type<void>>,
           Name(names::Producer1),
           AccessPoint(
             Name(names::E1),
@@ -71,7 +71,7 @@ int main()
     constexpr auto def =
       Context(
         Producer(
-          Type(hana::type_c<void>),
+          Type<hana::type<void>>,
           Name(names::Producer1),
           AccessPoint(
             Store<test_store_tag>,
