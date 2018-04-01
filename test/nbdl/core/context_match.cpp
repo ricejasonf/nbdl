@@ -39,10 +39,10 @@ namespace nbdl
     static constexpr auto apply()
     {
       return test_context_def::make(
-        test_context::producer_tag{},
-        test_context::producer_tag{},
-        test_context::state_consumer_tag{},
-        test_context::consumer_tag{},
+        test_context::producer_tag<>{},
+        test_context::producer_tag<>{},
+        test_context::state_consumer_tag<>{},
+        test_context::consumer_tag<>{},
         test_context_match::tcms_store_tag{}
       );
     }
@@ -101,7 +101,7 @@ TEST_CASE("Match a value in the stores.", "[context]")
 
   bool result = false;
 
-  nbdl::match(state_consumer.push_api, path<1>(1, 49), hana::overload_linearly(
+  nbdl::match(state_consumer.context, path<1>(1, 49), hana::overload_linearly(
     [&](my_entity<1> const& e)
     {
       result = hana::equal(e, my_entity<1>{1, 49});
@@ -120,7 +120,7 @@ TEST_CASE("Matching nbdl::trigger_read triggers upstream read message.", "[conte
 
   bool result = false;
 
-  nbdl::match(state_consumer.push_api, path<1>(1, 13), hana::overload_linearly(
+  nbdl::match(state_consumer.context, path<1>(1, 13), hana::overload_linearly(
     [&](nbdl::unresolved)  { result = true; },
     [&](auto const&)       { result = false; }
   ));

@@ -7,6 +7,7 @@
 #ifndef NBDL_HPP
 #define NBDL_HPP
 
+#include <nbdl/actor_type.hpp>
 #include <nbdl/apply_action.hpp>
 #include <nbdl/apply_delta.hpp>
 #include <nbdl/apply_foreign_message.hpp>
@@ -36,12 +37,9 @@
 #include <nbdl/hold.hpp>
 #include <nbdl/hold_lazy.hpp>
 #include <nbdl/macros/NBDL_ENTITY.hpp>
-#include <nbdl/make_consumer.hpp>
 #include <nbdl/make_context.hpp>
 #include <nbdl/make_def.hpp>
 #include <nbdl/make_delta.hpp>
-#include <nbdl/make_producer.hpp>
-#include <nbdl/make_state_consumer.hpp>
 #include <nbdl/make_store.hpp>
 #include <nbdl/map_store.hpp>
 #include <nbdl/match.hpp>

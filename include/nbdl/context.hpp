@@ -7,6 +7,7 @@
 #ifndef NBDL_CONTEXT_HPP
 #define NBDL_CONTEXT_HPP
 
+#include <nbdl/actor_type.hpp>
 #include <nbdl/apply_message.hpp>
 #include <nbdl/concept/Consumer.hpp>
 #include <nbdl/concept/DownstreamMessage.hpp>
@@ -14,12 +15,7 @@
 #include <nbdl/concept/StateConsumer.hpp>
 #include <nbdl/concept/UpstreamMessage.hpp>
 #include <nbdl/def/builder/context.hpp>
-#include <nbdl/detail/concept_pred.hpp>
-#include <nbdl/detail/normalize_path_type.hpp>
 #include <nbdl/match.hpp>
-#include <nbdl/make_consumer.hpp>
-#include <nbdl/make_producer.hpp>
-#include <nbdl/make_state_consumer.hpp>
 #include <nbdl/message.hpp>
 #include <nbdl/producer_init.hpp>
 #include <nbdl/send_downstream_message.hpp>
@@ -31,13 +27,13 @@
 #include <boost/hana.hpp>
 #include <boost/hana/experimental/types.hpp>
 #include <boost/hana/ext/std/integer_sequence.hpp>
+#include <boost/mp11/list.hpp>
 #include <type_traits>
 #include <utility>
 
 namespace nbdl
 {
   namespace hana  = boost::hana;
-  namespace hanax = boost::hana::experimental;
 
   namespace context_detail
   {
@@ -56,16 +52,15 @@ namespace nbdl
       });
     };
 
-    template <typename Tag, typename Context>
+    template <typename Context>
     class store_handle
     {
       Context& ctx;
 
       public:
 
-      using tag = Tag;
+      using tag = typename Context::tag;
       using hana_tag = context_detail::store_tag;
-      using channel = message::channel::upstream;
       friend apply_message_impl<hana_tag>;
       friend match_impl<hana_tag>;
       friend get_impl<hana_tag>;
@@ -76,13 +71,15 @@ namespace nbdl
 
   struct context_tag { };
 
-  template <typename Tag, typename ArgTypes>
+  template <typename Tag>
   class context
   {
+  public:
     using tag = Tag;
+  private:
     using ContextMeta     = nbdl_def::builder::make_context_meta_t<Tag>;
     using ProducerLookup  = typename ContextMeta::producer_lookup;
-    using ActorTagTypes    = typename ContextMeta::actor_tag_types;
+    using ActorTagTypes   = typename ContextMeta::actor_tag_types;
     using StoreMap        = typename ContextMeta::store_map;
     using ListenerLookup  = typename ContextMeta::listener_lookup;
 
@@ -92,148 +89,16 @@ namespace nbdl
     friend apply_message_impl<context_detail::store_tag>;
     friend match_impl<context_detail::store_tag>;
 
-    // calling the push functions after
-    // the context is destroyed will result
-    // in undefined behaviour
-    class push_upstream_api
-    {
-      context& ctx;
-
-      public:
-
-      using tag = tag;
-      using hana_tag = context_detail::store_tag;
-      using channel = message::channel::upstream;
-      friend apply_message_impl<hana_tag>;
-      friend match_impl<hana_tag>;
-      friend get_impl<hana_tag>;
-
-      push_upstream_api(context& c) : ctx(c) { }
-
-      template <typename Message>
-      void push(Message&& m) const
-      {
-        static_assert(nbdl::UpstreamMessage<Message>::value,
-          "nbdl::context::push_upstream_api requires an UpstreamMessage");
-         ctx.push_message(std::forward<Message>(m));
-      }
-    };
-
-    class push_downstream_api
-    {
-      context& ctx;
-
-      public:
-
-      using tag = tag;
-      using hana_tag = context_detail::store_tag;
-      using channel = message::channel::downstream;
-      friend apply_message_impl<hana_tag>;
-      friend match_impl<hana_tag>;
-      friend get_impl<hana_tag>;
-
-      push_downstream_api(context& c) : ctx(c) { }
-
-      template <typename Message>
-      void push(Message&& m) const
-      {
-        static_assert(nbdl::DownstreamMessage<Message>::value,
-          "nbdl::context::push_downstream_api requires a DownstreamMessage");
-         ctx.push_message(std::forward<Message>(m));
-      }
-    };
-
-    static constexpr std::size_t actor_count = decltype(hana::size(ActorTagTypes{}))::value;
-    static constexpr auto actor_index_sequence = std::make_index_sequence<actor_count>{};
-
-    template <std::size_t i>
-    static constexpr auto actor_factory()
-    {
-      using ActorTag = typename decltype(hana::at_c<i>(ActorTagTypes{}))::type;
-      if constexpr(nbdl::Producer<ActorTag>::value)
-        return nbdl::make_producer<ActorTag>;
-      else if constexpr(nbdl::StateConsumer<ActorTag>::value)
-        return nbdl::make_state_consumer<ActorTag>;
-      else if constexpr(nbdl::Consumer<ActorTag>::value)
-        return nbdl::make_consumer<ActorTag>;
-      else
-        static_assert(
-          std::is_void<ActorTag>::value
-        , "Context requires actors to be Producer, Consumer, or StateConsumer"
-        );
-    }
-
-    template <std::size_t i>
-    static constexpr auto get_push_api_type()
-    {
-      using ActorTag = typename decltype(hana::at_c<i>(ActorTagTypes{}))::type;
-      if constexpr(nbdl::Producer<ActorTag>::value)
-        return hana::type_c<push_downstream_api>;
-      else if constexpr(nbdl::StateConsumer<ActorTag>::value)
-        return hana::type_c<context_detail::store_handle<tag, context>>;
-      else // if Consumer
-        return hana::type_c<push_upstream_api>;
-    }
-
-    template <std::size_t i>
-    using PushApi = typename decltype(get_push_api_type<i>())::type;
-
-    template <std::size_t i, typename Arg = hana::type<void>>
-    static constexpr auto make_actor_type()
-    {
-      if constexpr(decltype(hana::equal(hana::typeid_(std::declval<Arg>()), hana::type_c<void>)){})
-      {
-        return hana::type_c<decltype(actor_factory<i>()(std::declval<PushApi<i>>()))>;
-      }
-      else
-      {
-        return hana::type_c<decltype(actor_factory<i>()(std::declval<PushApi<i>>(),
-           std::declval<Arg>()))>;
-      }
-    }
-
-    // For default construction.
-    template <std::size_t ...i>
-    static constexpr auto make_storage_helper(std::index_sequence<i...>, hanax::types<>)
-    {
-      return hana::template_<hana::tuple>(
-        make_actor_type<i>()...
-      );
-    }
-
-    // For single argument construction
-    template <std::size_t i1, std::size_t ...i, typename Arg1, typename ...Args>
-    static constexpr auto make_storage_helper(std::index_sequence<i1, i...>, hanax::types<Arg1, Args...>)
-    {
-      return hana::template_<hana::tuple>(
-        make_actor_type<i1, Arg1>(),
-        make_actor_type<i, Args>()...
-      );
-    }
-
-    using Actors = typename decltype(make_storage_helper(actor_index_sequence, ArgTypes{}))::type;
+    using Actors = mp_apply<
+      hana::tuple
+    , mp_transform_q<
+        mp_bind_back<nbdl::actor_type_t, context_detail::store_handle<context>>
+      , ActorTagTypes
+      >
+    >;
 
     Actors actors;
     StoreMap stores;
-
-    template <std::size_t i>
-    decltype(auto) make_actor()
-    {
-      return actor_factory<i>()(PushApi<i>(*this));
-    }
-
-    template <std::size_t i, typename Arg>
-    decltype(auto) make_actor(Arg&& arg)
-    {
-      if constexpr(decltype(hana::equal(hana::typeid_(arg), hana::type_c<void>)){})
-      {
-        return actor_factory<i>()(PushApi<i>(*this));
-      }
-      else
-      {
-        return actor_factory<i>()(PushApi<i>(*this), std::forward<Arg>(arg));
-      }
-    }
 
     template <typename Message>
     void propagate_upstream(Message&& m)
@@ -365,52 +230,32 @@ namespace nbdl
       propagate_upstream(m);
     }
 
-    // constructor helper
-    template <std::size_t ...i, typename ...Args,
-      typename = std::enable_if_t<(sizeof...(Args) > 0)>
-    >
-    context(std::index_sequence<i...>, Args&& ...args)
-      : actors(make_actor<i>(std::forward<Args>(args))...)
+  public:
+    template <typename ...Args>
+    explicit context(Args&& ...args)
+      : actors(detail::make_actor_initializer(
+            context_detail::store_handle<context>(*this)
+          , std::forward<Args>(args)
+        )...)
       , stores()
-    { }
-
-    // default constructor helper
-    template <std::size_t ...i>
-    explicit context(std::index_sequence<i...>)
-      : actors(make_actor<i>()...)
-      , stores()
-    { }
-
-    public:
-
-    template <typename Arg1, typename ...Args,
-      typename = std::enable_if_t<(
-        (sizeof...(Args) + 1 == actor_count)
-        && !std::is_same<std::decay_t<Arg1>, context>::value
-        && !hana::is_a<hana::ext::std::integer_sequence_tag, Arg1>
-      )>
-    >
-    explicit context(Arg1&& arg1, Args&& ...args)
-      : context(
-          actor_index_sequence,
-          std::forward<Arg1>(arg1),
-          std::forward<Args>(args)...
-        )
     {
       context_detail::init_producers(actors);
     }
 
-    // default constructor
+    // default constructor (deprecated - used in tests only I think)
     context()
-      : context(actor_index_sequence)
+      : actors(hana::cycle(
+          hana::make_tuple(detail::make_actor_initializer(
+            context_detail::store_handle<context>(*this)
+          , hana::type_c<void>
+          ))
+        , decltype(hana::length(std::declval<Actors>())){}
+        ))
+      , stores()
     {
       context_detail::init_producers(actors);
     }
 
-    // Push functions contain references to self
-    // another option is to use shared_from_this,
-    // but that responsibility should be on the
-    // Producers.
     context(context const&) = delete;
 
     // Access actor by its position
@@ -486,10 +331,15 @@ namespace nbdl
     template <typename Store, typename Message>
     static constexpr auto apply(Store& s, Message&& m)
     {
+      /* Removed assertion that only Producers
+       * can send downstream messages because
+       * it was to compile-time intensive.
       static_assert(
-        std::is_same_v<typename Store::channel, decltype(message::get_channel(m))>
-      , "nbdl::context::push_upstream_api requires an UpstreamMessage"
+        nbdl::Producer<???>::value or not message::is_downstream<Message>
+      , "Only Producers can send a downstream message."
       );
+       */
+
       s.ctx.push_message(std::forward<Message>(m));
       return hana::true_c;
     }
@@ -518,10 +368,10 @@ namespace nbdl
 
 namespace nbdl::ui_spec::detail
 {
-  template <typename ContextTag, typename T, typename X, typename ...Xs>
-  struct get_type_at_path_impl<context_detail::store_handle<ContextTag, T>, path_t<get_t<X, Xs...>>>
+  template <typename Context, typename X, typename ...Xs>
+  struct get_type_at_path_impl<context_detail::store_handle<Context>, path_t<get_t<X, Xs...>>>
   {
-    using S = typename nbdl_def::builder::make_context_meta_t<ContextTag>::store_map;
+    using S = typename nbdl_def::builder::make_context_meta_t<typename Context::tag>::store_map;
     using type = decltype(
       nbdl::get_path(std::declval<S const&>()[
         hana::type_c<X>

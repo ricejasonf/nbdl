@@ -20,7 +20,7 @@ namespace nbdl
   template <typename Tag, typename ...Args>
   constexpr decltype(auto) make_unique_context(Args&& ...args)
   {
-    using Context = nbdl::context<Tag, hanax::types<Args...>>;
+    using Context = nbdl::context<Tag>;
     return std::make_unique<Context>(std::forward<Args>(args)...);
   }
 } // nbdl

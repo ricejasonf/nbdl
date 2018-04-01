@@ -7,11 +7,11 @@
 #ifndef NBDL_ECHO_PROVIDER_HPP
 #define NBDL_ECHO_PROVIDER_HPP
 
-#include<nbdl/fwd/echo_producer.hpp>
+#include <nbdl/fwd/echo_producer.hpp>
 
-#include<nbdl/entity.hpp>
-#include<nbdl/make_producer.hpp>
-#include<nbdl/message.hpp>
+#include <nbdl/apply_message.hpp>
+#include <nbdl/entity.hpp>
+#include <nbdl/message.hpp>
 
 namespace nbdl
 {
@@ -44,22 +44,21 @@ namespace nbdl
     }
   }
 
-  template <typename PushApi>
+  template <typename Context>
   struct echo_producer_impl
   {
     using hana_tag = echo_producer;
 
-    PushApi push_api;
-  };
+    echo_producer_impl(actor_initializer<Context, echo_producer> p)
+      : context(p.context)
+    { }
 
-  template <>
-  struct make_producer_impl<echo_producer>
-  {
-    template <typename PushApi>
-    static constexpr auto apply(PushApi&& p)
-    {
-      return echo_producer_impl<PushApi>{std::forward<PushApi>(p)};
-    }
+    // deprecated
+    echo_producer_impl(actor_initializer<Context, hana::type<void>> p)
+      : context(p.context)
+    { }
+
+    Context context;
   };
 
   template <>
@@ -70,8 +69,9 @@ namespace nbdl
     {
       if constexpr(message::requires_key_for_downstream<Message>)
       {
-        p.push_api.push(
-          message::to_downstream_with_key(
+        nbdl::apply_message(
+          p.context
+        , message::to_downstream_with_key(
             m,
             echo_producer_detail::make_unique_key(m)
           )
@@ -79,8 +79,9 @@ namespace nbdl
       }
       else
       {
-        p.push_api.push(
-          message::to_downstream(m, message::no_is_confirmed)
+        nbdl::apply_message(
+          p.context
+        , message::to_downstream(m, message::no_is_confirmed)
         );
       }
     }

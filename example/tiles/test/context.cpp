@@ -21,7 +21,7 @@ namespace
 TEST_CASE(".", "[tiles][tiles_context]") 
 {
   tiles::create_game_move(state, (unsigned char) 5);
-  nbdl::match(state.push_api, tiles::game_path{}, [](auto const& g)
+  nbdl::match(state.context, tiles::game_path{}, [](auto const& g)
   {
     auto expected = tiles::game{ 3, 3,
       {{

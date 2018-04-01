@@ -9,6 +9,7 @@
 #define CONSOLE_LOG(x) emscripten::val::global("console").template call<void>("log", emscripten::val(x));
 
 #include <nbdl/message.hpp>
+#include <nbdl/notify_state_change.hpp>
 #include <nbdl/variant.hpp>
 #include <nbdl/webui/detail/dom_manips.hpp>
 #include <nbdl/webui/html.hpp>
@@ -86,7 +87,7 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
-  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+  auto renderer = nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
 
   my_store["key_1"_s] = std::string(" Here is some updated dynamic text.");
   my_store["key_3"_s] = std::string(" Here is some optional text.");
@@ -115,7 +116,7 @@ TEST_CASE("Unsafely set innerHTML", "[webui][renderer]")
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
-  nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+  nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
 
   CHECK(check_dom_equals());
 }
@@ -152,7 +153,7 @@ TEST_CASE("Render dynamic attributes", "[webui][renderer]")
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
-  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+  auto renderer = nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
 
   my_store["key_1"_s] = std::string("doo");
   my_store["key_2"_s] = std::string("baz");
@@ -193,7 +194,7 @@ TEST_CASE("Match value using list of predicates", "[webui][renderer][ui_spec][ma
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
-  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+  auto renderer = nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
 
   my_store["key_1"_s] = std::string("hello");
 
@@ -230,7 +231,7 @@ TEST_CASE("Handle click events.", "[webui][renderer][event_attribute]")
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
-  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+  auto renderer = nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
 
   // trigger click
   emscripten::val::global("triggerEvent")(
@@ -262,7 +263,7 @@ TEST_CASE("Add/Remove attribute based on predicate.", "[webui]")
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
-  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+  auto renderer = nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
 
   CHECK(check_dom_equals());
 }
@@ -286,7 +287,7 @@ TEST_CASE("Add/Remove class based on predicate.", "[webui]")
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
-  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+  auto renderer = nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
 
   CHECK(check_dom_equals());
 }
@@ -308,7 +309,7 @@ TEST_CASE("Add/Remove class based on matching a type.", "[webui]")
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
-  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+  auto renderer = nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
 
   CHECK(check_dom_equals());
 }
@@ -383,7 +384,7 @@ TEST_CASE("Render a Container in a Store with for_each", "[webui]")
   );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
-  auto renderer = nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+  auto renderer = nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
 
   // trigger click
   emscripten::val::global("triggerEvent")(
@@ -420,6 +421,6 @@ TEST_CASE("Handle scaled up document structure", "[webui][renderer]")
   );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
-  nbdl::make_state_consumer<renderer_tag>(std::ref(my_store), target);
+  nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
 }
 #endif

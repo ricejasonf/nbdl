@@ -29,9 +29,9 @@ namespace nbdl
     {
       return test_context_def::make(
         nbdl::echo_producer{},
-        test_context::producer_tag{},
-        test_context::consumer_tag{},
-        test_context::consumer_tag{},
+        test_context::producer_tag<>{},
+        test_context::consumer_tag<>{},
+        test_context::consumer_tag<>{},
         nbdl::null_store{}
       );
     }
@@ -53,9 +53,9 @@ TEST_CASE("Echo producer should echo messages to downstream.", "[echo_producer]"
   , message::no_uid
   , Entity{5, 5}
   );
-  consumer2.push_api.push(msg);
-  consumer2.push_api.push(msg);
-  consumer2.push_api.push(msg);
+  nbdl::apply_message(consumer2.context, msg);
+  nbdl::apply_message(consumer2.context, msg);
+  nbdl::apply_message(consumer2.context, msg);
 
   REQUIRE(consumer2.recorded_messages.size() == 3);
 

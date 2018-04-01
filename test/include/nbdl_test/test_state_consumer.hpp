@@ -15,28 +15,30 @@
 
 namespace nbdl_test
 {
-  struct state_consumer { };
+  struct state_consumer;
 
-  template <typename PushApi>
+  template <typename Context>
   struct state_consumer_impl
   {
     using hana_tag = state_consumer;
-    PushApi push_api;
+    Context context;
+
+    template <typename T>
+    state_consumer_impl(nbdl::actor_initializer<Context, T>&& a)
+     : context(a.context)
+    { } 
   };
+
+  struct state_consumer
+  {
+    template <typename Context>
+    using actor_impl = state_consumer_impl<Context>;
+  };
+
 }
 
 namespace nbdl
 {
-  template <>
-  struct make_state_consumer_impl<nbdl_test::state_consumer>
-  {
-    template <typename PushApi>
-    static auto apply(PushApi&& p)
-    {
-      return nbdl_test::state_consumer_impl<std::decay_t<PushApi>>{std::forward<PushApi>(p)};
-    }
-  };
-
   template <>
   struct notify_state_change_impl<nbdl_test::state_consumer>
   {

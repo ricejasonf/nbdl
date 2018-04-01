@@ -37,10 +37,10 @@ namespace nbdl
     static constexpr auto apply()
     {
       return test_context_def::make(
-        test_context::producer_tag{},
-        test_context::producer_tag{},
-        test_context::consumer_tag{},
-        test_context::consumer_tag{},
+        test_context::producer_tag<>{},
+        test_context::producer_tag<>{},
+        test_context::consumer_tag<>{},
+        test_context::consumer_tag<>{},
         nbdl::null_store{}
       );
     }
@@ -85,7 +85,7 @@ TEST_CASE("Dispatch Downstream Read Message", "[context]")
   , message::no_uid
   , entity::my_entity<1>{2, 1}
   );
-  producer0.push_api.push(msg);
+  nbdl::apply_message(producer0.context, msg);
 
   CHECK(producer0.recorded_messages.size() == 0);
   CHECK(producer1.recorded_messages.size() == 0);
@@ -110,7 +110,7 @@ TEST_CASE("Dispatch Upstream Read Message", "[context]")
 
   // Send upstream read to producer0.
   auto msg = message::make_upstream_read(test_context::path1(1, 2));
-  consumer2.push_api.push(msg);
+  nbdl::apply_message(consumer2.context, msg);
 
   // producer1 should not receive the message.
   REQUIRE(producer0.recorded_messages.size() == 1);
@@ -150,7 +150,7 @@ TEST_CASE("Dispatch Downstream Create Message", "[context]")
     , Entity{2, 1}
     , message::no_is_confirmed
     );
-    producer0.push_api.push(msg);
+    nbdl::apply_message(producer0.context, msg);
 
     CHECK(producer0.recorded_messages.size() == 0);
     CHECK(producer1.recorded_messages.size() == 0);
@@ -187,7 +187,7 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
     , message::no_uid
     , Entity{2, 1}
     );
-    consumer2.push_api.push(msg);
+    nbdl::apply_message(consumer2.context, msg);
 
     // producer1 should not receive the message.
     CHECK(producer0.recorded_messages.size() == 1);
@@ -223,7 +223,7 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
     , message::no_uid
     , Entity{2, 1}
     );
-    consumer2.push_api.push(msg);
+    nbdl::apply_message(consumer2.context, msg);
 
     // producer0 should not receive the message.
     CHECK(producer0.recorded_messages.size() == 0);
@@ -263,7 +263,7 @@ TEST_CASE("Dispatch Downstream Update Message", "[context]")
     , Entity{2, 1}
     , message::no_is_confirmed
     );
-    producer0.push_api.push(msg);
+    nbdl::apply_message(producer0.context, msg);
 
     CHECK(producer0.recorded_messages.size() == 0);
     CHECK(producer1.recorded_messages.size() == 0);
@@ -300,7 +300,7 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
     , message::no_uid
     , Entity{2, 1}
     );
-    consumer2.push_api.push(msg);
+    nbdl::apply_message(consumer2.context, msg);
 
     // producer1 should not receive the message.
     CHECK(producer0.recorded_messages.size() == 1);
@@ -336,7 +336,7 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
     , message::no_uid
     , Entity{2, 1}
     );
-    consumer2.push_api.push(msg);
+    nbdl::apply_message(consumer2.context, msg);
 
     // producer0 should not receive the message.
     CHECK(producer0.recorded_messages.size() == 0);

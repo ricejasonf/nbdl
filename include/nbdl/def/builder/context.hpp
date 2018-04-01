@@ -46,7 +46,7 @@ namespace nbdl_def::builder
   struct context_meta
   {
     using producer_lookup       = ProducerLookup;
-    using actor_tag_types        = ActorTagTypes;
+    using actor_tag_types       = ActorTagTypes;
     using store_map             = StoreMap;
     using message_api_meta      = MessageApiMeta;
     using listener_lookup       = ListenerLookup;
@@ -65,7 +65,7 @@ namespace nbdl_def::builder
       constexpr auto consumers_meta   = builder::enumerate_consumers(Def{});
       constexpr auto producer_map     = builder::producer_map(producers_meta);
       constexpr auto consumer_map     = builder::consumer_map(consumers_meta);
-      constexpr auto actor_info        = builder::context_actors(producer_map, consumer_map);
+      constexpr auto actor_info       = builder::context_actors(producer_map, consumer_map);
       constexpr auto store_map        = builder::store_map(
                                           hana::flatten(
                                             hana::unpack(producers_meta,

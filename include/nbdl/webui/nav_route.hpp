@@ -13,6 +13,10 @@
 #include <nbdl/webui/detail/event_receiver.hpp>
 #include <nbdl/webui/route_map.hpp>
 
+#include <boost/hana/equal.hpp>
+#include <boost/hana/functional/overload_linearly.hpp>
+#include <boost/hana/tuple.hpp>
+#include <boost/hana/type.hpp>
 #include <emscripten.h>
 #include <type_traits>
 #include <utility>
@@ -79,8 +83,9 @@ namespace nbdl::webui
         , route.data()
         );
 
-        context.push(
-          message::make_downstream_update(
+        nbdl::apply_message(
+          context
+        , message::make_downstream_update(
             hana::make_tuple(nav_route_s, hana::type_c<nbdl::string>)
           , message::no_uid
           , route
@@ -100,9 +105,14 @@ namespace nbdl::webui
     Context context;
     std::unique_ptr<detail::event_receiver> receiver;
 
-    nav_route_producer_impl(Context c)
-      : context(c)
-      , receiver(detail::make_event_receiver(detail::popstate_event_receiver<Context>{c}))
+    nav_route_producer_impl(actor_initializer<Context, hana_tag> a)
+      : context(a.context)
+      , receiver(detail::make_event_receiver(detail::popstate_event_receiver<Context>{a.context}))
+    { }
+
+    nav_route_producer_impl(actor_initializer<Context, hana::type<void>> a)
+      : context(a.context)
+      , receiver(detail::make_event_receiver(detail::popstate_event_receiver<Context>{a.context}))
     { }
   };
 
@@ -119,12 +129,10 @@ namespace nbdl
 {
   // nav_route_producer
 
-  template <typename RouteMap>
-  struct make_producer_impl<nbdl::webui::nav_route_producer<RouteMap>>
+  template <typename RouteMap, typename Context>
+  struct actor_type<nbdl::webui::nav_route_producer<RouteMap>, Context>
   {
-    template <typename Context, typename ...Args>
-    static nbdl::webui::nav_route_producer_impl<Context, RouteMap> apply(Context c, Args&&...)
-    { return {c}; }
+    using type = nbdl::webui::nav_route_producer_impl<Context, RouteMap>;
   };
 
   template <typename RouteMap>

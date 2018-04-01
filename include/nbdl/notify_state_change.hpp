@@ -7,8 +7,9 @@
 #ifndef NBDL_NOTIFY_STATE_CHANGE_HPP
 #define NBDL_NOTIFY_STATE_CHANGE_HPP
 
-#include<nbdl/concept/StateConsumer.hpp>
 #include<nbdl/fwd/notify_state_change.hpp>
+
+#include<nbdl/concept/StateConsumer.hpp>
 
 #include<utility>
 

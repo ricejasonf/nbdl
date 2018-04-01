@@ -28,10 +28,10 @@ namespace nbdl
     static constexpr auto apply()
     {
       return test_context_def::make(
-        test_context::producer_tag{},
-        test_context::producer_tag{},
-        test_context::consumer_tag{},
-        test_context::consumer_tag{},
+        test_context::producer_tag<>{},
+        test_context::producer_tag<>{},
+        test_context::consumer_tag<>{},
+        test_context::consumer_tag<>{},
         nbdl::null_store{}
       );
     }
@@ -40,10 +40,6 @@ namespace nbdl
 
 int main()
 {
-  // these are just constructor smoke tests
-  {
-    auto context_ptr = nbdl::make_unique_context<builder_test_context>();
-  }
   {
     using test_context::int_tag;
     // test single parameter construction

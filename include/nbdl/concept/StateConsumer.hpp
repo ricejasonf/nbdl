@@ -7,12 +7,10 @@
 #ifndef NBDL_CONCEPT_STATE_CONSUMER_HPP
 #define NBDL_CONCEPT_STATE_CONSUMER_HPP
 
-#include<nbdl/fwd/concept/StateConsumer.hpp>
+#include <nbdl/fwd/concept/StateConsumer.hpp>
+#include <nbdl/notify_state_change.hpp>
 
-#include<nbdl/make_state_consumer.hpp>
-#include<nbdl/notify_state_change.hpp>
-
-#include<boost/hana/core/default.hpp>
+#include <boost/hana/core/default.hpp>
 
 namespace nbdl
 {
@@ -23,10 +21,9 @@ namespace nbdl
   {
     using Tag = typename hana::tag_of<T>::type;
     static constexpr bool value =
-          !hana::is_default<nbdl::make_state_consumer_impl      <Tag>>::value
-      &&  !hana::is_default<nbdl::notify_state_change_impl      <Tag>>::value
+          !hana::is_default<nbdl::notify_state_change_impl      <Tag>>::value
       ;
   };
-} // nbdl
+}
 
 #endif

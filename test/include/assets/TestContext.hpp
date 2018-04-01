@@ -240,103 +240,103 @@ namespace test_context {
     int_tag() : x(i) { }
   };
 
-  struct producer_tag { };
-  struct consumer_tag { };
-  struct state_consumer_tag { };
+  template <typename T = void> struct producer_tag { };
+  template <typename T = void> struct consumer_tag { };
+  template <typename T = void> struct state_consumer_tag { };
   struct null_system_message { };
 
-  template<typename PushApi, typename T = void>
+  template<typename Context, typename T = void>
   struct producer
   {
-    static_assert(nbdl::Store<PushApi>::value);
-    using hana_tag = test_context::producer_tag;
-    PushApi push_api;
+    static_assert(nbdl::Store<Context>::value);
+    using hana_tag = test_context::producer_tag<T>;
+    Context context;
     T t_;
 
-    template<typename P, typename A>
-    producer(P&& p, A&& a)
-      : push_api(std::forward<P>(p))
-      , t_(std::forward<A>(a))
+    template <typename A>
+    producer(nbdl::actor_initializer<Context, A>&& p)
+      : context(p.context)
+      , t_(std::move(p).value)
     { }
   };
 
-  template<typename PushApi>
-  struct producer<PushApi, void>
+  template<typename Context>
+  struct producer<Context, void>
   {
-    static_assert(nbdl::Store<PushApi>::value);
-    using hana_tag = test_context::producer_tag;
+    static_assert(nbdl::Store<Context>::value);
+    using hana_tag = test_context::producer_tag<>;
 
     using MessageVariant = typename nbdl::message_api<
-      typename PushApi::tag
+      typename Context::tag
     , null_system_message  
     >::upstream_variant;
 
-    PushApi push_api;
+    Context context;
     std::vector<MessageVariant> recorded_messages;
 
-    template<typename P>
-    producer(P&& p)
-      : push_api(std::forward<P>(p))
+    template <typename A>
+    producer(nbdl::actor_initializer<Context, A>&& p)
+      : context(p.context)
       , recorded_messages()
     { }
   };
 
-  template<typename PushApi, typename T = void>
+  template<typename Context, typename T = void>
   struct consumer
   {
-    static_assert(nbdl::Store<PushApi>::value);
-    using hana_tag = test_context::consumer_tag;
+    static_assert(nbdl::Store<Context>::value);
+    using hana_tag = test_context::consumer_tag<T>;
 
     using MessageVariant = typename nbdl::message_api<
-      typename PushApi::tag
+      typename Context::tag
     , null_system_message  
     >::downstream_variant;
 
-    PushApi push_api;
+    Context context;
     T t_;
     std::vector<MessageVariant> recorded_messages;
 
-    template<typename P, typename A>
-    consumer(P&& p, A&& a)
-      : push_api(std::forward<P>(p))
-      , t_(std::forward<A>(a))
+    template <typename A>
+    consumer(nbdl::actor_initializer<Context, A>&& p)
+      : context(p.context)
+      , t_(std::move(p).value)
       , recorded_messages()
     { }
   };
 
-  template<typename PushApi>
-  struct consumer<PushApi, void>
+  template<typename Context>
+  struct consumer<Context, void>
   {
-    static_assert(nbdl::Store<PushApi>::value);
-    using hana_tag = test_context::consumer_tag;
+    static_assert(nbdl::Store<Context>::value);
+    using hana_tag = test_context::consumer_tag<>;
 
     using MessageVariant = typename nbdl::message_api<
-      typename PushApi::tag
+      typename Context::tag
     , null_system_message  
     >::downstream_variant;
 
 
-    PushApi push_api;
+    Context context;
     std::vector<MessageVariant> recorded_messages;
 
-    template<typename P>
-    consumer(P&& p)
-      : push_api(std::forward<P>(p))
+    template <typename A>
+    consumer(nbdl::actor_initializer<Context, A>&& p)
+      : context(p.context)
       , recorded_messages()
     { }
   };
 
-  template <typename PushApi>
+  template <typename Context>
   struct state_consumer
   {
-    using hana_tag = test_context::state_consumer_tag;
+    using hana_tag = test_context::state_consumer_tag<>;
 
-    PushApi push_api;
+    Context context;
     std::vector<path_variant> recorded_notifications;
 
-    template <typename P>
-    state_consumer(P&& p)
-      : push_api(std::forward<P>(p))
+    template <typename A>
+    state_consumer(nbdl::actor_initializer<Context, A>&& p)
+      : context(p.context)
       , recorded_notifications()
     { }
   };
@@ -344,24 +344,28 @@ namespace test_context {
 
 namespace nbdl
 {
-  // Producer
-
-  template <>
-  struct make_producer_impl<test_context::producer_tag>
+  template <typename T, typename Context>
+  struct actor_type<test_context::producer_tag<T>, Context>
   {
-    template <typename ...Args>
-    static constexpr auto apply(Args&& ...args)
-    {
-      static_assert(
-        !decltype(hana::contains(hana::make_tuple(hana::typeid_(args)...), hana::type_c<void>)){}
-      , "Type void should not be passed as parameter to context element"
-      );
-      return test_context::producer<std::decay_t<Args>...>(std::forward<Args>(args)...);
-    }
+    using type = test_context::producer<Context, T>;
   };
 
-  template <>
-  struct send_upstream_message_impl<test_context::producer_tag>
+  template <typename T, typename Context>
+  struct actor_type<test_context::consumer_tag<T>, Context>
+  {
+    using type = test_context::consumer<Context, T>;
+  };
+
+  template <typename T, typename Context>
+  struct actor_type<test_context::state_consumer_tag<T>, Context>
+  {
+    using type = test_context::state_consumer<Context>;
+  };
+
+  // Producer
+
+  template <typename T>
+  struct send_upstream_message_impl<test_context::producer_tag<T>>
   {
     template <typename Producer, typename Message>
     static constexpr auto apply(Producer& p, Message&& m)
@@ -372,22 +376,8 @@ namespace nbdl
 
   // Consumer
 
-  template <>
-  struct make_consumer_impl<test_context::consumer_tag>
-  {
-    template <typename ...Args>
-    static constexpr auto apply(Args&& ...args)
-    {
-      static_assert(
-        !decltype(hana::contains(hana::make_tuple(hana::typeid_(args)...), hana::type_c<void>)){}
-      , "Type void should not be passed as parameter to context element"
-      );
-      return test_context::consumer<std::decay_t<Args>...>(std::forward<Args>(args)...);
-    }
-  };
-
-  template <>
-  struct send_downstream_message_impl<test_context::consumer_tag>
+  template <typename T>
+  struct send_downstream_message_impl<test_context::consumer_tag<T>>
   {
     template <typename Producer, typename Message>
     static constexpr auto apply(Producer& p, Message&& m)
@@ -398,18 +388,8 @@ namespace nbdl
 
   // StateConsumer
 
-  template <>
-  struct make_state_consumer_impl<test_context::state_consumer_tag>
-  {
-    template <typename PushApi>
-    static constexpr auto apply(PushApi&& p)
-    {
-      return test_context::state_consumer<std::decay_t<PushApi>>(std::forward<PushApi>(p));
-    }
-  };
-
-  template <>
-  struct notify_state_change_impl<test_context::state_consumer_tag>
+  template <typename T>
+  struct notify_state_change_impl<test_context::state_consumer_tag<T>>
   {
     template <typename StateConsumer, typename Path>
     static constexpr void apply(StateConsumer&& s, Path&& p)

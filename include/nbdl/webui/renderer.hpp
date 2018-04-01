@@ -7,9 +7,9 @@
 #ifndef NBDL_WEBUI_RENDERER_HPP
 #define NBDL_WEBUI_RENDERER_HPP
 
+#include <nbdl/actor_type.hpp>
+#include <nbdl/fwd/notify_state_change.hpp>
 #include <nbdl/fwd/webui/renderer.hpp>
-#include <nbdl/make_state_consumer.hpp>
-#include <nbdl/notify_state_change.hpp>
 #include <nbdl/webui/detail/dom_manips.hpp>
 #include <nbdl/webui/detail/flatten_spec.hpp>
 
@@ -112,6 +112,19 @@ namespace nbdl
           ))
       { }
 
+      template <typename Element>
+      renderer_impl(actor_initializer<Store, Element>&& a)
+        : store(a.context)
+        , is_rendered(false)
+        , is_destroyed(false)
+        , render_pipe(hana::unpack(
+            FnList{}
+          , detail::construct_pipe_helper_fn<Store>{store}
+          ))
+      {
+        render(std::move(a.value));
+      }
+
       template <typename Parent>
       void render(Parent&& parent)
       {
@@ -156,18 +169,19 @@ namespace nbdl
         });
       }
     };
+
+    template <typename Tag, typename Store, typename Element>
+    auto make_renderer(Store s, Element&& el)
+    {
+      using Renderer = typename actor_type<Tag, Store>::type;
+      return Renderer(nbdl::detail::make_actor_initializer(s, std::forward<Element>(el)));
+    }
   }
 
-  template <typename RenderSpec>
-  struct make_state_consumer_impl<webui::renderer<RenderSpec>>
+  template <typename Spec, typename Context>
+  struct actor_type<webui::renderer<Spec>, Context>
   {
-    template <typename Store, typename RootElement>
-    static constexpr auto apply(Store&& store, RootElement&& root)
-    {
-      auto r = webui::renderer_impl<std::decay_t<Store>, RenderSpec>(std::forward<Store>(store));
-      r.render(std::forward<RootElement>(root));
-      return std::move(r);
-    }
+    using type = webui::renderer_impl<Context, Spec>;
   };
 
   template <typename RenderSpec>
