@@ -43,8 +43,8 @@ namespace nbdl
 namespace
 {
   auto context = nbdl::make_unique_context<test_context_state_consumer::my_context>();
-  auto& producer0       = context->cell<0>();
-  auto& state_consumer  = context->cell<2>();
+  auto& producer0       = context->actor<0>();
+  auto& state_consumer  = context->actor<2>();
   auto& notifications   = state_consumer.recorded_notifications;
 }
 

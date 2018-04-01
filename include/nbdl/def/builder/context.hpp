@@ -10,7 +10,7 @@
 #include <mpdef/list.hpp>
 #include <nbdl/def/directives.hpp>
 #include <nbdl/def/builder/consumer_map.hpp>
-#include <nbdl/def/builder/context_cells.hpp>
+#include <nbdl/def/builder/context_actors.hpp>
 #include <nbdl/def/builder/enumerate_producers.hpp>
 #include <nbdl/def/builder/enumerate_consumers.hpp>
 #include <nbdl/def/builder/listener_lookup.hpp>
@@ -38,7 +38,7 @@ namespace nbdl_def::builder
 
   template <
     typename ProducerLookup,
-    typename CellTagTypes,
+    typename ActorTagTypes,
     typename StoreMap,
     typename MessageApiMeta,
     typename ListenerLookup
@@ -46,7 +46,7 @@ namespace nbdl_def::builder
   struct context_meta
   {
     using producer_lookup       = ProducerLookup;
-    using cell_tag_types        = CellTagTypes;
+    using actor_tag_types        = ActorTagTypes;
     using store_map             = StoreMap;
     using message_api_meta      = MessageApiMeta;
     using listener_lookup       = ListenerLookup;
@@ -65,7 +65,7 @@ namespace nbdl_def::builder
       constexpr auto consumers_meta   = builder::enumerate_consumers(Def{});
       constexpr auto producer_map     = builder::producer_map(producers_meta);
       constexpr auto consumer_map     = builder::consumer_map(consumers_meta);
-      constexpr auto cell_info        = builder::context_cells(producer_map, consumer_map);
+      constexpr auto actor_info        = builder::context_actors(producer_map, consumer_map);
       constexpr auto store_map        = builder::store_map(
                                           hana::flatten(
                                             hana::unpack(producers_meta,
@@ -75,7 +75,7 @@ namespace nbdl_def::builder
       constexpr auto listener_lookup  = hana::type_c<builder::listener_lookup<decltype(producers_meta)>>;
       constexpr auto message_api      = hana::typeid_(builder::make_message_api(producers_meta));
       constexpr auto params = hana::concat(
-        cell_info,
+        actor_info,
         mpdef::make_list(store_map, message_api, listener_lookup)
       );
 

@@ -43,15 +43,15 @@ namespace nbdl
   {
     struct store_tag { };
 
-    constexpr auto init_producers = [](auto& cells)
+    constexpr auto init_producers = [](auto& actors)
     {
-      hana::for_each(cells, [](auto& cell)
+      hana::for_each(actors, [](auto& actor)
       {
-        using Cell = std::decay_t<decltype(cell)>;
+        using Actor = std::decay_t<decltype(actor)>;
 
-        if constexpr(nbdl::Producer<Cell>::value)
+        if constexpr(nbdl::Producer<Actor>::value)
         {
-          nbdl::producer_init(cell);
+          nbdl::producer_init(actor);
         }
       });
     };
@@ -82,7 +82,7 @@ namespace nbdl
     using tag = Tag;
     using ContextMeta     = nbdl_def::builder::make_context_meta_t<Tag>;
     using ProducerLookup  = typename ContextMeta::producer_lookup;
-    using CellTagTypes    = typename ContextMeta::cell_tag_types;
+    using ActorTagTypes    = typename ContextMeta::actor_tag_types;
     using StoreMap        = typename ContextMeta::store_map;
     using ListenerLookup  = typename ContextMeta::listener_lookup;
 
@@ -143,33 +143,33 @@ namespace nbdl
       }
     };
 
-    static constexpr std::size_t cell_count = decltype(hana::size(CellTagTypes{}))::value;
-    static constexpr auto cell_index_sequence = std::make_index_sequence<cell_count>{};
+    static constexpr std::size_t actor_count = decltype(hana::size(ActorTagTypes{}))::value;
+    static constexpr auto actor_index_sequence = std::make_index_sequence<actor_count>{};
 
     template <std::size_t i>
-    static constexpr auto cell_factory()
+    static constexpr auto actor_factory()
     {
-      using CellTag = typename decltype(hana::at_c<i>(CellTagTypes{}))::type;
-      if constexpr(nbdl::Producer<CellTag>::value)
-        return nbdl::make_producer<CellTag>;
-      else if constexpr(nbdl::StateConsumer<CellTag>::value)
-        return nbdl::make_state_consumer<CellTag>;
-      else if constexpr(nbdl::Consumer<CellTag>::value)
-        return nbdl::make_consumer<CellTag>;
+      using ActorTag = typename decltype(hana::at_c<i>(ActorTagTypes{}))::type;
+      if constexpr(nbdl::Producer<ActorTag>::value)
+        return nbdl::make_producer<ActorTag>;
+      else if constexpr(nbdl::StateConsumer<ActorTag>::value)
+        return nbdl::make_state_consumer<ActorTag>;
+      else if constexpr(nbdl::Consumer<ActorTag>::value)
+        return nbdl::make_consumer<ActorTag>;
       else
         static_assert(
-          std::is_void<CellTag>::value
-        , "Context requires cells to be Producer, Consumer, or StateConsumer"
+          std::is_void<ActorTag>::value
+        , "Context requires actors to be Producer, Consumer, or StateConsumer"
         );
     }
 
     template <std::size_t i>
     static constexpr auto get_push_api_type()
     {
-      using CellTag = typename decltype(hana::at_c<i>(CellTagTypes{}))::type;
-      if constexpr(nbdl::Producer<CellTag>::value)
+      using ActorTag = typename decltype(hana::at_c<i>(ActorTagTypes{}))::type;
+      if constexpr(nbdl::Producer<ActorTag>::value)
         return hana::type_c<push_downstream_api>;
-      else if constexpr(nbdl::StateConsumer<CellTag>::value)
+      else if constexpr(nbdl::StateConsumer<ActorTag>::value)
         return hana::type_c<context_detail::store_handle<tag, context>>;
       else // if Consumer
         return hana::type_c<push_upstream_api>;
@@ -179,15 +179,15 @@ namespace nbdl
     using PushApi = typename decltype(get_push_api_type<i>())::type;
 
     template <std::size_t i, typename Arg = hana::type<void>>
-    static constexpr auto make_cell_type()
+    static constexpr auto make_actor_type()
     {
       if constexpr(decltype(hana::equal(hana::typeid_(std::declval<Arg>()), hana::type_c<void>)){})
       {
-        return hana::type_c<decltype(cell_factory<i>()(std::declval<PushApi<i>>()))>;
+        return hana::type_c<decltype(actor_factory<i>()(std::declval<PushApi<i>>()))>;
       }
       else
       {
-        return hana::type_c<decltype(cell_factory<i>()(std::declval<PushApi<i>>(),
+        return hana::type_c<decltype(actor_factory<i>()(std::declval<PushApi<i>>(),
            std::declval<Arg>()))>;
       }
     }
@@ -197,7 +197,7 @@ namespace nbdl
     static constexpr auto make_storage_helper(std::index_sequence<i...>, hanax::types<>)
     {
       return hana::template_<hana::tuple>(
-        make_cell_type<i>()...
+        make_actor_type<i>()...
       );
     }
 
@@ -206,32 +206,32 @@ namespace nbdl
     static constexpr auto make_storage_helper(std::index_sequence<i1, i...>, hanax::types<Arg1, Args...>)
     {
       return hana::template_<hana::tuple>(
-        make_cell_type<i1, Arg1>(),
-        make_cell_type<i, Args>()...
+        make_actor_type<i1, Arg1>(),
+        make_actor_type<i, Args>()...
       );
     }
 
-    using Cells = typename decltype(make_storage_helper(cell_index_sequence, ArgTypes{}))::type;
+    using Actors = typename decltype(make_storage_helper(actor_index_sequence, ArgTypes{}))::type;
 
-    Cells cells;
+    Actors actors;
     StoreMap stores;
 
     template <std::size_t i>
-    decltype(auto) make_cell()
+    decltype(auto) make_actor()
     {
-      return cell_factory<i>()(PushApi<i>(*this));
+      return actor_factory<i>()(PushApi<i>(*this));
     }
 
     template <std::size_t i, typename Arg>
-    decltype(auto) make_cell(Arg&& arg)
+    decltype(auto) make_actor(Arg&& arg)
     {
       if constexpr(decltype(hana::equal(hana::typeid_(arg), hana::type_c<void>)){})
       {
-        return cell_factory<i>()(PushApi<i>(*this));
+        return actor_factory<i>()(PushApi<i>(*this));
       }
       else
       {
-        return cell_factory<i>()(PushApi<i>(*this), std::forward<Arg>(arg));
+        return actor_factory<i>()(PushApi<i>(*this), std::forward<Arg>(arg));
       }
     }
 
@@ -244,18 +244,18 @@ namespace nbdl
         , message::get_path_type(m)
         )
       );
-      nbdl::send_upstream_message(cells[Index{}], std::forward<Message>(m));
+      nbdl::send_upstream_message(actors[Index{}], std::forward<Message>(m));
     }
 
     template <typename Message>
     void propagate_downstream(Message const& m)
     {
       // notify all consumers
-      hana::for_each(cells, [&](auto& cell)
+      hana::for_each(actors, [&](auto& actor)
       {
-        if constexpr(nbdl::Consumer<decltype(cell)>::value)
+        if constexpr(nbdl::Consumer<decltype(actor)>::value)
         {
-          nbdl::send_downstream_message(cell, m);
+          nbdl::send_downstream_message(actor, m);
         }
       });
     }
@@ -263,11 +263,11 @@ namespace nbdl
     template <typename Path>
     void notify_state_consumers(Path const& p)
     {
-      hana::for_each(cells, [&](auto& cell)
+      hana::for_each(actors, [&](auto& actor)
       {
-        if constexpr(nbdl::StateConsumer<decltype(cell)>::value)
+        if constexpr(nbdl::StateConsumer<decltype(actor)>::value)
         {
-          nbdl::notify_state_change(cell, p);
+          nbdl::notify_state_change(actor, p);
         }
       });
     }
@@ -370,14 +370,14 @@ namespace nbdl
       typename = std::enable_if_t<(sizeof...(Args) > 0)>
     >
     context(std::index_sequence<i...>, Args&& ...args)
-      : cells(make_cell<i>(std::forward<Args>(args))...)
+      : actors(make_actor<i>(std::forward<Args>(args))...)
       , stores()
     { }
 
     // default constructor helper
     template <std::size_t ...i>
     explicit context(std::index_sequence<i...>)
-      : cells(make_cell<i>()...)
+      : actors(make_actor<i>()...)
       , stores()
     { }
 
@@ -385,26 +385,26 @@ namespace nbdl
 
     template <typename Arg1, typename ...Args,
       typename = std::enable_if_t<(
-        (sizeof...(Args) + 1 == cell_count)
+        (sizeof...(Args) + 1 == actor_count)
         && !std::is_same<std::decay_t<Arg1>, context>::value
         && !hana::is_a<hana::ext::std::integer_sequence_tag, Arg1>
       )>
     >
     explicit context(Arg1&& arg1, Args&& ...args)
       : context(
-          cell_index_sequence,
+          actor_index_sequence,
           std::forward<Arg1>(arg1),
           std::forward<Args>(args)...
         )
     {
-      context_detail::init_producers(cells);
+      context_detail::init_producers(actors);
     }
 
     // default constructor
     context()
-      : context(cell_index_sequence)
+      : context(actor_index_sequence)
     {
-      context_detail::init_producers(cells);
+      context_detail::init_producers(actors);
     }
 
     // Push functions contain references to self
@@ -413,12 +413,12 @@ namespace nbdl
     // Producers.
     context(context const&) = delete;
 
-    // Access cell by its position
+    // Access actor by its position
     // in the tuple of Producers/Consumers
     template <std::size_t i>
-    auto& cell()
+    auto& actor()
     {
-      return hana::at_c<i>(cells);
+      return hana::at_c<i>(actors);
     }
   };
 

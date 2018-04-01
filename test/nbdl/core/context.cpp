@@ -74,10 +74,10 @@ TEST_CASE("Dispatch Downstream Read Message", "[context]")
 {
   auto context = nbdl::make_unique_context<test_context_::my_context>();
 
-  auto& producer0 = context->cell<0>();
-  auto& producer1 = context->cell<1>();
-  auto& consumer2 = context->cell<2>();
-  auto& consumer3 = context->cell<3>();
+  auto& producer0 = context->actor<0>();
+  auto& producer1 = context->actor<1>();
+  auto& consumer2 = context->actor<2>();
+  auto& consumer3 = context->actor<3>();
 
   // Send downstream read to consumers.
   auto msg = message::make_downstream_read(
@@ -103,10 +103,10 @@ TEST_CASE("Dispatch Upstream Read Message", "[context]")
 {
   auto context = nbdl::make_unique_context<test_context_::my_context>();
 
-  auto& producer0 = context->cell<0>();
-  auto& producer1 = context->cell<1>();
-  auto& consumer2 = context->cell<2>();
-  auto& consumer3 = context->cell<3>();
+  auto& producer0 = context->actor<0>();
+  auto& producer1 = context->actor<1>();
+  auto& consumer2 = context->actor<2>();
+  auto& consumer3 = context->actor<3>();
 
   // Send upstream read to producer0.
   auto msg = message::make_upstream_read(test_context::path1(1, 2));
@@ -138,10 +138,10 @@ TEST_CASE("Dispatch Downstream Create Message", "[context]")
 
     auto context = nbdl::make_unique_context<test_context_::my_context>();
 
-    auto& producer0 = context->cell<0>();
-    auto& producer1 = context->cell<1>();
-    auto& consumer2 = context->cell<2>();
-    auto& consumer3 = context->cell<3>();
+    auto& producer0 = context->actor<0>();
+    auto& producer1 = context->actor<1>();
+    auto& consumer2 = context->actor<2>();
+    auto& consumer3 = context->actor<3>();
 
     // Send downstream create to consumers.
     auto msg = message::make_downstream_create(
@@ -176,10 +176,10 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
 
     auto context = nbdl::make_unique_context<test_context_::my_context>();
 
-    auto& producer0 = context->cell<0>();
-    auto& producer1 = context->cell<1>();
-    auto& consumer2 = context->cell<2>();
-    auto& consumer3 = context->cell<3>();
+    auto& producer0 = context->actor<0>();
+    auto& producer1 = context->actor<1>();
+    auto& consumer2 = context->actor<2>();
+    auto& consumer3 = context->actor<3>();
 
     // Send upstream create to producer0.
     auto msg = message::make_upstream_create(
@@ -212,10 +212,10 @@ TEST_CASE("Dispatch Upstream Create Message", "[context]")
 
     auto context = nbdl::make_unique_context<test_context_::my_context>();
 
-    auto& producer0 = context->cell<0>();
-    auto& producer1 = context->cell<1>();
-    auto& consumer2 = context->cell<2>();
-    auto& consumer3 = context->cell<3>();
+    auto& producer0 = context->actor<0>();
+    auto& producer1 = context->actor<1>();
+    auto& consumer2 = context->actor<2>();
+    auto& consumer3 = context->actor<3>();
 
     // Send upstream create to producer0.
     auto msg = message::make_upstream_create(
@@ -251,10 +251,10 @@ TEST_CASE("Dispatch Downstream Update Message", "[context]")
 
     auto context = nbdl::make_unique_context<test_context_::my_context>();
 
-    auto& producer0 = context->cell<0>();
-    auto& producer1 = context->cell<1>();
-    auto& consumer2 = context->cell<2>();
-    auto& consumer3 = context->cell<3>();
+    auto& producer0 = context->actor<0>();
+    auto& producer1 = context->actor<1>();
+    auto& consumer2 = context->actor<2>();
+    auto& consumer3 = context->actor<3>();
 
     // Send downstream update to consumers.
     auto msg = message::make_downstream_update(
@@ -289,10 +289,10 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
 
     auto context = nbdl::make_unique_context<test_context_::my_context>();
 
-    auto& producer0 = context->cell<0>();
-    auto& producer1 = context->cell<1>();
-    auto& consumer2 = context->cell<2>();
-    auto& consumer3 = context->cell<3>();
+    auto& producer0 = context->actor<0>();
+    auto& producer1 = context->actor<1>();
+    auto& consumer2 = context->actor<2>();
+    auto& consumer3 = context->actor<3>();
 
     // Send upstream update to producer0.
     auto msg = message::make_upstream_update(
@@ -325,10 +325,10 @@ TEST_CASE("Dispatch Upstream Update Message", "[context]")
 
     auto context = nbdl::make_unique_context<test_context_::my_context>();
 
-    auto& producer0 = context->cell<0>();
-    auto& producer1 = context->cell<1>();
-    auto& consumer2 = context->cell<2>();
-    auto& consumer3 = context->cell<3>();
+    auto& producer0 = context->actor<0>();
+    auto& producer1 = context->actor<1>();
+    auto& consumer2 = context->actor<2>();
+    auto& consumer3 = context->actor<3>();
 
     // Send upstream update to producer0.
     auto msg = message::make_upstream_update(

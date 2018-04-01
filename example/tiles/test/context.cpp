@@ -15,7 +15,7 @@
 namespace
 {
   auto context = tiles::make_context<nbdl::echo_producer, nbdl_test::state_consumer>();
-  auto& state = context->cell<1>();
+  auto& state = context->actor<1>();
 }
 
 TEST_CASE(".", "[tiles][tiles_context]") 

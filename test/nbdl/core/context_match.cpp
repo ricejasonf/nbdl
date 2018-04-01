@@ -97,7 +97,7 @@ namespace nbdl
 TEST_CASE("Match a value in the stores.", "[context]")
 {
   auto context = nbdl::make_unique_context<test_context_match::my_context>();
-  auto& state_consumer  = context->cell<2>();
+  auto& state_consumer  = context->actor<2>();
 
   bool result = false;
 
@@ -115,8 +115,8 @@ TEST_CASE("Match a value in the stores.", "[context]")
 TEST_CASE("Matching nbdl::trigger_read triggers upstream read message.", "[context]")
 {
   auto context = nbdl::make_unique_context<test_context_match::my_context>();
-  auto& producer1       = context->cell<1>();
-  auto& state_consumer  = context->cell<2>();
+  auto& producer1       = context->actor<1>();
+  auto& state_consumer  = context->actor<2>();
 
   bool result = false;
 

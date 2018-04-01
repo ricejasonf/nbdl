@@ -41,7 +41,7 @@ namespace nbdl
 TEST_CASE("Echo producer should echo messages to downstream.", "[echo_producer]")
 {
   auto context = nbdl::make_unique_context<test_echo_producer::my_context>();
-  auto& consumer2 = context->cell<2>();
+  auto& consumer2 = context->actor<2>();
 
   using Path = test_context::path<0>;
   using Entity = test_context::entity::my_entity<1>;

@@ -17,7 +17,7 @@ namespace hana  = boost::hana;
 namespace hanax = boost::hana::experimental;
 
 // return producer lookup, consumer lookup, and tuple of the instances of those
-struct context_cells_fn
+struct context_actors_fn
 {
   template<typename ProducerKeys>
   struct make_producer_lookup_pair_list_fn
@@ -40,7 +40,7 @@ struct context_cells_fn
     }
   };
 
-  struct make_cell_tags_fn
+  struct make_actor_tags_fn
   {
     template<typename ...ProducerTags, typename ...ConsumerTags>
     constexpr auto operator()(mpdef::list<ProducerTags...>, mpdef::list<ConsumerTags...>)
@@ -80,10 +80,10 @@ struct context_cells_fn
 
     // the order should match the first three
     // template params of nbdl::Context
-    return mpdef::make_list(plookup, make_cell_tags_fn{}(pvals, cvals));
+    return mpdef::make_list(plookup, make_actor_tags_fn{}(pvals, cvals));
   }
 };
-constexpr context_cells_fn context_cells{};
+constexpr context_actors_fn context_actors{};
 
 }//builder
 }//nbdl_def
