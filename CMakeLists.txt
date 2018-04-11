@@ -106,6 +106,10 @@ endif (${NBDL_USE_CATCH})
 
 if (${EMSCRIPTEN})
 	add_definitions(--bind)
+  # TODO don't use stringToAscii
+  set(
+    CMAKE_EXE_LINKER_FLAGS
+    "${CMAKE_EXE_LINKER_FLAGS} -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['stringToAscii']\"") 
 else (${EMSCRIPTEN})
   find_package(Threads)
 endif (${EMSCRIPTEN})

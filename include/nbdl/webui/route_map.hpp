@@ -199,7 +199,7 @@ namespace nbdl::webui
       , "Route string must map to type in route map."
       );
 
-      std::string temp{};
+      nbdl::string temp{};
       temp.reserve(50);
       temp += '/';
       temp += std::string_view(String{}.c_str(), hana::size(String{}));

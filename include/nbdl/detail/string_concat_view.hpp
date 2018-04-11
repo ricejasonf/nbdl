@@ -15,14 +15,14 @@
 #include <boost/hana/string.hpp>
 #include <dyno.hpp>
 #include <string>
-#include <experimental/string_view>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
 namespace nbdl::detail
 {
   namespace hana = boost::hana;
-  using std::experimental::string_view;
+  using std::string_view;
 
   // Keeping stuff in the context so I don't have to write my
   // own iterator which would probably result in more code

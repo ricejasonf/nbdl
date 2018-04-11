@@ -139,7 +139,7 @@ TEST_CASE("Insert entity with nested entities.", "[sql_db]")
     int{7}
   , foo{int{42}}
   , bar{
-      std::string("moo")
+      nbdl::string("moo")
     , foo{int{82}}
     }
   };

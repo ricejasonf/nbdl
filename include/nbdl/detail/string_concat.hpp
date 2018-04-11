@@ -17,13 +17,14 @@
 #include <boost/hana/sum.hpp>
 #include <boost/hana/transform.hpp>
 #include <boost/hana/value.hpp>
-#include <experimental/string_view>
+#include <string>
+#include <string_view>
 #include <utility>
 
 namespace nbdl::detail
 {
   namespace hana = boost::hana;
-  using string_view = std::experimental::string_view;
+  using string_view = std::string_view;
 
   struct to_string_view_fn
   {

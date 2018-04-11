@@ -185,7 +185,7 @@ namespace nbdl { namespace binder { namespace jsoncpp
       template <typename Buffer>
       void bind_buffer(Buffer const& b)
       {
-        nbdl::string temp = nbdl::util::base64_encode(b);
+        nbdl::string temp = nbdl::string(nbdl::util::base64_encode(b));
         bind_string(temp);
       }
 
