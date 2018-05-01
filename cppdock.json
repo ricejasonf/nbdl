@@ -6,81 +6,105 @@
     {
       "type": "linux_x64",
       "deps": [
-        {
-          "name": "boostorg/callable_traits",
-          "revision": "684dfbd7dfbdd0438ef3670be10002ca33a71715",
-          "tag": "master"
-        },
-        {
-          "name": "boostorg/config",
-          "revision": "0cdf4a5da8f2569061721abfeb3a43456cb060dc",
-          "tag": "HEAD"
-        },
-        {
-          "name": "boostorg/hana",
-          "revision": "59393cac76e718210cdf06316e1ab496ee2079eb",
-          "tag": "develop"
-        },
-        {
-          "name": "boostorg/mp11",
-          "revision": "a96ae790a43ad68433c773e8692bdeced24b6929",
-          "tag": "develop"
-        },
-        {
-          "name": "chriskohlhoff/asio",
-          "revision": "230c0d2ae035c5ce1292233fcab03cea0d341264",
-          "tag": "master"
-        },
-        {
-          "name": "ldionne/dyno",
-          "revision": "a95020f799d64c3b76e5ca377a0465deed1badb1",
-          "tag": "master"
-        },
-        {
-          "name": "open-source-parsers/jsoncpp",
-          "revision": "a679dde58d675e75eaf0fe31f62e833868e2f22d",
-          "tag": "refs/tags/1.8.1"
-        },
-        {
-          "name": "ldionne/libawful",
-          "revision": "d76ec919b9978da24023539fcfb7d8b157f7e535",
-          "tag": "master"
-        }
+        [
+          {
+            "name": "boostorg/callable_traits",
+            "revision": "684dfbd7dfbdd0438ef3670be10002ca33a71715",
+            "tag": "master"
+          }
+        ],
+        [
+          {
+            "name": "boostorg/config",
+            "revision": "0cdf4a5da8f2569061721abfeb3a43456cb060dc",
+            "tag": "HEAD"
+          }
+        ],
+        [
+          {
+            "name": "boostorg/hana",
+            "revision": "59393cac76e718210cdf06316e1ab496ee2079eb",
+            "tag": "develop"
+          },
+          {
+            "name": "ldionne/dyno",
+            "revision": "a95020f799d64c3b76e5ca377a0465deed1badb1",
+            "tag": "master"
+          }
+        ],
+        [
+          {
+            "name": "boostorg/mp11",
+            "revision": "a96ae790a43ad68433c773e8692bdeced24b6929",
+            "tag": "develop"
+          }
+        ],
+        [
+          {
+            "name": "chriskohlhoff/asio",
+            "revision": "230c0d2ae035c5ce1292233fcab03cea0d341264",
+            "tag": "master"
+          }
+        ],
+        [
+          {
+            "name": "open-source-parsers/jsoncpp",
+            "revision": "a679dde58d675e75eaf0fe31f62e833868e2f22d",
+            "tag": "refs/tags/1.8.1"
+          }
+        ],
+        [
+          {
+            "name": "ldionne/libawful",
+            "revision": "d76ec919b9978da24023539fcfb7d8b157f7e535",
+            "tag": "master"
+          }
+        ]
       ]
     },
     {
       "type": "emscripten",
       "deps": [
-        {
-          "name": "boostorg/callable_traits",
-          "revision": "684dfbd7dfbdd0438ef3670be10002ca33a71715",
-          "tag": "master"
-        },
-        {
-          "name": "boostorg/config",
-          "revision": "0cdf4a5da8f2569061721abfeb3a43456cb060dc",
-          "tag": "HEAD"
-        },
-        {
-          "name": "boostorg/hana",
-          "revision": "59393cac76e718210cdf06316e1ab496ee2079eb",
-          "tag": "develop"
-        },
-        {
-          "name": "boostorg/mp11",
-          "revision": "a96ae790a43ad68433c773e8692bdeced24b6929",
-          "tag": "develop"
-        },
-        {
-          "name": "ldionne/dyno",
-          "revision": "a95020f799d64c3b76e5ca377a0465deed1badb1",
-          "tag": "master"
-        },
-        {
-          "name": "ldionne/libawful",
-          "revision": "d76ec919b9978da24023539fcfb7d8b157f7e535",
-          "tag": "master"
-        }
+        [
+          {
+            "name": "boostorg/callable_traits",
+            "revision": "684dfbd7dfbdd0438ef3670be10002ca33a71715",
+            "tag": "master"
+          }
+        ],
+        [
+          {
+            "name": "boostorg/config",
+            "revision": "0cdf4a5da8f2569061721abfeb3a43456cb060dc",
+            "tag": "HEAD"
+          }
+        ],
+        [
+          {
+            "name": "boostorg/hana",
+            "revision": "59393cac76e718210cdf06316e1ab496ee2079eb",
+            "tag": "develop"
+          },
+          {
+            "name": "ldionne/dyno",
+            "revision": "a95020f799d64c3b76e5ca377a0465deed1badb1",
+            "tag": "master"
+          }
+        ],
+        [
+          {
+            "name": "boostorg/mp11",
+            "revision": "a96ae790a43ad68433c773e8692bdeced24b6929",
+            "tag": "develop"
+          }
+        ],
+        [
+          {
+            "name": "ldionne/libawful",
+            "revision": "d76ec919b9978da24023539fcfb7d8b157f7e535",
+            "tag": "master"
+          }
+        ]
       ]
     }
   ]
