@@ -1,4 +1,4 @@
-FROM nbdl_build:emscripten
+FROM nbdl_build:web_develop
 
   # Debug just doesn't work with emscripten right now
   ARG BUILD_TYPE=Release

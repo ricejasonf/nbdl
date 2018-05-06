@@ -1,4 +1,4 @@
-FROM nbdl_build:linux_x64
+FROM nbdl_build:develop
 
   ARG BUILD_TYPE=Debug
   ENV BUILD_TYPE ${BUILD_TYPE}

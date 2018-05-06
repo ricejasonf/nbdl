@@ -5,14 +5,14 @@
 SOURCE_DIR = ${shell pwd}
 
 image_develop:
-	cppdock build linux_x64 \
+	cppdock build develop \
 	&& docker build -f ./docker/Dockerfile-develop -t nbdl:develop .
 
 develop:
 	docker run --rm -it -v ${shell pwd}:/opt/src:ro nbdl:develop
 
 image_web_develop:
-	cppdock build emscripten \
+	cppdock build web_develop \
 	&& docker build -f ./docker/Dockerfile-web_develop -t nbdl:web_develop .
 
 web_develop:
