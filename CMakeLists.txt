@@ -93,7 +93,7 @@ function(nbdl_catch_dom_test_suite out suite_name)
   set(${out} ${_build_targets} PARENT_SCOPE)
 endfunction()
 
-add_definitions(-std=c++1z)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
 add_definitions(-DBOOST_HANA_CONFIG_ENABLE_STRING_UDL)
 add_definitions(-ftemplate-backtrace-limit=0)
 add_definitions(-Wall)

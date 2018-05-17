@@ -48,6 +48,15 @@ namespace nbdl::js::detail
     static_assert(sizeof...(vals) > 0);
     return std::array<val, sizeof...(vals)>{{val{vals}...}};
   };
+
+  constexpr auto collect_js_vals_reverse = [](auto const& ...vals)
+  {
+    static_assert(sizeof...(vals) > 0);
+    return hana::unpack(hana::reverse(hana::make_tuple(vals...)), [](auto const& ...vals)
+    {
+      return std::array<val, sizeof...(vals)>{{val{vals}...}};
+    });
+  };
 }
 
 //
@@ -139,7 +148,18 @@ namespace nbdl::js::detail
   }
 
 #define NBDL_DETAIL_JS_PROMISE_ROUTINE_WITH_CAPTURE(code, ...) \
-  NBDL_DETAIL_JS_PROMISE_ROUTINE_WITH_CAPTURE_IMPL(code, NBDL_DETAIL_JS_PROMISE_INIT_CAPTURES(__VA_ARGS__), __VA_ARGS__)
+  NBDL_DETAIL_JS_PROMISE_ROUTINE_WITH_CAPTURE_IMPL( \
+    code \
+  , NBDL_DETAIL_JS_PROMISE_INIT_CAPTURES(__VA_ARGS__), __VA_ARGS__ \
+  )
+
+#define NBDL_DETAIL_JS_PROMISE_ROUTINE_C_FUNC(fn, ...) \
+  [](auto const& resolve, auto const& reject, auto const& input_vals) { \
+    fn( \
+      ::nbdl::js::detail::get_handle(resolve) \
+    , ::nbdl::js::detail::get_handle(reject) \
+    , NBDL_DETAIL_JS_PROMISE_ARG_HANDLES(__VA_ARGS__)); \
+  }
 
 //
 // NBDL_JS_PROMISE
@@ -157,6 +177,18 @@ namespace nbdl::js::detail
   ::boost::hana::make_tuple( \
     ::nbdl::hold(::nbdl::js::detail::collect_js_vals(NBDL_DETAIL_JS_PROMISE_COLLECT_ARGS(__VA_ARGS__))) \
   , ::nbdl::js::detail::make_promise(NBDL_DETAIL_JS_PROMISE_ROUTINE_WITH_CAPTURE(code, __VA_ARGS__)) \
+  )
+
+//
+// NBDL_JS_PROMISE_C_FUNC - captures up to 8 input values
+//                          signature of c function shall be:
+//                          fn(int h_resolve, int h_reject, int h_captures...);
+//
+#define NBDL_JS_PROMISE_C_FUNC(fn, ...) \
+  ::boost::hana::make_tuple( \
+    ::nbdl::hold(::nbdl::js::detail::collect_js_vals_reverse( \
+        NBDL_DETAIL_JS_PROMISE_COLLECT_ARGS(__VA_ARGS__))) \
+  , ::nbdl::js::detail::make_promise(NBDL_DETAIL_JS_PROMISE_ROUTINE_C_FUNC(fn, __VA_ARGS__)) \
   )
 
 #endif
