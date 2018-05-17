@@ -49,12 +49,12 @@ namespace nbdl::js::detail
     return std::array<val, sizeof...(vals)>{{val{vals}...}};
   };
 
-  constexpr auto collect_js_vals_reverse = [](auto const& ...vals)
+  constexpr auto collect_js_vals_reverse = [](auto const& ...inputs)
   {
-    static_assert(sizeof...(vals) > 0);
-    return hana::unpack(hana::reverse(hana::make_tuple(vals...)), [](auto const& ...vals)
+    static_assert(sizeof...(inputs) > 0);
+    return hana::unpack(hana::reverse(hana::make_tuple(val{inputs}...)), [](auto const& ...vals)
     {
-      return std::array<val, sizeof...(vals)>{{val{vals}...}};
+      return std::array<val, sizeof...(vals)>{{vals...}};
     });
   };
 }
