@@ -86,6 +86,11 @@ namespace nbdl::webui::detail
           $0
         , function(event)
           {
+            if (event && event.type === 'submit')
+            {
+              event.preventDefault();
+            }
+
             Module.NBDL_DETAIL_JS_SET(
               $1
             , event
