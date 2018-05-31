@@ -16,6 +16,8 @@
 #include <queue>
 #include <string>
 
+#define LARGE_MESSAGE_SIZE std::size_t{64 * 1024}
+
 namespace hana = boost::hana;
 using tcp = asio::ip::tcp;
 
@@ -188,6 +190,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
     "Hello, client! 1"
   , "Hello, client! 2"
   , "Hello, client! 3"
+  , std::string(LARGE_MESSAGE_SIZE, 's')
   , "close"
   };
 
@@ -195,6 +198,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
     "Hello, server! 1"
   , "Hello, server! 2"
   , "Hello, server! 3"
+  , std::string(LARGE_MESSAGE_SIZE, 'c')
   , "close"
   };
 
@@ -205,6 +209,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
   , make_test_event(event_kind::MESSAGE , std::string("Hello, server! 1"))
   , make_test_event(event_kind::MESSAGE , std::string("Hello, server! 2"))
   , make_test_event(event_kind::MESSAGE , std::string("Hello, server! 3"))
+  , make_test_event(event_kind::MESSAGE , std::string(LARGE_MESSAGE_SIZE, 'c'))
   , make_test_event(event_kind::MESSAGE , std::string("close"))
   , make_test_event(event_kind::CLOSE   , std::string())
   };
@@ -216,6 +221,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
   , make_test_event(event_kind::MESSAGE , std::string("Hello, client! 1"))
   , make_test_event(event_kind::MESSAGE , std::string("Hello, client! 2"))
   , make_test_event(event_kind::MESSAGE , std::string("Hello, client! 3"))
+  , make_test_event(event_kind::MESSAGE , std::string(LARGE_MESSAGE_SIZE, 's'))
   , make_test_event(event_kind::MESSAGE , std::string("close"))
   , make_test_event(event_kind::CLOSE   , std::string())
   };
