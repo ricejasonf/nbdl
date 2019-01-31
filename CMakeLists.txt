@@ -63,7 +63,7 @@ function(nbdl_add_dom_test name_)
   add_dependencies(${name} tool.dom_test)
   get_target_property(link_flags_ ${name} LINK_FLAGS)
   set_target_properties(${name} PROPERTIES LINK_FLAGS
-    "${link_flags} --bind -s ASSERTIONS=1 --memory-init-file 0"
+    "${link_flags} --bind -s ASSERTIONS=1 -s ENVIRONMENT=node --memory-init-file 0"
   )
   add_test(
     NAME ${name}
@@ -129,7 +129,7 @@ include_directories(${nbdl_project_SOURCE_DIR}/include)
 add_subdirectory(test)
 add_subdirectory(example/tiles)
 add_subdirectory(example/pipes)
-add_subdirectory(metabench)
+#add_subdirectory(metabench)
 
 install(FILES include/nbdl.hpp  DESTINATION include)
 install(DIRECTORY include/nbdl  DESTINATION include)

@@ -10,8 +10,10 @@ global.triggerEvent = triggerEvent;
 initDom('')
 
 var Module = {
-  ENVIRONMENT: 'NODE',
-  "arguments": []
+  "arguments": [],
+  "locateFile": function(path, prefix) {
+    return './' + path;
+  }
 };
 
 // "include" the test js file

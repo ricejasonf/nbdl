@@ -12,3 +12,4 @@ nbdl_catch_test_suite(build_targets "test.nbdl.js"
 )
 
 em_link_js_library(test.nbdl.js "c_library.js")
+em_link_js_library(individual.test.nbdl.js.promise "c_library.js")
