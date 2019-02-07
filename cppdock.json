@@ -5,6 +5,7 @@
   "platforms": {
     "develop": {
       "type": "linux_x64",
+      "base_image": "ricejasonf/parmexpr-emscripten",
       "deps": [
         [
           {
@@ -66,6 +67,7 @@
     },
     "web_develop": {
       "type": "emscripten",
+      "base_image": "ricejasonf/parmexpr-emscripten",
       "deps": [
         [
           {
