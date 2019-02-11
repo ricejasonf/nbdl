@@ -31,7 +31,7 @@ namespace nbdl::detail
   constexpr auto length_s = BOOST_HANA_STRING("length");
 
   // TODO the interface for "equal" needs a second look :/
-  struct StringConcatView : decltype(dyno::requires(
+  struct StringConcatView : decltype(dyno::requires_(
     dyno::CopyConstructible{}
   , hana::make_pair(copy_s,   dyno::function<void(dyno::T const&, std::string::iterator)>)
   , hana::make_pair(equal_s,  dyno::function<bool(dyno::T const&, std::string::const_iterator)>)

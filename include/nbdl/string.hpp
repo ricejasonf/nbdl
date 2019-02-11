@@ -15,8 +15,16 @@ namespace nbdl
 {
   struct string : std::string
   {
-    using std::string::string;
-    using std::string::operator=;
+      using std::string::string;
+      using std::string::operator=;
+
+      string(std::string const& s)
+        : std::string(s)
+      { }
+
+      string(std::string&& s)
+        : std::string(std::move(s))
+      { }
   };
 
   template <>

@@ -20,7 +20,7 @@ namespace nbdl::websocket_api::detail
 
   constexpr auto value_handle_s = BOOST_HANA_STRING("value_handle");
 
-  struct EventReceiver : decltype(dyno::requires(
+  struct EventReceiver : decltype(dyno::requires_(
     dyno::CopyConstructible{}
   , hana::make_pair(event::ready,   dyno::function<void(dyno::T&)>)
   , hana::make_pair(event::message, dyno::function<void(dyno::T&)>)

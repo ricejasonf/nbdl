@@ -8,8 +8,6 @@
 #define NBDL_DEF_BUILDER_ENUMERATE_ACCESS_POINTS_HPP
 
 #include <mpdef/append_if.hpp>
-#include <mpdef/collect_settings.hpp>
-#include <mpdef/compose_collectors.hpp>
 #include <mpdef/find_in_tree.hpp>
 #include <mpdef/list.hpp>
 #include <mpdef/pair.hpp>

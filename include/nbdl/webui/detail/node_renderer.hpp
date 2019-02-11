@@ -18,11 +18,11 @@ namespace nbdl::webui::detail
   constexpr auto render_s = BOOST_HANA_STRING("render");
   constexpr auto update_s = BOOST_HANA_STRING("update");
 
-  struct NodeRenderer : decltype(dyno::requires(
+  struct NodeRenderer : decltype(dyno::requires_(
     hana::make_pair(render_s, dyno::function<emscripten::val(emscripten::val)>)
   )) { };
 
-  struct MutableNodeRenderer : decltype(dyno::requires(
+  struct MutableNodeRenderer : decltype(dyno::requires_(
     hana::make_pair(render_s, dyno::function<emscripten::val(emscripten::val)>)
   , hana::make_pair(update_s, dyno::function<void(void)>)
   )) { };

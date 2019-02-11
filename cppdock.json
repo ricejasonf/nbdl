@@ -5,27 +5,13 @@
   "platforms": {
     "develop": {
       "type": "linux_x64",
-      "base_image": "ricejasonf/parmexpr-emscripten",
+      "base_image": "ricejasonf/parmexpr",
       "deps": [
-        [
-          {
-            "name": "boostorg/callable_traits",
-            "revision": "684dfbd7dfbdd0438ef3670be10002ca33a71715",
-            "tag": "master"
-          }
-        ],
         [
           {
             "name": "boostorg/config",
             "revision": "0cdf4a5da8f2569061721abfeb3a43456cb060dc",
             "tag": "HEAD"
-          }
-        ],
-        [
-          {
-            "name": "boostorg/hana",
-            "revision": "59393cac76e718210cdf06316e1ab496ee2079eb",
-            "tag": "develop"
           }
         ],
         [
@@ -44,9 +30,19 @@
         ],
         [
           {
-            "name": "ldionne/dyno",
-            "revision": "a95020f799d64c3b76e5ca377a0465deed1badb1",
+            "name": "boostorg/callable_traits",
+            "revision": "684dfbd7dfbdd0438ef3670be10002ca33a71715",
             "tag": "master"
+          },
+          {
+            "name": "ricejasonf/hana",
+            "revision": "7230879ec63c9cbbeefdd1415fe2255043168422",
+            "tag": "parmexpr"
+          },
+          {
+            "name": "ricejasonf/dyno",
+            "revision": "8dcb05fde3d1c4dae8ad005c46a36b7efcdf3380",
+            "tag": "fix2a"
           }
         ],
         [
@@ -71,23 +67,9 @@
       "deps": [
         [
           {
-            "name": "boostorg/callable_traits",
-            "revision": "684dfbd7dfbdd0438ef3670be10002ca33a71715",
-            "tag": "master"
-          }
-        ],
-        [
-          {
             "name": "boostorg/config",
             "revision": "0cdf4a5da8f2569061721abfeb3a43456cb060dc",
             "tag": "HEAD"
-          }
-        ],
-        [
-          {
-            "name": "boostorg/hana",
-            "revision": "59393cac76e718210cdf06316e1ab496ee2079eb",
-            "tag": "develop"
           }
         ],
         [
@@ -99,9 +81,19 @@
         ],
         [
           {
-            "name": "ldionne/dyno",
-            "revision": "a95020f799d64c3b76e5ca377a0465deed1badb1",
+            "name": "boostorg/callable_traits",
+            "revision": "684dfbd7dfbdd0438ef3670be10002ca33a71715",
             "tag": "master"
+          },
+          {
+            "name": "ricejasonf/hana",
+            "revision": "7230879ec63c9cbbeefdd1415fe2255043168422",
+            "tag": "parmexpr"
+          },
+          {
+            "name": "ricejasonf/dyno",
+            "revision": "8dcb05fde3d1c4dae8ad005c46a36b7efcdf3380",
+            "tag": "fix2a"
           }
         ],
         [
