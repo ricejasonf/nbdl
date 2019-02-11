@@ -65,23 +65,23 @@ TEST_CASE("Render store data then update", "[webui][renderer]")
   );
 
   constexpr auto spec =
-    div(attr_class("foo"_s)
-    , div(attr_class("bar"_s)
-      , text_node("I'm some static text content."_s)
-      , text_node(get("key_1"_s))
-      , text_node(get("key_2"_s))
-      , text_node(" More static text."_s)
-      , text_node(hana::size_c<12>)
-      , text_node(get("key_4"_s))
+    div(attr_class("foo")
+    , div(attr_class("bar")
+      , text_node("I'm some static text content.")
+      , text_node(get("key_1"))
+      , text_node(get("key_2"))
+      , text_node(" More static text.")
+      , text_node(12)
+      , text_node(get("key_4"))
       , match(
-          get("key_3"_s)
+          get("key_3")
         , when<std::string>([](auto p) { return text_node(p); })
         , when<>(div())
         )
       , match(
-          get("key_6"_s) // a branch that doesn't change
-        , when<std::string>(text_node(get("key_4"_s)))
-        , when<>(text_node("FAIL"_s))
+          get("key_6") // a branch that doesn't change
+        , when<std::string>(text_node(get("key_4")))
+        , when<>(text_node("FAIL"))
         )
       )
     );
@@ -181,14 +181,14 @@ TEST_CASE("Match value using list of predicates", "[webui][renderer][ui_spec][ma
   auto spec =
     div(
       attr_class(concat(
-        "foo "_s
+        "foo "
       , match_if(
-          get("key_1"_s)
-        , cond(equal("blah"_s), "FAIL"_s)
-        , cond(equal("blaz"_s), "FAIL"_s)
-        , cond(equal("blar"_s), "FAIL"_s)
-        , cond(equal("hello"_s), prepend("prefix_"_s))
-        , otherwise("FAIL"_s)
+          get("key_1")
+        , cond(equal("blah"), "FAIL")
+        , cond(equal("blaz"), "FAIL")
+        , cond(equal("blar"), "FAIL")
+        , cond(equal("hello"), prepend("prefix_"_s))
+        , otherwise("FAIL")
         )
       ))
     );
@@ -257,9 +257,9 @@ TEST_CASE("Add/Remove attribute based on predicate.", "[webui]")
 
   auto spec =
     a(
-      add_attribute_if("disabled"_s, get("has_stuff"_s), hana::id)
-    , add_attribute_if("FAIL"_s,  get("has_stuff"_s), hana::not_)
-    , text_node("whoa"_s)
+      add_attribute_if("disabled", get("has_stuff"), hana::id)
+    , add_attribute_if("FAIL",  get("has_stuff"), hana::not_)
+    , text_node("whoa")
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
@@ -281,9 +281,9 @@ TEST_CASE("Add/Remove class based on predicate.", "[webui]")
 
   auto spec =
     div(
-      add_class_if("hello"_s, get("has_stuff"_s), hana::id)
-    , add_class_if("FAIL"_s,  get("has_stuff"_s), hana::not_)
-    , text_node("whoa"_s)
+      add_class_if("hello", get("has_stuff"), hana::id)
+    , add_class_if("FAIL",  get("has_stuff"), hana::not_)
+    , text_node("whoa")
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
@@ -303,9 +303,9 @@ TEST_CASE("Add/Remove class based on matching a type.", "[webui]")
 
   auto spec =
     div(
-      add_class_when<int>("hello"_s, get())
-    , add_class_when<float>("FAIL"_s,  get())
-    , text_node("whoa"_s)
+      add_class_when<int>("hello", get())
+    , add_class_when<float>("FAIL",  get())
+    , text_node("whoa")
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
@@ -355,32 +355,32 @@ TEST_CASE("Render a Container in a Store with for_each", "[webui]")
   static constexpr auto click_row = [](auto x)
   {
     return div(
-      attr_class("row"_s)
-    , attribute("id"_s, "click_me"_s)
-    , on_click(handle_click, get(x, "text"_s))
-    , text_node(get(x, "text"_s))
+      attr_class("row")
+    , attribute("id", "click_me")
+    , on_click(handle_click, get(x, "text"))
+    , text_node(get(x, "text"))
     );
   };
 
   static constexpr auto row = [](auto x) {
     return div(
-      attr_class("row"_s)
-    , text_node(get(x, "text"_s))
+      attr_class("row")
+    , text_node(get(x, "text"))
     );
   };
 
   constexpr auto spec = div(
     div(
-      for_each(get("column"_s), [](auto x)
+      for_each(get("column"), [](auto x)
       {
         return match_if(
-          get(x, "text"_s)
-        , cond(equal("CLICK THIS BEFORE IT CHANGES!!"_s), click_row)
+          get(x, "text")
+        , cond(equal("CLICK THIS BEFORE IT CHANGES!!"), click_row)
         , otherwise(row)
         );
       })
     )
-  , div(text_node(get("last_clicked"_s)))
+  , div(text_node(get("last_clicked")))
   );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;

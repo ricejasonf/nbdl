@@ -61,8 +61,7 @@ namespace nbdl::webui
     constexpr auto text_area(Args ...args)
     { return element(hana::string<'t', 'e', 'x', 't', 'a', 'r', 'e', 'a'>{}, args...); }
 
-    template <typename ...Args>
-    constexpr auto attr_class(Args ...args)
+    using attr_class(using auto ...args)
     { return attribute(hana::string<'c', 'l', 'a', 's', 's'>{}, args...); }
 
     template <typename ...Args>
@@ -91,13 +90,18 @@ namespace nbdl::webui
     }
 
     template <typename T>
-    constexpr auto add_class_when = [](auto class_name, auto path)
-    {
-      return mpdef::tree_node<
-        decltype(tag::add_class_when<T>)
-      , mpdef::list<decltype(class_name), decltype(path)>
-      >{};
+    struct add_class_when_fn {
+      static using operator()(using auto class_name, using auto path)
+      {
+        return mpdef::tree_node<
+          decltype(tag::add_class_when<T>)
+        , mpdef::list<decltype(mpdef::to_constant(class_name)), decltype(path)>
+        >{};
+      }
     };
+
+    template <typename T>
+    constexpr add_class_when_fn<T> add_class_when{};
 
     // Key used to lookup event object in store
     // for use in relevant event handlers.

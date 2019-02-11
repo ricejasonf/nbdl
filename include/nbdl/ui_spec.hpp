@@ -93,10 +93,9 @@ namespace nbdl::ui_spec
 
   struct get_fn
   {
-    template <typename ...Xs>
-    constexpr auto operator()(Xs...) const
-      -> typename make_path<Xs...>::type
-    { return {}; }
+    static using operator()(using auto ...x) {
+      return typename make_path<std::decay_t<decltype(mpdef::to_constant(x))>...>::type{};
+    }
   };
 
   constexpr get_fn get{};
@@ -182,7 +181,7 @@ namespace nbdl::ui_spec
       -> when_t<T, Spec>
     { return {}; }
 
-    inline constexpr auto operator()() const
+    constexpr auto operator()() const
       -> when_t<T, noop_t>
     { return {}; }
   };
@@ -197,10 +196,13 @@ namespace nbdl::ui_spec
 
   struct cond_fn
   {
-    template <typename Pred, typename Spec>
-    constexpr auto operator()(Pred pred, Spec) const
-      -> when_t<decltype(pred), Spec>
-    { return {}; }
+    static using operator()(using auto pred, using auto spec)
+    {
+      return when_t<
+        std::decay_t<decltype(pred)>
+      , std::decay_t<decltype(mpdef::to_constant(spec))>
+      >{};
+    }
   };
 
   constexpr cond_fn cond{};
@@ -211,14 +213,20 @@ namespace nbdl::ui_spec
 
   struct otherwise_fn
   {
+    static using operator()(using auto spec)
+    {
+      return when_t<
+        decltype(hana::always(hana::true_c))
+      , std::decay_t<decltype(mpdef::to_constant(spec))>
+      >{};
+    }
+
+    /* NOTE there was this nullary overload (might not be used)
+     *
     constexpr auto operator()() const
       -> when_t<decltype(hana::always(hana::true_c)), noop_t>
     { return {}; }
-
-    template <typename Spec>
-    constexpr auto operator()(Spec) const
-      -> when_t<decltype(hana::always(hana::true_c)), Spec>
-    { return {}; }
+    */
   };
 
   constexpr otherwise_fn otherwise{};
@@ -327,10 +335,10 @@ namespace nbdl::ui_spec
 
   struct equal_fn
   {
-    template <typename X>
-    constexpr auto operator()(X) const
-      -> equal_<X>
-    { return {}; }
+    static using operator()(using auto x)
+    {
+      return equal_<std::decay_t<decltype(mpdef::to_constant(x))>>{};
+    }
   };
 
   constexpr equal_fn equal{};

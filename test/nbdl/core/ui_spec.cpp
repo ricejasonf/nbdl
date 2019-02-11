@@ -24,12 +24,6 @@ namespace
   template <int i>
   constexpr key_t<i> key{};
 
-  template <int>
-  struct spec_t { };
-
-  template <int i>
-  constexpr spec_t<i> spec{};
-
   template <int i>
   struct some_type { };
 };

@@ -30,10 +30,10 @@ namespace map_detail {
   hana::optional<> maybe_get_(...);
 
   template<typename Map, typename Key>
-  using get = decltype(get_<std::add_const_t<Key>>(typename Map::type_table{}));
+  using get = decltype(get_<std::remove_const_t<Key>>(typename Map::type_table{}));
 
   template<typename Map, typename Key>
-  using maybe_get = decltype(maybe_get_<std::add_const_t<Key>>(typename Map::type_table{}));
+  using maybe_get = decltype(maybe_get_<std::remove_const_t<Key>>(typename Map::type_table{}));
 }
 
 template<typename... Pairs>
@@ -41,8 +41,8 @@ struct map
 {
   struct type_table
     : map_detail::elt<
-        std::add_const_t<decltype(hana::first(Pairs{}))>,
-        decltype(hana::second(Pairs{}))
+        std::remove_const_t<decltype(hana::first(Pairs{}))>,
+        std::remove_const_t<decltype(hana::second(Pairs{}))>
       >...
   { };
 
