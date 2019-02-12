@@ -155,6 +155,7 @@ namespace nbdl::websocket::detail
         })
       , [this]()
         {
+          (void(this));
           start_send_queue();
         }
       )
@@ -204,6 +205,7 @@ namespace nbdl::websocket::detail
     nbdl::run_async_loop(hana::make_tuple(
       nbdl::promise([this, shared_this](auto& resolver)
       {
+        (void(this));
         if (is_sending_close())
         {
           sender.data.payload = pending_control_frame.payload;
@@ -236,6 +238,7 @@ namespace nbdl::websocket::detail
       })
     , nbdl::promise([this](auto& resolver)
       {
+        (void(this));
         if (send_queue.size() > 0)
         {
           sender.data.payload = send_queue.front();
@@ -249,6 +252,7 @@ namespace nbdl::websocket::detail
       })
     , [this](auto&& ...)
       {
+        (void(this));
         if (send_queue.size() > 0)
         {
           // pop after the message was sent without error
@@ -257,6 +261,7 @@ namespace nbdl::websocket::detail
       }
     , nbdl::catch_([this](std::error_code error)
       {
+        (void(this));
         is_send_queue_running = false;
 
         if ( is_sending_close() 
@@ -273,6 +278,7 @@ namespace nbdl::websocket::detail
       })
     , nbdl::catch_([this](auto&& error)
       {
+        (void(this));
         is_send_queue_running = false;
         call_handler(hana::typeid_(error), std::forward<decltype(error)>(error));
       })
@@ -299,11 +305,13 @@ namespace nbdl::websocket::detail
     return hana::make_map(
       hana::make_pair(read_event::message, [this](auto, auto& frame_ctx)
       {
+        (void(this));
         // move from the payload object in the reader
         call_handler(endpoint_event::message, frame_ctx.payload);
       })
     , hana::make_pair(read_event::close, [this](auto, auto const&)
       {
+        (void(this));
         mark_is_close_received();
 
         if (is_sending_close())
@@ -317,15 +325,18 @@ namespace nbdl::websocket::detail
       })
     , hana::make_pair(read_event::ping, [this](auto, auto const& frame_ctx)
       {
+        (void(this));
         pending_control_frame.to_pong(std::move(frame_ctx.payload));
       })
     , hana::make_pair(read_event::pong, [](auto&& ...) { })
     , hana::make_pair(read_event::bad_input, [this](auto&& ...)
       {
+        (void(this));
         call_handler(event::bad_request);
       })
     , hana::make_pair(hana::type_c<std::error_code>, [this](std::error_code error, auto const&)
       {
+        (void(this));
         call_handler(hana::type_c<std::error_code>, error);
       })
     );

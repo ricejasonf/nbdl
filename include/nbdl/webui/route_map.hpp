@@ -158,6 +158,8 @@ namespace nbdl::webui
             T value{};
             nbdl::bind_sequence(value, [&, param...](auto& ...member)
             {
+              (void(param), ...); // suppress unused value in clang
+
               if (sizeof...(member) != params_count - 1)
               {
                 var = Variant{};

@@ -68,6 +68,8 @@ namespace nbdl
       {
         return nbdl::bind_sequence(e2, [&e1_arg ...](auto const& ...e2_arg)
         {
+          (void(e1_arg), ...); // suppress warning
+
           return Delta(hana::make_basic_tuple(
             nbdl::make_optional_if(hana::not_(hana::equal(e1_arg, e2_arg)), e1_arg)...
           ));
@@ -94,6 +96,8 @@ namespace nbdl
       {
         return hana::unpack(d.storage, [&x...](auto&& ...opt)
         {
+          (void(x), ...); // suppress warning
+
           bool result = false;
 
           (opt.match(

@@ -56,6 +56,7 @@ namespace nbdl::util
       int const extra_length    = length % 3;
       int const round_length    = length - extra_length;
       int const padding_length  = (3 - extra_length) % 3;
+      (void(padding_length));
 
       for (int i = 0; i < round_length; i += 3)
       {
