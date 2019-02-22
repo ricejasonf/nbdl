@@ -48,14 +48,14 @@ namespace mpdef
   template <auto ...i>
   struct iota_<std::index_sequence<i...>>
   {
-    static using apply() {
+    static using apply~() {
       return i;
     }
   };
 
-  using iota(using auto N)
+  using iota~(using auto N)
   {
-    return iota_<std::make_index_sequence<N>>::apply();
+    return iota_<std::make_index_sequence<N>>::apply~();
   }
 
   template <typename, typename = void>
@@ -97,8 +97,7 @@ namespace mpdef
 #if 0 // causes ICE
     static using apply(using auto ...x)
     {
-      using foo = typename hana::string<x[iota(N - 1)]...>::foo;
-      return hana::string<x[iota(N - 1)]...>{};
+      return hana::string<x[iota~(N - 1)]...>{};
     }
 #endif
   };
