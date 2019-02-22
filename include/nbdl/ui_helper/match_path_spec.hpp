@@ -16,7 +16,6 @@
 #include <boost/hana/basic_tuple.hpp>
 #include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/type.hpp>
-#include <boost/hana/unpack.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/list.hpp>
 #include <mpdef/list.hpp>
@@ -43,8 +42,7 @@ namespace nbdl::ui_helper::detail
   {
     Fn const& fn;
 
-    template <typename Store>
-    void operator()(Store const& store) const
+    using operator()(auto self, auto store)
     {
       // use params as path
       match_params_spec(store, mpdef::list<P...>{}, [&](auto const& ...x)
@@ -55,7 +53,7 @@ namespace nbdl::ui_helper::detail
         , [&](auto const& result)
           {
             if constexpr(decltype(hana::type_c<T> == hana::typeid_(result)){})
-              fn(result);
+              self.fn(result);
             // else do nothing 
           }
         );
@@ -68,8 +66,7 @@ namespace nbdl::ui_helper::detail
   {
     Fn const& fn;
 
-    template <typename Store>
-    void operator()(Store const& store) const
+    using operator()(auto self, auto store)
     {
       // use params as path
       match_params_spec(store, mpdef::list<P...>{}, [&](auto const& ...x)
@@ -77,7 +74,7 @@ namespace nbdl::ui_helper::detail
         nbdl::match_path(
           store
         , hana::make_basic_tuple(x...)
-        , fn
+        , self.fn
         );
       });
     }
@@ -90,37 +87,47 @@ namespace nbdl::ui_helper::detail
   };
 
   template <typename ...>
-  int path_impl;
+  struct path_impl;
 
   template <>
-  constexpr auto path_impl<> = [](auto const& store, auto const& fn)
+  struct path_impl<>
   {
-    fn(store);
+    static using apply(auto store, auto fn) {
+      fn(store);
+    }
   };
 
   template <typename P1>
-  constexpr auto path_impl<P1> = [](auto const& store, auto const& fn)
+  struct path_impl<P1>
   {
-    path_node_match<P1, decltype(fn)>{fn}(store);
+    static using apply(auto store, auto fn) {
+      path_node_match<P1, decltype(fn)>{fn}(store);
+    }
   };
 
   template <typename P1, typename P2>
-  constexpr auto path_impl<P1, P2> = [](auto const& store, auto const& fn)
+  struct path_impl<P1, P2>
   {
-    make_path_node_match<P1>(
-    make_path_node_match<P2>(
-      fn
-    ))(store);
+    static using apply(auto store, auto fn)
+    {
+      make_path_node_match<P1>(
+      make_path_node_match<P2>(
+        fn
+      ))(store);
+    }
   };
 
   template <typename P1, typename P2, typename P3, typename ...Ps>
-  constexpr auto path_impl<P1, P2, P3, Ps...> = [](auto const& store, auto const& fn)
+  struct path_impl<P1, P2, P3, Ps...>
   {
-    make_path_node_match<P1>(
-    make_path_node_match<P2>(
-    make_path_node_match<P3>(
-      [&](auto const& result) { path_impl<Ps...>(result, fn); }
-    )))(store);
+    static using apply(auto store, auto fn)
+    {
+      make_path_node_match<P1>(
+      make_path_node_match<P2>(
+      make_path_node_match<P3>(
+        [&](auto const& result) { path_impl<Ps...>::apply(result, fn); }
+      )))(store);
+    }
   };
 }
 
@@ -131,10 +138,10 @@ namespace nbdl::ui_helper
   template <typename Store, typename PathSpec, typename Fn>
   void match_path_spec_fn::operator()(Store const& store, PathSpec, Fn&& fn) const
   {
-    hana::unpack(mp_reverse<mp_apply<mpdef::list, PathSpec>>{}, [&](auto ...x)
-    {
-      detail::path_impl<decltype(x)...>(store, std::forward<Fn>(fn));
-    });
+    mp_apply<detail::path_impl, mp_reverse<PathSpec>>::apply(
+      store
+    , std::forward<Fn>(fn)
+    );
   }
 
   template <typename T, typename PathSpec>
