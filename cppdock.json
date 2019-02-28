@@ -58,6 +58,13 @@
             "revision": "d76ec919b9978da24023539fcfb7d8b157f7e535",
             "tag": "master"
           }
+        ],
+        [
+          {
+            "name": "ricejasonf/full_duplex",
+            "tag": "master",
+            "revision": "1bdd6ebb8311ddf2e99178ff77ebb28542731d85"
+          }
         ]
       ]
     },
