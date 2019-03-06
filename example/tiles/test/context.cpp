@@ -14,8 +14,20 @@
 
 namespace
 {
-  auto context = tiles::make_context<nbdl::echo_producer, nbdl_test::state_consumer>();
-  auto& state = context->actor<1>();
+  struct context
+  {
+    static auto make_def()
+    {
+      return tiles::context<nbdl::echo_producer,
+                            nbdl_test::state_consumer>::make_def();
+    }
+  };
+
+  auto ctx = nbdl::make_context<context>(
+    nbdl::actor("server", nbdl::echo_producer{})
+  );
+
+  auto& state = ctx->template actor<1>();
 }
 
 TEST_CASE(".", "[tiles][tiles_context]") 

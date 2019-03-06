@@ -132,6 +132,7 @@ namespace tiles
       return
         Context(
           Producer(
+            Name("producer"),
             Type<ProducerTag>,
             AccessPoint(
               Entity<game>,
@@ -145,9 +146,12 @@ namespace tiles
               )
             )
           ),
-          Consumer(Type<ConsumerTag>)
+          Consumer(
+            Name("consumer"),
+            Type<ConsumerTag>
+          )
         );
-      }
+    }
   };
 
   template <typename ProducerTag, typename ConsumerTag, typename ...Args>

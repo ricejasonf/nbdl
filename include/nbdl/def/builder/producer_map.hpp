@@ -27,6 +27,7 @@ namespace details {
       constexpr ProducerMeta producer_meta{};
       auto path_types = hana::unique(hana::transform(producer_meta::access_points(producer_meta),
         access_point_meta::path));
+      // note that the last element in the key is the name
       return mpdef::make_pair(
         hana::append(path_types, producer_meta::name(producer_meta)),
         producer_meta::producer(producer_meta)

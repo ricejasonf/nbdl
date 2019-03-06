@@ -80,6 +80,7 @@ namespace nbdl
     using ContextMeta     = nbdl_def::builder::make_context_meta_t<Tag>;
     using ProducerLookup  = typename ContextMeta::producer_lookup;
     using ActorTagTypes   = typename ContextMeta::actor_tag_types;
+    using ActorNames      = typename ContextMeta::actor_names;
     using StoreMap        = typename ContextMeta::store_map;
     using ListenerLookup  = typename ContextMeta::listener_lookup;
 
