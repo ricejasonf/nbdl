@@ -45,12 +45,12 @@ namespace nbdl::ui_helper::detail
     using operator()(auto self, auto store)
     {
       // use params as path
-      match_params_spec(store, mpdef::list<P...>{}, [&](auto const& ...x)
+      match_params_spec(store, mpdef::list<P...>{}, [self, &store](auto const& ...x)
       {
         nbdl::match_path(
           store
         , hana::make_basic_tuple(x...)
-        , [&](auto const& result)
+        , [self](auto const& result)
           {
             if constexpr(decltype(hana::type_c<T> == hana::typeid_(result)){})
               self.fn(result);
@@ -69,7 +69,7 @@ namespace nbdl::ui_helper::detail
     using operator()(auto self, auto store)
     {
       // use params as path
-      match_params_spec(store, mpdef::list<P...>{}, [&](auto const& ...x)
+      match_params_spec(store, mpdef::list<P...>{}, [self, &store](auto const& ...x)
       {
         nbdl::match_path(
           store
