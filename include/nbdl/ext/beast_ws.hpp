@@ -11,49 +11,86 @@
 
 #include <boost/beast.hpp>
 #include <full_duplex.hpp>
-#include <optional>
 #include <string>
+#include <string_view>
+#include <utility>
 
 namespace nbdl::beast_ws
 {
+  namespace asio  = boost::asio;
+  namespace beast = boost::beast;
   using asio::ip::tcp;
 
-  // accept
-
-  struct accept_state
+  struct websocket_acceptor
   {
-    accept_state(asio::io_service& io, unsigned short port)
-        : ws(io)
-        , endpoint(tcp::v4(), port)
-        , acceptor()
+    tcp::acceptor acceptor;
+
+    template <typename ...Args>
+    websocket_acceptor(Args&& ...args)
+      : impl(std::forward<Args>(args)...)
     { }
-
-    tcp::socket& socket()
-    { return ws.next_layer(); }
-
-    boost::beast::websocket::stream<tcp::socket> ws;
-    tcp::endpoint endpoint;
-    std::optional<tcp::acceptor> acceptor;
   };
 
-  struct connect_state
+  // Returns a Promise that resolves a
+  // socket or an error
+  //
+  // Could be part of a Socket concept
+  auto accept_socket(websocket_acceptor ws)
   {
-    connect_state(asio::io_service& io, 
+    using full_duplex::promise;
+    using full_duplex::promise_lift;
+    using full_duplex::make_error;
+
+    return full_duplex::do_(
+      promise_lift(std::pair{
+        std::move(ws.acceptor)
+      , beast::websocket::stream<tcp::socket>(io)
+      })
+    , promise([](auto& resolve, auto& pair)
+      {
+        auto& [acceptor, socket] = pair;
+        acceptor.async_accept(socket, [&](auto error)
+        {
+          (not error) ? resolve(pair) :
+                        resolve(make_error(error));
+        });
+      })
+    , promise([](auto& resolve, auto& pair)
+      {
+        auto& [acceptor, socket] = pair;
+        socket.async_accept([&](auto error)
+        {
+          (not error) ? resolve(std::move(socket)) :
+                        resolve(make_error(error));
+        });
+      })
+    );
+  }
+
+  // socket_state
+
+  struct socket_state
+  {
+    beast::websocket::stream<tcp::socket> socket;
+  };
+
+  // connect_state
+
+  struct connect_state : socket_state
+  {
+    connect_state(asio::io_service& io,
                   std::string host,
                   std::string target
                   unsigned short port)
-      : ws(io)
+      : socket_state(beast::websocket(io))
       , host(std::move(host))
       , target(std::move(target))
       , endpoint(tcp::v4(), port)
     { }
 
-    tcp::socket& socket()
-    { return ws.next_layer(); }
-
     std::string host;
     std::string target;
-    boost::beast::websocket::stream<tcp::socket> ws;
+    beast::websocket::stream<tcp::socket> socket;
     tcp::endpoint endpoint;
   };
 }
@@ -65,6 +102,7 @@ namespace nbdl::beast_ws::detail
   using full_duplex::promise;
 
 
+#if 0
   constexpr auto accept = promise([](auto& resolve, auto&&)
   {
     // This does the websocket handshake
@@ -74,6 +112,7 @@ namespace nbdl::beast_ws::detail
                     resolve(make_error(error));
     });
   });
+#endif
 
   // connect
 
@@ -97,7 +136,7 @@ namespace nbdl::beast_ws::detail
     template <typename Resolve, typename Input>
     void operator()(Resolve& resolve, Input&&)
     {
-      resolve.get_state().ws.async_read(buffer, [&](auto error, size_t)
+      resolve.get_state().socket.async_read(buffer, [&](auto error, size_t)
       {
         auto mut_buf = buffer.data();
         std::string_view buffer_view(static_cast<char const*>(mut_buf.data()), mut_buf.size());
@@ -109,7 +148,7 @@ namespace nbdl::beast_ws::detail
     }
 
     std::string body = {};
-    boost::beast::flat_buffer buffer = {};
+    beast::flat_buffer buffer = {};
   };
 
   constexpr auto read_message = promise(read_message_fn{});
@@ -118,13 +157,14 @@ namespace nbdl::beast_ws::detail
 
   constexpr auto write_message = promise([](auto& resolve, auto& message)
   {
-    resolve.get_state().ws.async_write(
+    resolve.get_state().socket.async_write(
       asio::buffer(message, message.size()),
       [&](auto error, size_t)
       { (not error) ? resolve(message) : resolve(make_error(error)); }
     );
   });
 
+#if 0
   // server_endpoint
 
   template <typename Queue, typename ...Events>
@@ -167,12 +207,56 @@ namespace nbdl::beast_ws::detail
     );
   };
 }
+#endif
 
 namespace nbdl
 {
   // Producer
 
+  template <typename Context>
+  struct actor_type<beast_ws::connect_state, Context>
+  {
+    using type = beast_ws::detail::client_impl<Context>;
+  };
+
+  template <>
+  struct send_downstream_message<beast_ws::connect_state>
+  {
+    template <typename Consumer, typename Message>
+    static void apply(Consumer& c, Message&& m)
+    {
+      c.write_message(std::forward<M>(m));
+    }
+  };
+
   // Consumer
+
+  template <typename Context>
+  struct actor_type<beast_ws::accept_state, Context>
+  {
+    using type = beast_ws::detail::server_impl<Context>;
+  };
+
+  template <>
+  struct send_downstream_message<beast_ws::accept_state>
+  {
+    template <typename Consumer, typename Message>
+    static void apply(Consumer& c, Message&& m)
+    {
+      c.write_message(std::forward<M>(m));
+      /*
+      // marshalling/filtering happens in the endoints'
+      // write_message customization
+      //
+      // Still, a way to allow the user to map these would
+      // be good
+      for (auto& conn : c.connections())
+      {
+        conn.write_message(std::forward<M>(m));
+      }
+      */
+    }
+  };
 }
 
 #endif

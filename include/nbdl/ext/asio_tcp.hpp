@@ -20,62 +20,23 @@ namespace nbdl::asio_tcp
   using full_duplex::make_error;
   using full_duplex::promise;
 
-  // accept
-
-  struct accept_state
-  {
-    accept_state(asio::io_service& io, unsigned short port)
-        : ws(io)
-        , endpoint(tcp::v4(), port)
-        , acceptor()
-    { }
-
-    tcp::socket& socket()
-    { return ws.next_layer(); }
-
-    tcp::socket socket_;
-    tcp::endpoint endpoint;
-    std::optional<tcp::acceptor> acceptor;
-  };
-
-  constexpr auto accept = promise([](auto& resolve, auto&&)
-  {
-    auto& state = resolve.get_state();
-    state.acceptor = tcp::acceptor(
-      state.socket().get_io_service()
-    , state.endpoint
-    );
-
-    state.acceptor->async_accept(
-      state.socket()
-    , [&](auto error)
-      {
-        (not error) ? resolve(full_duplex::void_input) :
-                      resolve(make_error(error));
-      }
-    );
-  });
-
   // connect
 
   struct connect_state
   {
     connect_state(asio::io_service& io, unsigned short port)
-      : socket_(io)
+      : socket(io)
       , endpoint(tcp::v4(), port)
     { }
 
-    tcp::socket& socket()
-    { return socket_; }
-
-    tcp::socket socket_;
+    tcp::socket socket;
     tcp::endpoint endpoint;
   };
 
   constexpr auto connect = promise([](auto& resolve, auto&&)
   {
     auto& state = resolve.get_state();
-    state.socket().async_connect(
+    state.socket.async_connect(
       state.endpoint
     , [&](auto error)
       {
@@ -93,7 +54,7 @@ namespace nbdl::asio_tcp
     auto operator()(Resolve& resolve, Input&&)
     {
       asio::async_read(
-        self.state().socket()
+        self.state().socket
       , asio::buffer(buffer, 4)
       , [&](auto error, size_t)
         {
@@ -116,7 +77,7 @@ namespace nbdl::asio_tcp
     {
       body.resize(length);
       asio::async_read(
-        self.state().socket()
+        self.state().socket
       , asio::buffer(body, length)
       , [&](auto error, size_t)
         { (not error) ? resolve(body) : resolve(make_error(error)); }
@@ -144,7 +105,7 @@ namespace nbdl::asio_tcp
       buffer[3] = static_cast<unsigned char>(m.size());
 
       asio::async_write(
-        resolve.get_state().socket()
+        resolve.get_state().socket
       , asio::buffer(buffer, 4)
       , [&](auto error, size_t)
         { (not error) ? resolve(m) : resolve(make_error(error)); }
@@ -159,7 +120,7 @@ namespace nbdl::asio_tcp
   , promise([](auto& resolve, auto& message)
     {
       asio::async_write(
-        resolve.get_state().socket()
+        resolve.get_state().socket
       , asio::buffer(message, message.size())
       , [&](auto error, size_t)
         { (not error) ? resolve(message) : resolve(make_error(error)); }
@@ -181,8 +142,6 @@ namespace nbdl::asio_tcp
 namespace nbdl
 {
   // Just use the Beast Websockets integration
-  //
-  // TODO implement Producer/Consumer
 }
 
 #endif
