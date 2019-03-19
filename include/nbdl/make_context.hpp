@@ -46,19 +46,18 @@ namespace nbdl
   }
 
   // make_context - named parameter interface for making a context
-  //                Use `actor("name") = arg` for NamedPairs
-  template <typename Tag, typename ...NamedPairs>
-  auto make_context(NamedPairs&& ...named_pairs)
+  //                Use `actor("name") = arg` for named_pairs
+  template <typename Tag>
+  constexpr auto make_context = [](auto&& ...named_pairs)
   {
     using ActorNames = typename nbdl_def::builder::make_context_meta_t<Tag>
                                                  ::actor_names;
-    constexpr auto N = mp_size<ActorNames>{};
-
-    auto params = hana::make_map(std::forward<NamedPairs>(named_pairs)...);
+    auto params = hana::make_map(
+        std::forward<decltype(named_pairs)>(named_pairs)...);
 
     return make_context_detail::make_helper<nbdl::context<Tag>, ActorNames>(
       std::move(params)
-    , std::make_index_sequence<N>{}
+    , std::make_index_sequence<mp_size<ActorNames>{}>{}
     );
 
 #if 0 // causes ICE
@@ -69,7 +68,7 @@ namespace nbdl
       ...
     );
 #endif
-  }
+  };
 }
 
 #endif
