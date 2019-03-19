@@ -20,6 +20,7 @@
 #include <boost/hana/unpack.hpp>
 #include <iterator>
 #include <mpdef/pair.hpp>
+#include <mpdef/utility.hpp>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -256,13 +257,6 @@ namespace nbdl::webui
     // expose variant type
     using variant = Variant;
   };
-
-  template <typename T>
-  template <typename Name>
-  constexpr auto route_pair_fn<T>::operator()(Name) const
-  {
-    return mpdef::pair<Name, T>{};
-  } 
 
   template <typename ...Pairs>
   constexpr auto make_route_map_fn::operator()(Pairs ...) const

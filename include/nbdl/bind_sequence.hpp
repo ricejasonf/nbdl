@@ -88,6 +88,7 @@ namespace nbdl
         hana::Sequence  <Tag>::value
     ||  hana::Product   <Tag>::value
     ||  hana::is_a<hana::optional_tag, Tag>
+    ||  hana::is_a<hana::string_tag, Tag>
   >>
   {
     template <typename BindableSequence, typename BindFn>

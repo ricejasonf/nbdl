@@ -7,6 +7,8 @@
 #ifndef NBDL_FWD_WEBUI_ROUTE_MAP_HPP
 #define NBDL_FWD_WEBUI_ROUTE_MAP_HPP
 
+#include <mpdef/pair.hpp>
+#include <mpdef/utility.hpp>
 #include <nbdl/variant.hpp>
 
 namespace nbdl::webui
@@ -17,12 +19,27 @@ namespace nbdl::webui
   template <typename T>
   struct route_pair_fn
   {
-    template <typename Name>
-    constexpr auto operator()(Name) const;
+    static using operator()(using auto name)
+    {
+      return mpdef::pair<decltype(mpdef::to_constant(name)), T>{};
+    }
   };
 
-  template <typename T>
+  template <>
+  struct route_pair_fn<void>
+  {
+    static using operator()(using auto name)
+    {
+      return mpdef::pair<
+        decltype(mpdef::to_constant(name))
+      , decltype(mpdef::to_constant(name))
+      >{};
+    }
+  };
+
+  template <typename T = void>
   constexpr route_pair_fn<T> route_pair{};
+
 
   struct make_route_map_fn
   {
