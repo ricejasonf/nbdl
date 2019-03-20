@@ -9,6 +9,7 @@
 #include <boost/hana/string.hpp>
 #include <catch.hpp>
 #include <nbdl/webui/route_map.hpp>
+#include <nbdl/webui/set_route.hpp>
 #include <nbdl/entity.hpp>
 #include <nbdl/string.hpp>
 #include <cstddef>
@@ -16,24 +17,30 @@
 
 namespace hana = boost::hana;
 using namespace hana::literals;
+namespace message = nbdl::message;
 
 namespace
 {
-
   struct foo
   {
     std::size_t id;
+
+    foo() = delete;
   };
 
   struct bar
   {
     nbdl::string name;
+
+    bar() = delete;
   };
 
   struct baz
   {
     std::size_t id;
     nbdl::string name;
+
+    baz() = delete;
   };
 
   struct boo_moo { };
@@ -125,4 +132,42 @@ TEST_CASE("Map string to route", "[webui][route_map]")
 
   CHECK(hana::equal(route_map.from_string("/platypus") , decltype(route_map)::variant{}));
   CHECK(hana::equal(route_map.from_string("") , decltype(route_map)::variant{}));
+}
+
+TEST_CASE("Make set_route for a route_map", "[webui][route_map]")
+{
+  constexpr auto set_route = nbdl::webui::make_set_route(route_map);
+
+  {
+    bool is_sent = false;
+    auto send_message = [&](auto const& message)
+    {
+      is_sent = true;
+      CHECK(hana::equal(message::get_payload(message), route_map.to_variant(""_s)));
+    };
+    set_route("")(send_message);
+    CHECK(is_sent);
+  }
+
+  {
+    bool is_sent = false;
+    auto send_message = [&](auto const& message)
+    {
+      is_sent = true;
+      CHECK(hana::equal(message::get_payload(message), route_map.to_variant(baz{42, "baz"})));
+    };
+    set_route("baz")(send_message, baz{42, "baz"});
+    CHECK(is_sent);
+  }
+
+  {
+    bool is_sent = false;
+    auto send_message = [&](auto const& message)
+    {
+      is_sent = true;
+      CHECK(hana::equal(message::get_payload(message), route_map.to_variant(boo_moo{})));
+    };
+    set_route("boo-moo")(send_message);
+    CHECK(is_sent);
+  }
 }
