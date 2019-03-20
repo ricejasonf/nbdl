@@ -18,6 +18,7 @@
 #include <boost/mp11/map.hpp>
 #include <boost/hana/ext/std/array.hpp>
 #include <boost/hana/unpack.hpp>
+#include <boost/hana/type.hpp>
 #include <iterator>
 #include <mpdef/pair.hpp>
 #include <mpdef/utility.hpp>
@@ -186,6 +187,14 @@ namespace nbdl::webui
     }
 
     public:
+
+    static using get_type(using auto route_name)
+    {
+      return hana::type_c<mp_second<mp_map_find<
+        Map
+      , decltype(mpdef::to_constant(route_name))
+      >>>;
+    }
 
     template <typename T>
     Variant to_variant(T&& t) const
