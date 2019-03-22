@@ -85,6 +85,8 @@ namespace nbdl::js
       return *this;
     }
 
+    using ::nbdl::detail::js_val::operator emscripten::val;
+
     private:
 
     friend get_handle_fn;

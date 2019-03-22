@@ -53,6 +53,11 @@ namespace nbdl::detail
     {
       return emscripten::val::module_property("nbdl_detail_json_val")[handle()];
     }
+
+    operator emscripten::val() const
+    {
+      return this->as_val();
+    }
   };
 }
 

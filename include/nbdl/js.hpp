@@ -14,7 +14,9 @@
 
 #include <boost/hana/core/when.hpp>
 #include <boost/hana/equal.hpp>
+#include <boost/hana/string.hpp>
 #include <emscripten.h>
+#include <mpdef/utility.hpp>
 #include <type_traits>
 
 //
@@ -24,8 +26,15 @@
   Module.NBDL_DETAIL_JS_SET($0, F(Module.NBDL_DETAIL_JS_GET($0))); \
   } , nbdl::js::get_handle(val))
 
+#define NBDL_JS_TRANSFORM_(val, HANA_STRING) emscripten_asm_const_int( \
+  ("{ Module.NBDL_DETAIL_JS_SET($0, "_s + HANA_STRING + \
+  "(Module.NBDL_DETAIL_JS_GET($0))); \
+  }"_s).c_str(), nbdl::js::get_handle(val))
+
 namespace nbdl::js
 {
+  using namespace boost::hana::literals;
+
   inline void init()
   {
     nbdl::detail::js_val::init_registry();
@@ -109,6 +118,21 @@ namespace nbdl::js
   {
     // deprecated
     constexpr get_handle_fn get_handle{};
+  }
+
+  // convenience for using document.getElementById in javascript
+  template <typename String>
+  auto get_element_by_id_(String) {
+    val x;
+    constexpr auto js_code = "function() { return document.getElementById('"_s +
+                String{} + "'); }"_s;
+    (void)js_code;
+    NBDL_JS_TRANSFORM_(x, js_code);
+    return x;
+  }
+
+  using get_element_by_id(using auto name) {
+    return get_element_by_id_(mpdef::to_constant(name));
   }
 }
 

@@ -7,6 +7,7 @@
 
 nbdl_catch_test_suite(build_targets "test.nbdl.js"
   callback.cpp
+  get_element_by_id.cpp
   promise.cpp
   val.cpp
 )
