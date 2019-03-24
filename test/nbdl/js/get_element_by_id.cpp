@@ -14,6 +14,7 @@ namespace hana = boost::hana;
 
 TEST_CASE("get_element_by_id from document object.", "[js]")
 {
+  nbdl::js::init();
   EM_ASM({
     // set up fake document object
     document = {
