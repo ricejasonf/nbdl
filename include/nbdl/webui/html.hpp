@@ -33,8 +33,7 @@ namespace nbdl::webui
     constexpr auto span(Args ...args)
     { return element(hana::string<'s', 'p', 'a', 'n'>{}, args...); }
 
-    template <typename ...Args>
-    constexpr auto pre(Args ...args)
+    using pre(using auto ...args)
     { return element(hana::string<'p', 'r', 'e'>{}, args...); }
 
     template <typename ...Args>
@@ -57,15 +56,13 @@ namespace nbdl::webui
     constexpr auto form(Args ...args)
     { return element(hana::string<'f', 'o', 'r', 'm'>{}, args...); }
 
-    template <typename ...Args>
-    constexpr auto text_area(Args ...args)
+    using text_area(using auto ...args)
     { return element(hana::string<'t', 'e', 'x', 't', 'a', 'r', 'e', 'a'>{}, args...); }
 
     using attr_class(using auto ...args)
     { return attribute(hana::string<'c', 'l', 'a', 's', 's'>{}, args...); }
 
-    template <typename ...Args>
-    constexpr auto attr_href(Args ...args)
+    using attr_href(using auto ...args)
     { return attribute(hana::string<'h', 'r', 'e', 'f'>{}, args...); }
 
     template <typename ...Args>
