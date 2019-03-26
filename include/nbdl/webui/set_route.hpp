@@ -20,9 +20,9 @@ namespace nbdl::webui
   {
     // Support DefaultConstructible for stateless routes.
     template <typename Send>
-    void operator()(Send send)
+    void operator()(Send send) const
     {
-      send(nbdl::message::make_upstream_create(
+      send(nbdl::message::make_upstream_update(
         nav_route_path
       , nbdl::message::no_uid
       , Variant(Route{})
@@ -30,9 +30,9 @@ namespace nbdl::webui
     }
 
     template <typename Send>
-    void operator()(Send send, Route const& route)
+    void operator()(Send send, Route const& route) const
     {
-      send(nbdl::message::make_upstream_create(
+      send(nbdl::message::make_upstream_update(
         nav_route_path
       , nbdl::message::no_uid
       , Variant(route)
