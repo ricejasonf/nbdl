@@ -59,6 +59,19 @@ namespace nbdl::webui
     using text_area(using auto ...args)
     { return element(hana::string<'t', 'e', 'x', 't', 'a', 'r', 'e', 'a'>{}, args...); }
 
+    using h1(using auto ...args)
+    { return element(hana::string<'h', '1'>{}, args...); }
+    using h2(using auto ...args)
+    { return element(hana::string<'h', '2'>{}, args...); }
+    using h3(using auto ...args)
+    { return element(hana::string<'h', '3'>{}, args...); }
+    using h4(using auto ...args)
+    { return element(hana::string<'h', '4'>{}, args...); }
+    using h5(using auto ...args)
+    { return element(hana::string<'h', '5'>{}, args...); }
+    using h6(using auto ...args)
+    { return element(hana::string<'h', '6'>{}, args...); }
+
     using attr_class(using auto ...args)
     { return attribute(hana::string<'c', 'l', 'a', 's', 's'>{}, args...); }
 
