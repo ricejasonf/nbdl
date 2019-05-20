@@ -111,6 +111,7 @@ TEST_CASE("Update and check the nav location using a nbdl::context", "[webui][na
 
 TEST_CASE("Nav location is updated when browser changes location", "[webui][nav_route]")
 {
+  // set a uri prefix
   auto ctx = nbdl::make_unique_context<context>();
 
   EM_ASM({ window.history.pushState(null, null, "/"); });
@@ -156,6 +157,67 @@ TEST_CASE("Nav location is updated when browser changes location", "[webui][nav_
         result = str == nbdl::string("/my-route-2/101");
       }
     );
+    CHECK(result);
+  }
+}
+
+TEST_CASE("Nav location seemlessly uses a hardcoded URI prefix", "[webui][nav_route]")
+{
+  // set a uri prefix
+  EM_ASM_({ Module.NBDL_WEBUI_NAV_URI_PREFIX = "/prefix" });
+
+  auto ctx = nbdl::make_unique_context<context>();
+
+  EM_ASM({ window.history.pushState(null, null, "/prefix"); });
+
+  nbdl::apply_message(
+    *ctx
+  , message::make_upstream_update(
+      hana::make_tuple("nav_route"_s)
+    , message::no_uid
+    , my_route_1{42, 84}
+    )
+  );
+
+  {
+    bool result = false;
+    nbdl::match(
+      *ctx
+    , hana::make_tuple("nav_route"_s)
+    , hana::overload_linearly(
+        [&](my_route_1 const& r)
+        {
+          result = hana::equal(r, my_route_1{42, 84});
+        }
+      , [](auto&&)
+        {
+          CHECK(false);   
+        }
+      )
+    );
+    CHECK(result);
+  }
+
+  {
+    bool result = false;
+    nbdl::match(
+      *ctx
+    , hana::make_tuple("nav_route"_s, hana::type_c<nbdl::string>)
+    , [&](nbdl::string const& str)
+      {
+        CHECK(std::string{str} == std::string("/my-route-1/42/84"));
+        CHECK(std::string{str}.size() == std::string("/my-route-1/42/84").size());
+        result = str == nbdl::string("/my-route-1/42/84");
+      }
+    );
+    CHECK(result);
+  }
+
+  {
+    // 
+    bool result = EM_ASM_INT({
+      return window.location.pathname == "/prefix/my-route-1/42/84";
+    });
     CHECK(result);
   }
 }

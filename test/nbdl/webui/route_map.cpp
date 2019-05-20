@@ -74,18 +74,18 @@ TEST_CASE("Map route to variant", "[webui][route_map]")
 
 TEST_CASE("Map route name to route type", "[webui][route_map]")
 {
-  CHECK(RouteMap::get_type("")        == hana::typeid_(""_s)); 
-  CHECK(RouteMap::get_type("bar")     == hana::type_c<bar>); 
-  CHECK(RouteMap::get_type("baz")     == hana::type_c<baz>); 
-  CHECK(RouteMap::get_type("boo-moo") == hana::type_c<boo_moo>); 
+  CHECK((RouteMap::get_type("")        == hana::typeid_(""_s))); 
+  CHECK((RouteMap::get_type("bar")     == hana::type_c<bar>)); 
+  CHECK((RouteMap::get_type("baz")     == hana::type_c<baz>)); 
+  CHECK((RouteMap::get_type("boo-moo") == hana::type_c<boo_moo>)); 
 }
 
 TEST_CASE("Map route to string", "[webui][route_map]")
 {
-  CHECK(route_map.to_string(""_s)               == nbdl::string("/"));
-  CHECK(route_map.to_string(foo{42})            == nbdl::string("/foo/42"));
-  CHECK(route_map.to_string(bar{"hello"})       == nbdl::string("/bar/hello"));
-  CHECK(route_map.to_string(baz{42, "world"})   == nbdl::string("/baz/42/world"));
+  CHECK((route_map.to_string(""_s)               == nbdl::string("/")));
+  CHECK((route_map.to_string(foo{42})            == nbdl::string("/foo/42")));
+  CHECK((route_map.to_string(bar{"hello"})       == nbdl::string("/bar/hello")));
+  CHECK((route_map.to_string(baz{42, "world"})   == nbdl::string("/baz/42/world")));
 }
 
 TEST_CASE("Map string to route", "[webui][route_map]")

@@ -43,7 +43,8 @@ namespace nbdl::webui
     {
       EM_ASM_(
         {
-          window.history.pushState(null, null, Pointer_stringify($0));
+          var s = Module.NBDL_WEBUI_NAV_URI_PREFIX + Pointer_stringify($0);
+          window.history.pushState(null, null, s);
         }
       , route.data()
       );
@@ -61,6 +62,9 @@ namespace nbdl::webui
       {
         EM_ASM_(
           {
+            if (!Module.NBDL_WEBUI_NAV_URI_PREFIX) {
+              Module.NBDL_WEBUI_NAV_URI_PREFIX = "";
+            }
             window.onpopstate = function()
             {
               // call the handler
@@ -73,12 +77,17 @@ namespace nbdl::webui
 
       void receive_event()
       {
-        std::size_t length = EM_ASM_INT({ return window.location.pathname.length; }, 0);
+        std::size_t length = EM_ASM_INT({
+          return window.location.pathname.length
+                 - Module.NBDL_WEBUI_NAV_URI_PREFIX.length;
+        }, 0);
         nbdl::string route(length, '\0');
 
         EM_ASM_(
           {
-            stringToAscii(window.location.pathname, $0);
+            var s = window.location.pathname.slice(
+              Module.NBDL_WEBUI_NAV_URI_PREFIX.length);
+            stringToAscii(s, $0);
           }
         , route.data()
         );
