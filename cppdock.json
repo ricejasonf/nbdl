@@ -111,6 +111,52 @@
           }
         ]
       ]
+    },
+    "server": {
+      "description": "For building nbdl::server",
+      "type": "linux_x64",
+      "base_image": "ricejasonf/parmexpr",
+      "deps": [
+        [
+          {
+            "name": "ricejasonf/boost_header_only",
+            "tag": "1_70_0",
+            "source": "docker",
+            "revision": "sha256:5d385c9766123d5915bbaf6cefd2de19f74d386bb8b990f778907e57eb9d49fd"
+          },
+          {
+            "name": "ricejasonf/hana",
+            "revision": "7230879ec63c9cbbeefdd1415fe2255043168422",
+            "tag": "parmexpr"
+          },
+          {
+            "name": "ricejasonf/dyno",
+            "revision": "8dcb05fde3d1c4dae8ad005c46a36b7efcdf3380",
+            "tag": "fix2a"
+          }
+        ],
+        [
+          {
+            "name": "open-source-parsers/jsoncpp",
+            "revision": "a679dde58d675e75eaf0fe31f62e833868e2f22d",
+            "tag": "refs/tags/1.8.1"
+          }
+        ],
+        [
+          {
+            "name": "ldionne/libawful",
+            "revision": "d76ec919b9978da24023539fcfb7d8b157f7e535",
+            "tag": "master"
+          }
+        ],
+        [
+          {
+            "name": "ricejasonf/full_duplex",
+            "tag": "master",
+            "revision": "eb6b16337d37831fe6c3fa047d166cab212fa8aa"
+          }
+        ]
+      ]
     }
   }
 }

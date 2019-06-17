@@ -37,13 +37,24 @@ namespace nbdl::asio_tcp
   {
     auto& state = resolve.get_state();
     state.socket.async_connect(
-      state.endpoint
-    , [&](auto error)
+      state.endpoint,
+      [&](auto error)
       {
         (not error) ? resolve(full_duplex::void_input) :
                       resolve(make_error(error));
       }
     );
+  });
+
+  // accept
+
+  constexpr auto accept = promise([&](auto& resolve, auto&&) {
+    auto& state = resolve.get_state();
+    state.acceptor() = tcp::acceptor(state.socket().get_io_service(),
+                                     state.tcp_endpoint());
+    stat.acceptor().async_accept(state.socket(), [&](auto error) {
+      (not error) ? resolve(self) : resolve(make_error(error));
+    });
   });
 
   // read message
@@ -54,9 +65,9 @@ namespace nbdl::asio_tcp
     auto operator()(Resolve& resolve, Input&&)
     {
       asio::async_read(
-        self.state().socket
-      , asio::buffer(buffer, 4)
-      , [&](auto error, size_t)
+        self.state().socket,
+        asio::buffer(buffer, 4),
+        [&](auto error, size_t)
         {
           uint32_t length = buffer[0] << 24
                           | buffer[1] << 16
@@ -77,9 +88,9 @@ namespace nbdl::asio_tcp
     {
       body.resize(length);
       asio::async_read(
-        self.state().socket
-      , asio::buffer(body, length)
-      , [&](auto error, size_t)
+        self.state().socket,
+        asio::buffer(body, length),
+        [&](auto error, size_t)
         { (not error) ? resolve(body) : resolve(make_error(error)); }
       );
     }
@@ -105,9 +116,9 @@ namespace nbdl::asio_tcp
       buffer[3] = static_cast<unsigned char>(m.size());
 
       asio::async_write(
-        resolve.get_state().socket
-      , asio::buffer(buffer, 4)
-      , [&](auto error, size_t)
+        resolve.get_state().socket,
+        asio::buffer(buffer, 4),
+        [&](auto error, size_t)
         { (not error) ? resolve(m) : resolve(make_error(error)); }
       );
     }
@@ -116,13 +127,13 @@ namespace nbdl::asio_tcp
   };
 
   constexpr auto write_message = do_(
-    promise(write_length_fn{})
-  , promise([](auto& resolve, auto& message)
+    promise(write_length_fn{}),
+    promise([](auto& resolve, auto& message)
     {
       asio::async_write(
-        resolve.get_state().socket
-      , asio::buffer(message, message.size())
-      , [&](auto error, size_t)
+        resolve.get_state().socket,
+        asio::buffer(message, message.size()),
+        [&](auto error, size_t)
         { (not error) ? resolve(message) : resolve(make_error(error)); }
       );
     })
@@ -130,8 +141,8 @@ namespace nbdl::asio_tcp
 
   // endpoint "classes"
 
-  constexpr auto acceptor   = endpoint(event::init = accept);
-  constexpr auto connector  = endpoint(event::init = connect);
+  constexpr auto accept   = endpoint(event::init = accept);
+  constexpr auto connect  = endpoint(event::init = connect);
 
   constexpr auto message = endpoint(
     event::read_message  = read_message,

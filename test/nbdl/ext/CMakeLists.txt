@@ -8,3 +8,5 @@
 nbdl_catch_test_suite(build_targets "test.nbdl.ext"
   std/unordered_map.cpp
 )
+
+add_subdirectory(beast_ws)
