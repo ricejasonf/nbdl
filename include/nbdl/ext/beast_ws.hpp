@@ -13,7 +13,7 @@
 #include <string_view>
 #include <utility>
 
-namespace nbdl::beast_ws
+namespace nbdl::ext::beast_ws
 {
   namespace asio  = boost::asio;
   namespace beast = boost::beast;
@@ -42,11 +42,13 @@ namespace nbdl::beast_ws
       });
     }),
     promise([](auto& resolve, tcp::socket socket) {
-      beast::websocket::stream<tcp::socket>
-      stream{std::move(tcp::socket)};
+      //beast::websocket::stream<tcp::socket>
+      //stream{std::move(socket)};
+      auto& stream = resolve.get_state().stream();
+      stream.next_layer() = std::move(socket);
 
-      stream.async_accept([&resolve, &stream](auto error) {
-        (not error) ? resolve(std::move(stream)) :
+      stream.async_accept([&resolve](boost::system::error_code error) {
+        (not error) ? resolve(resolve.get_state().stream()) :
                       resolve(make_error(error));
       });
       // TODO get session cookie somehow
@@ -54,20 +56,39 @@ namespace nbdl::beast_ws
   );
 
   // connect - currently used for integration testing
-  constexpr auto connect = [](std::string host) {
+  //           service may be a port number
+  constexpr auto connect = [](auto& io,
+                              std::string host,
+                              std::string service) {
+    tcp::resolver resolver{io};
     return full_duplex::do_(
-      promise([&](auto& resolve, auto&&) {
+      promise([resolver = std::move(resolver),
+               host     = std::move(host),
+               service  = std::move(service)]
+        (auto& resolve, auto&&) mutable {
+        resolver.async_resolve(tcp::v4(), host, service, 
+                               [&](auto error, auto results) {
+          // the result range is guaranteed to be non-empty unless
+          // there is an error
+          (not error) ? resolve(std::move(*(results.begin()))) :
+                        resolve(make_error(error));
+        });
+      }),
+      promise([](auto& resolve, auto entry) {
           auto& socket = resolve.get_state().socket();
-          socket.async_connect(state.endpoint, [&](auto error) {
-              (not error) ? resolve(self) : resolve(make_error(error));
+          socket.async_connect(entry.endpoint(),
+                               [&resolve](auto error) {
+              (not error) ? resolve(full_duplex::void_input) :
+                            resolve(make_error(error));
           });
       }),
-      promise([host = std::move(host)](auto& resolve, auto&&) {
+      promise([](auto& resolve, auto const&) {
           auto& stream = resolve.get_state().stream();
-          state.ws.async_handshake(boost::string_view(host),
-                                   boost::string_view("/"),
-                                   [&](auto error) {
-            (not error) ? resolve(self) : resolve(make_error(error));
+          stream.async_handshake(boost::string_view("localhost"),
+                                 boost::string_view("/"),
+                                 [&](boost::system::error_code error) {
+            (not error) ? resolve(full_duplex::void_input) :
+                          resolve(make_error(error));
           });
       })
     );
@@ -80,7 +101,7 @@ namespace nbdl::beast_ws
     template <typename Resolve, typename Input>
     void operator()(Resolve& resolve, Input&&)
     {
-      resolve.get_state().socket.async_read(buffer, [&](auto error, size_t)
+      resolve.get_state().stream().async_read(buffer, [&](auto error, size_t)
       {
         auto mut_buf = buffer.data();
         std::string_view buffer_view(static_cast<char const*>(mut_buf.data()), mut_buf.size());
@@ -95,13 +116,15 @@ namespace nbdl::beast_ws
     beast::flat_buffer buffer = {};
   };
 
-  constexpr auto read_message = promise(read_message_fn{});
+  constexpr auto read_message = [](auto&& /* self */) {
+    return promise(read_message_fn{});
+  };
 
   // write_message
 
   constexpr auto write_message = promise([](auto& resolve, auto& message)
   {
-    resolve.get_state().socket.async_write(
+    resolve.get_state().stream().async_write(
       asio::buffer(message, message.size()),
       [&](auto error, size_t)
       { (not error) ? resolve(message) : resolve(make_error(error)); }

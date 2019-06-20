@@ -63,7 +63,7 @@
           {
             "name": "ricejasonf/full_duplex",
             "tag": "master",
-            "revision": "eb6b16337d37831fe6c3fa047d166cab212fa8aa"
+            "revision": "5ab2b4be773f4defd4aef295ede8cc48d8088b02"
           }
         ]
       ]
@@ -123,7 +123,9 @@
             "tag": "1_70_0",
             "source": "docker",
             "revision": "sha256:5d385c9766123d5915bbaf6cefd2de19f74d386bb8b990f778907e57eb9d49fd"
-          },
+          }
+        ],
+        [
           {
             "name": "ricejasonf/hana",
             "revision": "7230879ec63c9cbbeefdd1415fe2255043168422",
@@ -153,7 +155,7 @@
           {
             "name": "ricejasonf/full_duplex",
             "tag": "master",
-            "revision": "eb6b16337d37831fe6c3fa047d166cab212fa8aa"
+            "revision": "5ab2b4be773f4defd4aef295ede8cc48d8088b02"
           }
         ]
       ]
