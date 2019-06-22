@@ -14,6 +14,7 @@
 #include <nbdl/concept/Producer.hpp>
 #include <nbdl/concept/StateConsumer.hpp>
 #include <nbdl/concept/UpstreamMessage.hpp>
+#include <nbdl/consumer_init.hpp>
 #include <nbdl/def/builder/context.hpp>
 #include <nbdl/match.hpp>
 #include <nbdl/message.hpp>
@@ -39,7 +40,7 @@ namespace nbdl
   {
     struct store_tag { };
 
-    constexpr auto init_producers = [](auto& actors)
+    constexpr auto init_actors = [](auto& actors)
     {
       hana::for_each(actors, [](auto& actor)
       {
@@ -48,6 +49,15 @@ namespace nbdl
         if constexpr(nbdl::Producer<Actor>::value)
         {
           nbdl::producer_init(actor);
+        }
+      });
+      hana::for_each(actors, [](auto& actor)
+      {
+        using Actor = std::decay_t<decltype(actor)>;
+
+        if constexpr(nbdl::Consumer<Actor>::value)
+        {
+          //nbdl::consumer_init(actor);
         }
       });
     };
@@ -240,7 +250,7 @@ namespace nbdl
         )...)
       , stores()
     {
-      context_detail::init_producers(actors);
+      context_detail::init_actors(actors);
     }
 
     // default constructor (deprecated - used in tests only I think)
@@ -254,7 +264,7 @@ namespace nbdl
         ))
       , stores()
     {
-      context_detail::init_producers(actors);
+      context_detail::init_actors(actors);
     }
 
     context(context const&) = delete;

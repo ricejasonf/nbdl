@@ -6,6 +6,7 @@
 #
 
 nbdl_catch_test_suite(build_targets "test.nbdl.core"
+  actor_init.cpp
   api_signature.cpp
   apply_action.cpp
   context.cpp
