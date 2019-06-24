@@ -33,7 +33,7 @@ namespace test {
     consumer(T&&) { }
 
     template <typename>
-    using actor_impl = producer;
+    using actor_impl = consumer;
   };
 }
 
@@ -93,6 +93,7 @@ TEST_CASE("Context should init producers then consumers") {
   auto ctx = nbdl::make_context<test::context_tag>(
     nbdl::actor("test_producer", 42),
     nbdl::actor("test_consumer", 42)
+    //, nbdl::actor("fake_an_actor", 42)
   );
 
   test::producer foo = ctx->actor<0>();

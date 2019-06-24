@@ -15,6 +15,7 @@
 #include <boost/hana/pair.hpp>
 #include <boost/hana/type.hpp>
 #include <boost/mp11/list.hpp>
+#include <boost/mp11/set.hpp>
 #include <memory>
 #include <utility>
 
@@ -36,9 +37,18 @@ namespace nbdl
 
   namespace make_context_detail
   {
+    using namespace boost::mp11;
+
     template <typename Context, typename Names, typename Params, auto ...i>
     auto make_helper(Params&& params, std::index_sequence<i...>)
     {
+      // FIXME mp_set_difference not available in mp11 yet
+#if 0
+      static_assert(
+        mp_empty<mp_set_difference<decltype(params.keys()), Names>>::value,
+        "Invalid argument detected");
+#endif
+
       return std::make_unique<Context>(
         hana::find(params, mp_at_c<Names, i>{})
           .value_or(hana::type_c<void>)...);
@@ -59,15 +69,6 @@ namespace nbdl
       std::move(params)
     , std::make_index_sequence<mp_size<ActorNames>{}>{}
     );
-
-#if 0 // causes ICE
-    return std::make_unique<nbdl::context<Tag>>(
-      std::move(params[
-        mp_at_c<ActorNames, mpdef::iota~(N)>{}
-      ]).value_or(hana::type_c<void>)
-      ...
-    );
-#endif
   };
 }
 
