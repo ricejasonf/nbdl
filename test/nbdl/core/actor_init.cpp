@@ -97,6 +97,8 @@ TEST_CASE("Context should init producers then consumers") {
 
   test::producer foo = ctx->actor<0>();
   test::consumer bar = ctx->actor<1>();
+  (void) foo;
+  (void) bar;
 
   event_list expected = {"producer_init", "consumer_init"};
   CHECK(test_events == expected);

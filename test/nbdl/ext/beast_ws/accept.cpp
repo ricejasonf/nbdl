@@ -19,7 +19,7 @@ namespace hana     = boost::hana;
 using tcp          = boost::asio::ip::tcp;
 
 namespace {
-  using stream_t = beast::websocket::stream<tcp::socket>;
+  using stream_t = beast_ws::stream_t;
 
   // TODO these should satisfy documented constraints
   struct accept_t {

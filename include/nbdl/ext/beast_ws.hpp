@@ -23,9 +23,10 @@ namespace nbdl::ext::beast_ws
   using full_duplex::promise_lift;
 
   using asio::ip::tcp;
+  using stream_t = beast::websocket::stream<tcp::socket>;
 
   // accept -/ Promise that resolves a
-  // beast::websocket<tcp::stream>
+  // stream_t
   // and (eventually) http request info
   // or an error
   //
@@ -42,8 +43,6 @@ namespace nbdl::ext::beast_ws
       });
     }),
     promise([](auto& resolve, tcp::socket socket) {
-      //beast::websocket::stream<tcp::socket>
-      //stream{std::move(socket)};
       auto& stream = resolve.get_state().stream();
       stream.next_layer() = std::move(socket);
 
@@ -131,9 +130,9 @@ namespace nbdl::ext::beast_ws
     );
   });
 
-  // message endpoint
+  // message_endpoint
 
-  constexpr auto message = full_duplex::endpoint(
+  constexpr auto message_endpoint = full_duplex::endpoint(
     event::read_message  = read_message,
     event::write_message = write_message
   );
