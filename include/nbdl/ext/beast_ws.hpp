@@ -47,7 +47,7 @@ namespace nbdl::ext::beast_ws
       stream.next_layer() = std::move(socket);
 
       stream.async_accept([&resolve](boost::system::error_code error) {
-        (not error) ? resolve(resolve.get_state().stream()) :
+        (not error) ? resolve(std::move(resolve.get_state().stream())) :
                       resolve(make_error(error));
       });
       // TODO get session cookie somehow
