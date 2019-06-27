@@ -9,20 +9,6 @@
       "deps": [
         [
           {
-            "name": "boostorg/config",
-            "revision": "0cdf4a5da8f2569061721abfeb3a43456cb060dc",
-            "tag": "HEAD"
-          }
-        ],
-        [
-          {
-            "name": "boostorg/mp11",
-            "revision": "a96ae790a43ad68433c773e8692bdeced24b6929",
-            "tag": "develop"
-          }
-        ],
-        [
-          {
             "name": "chriskohlhoff/asio",
             "revision": "230c0d2ae035c5ce1292233fcab03cea0d341264",
             "tag": "master"
@@ -30,9 +16,10 @@
         ],
         [
           {
-            "name": "boostorg/callable_traits",
-            "revision": "684dfbd7dfbdd0438ef3670be10002ca33a71715",
-            "tag": "master"
+            "name": "ricejasonf/boost_header_only",
+            "tag": "1_70_0",
+            "source": "docker",
+            "revision": "sha256:5d385c9766123d5915bbaf6cefd2de19f74d386bb8b990f778907e57eb9d49fd"
           },
           {
             "name": "ricejasonf/hana",
@@ -74,23 +61,10 @@
       "deps": [
         [
           {
-            "name": "boostorg/config",
-            "revision": "0cdf4a5da8f2569061721abfeb3a43456cb060dc",
-            "tag": "HEAD"
-          }
-        ],
-        [
-          {
-            "name": "boostorg/mp11",
-            "revision": "a96ae790a43ad68433c773e8692bdeced24b6929",
-            "tag": "develop"
-          }
-        ],
-        [
-          {
-            "name": "boostorg/callable_traits",
-            "revision": "684dfbd7dfbdd0438ef3670be10002ca33a71715",
-            "tag": "master"
+            "name": "ricejasonf/boost_header_only",
+            "tag": "1_70_0",
+            "source": "docker",
+            "revision": "sha256:5d385c9766123d5915bbaf6cefd2de19f74d386bb8b990f778907e57eb9d49fd"
           },
           {
             "name": "ricejasonf/hana",

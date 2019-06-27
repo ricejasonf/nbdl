@@ -57,7 +57,7 @@ namespace nbdl
 
         if constexpr(nbdl::Consumer<Actor>::value)
         {
-          //nbdl::consumer_init(actor);
+          nbdl::consumer_init(actor);
         }
       });
     };
@@ -284,7 +284,7 @@ namespace nbdl
   struct apply_message_impl<context_tag>
   {
     template <typename Store, typename Message>
-    static constexpr auto apply(Store& s, Message&& m)
+    static constexpr auto apply(Store&& s, Message&& m)
     {
       s.push_message(std::forward<Message>(m));
       return hana::true_c;
@@ -306,7 +306,7 @@ namespace nbdl
   struct match_impl<context_tag>
   {
     template <typename Store, typename Key, typename Fn>
-    static constexpr void apply(Store& s, Key&& k, Fn&& fn)
+    static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
     {
       constexpr auto path_type = decltype(hana::typeid_(k)){};
       nbdl::match(s.stores[path_type], k, [&](auto const& value)
@@ -340,7 +340,7 @@ namespace nbdl
   struct apply_message_impl<context_detail::store_tag>
   {
     template <typename Store, typename Message>
-    static constexpr auto apply(Store& s, Message&& m)
+    static constexpr auto apply(Store&& s, Message&& m)
     {
       /* Removed assertion that only Producers
        * can send downstream messages because
@@ -351,7 +351,8 @@ namespace nbdl
       );
        */
 
-      s.ctx.push_message(std::forward<Message>(m));
+      std::forward<Store>(s)
+        .ctx.push_message(std::forward<Message>(m));
       return hana::true_c;
     }
   };
@@ -370,9 +371,11 @@ namespace nbdl
   struct match_impl<context_detail::store_tag>
   {
     template <typename Store, typename Key, typename Fn>
-    static constexpr void apply(Store& s, Key&& k, Fn&& fn)
+    static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
     {
-      nbdl::match(s.ctx, std::forward<Key>(k), std::forward<Fn>(fn));
+      nbdl::match(std::forward<Store>(s).ctx,
+                  std::forward<Key>(k),
+                  std::forward<Fn>(fn));
     }
   };
 }
