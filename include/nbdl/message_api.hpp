@@ -8,6 +8,7 @@
 #define NBDL_MESSAGE_API_HPP
 
 #include <nbdl/def/builder/context.hpp>
+#include <nbdl/entity.hpp>
 #include <nbdl/variant.hpp>
 
 #include <boost/mp11/list.hpp>
@@ -17,7 +18,16 @@ namespace nbdl
   namespace hana = boost::hana;
   namespace mp11 = boost::mp11;
 
-  template <typename Tag, typename SystemMessage>
+  struct system_message {
+    enum {
+      ERROR, WARNING, STATUS, DEBUG, DEV_DEBUG
+    } level;
+    std::string value;
+  };
+
+  NBDL_ENTITY(system_message, level, value);
+
+  template <typename Tag, typename SystemMessage = system_message>
   struct message_api
   {
     using upstream_variant =
