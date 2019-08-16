@@ -4,15 +4,16 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef NBDL_SERIALIZER_HPP
-#define NBDL_SERIALIZER_HPP
+#ifndef NBDL_APP_SERIALIZER_HPP
+#define NBDL_APP_SERIALIZER_HPP
+
+#include <nbdl/fwd/app/serializer.hpp>
 
 #ifdef EMSCRIPTEN
-#include <nbdl/serializer_js.hpp>
+#include <nbdl/app/serializer_js.hpp>
 #else // NOT EMSCRIPTEN
 
 #include <nbdl/binder/jsoncpp.hpp>
-#include <nbdl/message_api.hpp>
 
 #include <string>
 
@@ -24,43 +25,40 @@
 //       serialization types such as Protobuf et al.
 //
 
-namespace nbdl
+namespace nbdl::app
 {
   namespace hana = boost::hana;
+  using full_duplex::promise;
 
   // serializer - An object to be held by an actor and
   //                      has a simple serialize function returning
   //                      a reference to its buffer
-  template <typename Tag>
+  template <typename Tag, typename Variant>
   struct serializer
   {
-    using variant = typename message_api<Tag>::downstream_variant;
-
     std::string buffer = {};
 
     serializer(serializer const&) = delete;
 
-    // converts to the downstream variant type
+    // converts to the variant type
     // and serializes
     template <typename Message>
     std::string& serialize(Message&& m) {
       using nbdl::binder::jsoncpp::to_string;
-      buffer = to_string(variant(std::forward<Message>(m)));
+      buffer = to_string(Variant(std::forward<Message>(m)));
       return (buffer);
     }
   };
 
   // deserializer - A nullary function that returns a promise
   //                to handle deserialization and validation
-  template <typename Tag>
-  struct deserialize_fn
+  template <typename Tag, typename Variant>
+  struct deserializer_fn
   {
-    using variant = typename message_api<Tag>::upstream_variant;
-
     auto operator()() const {
       return promise([](auto& resolve, std::string const& msg_buf) {
         using full_duplex::make_error;
-        variant var;
+        Variant var;
 
         try {
           nbdl::binder::jsoncpp::from_string(msg_buf, var);
@@ -84,9 +82,6 @@ namespace nbdl
       });
     }
   };
-
-  template <typename Tag>
-  constexpr deserialize_fn<Tag> deserialize{};
 }
 
 #endif // NOT EMSCRIPTEN

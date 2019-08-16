@@ -13,6 +13,7 @@
 #include <full_duplex/future.hpp>
 #include <functional>
 #include <nbdl.hpp>
+#include <nbdl/app/context_endpoint.hpp>
 #include <nbdl/binder/jsoncpp.hpp>
 #include <nbdl/ext/beast_ws.hpp>
 #include <queue>
@@ -35,6 +36,7 @@ namespace nbdl::app {
     resolve(std::forward<decltype(x)>(x));
   });
 
+#if 0 // I dont' think these are used
   constexpr auto serialize_message = [] {
     return do_(
       // TODO map to downstream variant
@@ -71,16 +73,7 @@ namespace nbdl::app {
         }));
     });
   };
-
-  constexpr auto apply_read = promise([](auto& resolve, auto&& msg) {
-    nbdl::apply_message(resolve.get_state().context(),
-                        std::forward<decltype(msg)>(msg));
-    resolve(void_input);
-  });
-
-  constexpr auto log_error = tap([](auto const& /*err*/) {
-    //std::cerr << '\n' << err << '\n';
-  });
+#endif
 
   constexpr auto register_conn = [](auto& self) {
     return tap([&](auto&&) {

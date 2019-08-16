@@ -12,6 +12,7 @@
 #include <nbdl/variant.hpp>
 
 #include <boost/mp11/list.hpp>
+#include <string>
 
 namespace nbdl
 {

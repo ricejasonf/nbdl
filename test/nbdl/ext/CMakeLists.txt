@@ -9,4 +9,6 @@ nbdl_catch_test_suite(build_targets "test.nbdl.ext"
   std/unordered_map.cpp
 )
 
+if (NOT EMSCRIPTEN)
 add_subdirectory(beast_ws)
+endif()

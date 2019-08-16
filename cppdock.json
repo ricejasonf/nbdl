@@ -50,7 +50,7 @@
           {
             "name": "ricejasonf/full_duplex",
             "tag": "master",
-            "revision": "5ab2b4be773f4defd4aef295ede8cc48d8088b02"
+            "revision": "dedbc9c350b740dc60de0af929fef1e7f6a4d904"
           }
         ]
       ]
@@ -82,6 +82,13 @@
             "name": "ldionne/libawful",
             "revision": "d76ec919b9978da24023539fcfb7d8b157f7e535",
             "tag": "master"
+          }
+        ],
+        [
+          {
+            "name": "ricejasonf/full_duplex",
+            "tag": "master",
+            "revision": "dedbc9c350b740dc60de0af929fef1e7f6a4d904"
           }
         ]
       ]
@@ -129,7 +136,7 @@
           {
             "name": "ricejasonf/full_duplex",
             "tag": "master",
-            "revision": "5ab2b4be773f4defd4aef295ede8cc48d8088b02"
+            "revision": "dedbc9c350b740dc60de0af929fef1e7f6a4d904"
           }
         ]
       ]

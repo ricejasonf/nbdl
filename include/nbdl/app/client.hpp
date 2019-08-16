@@ -9,23 +9,77 @@
 
 #include <nbdl.hpp>
 #include <nbdl/app/client_connection.hpp>
-#include <nbdl/js.hpp>
+#include <nbdl/app/context_endpoint.hpp>
+
+#include <memory>
 
 namespace nbdl::app {
-  struct client {
-    std::string address;
-  };
+  using full_duplex::promise;
+  using full_duplex::do_;
+
+  namespace client_detail {
+    template <typename ContextTag, typename Client>
+    auto make_connection(Client& c) {
+      return client_endpoint_open(std::ref(c), endpoint(
+        event::error          = log_error,
+        event::read_message   = do_(deserializer_downstream<ContextTag>(),
+                                    apply_read),
+        event::terminate      = tap([&c](auto&&) {
+          [](auto& /*lazy_c*/) {
+            // TODO actually track connection attempts
+            // just reconnect
+            //lazy_c.connect(); 
+          }(c);
+        })
+      ));
+    }
+  }
+
+  struct client;
 
   template <typename Context>
-  struct client_impl {
-    using ContextTag = typename Context::tag;
+  class client_impl {
+    using context_tag = typename Context::tag;
+    using client_connection_t = decltype(
+        client_detail::make_connection<context_tag>(
+          std::declval<client_impl&>()));
+
+  public:
+    using hana_tag = client;
 
     Context context;
     std::string address;
+    client_connection_t conn;
+    serializer_upstream<context_tag> serializer_ = {};
 
-    // TODO
-    void start_connecting() {
+    client_impl(client_impl const&) = delete;
+
+    template <typename Value>
+    client_impl(actor_initializer<Context, Value> a)
+      : context(a.context)
+      , address(std::move(a.value))
+    { }
+
+    void connect() {
+      conn = client_detail::make_connection<context_tag>(*this);
     }
+
+    template <typename Message>
+    void send_message(Message&& message) {
+      if (!conn) {
+        // extra safe here
+        return;
+      }
+
+      conn->send_message(serializer_.serialize(std::move(message)));
+    }
+  };
+
+  struct client {
+    std::string address;
+
+    template <typename Context>
+    using actor_impl = client_impl<Context>;
   };
 }
 
@@ -34,7 +88,7 @@ namespace nbdl {
   struct producer_init_impl<app::client> {
     template <typename Producer>
     static void apply(Producer& p) {
-      p.start_connecting();
+      p.connect();
     }
   };
 

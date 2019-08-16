@@ -153,6 +153,22 @@ namespace nbdl::binder::js
     };
 
     template <typename T>
+    struct bind_to_impl<T, hana::when<std::is_enum<T>::value>>
+    {
+      template <typename X>
+      static void apply(js_val& val, X x)
+      {
+        EM_ASM_(
+          {
+            Module.NBDL_DETAIL_JS_SET($0, $1);
+          }
+        , val.handle()
+        , static_cast<std::underlying_type_t<X>>(x)
+        );
+      }
+    };
+
+    template <typename T>
     struct bind_to_impl<T, hana::when<nbdl::BindableSequence<T>::value
                               and not nbdl::BindableMap<T>::value>>
     {
@@ -325,6 +341,21 @@ namespace nbdl::binder::js
           }
         , val.handle()
         );
+      }
+    };
+
+    template <typename T>
+    struct bind_from_impl<T, hana::when<std::is_enum<T>::value>>
+    {
+      template <typename X>
+      static void apply(js_val const& val, X& x)
+      {
+        x = static_cast<X>(EM_ASM_INT(
+          {
+            return Module.NBDL_DETAIL_JS_GET($0);
+          }
+        , val.handle()
+        ));
       }
     };
 

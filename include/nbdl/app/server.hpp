@@ -7,6 +7,10 @@
 #ifndef NBDL_SERVER_HPP
 #define NBDL_SERVER_HPP
 
+#if EMSCRIPTEN
+#include <nbdl/app/server_js.hpp>
+#elif
+
 // Consumer that manages messaging to socket clients
 
 #include <nbdl/app/server_connection.hpp>
@@ -185,4 +189,5 @@ namespace nbdl {
   };
 }
 
+#endif // NOT EMSCRIPTEN
 #endif
