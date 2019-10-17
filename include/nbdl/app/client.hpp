@@ -10,12 +10,16 @@
 #include <nbdl.hpp>
 #include <nbdl/app/client_connection.hpp>
 #include <nbdl/app/context_endpoint.hpp>
+#include <nbdl/app/io_context.hpp>
+#include <nbdl/app/serializer.hpp>
 
 #include <memory>
 
 namespace nbdl::app {
-  using full_duplex::promise;
   using full_duplex::do_;
+  using full_duplex::endpoint;
+  using full_duplex::promise;
+  namespace event = full_duplex::event;
 
   namespace client_detail {
     template <typename ContextTag, typename Client>
@@ -57,7 +61,7 @@ namespace nbdl::app {
     template <typename Value>
     client_impl(actor_initializer<Context, Value> a)
       : context(a.context)
-      , address(std::move(a.value))
+      , address(std::move(a.value.address))
     { }
 
     void connect() {
@@ -77,6 +81,7 @@ namespace nbdl::app {
 
   struct client {
     std::string address;
+    nbdl::app::io_context& io;
 
     template <typename Context>
     using actor_impl = client_impl<Context>;

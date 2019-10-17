@@ -9,10 +9,11 @@
 
 #if EMSCRIPTEN
 #include <nbdl/app/server_js.hpp>
-#elif
+#else
 
 // Consumer that manages messaging to socket clients
 
+#include <nbdl/app/io_context.hpp>
 #include <nbdl/app/server_connection.hpp>
 #include <nbdl/app/serializer.hpp>
 
@@ -31,8 +32,8 @@ namespace nbdl::app {
 
   // server - The construction arg for make_context
   struct server {
-    net::io_service& io;
     unsigned short port;
+    nbdl::app::io_context& io;
   };
 
   void error_log(std::string_view err) {
@@ -48,7 +49,7 @@ namespace nbdl::app {
     tcp::acceptor acceptor_;
     beast_ws::stream_t stream_;
     boost::system::error_code ec;
-    serializer<ContextTag> serializer_ = {};
+    serializer_downstream<ContextTag> serializer_ = {};
 
     server_impl(server_impl const&) = delete;
 

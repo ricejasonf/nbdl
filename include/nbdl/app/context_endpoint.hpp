@@ -47,7 +47,7 @@ namespace nbdl::app {
         return err;
       });
     },
-#endif /* EMSCIPTEN */
+#endif /* EMSCRIPTEN */
     [](auto const& err) {
       std::cerr << '\n' << err << '\n';
     }));

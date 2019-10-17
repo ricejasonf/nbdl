@@ -33,7 +33,7 @@ namespace
   void force_exit(int code) {
     EM_ASM({ process.exit($0) }, code);
   }
-#elif // NOT EMSCRIPTEN
+#else // NOT EMSCRIPTEN
   void force_exit(int code) {
     std::exit(code);
   }
@@ -119,13 +119,15 @@ int main()
     }
   };
 
+  nbdl::app::io_context io;
+
   auto client_ctx = nbdl::make_context<client_context>(
-    nbdl::actor("client", "ws://127.0.0.1:8080"),
+    nbdl::actor("client", nbdl::app::client{"ws://127.0.0.1:8080", io}),
     nbdl::actor("test_consumer", on_message)
   );
 
   auto server_ctx = nbdl::make_context<server_context>(
-    nbdl::actor("server", nbdl::app::server{8080})
+    nbdl::actor("server", nbdl::app::server{8080, io})
   );
 
   auto init = [&] {
@@ -150,6 +152,8 @@ int main()
   };
 
   init();
+
+  io.run();
 
 #if EMSCRIPTEN
   emscripten_exit_with_live_runtime();

@@ -110,7 +110,8 @@ namespace nbdl::app {
         beast_ws::message_endpoint,
         endpoint(
           event::init           = register_conn,
-          event::read_message   = do_(deserialize<ContextTag>(), apply_read),
+          event::read_message   = do_(deserializer_upstream<ContextTag>(),
+                                      apply_read),
           event::error          = log_error,
           event::terminate      = unregister_conn
         )

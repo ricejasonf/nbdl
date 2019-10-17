@@ -10,6 +10,7 @@
 // Consumer that manages messaging to socket clients
 // FOR JAVASCRIPT LAND!! ;P ;P ;P
 
+#include <nbdl/app/io_context.hpp>
 #include <nbdl/app/serializer.hpp>
 
 #include <full_duplex.hpp>
@@ -22,6 +23,7 @@ namespace nbdl::app {
   // server - The construction arg for make_context
   struct server {
     unsigned short port;
+    nbdl::app::io_context& io;
   };
 
   template <typename Context>
