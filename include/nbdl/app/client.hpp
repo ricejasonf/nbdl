@@ -52,8 +52,9 @@ namespace nbdl::app {
     using hana_tag = client;
 
     Context context;
+    nbdl::app::io_context& io;
     std::string address;
-    client_connection_t conn;
+    client_connection_t conn = {};
     serializer_upstream<context_tag> serializer_ = {};
 
     client_impl(client_impl const&) = delete;
@@ -61,6 +62,7 @@ namespace nbdl::app {
     template <typename Value>
     client_impl(actor_initializer<Context, Value> a)
       : context(a.context)
+      , io(a.value.io)
       , address(std::move(a.value.address))
     { }
 

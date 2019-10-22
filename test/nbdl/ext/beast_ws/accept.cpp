@@ -58,7 +58,7 @@ TEST_CASE("Accept a websocket connection.", "[ext][beast_ws]")
     accept_t{
       tcp::acceptor(io, tcp::endpoint(tcp::v4(), 60080))
     },
-    beast_ws::accept,
+    beast_ws::accept(),
     full_duplex::tap([&](auto& /* stream */) {
       // TODO check session token
       did_accept = true;

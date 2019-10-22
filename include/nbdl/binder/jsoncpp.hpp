@@ -46,18 +46,25 @@ namespace nbdl { namespace binder { namespace jsoncpp
         field = obj.asUInt();
       }
 
-      void bind_(Json::Value const& obj, unsigned int& field)
+      void bind_unsigned(Json::Value const& obj, unsigned int& field)
       {
         if (!obj.isIntegral())
           throw std::runtime_error("JSON Integral expected");
         field = obj.asUInt();
       }
 
-      void bind_(Json::Value const& obj, int& field)
+      void bind_signed(Json::Value const& obj, int& field)
       {
         if (!obj.isIntegral())
           throw std::runtime_error("JSON Integral expected");
         field = obj.asInt();
+      }
+      
+      template <typename T>
+      void bind_enum(Json::Value const& obj, T& field) {
+        if (!obj.isIntegral())
+          throw std::runtime_error("JSON Integral expected");
+        field = static_cast<T>(obj.asUInt());
       }
 
       void bind_(Json::Value const& obj, double& field)
@@ -76,9 +83,21 @@ namespace nbdl { namespace binder { namespace jsoncpp
       { }
 
       template<typename T>
-      void bind_member(T&& field)
+      void bind_member(T& field)
       {
-        bind_(json_val, std::forward<T>(field));
+        using T_ = std::remove_reference_t<T>;
+        if constexpr(std::is_integral_v<T_> && std::is_unsigned_v<T_>) {
+          bind_unsigned(json_val, field);
+        }
+        else if constexpr(std::is_integral_v<T_>) {
+          bind_signed(json_val, field);
+        }
+        else if constexpr(std::is_enum_v<T_>) {
+          bind_enum(json_val, field);
+        }
+        else {
+          bind_(json_val, std::forward<T>(field));
+        }
       }
 
       template <typename Container>

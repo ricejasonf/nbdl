@@ -46,8 +46,8 @@ namespace nbdl::app {
     using ContextTag = typename Context::tag;
 
     Context context;
+    nbdl::app::io_context& io_;
     tcp::acceptor acceptor_;
-    beast_ws::stream_t stream_;
     boost::system::error_code ec;
     serializer_downstream<ContextTag> serializer_ = {};
 
@@ -55,8 +55,8 @@ namespace nbdl::app {
 
     server_impl(nbdl::actor_initializer<Context, server> a)
       : context(a.context)
+      , io_(a.value.io)
       , acceptor_(a.value.io)
-      , stream_(a.value.io)
     {
       tcp::endpoint endpoint{tcp::v4(), a.value.port};
 
@@ -84,8 +84,7 @@ namespace nbdl::app {
     }
 
     auto& acceptor() { return acceptor_; }
-    auto& stream()   { return stream_; }
-    auto& socket()   { return stream_.next_layer(); }
+    auto& io()       { return io_; }
 
     struct connection_state {
       // eventually replace tcp::socket with something that includes
@@ -134,7 +133,7 @@ namespace nbdl::app {
 
       full_duplex::run_async_loop_with_state(
         std::ref(*this),
-        beast_ws::accept,
+        beast_ws::accept(),
 #if 0
         full_duplex::tap([&](auto& stream ) {
           // TODO check session token

@@ -47,9 +47,13 @@ namespace nbdl::app {
         return err;
       });
     },
+#else  /* NOT EMSCRIPTEN */
+    [](boost::system::error_code const& err) {
+      std::cerr << "\nERROR: " << err.message() << '\n';
+    },
 #endif /* EMSCRIPTEN */
     [](auto const& err) {
-      std::cerr << '\n' << err << '\n';
+      std::cerr << "\nERROR: " << err << '\n';
     }));
 }
 

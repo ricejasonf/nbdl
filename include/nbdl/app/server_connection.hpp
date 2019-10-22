@@ -36,45 +36,6 @@ namespace nbdl::app {
     resolve(std::forward<decltype(x)>(x));
   });
 
-#if 0 // I dont' think these are used
-  constexpr auto serialize_message = [] {
-    return do_(
-      // TODO map to downstream variant
-      tap([](auto&& foo) { foo.foo(); }),
-      map(nbdl::binder::jsoncpp::to_string),
-      map(full_duplex::future<std::string>())
-    );
-  };
-
-  constexpr auto deserialize_message = [] {
-    return promise([](auto& resolve,
-                      std::string const& msg_buf) {
-      using full_duplex::make_error;
-      api::upstream_variant var;
-
-      try {
-        nbdl::binder::jsoncpp::from_string(msg_buf, var);
-      } catch(...) {
-        resolve(make_error("JSONCPP Parse Error"));
-      }
-
-      nbdl::match(var, hana::overload_linearly(
-        [&resolve](nbdl::unresolved) {
-          // this should not happen unless we get
-          // garbage input or something
-          resolve(make_error("Unknown Error"));
-        },
-        [&resolve](system_message sys_msg) {
-          // something bad happened?
-          resolve(make_error(std::move(sys_msg)));
-        },
-        [&resolve](auto&& msg) {
-          resolve(std::forward<decltype(msg)>(msg));
-        }));
-    });
-  };
-#endif
-
   constexpr auto register_conn = [](auto& self) {
     return tap([&](auto&&) {
       self.state().register_connection(self);
