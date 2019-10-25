@@ -17,14 +17,67 @@
 #include <string_view>
 #include <utility>
 
-namespace nbdl::ext::beast_ws
-{
+namespace nbdl::ext::beast_ws::detail {
   namespace asio  = boost::asio;
   namespace beast = boost::beast;
   namespace event = full_duplex::event;
+  namespace http  = boost::beast::http;
+  using full_duplex::do_;
   using full_duplex::future;
   using full_duplex::make_error;
   using full_duplex::map;
+  using full_duplex::promise;
+  using full_duplex::promise_lift;
+
+  using asio::ip::tcp;
+  using stream_t = beast::websocket::stream<tcp::socket>;
+
+  constexpr auto tcp_accept = promise([](auto& resolve, auto&&) {
+    auto& acceptor = resolve.get_state().acceptor();
+    auto io = acceptor.get_executor();
+    acceptor.async_accept(asio::make_strand(io),
+                          [&resolve](auto error, tcp::socket socket) {
+      (not error) ? resolve(std::move(socket)) :
+                    resolve(make_error(error));
+    });
+  });
+
+  struct parse_request_fn {
+    beast::flat_buffer buffer = {};
+
+    template <typename Resolve>
+    void operator()(Resolve&& resolve, stream_t &stream) {
+      auto& req = resolve.get_state().request();
+      http::async_read(stream.next_layer(), buffer, req, [&](auto error, std::size_t) {
+        (not error) ? resolve(stream) :
+                      resolve(make_error(error));
+      });
+    }
+  };
+
+  constexpr auto parse_request = [] {
+    return do_(
+      map(future<stream_t>()),
+      promise(parse_request_fn{})
+    );
+  };
+
+  constexpr auto ws_accept = promise([](auto& resolve, stream_t& stream) {
+    auto& req = resolve.get_state().request();
+    stream.async_accept(req,
+                        [&resolve, &stream](boost::system::error_code error)
+    {
+      (not error) ? resolve(std::move(stream)) :
+                    resolve(make_error(error));
+    });
+  });
+}
+
+namespace nbdl::ext::beast_ws {
+  namespace asio  = boost::asio;
+  namespace beast = boost::beast;
+  namespace event = full_duplex::event;
+  using full_duplex::make_error;
   using full_duplex::promise;
   using full_duplex::promise_lift;
 
@@ -37,28 +90,9 @@ namespace nbdl::ext::beast_ws
   //
   constexpr auto accept = [] {
     return full_duplex::do_(
-      promise([](auto& resolve, auto&&) {
-        // TODO a concept for state would be nice
-        auto& acceptor = resolve.get_state().acceptor();
-        auto io = acceptor.get_executor();
-        acceptor.async_accept(asio::make_strand(io),
-                              [&resolve](auto error, tcp::socket socket) {
-          // it's normal to move the socket
-          // and recycle the original
-          (not error) ? resolve(std::move(socket)) :
-                        resolve(make_error(error));
-        });
-      }),
-      map(future<stream_t>()),
-      promise([](auto& resolve, stream_t& stream) {
-        // the future lazily holds the stream object, keeping it alive
-        // for the lifetime of the owning promise
-        stream.async_accept([&resolve, &stream](boost::system::error_code error) {
-          (not error) ? resolve(std::move(stream)) :
-                        resolve(make_error(error));
-        });
-        // TODO get session cookie somehow
-      })
+      detail::tcp_accept,
+      detail::parse_request(),
+      detail::ws_accept
     );
   };
 

@@ -55,6 +55,7 @@ namespace nbdl::app {
     using full_duplex::endpoint_compose;
     using full_duplex::endpoint_open;
     using full_duplex::map;
+    using full_duplex::tap;
     namespace event = full_duplex::event;
 
     // It's fine to just unwrap the smart pointer here.
@@ -73,7 +74,7 @@ namespace nbdl::app {
           event::init           = register_conn,
           event::read_message   = do_(deserializer_upstream<ContextTag>(),
                                       apply_read),
-          event::error          = log_error,
+          event::error          = tap(log_error),
           event::terminate      = unregister_conn
         )
       )

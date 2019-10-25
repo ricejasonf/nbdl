@@ -27,6 +27,7 @@
 
 namespace nbdl::app {
   namespace beast_ws = nbdl::ext::beast_ws;
+  namespace http = boost::beast::http;
   namespace net = boost::asio;
   using tcp = net::ip::tcp;
 
@@ -50,6 +51,7 @@ namespace nbdl::app {
     tcp::acceptor acceptor_;
     boost::system::error_code ec;
     serializer_downstream<ContextTag> serializer_ = {};
+    http::request<http::string_body> request_ = {};
 
     server_impl(server_impl const&) = delete;
 
@@ -85,19 +87,20 @@ namespace nbdl::app {
 
     auto& acceptor() { return acceptor_; }
     auto& io()       { return io_; }
+    auto& request()  { return request_; }
 
     struct connection_state {
-      // eventually replace tcp::socket with something that includes
-      // http request information to get the session cookie
       beast_ws::stream_t stream_;
       server_impl& serv_;
+      std::string session_id = {};
+      std::string user_id = {};
 
       Context context() {
         return serv_.context;
       }
 
-      auto& stream()   { return stream_; }
-      auto& socket()   { return stream_.next_layer(); }
+      auto& stream() { return stream_; }
+      auto& socket() { return stream_.next_layer(); }
 
       template <typename Conn>
       void register_connection(Conn& c) {

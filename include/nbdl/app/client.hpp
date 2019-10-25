@@ -19,13 +19,14 @@ namespace nbdl::app {
   using full_duplex::do_;
   using full_duplex::endpoint;
   using full_duplex::promise;
+  using full_duplex::tap;
   namespace event = full_duplex::event;
 
   namespace client_detail {
     template <typename ContextTag, typename Client>
     auto make_connection(Client& c) {
       return client_endpoint_open(std::ref(c), endpoint(
-        event::error          = log_error,
+        event::error          = tap(log_error),
         event::read_message   = do_(deserializer_downstream<ContextTag>(),
                                     apply_read),
         event::terminate      = tap([&c](auto&&) {

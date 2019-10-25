@@ -9,12 +9,13 @@
 
 #include <full_duplex.hpp>
 #include <full_duplex/future.hpp>
-#include <iostream> // for log_error
 #include <nbdl.hpp>
 #include <utility>
 
 #if EMSCRIPTEN
 #include <nbdl/js.hpp>
+#else
+#include <iostream> // for log_error
 #endif
 
 namespace nbdl::app {
@@ -33,7 +34,7 @@ namespace nbdl::app {
     resolve(void_input);
   });
 
-  constexpr auto log_error = tap(hana::overload_linearly(
+  constexpr auto log_error = hana::overload_linearly(
     [](nbdl::system_message const& err) {
       std::cerr << '\n' << err.value << '\n';
     },
@@ -54,7 +55,7 @@ namespace nbdl::app {
 #endif /* EMSCRIPTEN */
     [](auto const& err) {
       std::cerr << "\nERROR: " << err << '\n';
-    }));
+    });
 }
 
 #endif
