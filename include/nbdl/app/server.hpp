@@ -25,10 +25,20 @@
 #include <string_view>
 #include <vector>
 
+namespace nbdl::app::detail {
+  namespace beast = boost::beast;
+  namespace http = beast::http;
+
+  struct session_info {
+    size_t user_id;
+  };
+}
 namespace nbdl::app {
+  namespace beast = boost::beast;
   namespace beast_ws = nbdl::ext::beast_ws;
-  namespace http = boost::beast::http;
+  namespace http = beast::http;
   namespace net = boost::asio;
+  namespace websocket = beast::websocket;
   using tcp = net::ip::tcp;
 
   // server - The construction arg for make_context
@@ -92,8 +102,6 @@ namespace nbdl::app {
     struct connection_state {
       beast_ws::stream_t stream_;
       server_impl& serv_;
-      std::string session_id = {};
-      std::string user_id = {};
 
       Context context() {
         return serv_.context;
@@ -128,6 +136,7 @@ namespace nbdl::app {
       using full_duplex::map_any;
       using full_duplex::promise;
       using full_duplex::void_input;
+      using full_duplex::tap;
 
       if (ec) {
         std::cerr << "An error occurred before accept loop\n";
@@ -137,16 +146,21 @@ namespace nbdl::app {
       full_duplex::run_async_loop_with_state(
         std::ref(*this),
         beast_ws::accept(),
-#if 0
-        full_duplex::tap([&](auto& stream ) {
-          // TODO check session token
-        }),
-#endif
-        map([this](auto stream) {
-          // create connection object add to connections list
-          connection_open<ContextTag>(
-              connection_state{std::move(stream), *this});
-          return void_input;
+        promise([&](auto& resolve, auto&& stream) {
+          auto& req = resolve.get_state().request();
+          if (websocket::is_upgrade(req)) {
+            // TODO 
+            // use detail::get_session_cookie to get user_id from db
+            connection_open<ContextTag>(
+                connection_state{std::move(stream), *this});
+          }
+          else {
+            // TODO
+            // check auth request
+            // immediately continue accepting
+            //async_auth_check(std::move(req));
+          }
+          resolve(full_duplex::void_input);
         }),
         map_any([](auto&& val) {
           if constexpr(full_duplex::is_error<decltype(val)>) {

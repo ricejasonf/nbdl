@@ -14,6 +14,7 @@
 
 namespace asio     = boost::asio;
 namespace beast    = boost::beast;
+namespace http     = boost::beast::http;
 namespace beast_ws = nbdl::ext::beast_ws;
 namespace hana     = boost::hana;
 using tcp          = boost::asio::ip::tcp;
@@ -25,6 +26,7 @@ namespace {
   struct accept_t {
     tcp::acceptor acceptor_;
     stream_t stream_;
+    http::request<http::string_body> request_ = {};
 
     accept_t(tcp::acceptor acceptor)
       : acceptor_(std::move(acceptor))
@@ -34,6 +36,7 @@ namespace {
     auto& acceptor() { return acceptor_; }
     auto& stream()   { return stream_; }
     auto& socket()   { return stream_.next_layer(); }
+    auto& request()  { return request_; }
   };
 
   struct connect_t {
