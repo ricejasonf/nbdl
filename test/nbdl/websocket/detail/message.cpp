@@ -4,6 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+
+#include <boost/asio.hpp>
 #include <catch.hpp>
 #include <nbdl/catch.hpp>
 #include <nbdl/run_async.hpp>
@@ -13,6 +15,7 @@
 #include <string>
 
 namespace hana = boost::hana;
+namespace asio = boost::asio;
 
 namespace
 {
@@ -105,7 +108,7 @@ namespace
       sender.set_opcode(opcode);
       sender.send_frame_impl(
         asio::buffer(payload)
-      , [&](auto error_code, std::size_t)
+      , [&](std::error_code error_code, std::size_t)
         {
           if (error_code)
           {

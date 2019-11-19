@@ -9,14 +9,14 @@
 
 #include <nbdl/websocket/detail/endpoint_impl.hpp>
 
-#include <asio/ip/tcp.hpp>
+#include <boost/asio/ip/tcp.hpp>
 
 namespace nbdl::websocket
 {
   template <typename SendMessageImpl, typename Derived = void>
   struct server_endpoint_impl
   {
-    asio::ip::tcp::socket socket;
+    boost::asio::ip::tcp::socket socket;
   };
 
   using server_endpoint         = server_endpoint_impl<decltype(detail::send_binary)>;

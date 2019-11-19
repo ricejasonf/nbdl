@@ -4,6 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+
+#include <boost/asio.hpp>
 #include <boost/hana/functional/always.hpp>
 #include <boost/hana/tuple.hpp>
 #include <catch.hpp>
@@ -18,6 +20,7 @@ namespace hana = boost::hana;
 
 namespace
 {
+  namespace asio = boost::asio;
   using nbdl::websocket::detail::handshake_info_t;
   using nbdl::websocket::event::bad_request_t;
 
@@ -35,7 +38,7 @@ namespace
     , nbdl_test::accept()
     , nbdl::websocket::detail::parse_handshake_request()
     , nbdl::tap([&](auto&&, handshake_info_t h) { handshake_info = h; })
-    , nbdl::catch_([](asio::error_code) { CHECK(false); })
+    , nbdl::catch_([](std::error_code) { CHECK(false); })
     , nbdl::catch_([](hana::basic_type<bad_request_t>) { CHECK(false); })
     ));
 

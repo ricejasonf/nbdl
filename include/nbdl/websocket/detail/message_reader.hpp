@@ -11,12 +11,13 @@
 #include <nbdl/run_async_loop.hpp>
 
 #include <algorithm>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <boost/hana/tuple.hpp>
 #include <cstdint>
 
 namespace nbdl::websocket::detail
 {
+  namespace asio = boost::asio;
   using asio::ip::tcp;
   namespace hana = boost::hana;
 
@@ -37,7 +38,7 @@ namespace nbdl::websocket::detail
 
   constexpr auto handle_next = [](auto& resolver, auto& frame_ctx)
   {
-    return [&](auto error_code, std::size_t)
+    return [&](std::error_code error_code, std::size_t)
     {
       if (error_code)
       {
@@ -174,7 +175,7 @@ namespace nbdl::websocket::detail
     asio::async_read(
       frame_ctx.socket
     , asio::buffer(&payload[current_offset], length)
-    , [&resolver, &payload, &frame_ctx, length](auto error_code, std::size_t)
+    , [&resolver, &payload, &frame_ctx, length](std::error_code error_code, std::size_t)
       {
         if (error_code)
         {
@@ -207,7 +208,7 @@ namespace nbdl::websocket::detail
     asio::async_read(
       frame_ctx.socket
     , asio::buffer(payload)
-    , [&resolver, &payload, &frame_ctx, length](auto error_code, std::size_t)
+    , [&resolver, &payload, &frame_ctx, length](std::error_code error_code, std::size_t)
       {
         if (error_code)
         {

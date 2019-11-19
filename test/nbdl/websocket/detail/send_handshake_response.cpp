@@ -4,6 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+
+#include <boost/asio.hpp>
 #include <boost/hana/functional/always.hpp>
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
@@ -18,6 +20,7 @@
 #include <string_view>
 
 namespace hana = boost::hana;
+namespace asio = boost::asio;
 
 namespace
 {
@@ -34,7 +37,7 @@ namespace
     , nbdl_test::accept()
     , nbdl::promise([&](auto& resolve, auto& socket) { resolve(socket, handshake_info); })
     , nbdl::websocket::detail::send_handshake_response()
-    , nbdl::catch_([](asio::error_code) { CHECK(false); })
+    , nbdl::catch_([](std::error_code) { CHECK(false); })
     ));
 
     nbdl::run_async(hana::make_tuple(

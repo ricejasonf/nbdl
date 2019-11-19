@@ -100,7 +100,7 @@ add_definitions(-DBOOST_HANA_CONFIG_ENABLE_STRING_UDL)
 add_definitions(-ftemplate-backtrace-limit=0)
 add_definitions(-Wall)
 add_definitions(-Wextra)
-add_definitions(-DASIO_STANDALONE -DASIO_NO_TYPEID -DASIO_HAS_STD_STRING_VIEW)
+add_definitions(-DBOOST_ASIO_NO_TYPEID)
 
 if (${NBDL_USE_CATCH})
   add_definitions(-DNBDL_USE_CATCH)

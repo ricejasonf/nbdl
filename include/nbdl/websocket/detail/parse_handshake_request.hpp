@@ -11,13 +11,14 @@
 #include <nbdl/websocket/detail/expect_equal.hpp>
 
 #include <algorithm>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <boost/hana/tuple.hpp>
 #include <cctype>
 #include <string_view>
 
 namespace nbdl::websocket::detail
 {
+  namespace asio = boost::asio;
   using asio::ip::tcp;
   namespace hana = boost::hana;
   using namespace std::string_view_literals;
@@ -69,7 +70,7 @@ namespace nbdl::websocket::detail
         socket
       , asio::dynamic_buffer(buffer, 256)
       , "\r\n"sv
-      , [&](auto error_code, std::size_t size) noexcept
+      , [&](std::error_code error_code, std::size_t size) noexcept
         {
           if (error_code)
           {

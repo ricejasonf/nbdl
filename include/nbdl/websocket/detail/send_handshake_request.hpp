@@ -12,11 +12,12 @@
 #include <nbdl/fwd/websocket/client_endpoint.hpp>
 #include <nbdl/promise.hpp>
 
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <string_view>
 
 namespace nbdl::websocket::detail
 {
+  namespace asio = boost::asio;
   using asio::ip::tcp;
   using namespace std::string_view_literals;
   using std::string_view;

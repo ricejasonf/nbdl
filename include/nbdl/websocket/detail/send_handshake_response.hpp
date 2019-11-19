@@ -14,11 +14,12 @@
 #include <nbdl/websocket/detail/parse_handshake_request.hpp>
 
 #include <array>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <string_view>
 
 namespace nbdl::websocket::detail
 {
+  namespace asio = boost::asio;
   using asio::ip::tcp;
   using namespace std::string_view_literals;
   using std::string_view;
@@ -54,7 +55,7 @@ namespace nbdl::websocket::detail
       , asio::buffer(response_end)
       }};
 
-      asio::async_write(socket, buffers, [&, cookies = cookies](auto error_code, std::size_t)
+      asio::async_write(socket, buffers, [&, cookies = cookies](std::error_code error_code, std::size_t)
       {
         if (error_code)
         {

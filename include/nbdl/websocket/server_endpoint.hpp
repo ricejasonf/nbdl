@@ -17,13 +17,14 @@
 #include <nbdl/websocket/detail/parse_handshake_request.hpp>
 #include <nbdl/websocket/detail/send_handshake_response.hpp>
 
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
 #include <memory>
 
 namespace nbdl
 {
+  namespace asio = boost::asio;
   namespace hana = boost::hana;
 
   namespace websocket::detail

@@ -10,7 +10,7 @@
 #include <nbdl/auth_token.hpp>
 #include <nbdl/websocket/detail/endpoint_impl.hpp>
 
-#include <asio/ip/tcp.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <string>
 
 namespace nbdl::websocket
@@ -23,7 +23,7 @@ namespace nbdl::websocket
   template <typename SendMessageImpl, typename Derived = void>
   struct client_endpoint_impl
   {
-    asio::ip::tcp::socket& socket;
+    boost::asio::ip::tcp::socket& socket;
     auth_token_t auth_token;
     origin_t origin;
   };

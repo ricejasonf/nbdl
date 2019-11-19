@@ -16,12 +16,13 @@
 #include <nbdl/websocket/detail/parse_handshake_response.hpp>
 #include <nbdl/websocket/detail/send_handshake_request.hpp>
 
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
 
 namespace nbdl
 {
+  namespace asio = boost::asio;
   namespace hana = boost::hana;
 
   template <typename SendMessageImpl>

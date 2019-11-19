@@ -10,14 +10,14 @@
 #include <nbdl/endpoint_open.hpp>
 #include <nbdl/websocket/detail/endpoint_impl.hpp>
 
-#include <asio.hpp>
+#include <boost/asio.hpp>
 
 namespace nbdl::websocket
 {
   template <typename SendMessageImpl>
   struct endpoint
   {
-    asio::ip::tcp::socket socket;
+    boost::asio::ip::tcp::socket socket;
   };
 
   using endpoint_text   = endpoint<decltype(detail::send_text)>;

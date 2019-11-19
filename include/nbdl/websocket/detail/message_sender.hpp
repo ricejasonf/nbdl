@@ -10,12 +10,13 @@
 #include <nbdl/promise.hpp>
 
 #include <algorithm>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <boost/hana/integral_constant.hpp>
 #include <iterator>
 
 namespace nbdl::websocket::detail
 {
+  namespace asio = boost::asio;
   using asio::ip::tcp;
   namespace hana = boost::hana;
   using namespace std::string_view_literals;
@@ -152,7 +153,7 @@ namespace nbdl::websocket::detail
 
     send_frame_impl(
       frame_payload_buffer
-    , [new_begin = frag_end, end, &resolver, this](auto error_code, std::size_t)
+    , [new_begin = frag_end, end, &resolver, this](std::error_code error_code, std::size_t)
       {
         if (error_code)
         {

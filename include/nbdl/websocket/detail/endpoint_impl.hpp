@@ -18,7 +18,7 @@
 #include <nbdl/websocket/detail/message_sender.hpp>
 #include <nbdl/websocket/event.hpp>
 
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <boost/callable_traits/return_type.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/mp11/utility.hpp>
@@ -27,6 +27,7 @@
 
 namespace nbdl::websocket::detail
 {
+  namespace asio = boost::asio;
   using asio::ip::tcp;
   namespace hana = boost::hana;
 
@@ -259,7 +260,7 @@ namespace nbdl::websocket::detail
           send_queue.pop();
         }
       }
-    , nbdl::catch_([this](std::error_code error)
+    , nbdl::catch_([this](boost::system::error_code error)
       {
         (void(this));
         is_send_queue_running = false;

@@ -11,12 +11,13 @@
 #include <nbdl/websocket/event.hpp>
 
 #include <algorithm>
-#include <asio/buffer.hpp>
-#include <asio/read.hpp>
+#include <boost/asio/buffer.hpp>
+#include <boost/asio/read.hpp>
 #include <string_view>
 
 namespace nbdl::websocket::detail
 {
+  namespace asio = boost::asio;
   using std::string_view;
 
   constexpr auto expect_equal = [](string_view str)
@@ -25,7 +26,8 @@ namespace nbdl::websocket::detail
     return nbdl::promise([=, buffer = std::move(input_buffer)](auto& resolver, auto& socket)
       mutable
     {
-      asio::async_read(socket, asio::buffer(buffer, str.size()), [&](auto error_code, std::size_t)
+      asio::async_read(socket, asio::buffer(buffer, str.size()),
+                       [&](std::error_code error_code, std::size_t)
       {
         if (error_code)
         {

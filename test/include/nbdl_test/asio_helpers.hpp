@@ -7,13 +7,14 @@
 #ifndef NBDL_TEST_ASIO_HELPERS_HPP
 #define NBDL_TEST_ASIO_HELPERS_HPP
 
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <nbdl/variant.hpp>
 #include <nbdl/promise.hpp>
 #include <nbdl/tap.hpp>
 
 namespace nbdl_test
 {
+  namespace asio = boost::asio;
   using asio::ip::tcp;
 
   inline tcp::endpoint endpoint() { return tcp::endpoint(tcp::v4(), 8585); }
@@ -46,7 +47,7 @@ namespace nbdl_test
                                                         , tcp::socket& socket)
                                                           mutable
     {
-      tcp::acceptor acceptor(socket.get_io_service(), endpoint());
+      tcp::acceptor acceptor(socket.get_executor(), endpoint());
       acceptor.async_accept(socket, [&](auto error)
       {
         if (error)

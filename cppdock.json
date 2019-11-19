@@ -9,13 +9,6 @@
       "deps": [
         [
           {
-            "name": "chriskohlhoff/asio",
-            "revision": "230c0d2ae035c5ce1292233fcab03cea0d341264",
-            "tag": "master"
-          }
-        ],
-        [
-          {
             "name": "ricejasonf/boost_header_only",
             "tag": "1_70_0",
             "source": "docker",

@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <boost/asio.hpp>
 #include <catch.hpp>
 #include <nbdl/catch.hpp>
 #include <nbdl/hold.hpp>
@@ -18,8 +19,9 @@
 
 #define LARGE_MESSAGE_SIZE std::size_t{64 * 1024}
 
+namespace asio = boost::asio;
 namespace hana = boost::hana;
-using tcp = asio::ip::tcp;
+using tcp = boost::asio::ip::tcp;
 
 namespace
 {
@@ -135,7 +137,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
               }
             , event::on_close             = save_and_close(save_event(event_kind::CLOSE), resolver)
             , event::on_bad_request       = save_and_close(save_event(event_kind::BAD_REQUEST), resolver)
-            , event::on<asio::error_code> = save_and_close(save_event(event_kind::ERROR), resolver)
+            , event::on<std::error_code> = save_and_close(save_event(event_kind::ERROR), resolver)
             )
           );
         }
@@ -176,7 +178,7 @@ TEST_CASE("Integrate server and client endpoint.", "[websocket][server_endpoint]
               }
             , event::on_close             = save_and_close(save_event(event_kind::CLOSE), resolver)
             , event::on_bad_request       = save_and_close(save_event(event_kind::BAD_REQUEST), resolver)
-            , event::on<asio::error_code> = save_and_close(save_event(event_kind::ERROR), resolver)
+            , event::on<std::error_code> = save_and_close(save_event(event_kind::ERROR), resolver)
             )
           );
         }
