@@ -9,10 +9,10 @@
       "deps": [
         [
           {
-            "name": "ricejasonf/boost_header_only",
-            "tag": "1_70_0",
+            "name": "ricejasonf/boost",
+            "tag": "1_71_0",
             "source": "docker",
-            "revision": "sha256:5d385c9766123d5915bbaf6cefd2de19f74d386bb8b990f778907e57eb9d49fd"
+            "revision": "sha256:9bdd62912a260ccfe69a3fb843dd4551441cd4ed3a824d1b10035fbf55e61cec"
           },
           {
             "name": "ricejasonf/hana",
@@ -93,17 +93,33 @@
       "deps": [
         [
           {
-            "name": "ricejasonf/boost_header_only",
-            "tag": "1_70_0",
+            "name": "ricejasonf/boost",
+            "tag": "1_71_0",
             "source": "docker",
-            "revision": "sha256:5d385c9766123d5915bbaf6cefd2de19f74d386bb8b990f778907e57eb9d49fd"
-          }
-        ],
-        [
+            "revision": "sha256:9bdd62912a260ccfe69a3fb843dd4551441cd4ed3a824d1b10035fbf55e61cec"
+          },
           {
             "name": "ricejasonf/hana",
             "revision": "7230879ec63c9cbbeefdd1415fe2255043168422",
             "tag": "parmexpr"
+          },
+          {
+            "name": "elsid/resource_pool",
+            "revision": "40ff1593a3a22070d276103cbdcd61dff75a0402"
+          },
+          {
+            "name": "ricejasonf/libpq",
+            "source": "docker",
+            "revision": "sha256:260af9b730dc7e7cbdd80a14fe2ec939b1f7b1eec255def8137b0e2b7b45beab"
+          },
+          {
+            "name": "elsid/resource_pool",
+            "revision": "40ff1593a3a22070d276103cbdcd61dff75a0402"
+          },
+          {
+            "name": "yandex/ozo",
+            "tag": "master",
+            "revision": "4bf9f42098cead27d4a3d4c1af2d06eb360f24cb"
           },
           {
             "name": "ricejasonf/dyno",
