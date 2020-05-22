@@ -5,7 +5,7 @@
   "platforms": {
     "develop": {
       "type": "linux_x64",
-      "base_image": "ricejasonf/parmexpr",
+      "base_image": "ricejasonf/cppdock:linux_x64",
       "deps": [
         [
           {
@@ -15,21 +15,9 @@
             "revision": "sha256:9bdd62912a260ccfe69a3fb843dd4551441cd4ed3a824d1b10035fbf55e61cec"
           },
           {
-            "name": "ricejasonf/hana",
-            "revision": "7230879ec63c9cbbeefdd1415fe2255043168422",
-            "tag": "parmexpr"
-          },
-          {
             "name": "ricejasonf/dyno",
             "revision": "8dcb05fde3d1c4dae8ad005c46a36b7efcdf3380",
             "tag": "fix2a"
-          }
-        ],
-        [
-          {
-            "name": "open-source-parsers/jsoncpp",
-            "revision": "a679dde58d675e75eaf0fe31f62e833868e2f22d",
-            "tag": "refs/tags/1.8.1"
           }
         ],
         [

@@ -20,27 +20,27 @@ namespace tag {                                         \
   struct NAME##_t {};                                   \
   constexpr auto NAME = boost::hana::type_c<NAME##_t>;  \
 }                                                       \
-using NAME(using auto ...x)  \
-{ return mpdef::make_tree_node(tag::NAME, \
-    mpdef::make_map(mpdef::to_constant(x)...)); }
+heavy_macro NAME(...x)  = \
+  mpdef::make_tree_node(tag::NAME, \
+    mpdef::make_map(mpdef::to_constant(x)...));
 
 #define MPDEF_DIRECTIVE_LIST(NAME)                      \
 namespace tag {                                         \
   struct NAME##_t {};                                   \
   constexpr auto NAME = boost::hana::type_c<NAME##_t>;  \
 }                                                       \
-using NAME(using auto ...x)                             \
-{ return mpdef::tree_node<decltype(tag::NAME),          \
-    mpdef::list<decltype(mpdef::to_constant(x))...>>{}; };
+heavy_macro NAME(...x) =                                \
+  mpdef::tree_node<decltype(tag::NAME),                 \
+    mpdef::list<decltype(mpdef::to_constant(x))...>>{};
 
 #define MPDEF_DIRECTIVE_LEAF(NAME)                      \
 namespace tag {                                         \
   struct NAME##_t {};                                   \
   constexpr auto NAME = boost::hana::type_c<NAME##_t>;  \
 }                                                       \
-using NAME(using auto x)                                \
-{ return mpdef::tree_node<decltype(tag::NAME),          \
-  decltype(mpdef::to_constant(x))>{}; };
+heavy_macro NAME(x) =                              \
+  mpdef::tree_node<decltype(tag::NAME),          \
+    decltype(mpdef::to_constant(x))>{};
 
 #define MPDEF_DIRECTIVE_TYPE(NAME)                      \
 namespace tag {                                         \

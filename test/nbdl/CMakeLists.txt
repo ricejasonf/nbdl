@@ -23,7 +23,7 @@ if (NBDL_HAS_UIKIT)
   return()
 endif (NBDL_HAS_UIKIT)
 
-add_subdirectory(binders/jsoncpp)
+#add_subdirectory(binders/jsoncpp)
 add_subdirectory(builder)
 add_subdirectory(core)
 add_subdirectory(ext)

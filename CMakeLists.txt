@@ -95,7 +95,7 @@ function(nbdl_catch_dom_test_suite out suite_name)
   set(${out} ${_build_targets} PARENT_SCOPE)
 endfunction()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=heavy")
 add_definitions(-DBOOST_HANA_CONFIG_ENABLE_STRING_UDL)
 add_definitions(-ftemplate-backtrace-limit=0)
 add_definitions(-Wall)
@@ -116,7 +116,7 @@ else (${EMSCRIPTEN})
   find_package(Threads)
 endif (${EMSCRIPTEN})
 
-find_library(JsonCpp jsoncpp)
+#find_library(JsonCpp jsoncpp)
 
 if (${NBDL_HAS_UIKIT})
   #add_definitions(-fmodules)
