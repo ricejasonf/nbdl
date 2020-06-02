@@ -18,7 +18,9 @@ namespace mpdef
 
   // idempotently converts to a hana Constant or string
   heavy_macro to_constant(x) = [] {
-    using T = std::decay_t<decltype(x)>;
+    constexpr auto t = hana::traits::decay(hana::typeid_(x));
+    using T = typename decltype(t)::type;
+
     if constexpr (std::is_integral_v<T>)
       return hana::integral_constant<T, x>{};
     else if constexpr (std::is_same_v<char const*, T>)

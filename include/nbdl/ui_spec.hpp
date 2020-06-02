@@ -91,14 +91,8 @@ namespace nbdl::ui_spec
    * get
    */
 
-  struct get_fn
-  {
-    static using operator()(using auto ...x) {
-      return typename make_path<std::decay_t<decltype(mpdef::to_constant(x))>...>::type{};
-    }
-  };
-
-  constexpr get_fn get{};
+  heavy_macro get(...x) =
+    typename make_path<std::decay_t<decltype(mpdef::to_constant(x))>...>::type{};
 
   /*
    * match_when<T>
@@ -194,42 +188,17 @@ namespace nbdl::ui_spec
    *        (to be used with predicates)
    */
 
-  struct cond_fn
-  {
-    static using operator()(using auto pred, using auto spec)
-    {
-      return when_t<
-        std::decay_t<decltype(pred)>
-      , std::decay_t<decltype(mpdef::to_constant(spec))>
-      >{};
-    }
-  };
-
-  constexpr cond_fn cond{};
+  heavy_macro cond(pred, spec) = when_t<
+    std::decay_t<decltype(pred)>,
+    std::decay_t<decltype(mpdef::to_constant(spec))>>{};
 
   /*
    * otherwise - alias for default branch
    */
 
-  struct otherwise_fn
-  {
-    static using operator()(using auto spec)
-    {
-      return when_t<
-        decltype(hana::always(hana::true_c))
-      , std::decay_t<decltype(mpdef::to_constant(spec))>
-      >{};
-    }
-
-    /* NOTE there was this nullary overload (might not be used)
-     *
-    constexpr auto operator()() const
-      -> when_t<decltype(hana::always(hana::true_c)), noop_t>
-    { return {}; }
-    */
-  };
-
-  constexpr otherwise_fn otherwise{};
+  heavy_macro otherwise(spec) = when_t<
+    decltype(hana::always(hana::true_c)),
+    std::decay_t<decltype(mpdef::to_constant(spec))>>{};
 
   /*
    * branch_spec
@@ -333,15 +302,8 @@ namespace nbdl::ui_spec
     }
   };
 
-  struct equal_fn
-  {
-    static using operator()(using auto x)
-    {
-      return equal_<std::decay_t<decltype(mpdef::to_constant(x))>>{};
-    }
-  };
-
-  constexpr equal_fn equal{};
+  heavy_macro equal(x) = equal_<
+    std::decay_t<decltype(mpdef::to_constant(x))>>{};
 
   namespace detail
   {

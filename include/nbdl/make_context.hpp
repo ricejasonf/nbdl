@@ -30,10 +30,7 @@ namespace nbdl
   }
 
   // actor - named pair operand for use with make_context
-  using actor(using auto name, using auto arg)
-  {
-    return hana::make_pair(mpdef::to_constant(name), arg);
-  }
+  heavy_macro actor(name, arg) = hana::make_pair(mpdef::to_constant(name), arg);
 
   namespace make_context_detail
   {
