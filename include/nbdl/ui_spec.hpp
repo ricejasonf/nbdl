@@ -27,6 +27,11 @@
  */
 namespace nbdl::ui_spec
 {
+  template <typename T>
+  constexpr auto type_inst(T) {
+    return typename T::type{};
+  }
+
   namespace hana = boost::hana;
 
   template <typename T, typename Spec>
@@ -91,8 +96,8 @@ namespace nbdl::ui_spec
    * get
    */
 
-  heavy_macro get(...x) =
-    typename make_path<std::decay_t<decltype(mpdef::to_constant(x))>...>::type{};
+  heavy_macro get(...x) = type_inst(type_inst(hana::template_<make_path>(
+        hana::typeid_(mpdef::to_constant(x))...)));
 
   /*
    * match_when<T>
@@ -188,17 +193,16 @@ namespace nbdl::ui_spec
    *        (to be used with predicates)
    */
 
-  heavy_macro cond(pred, spec) = when_t<
-    std::decay_t<decltype(pred)>,
-    std::decay_t<decltype(mpdef::to_constant(spec))>>{};
+  heavy_macro cond(pred, spec) = type_inst(hana::template_<when_t>(
+      hana::typeid_(pred), hana::typeid_(mpdef::to_constant(spec))));
 
   /*
    * otherwise - alias for default branch
    */
 
-  heavy_macro otherwise(spec) = when_t<
-    decltype(hana::always(hana::true_c)),
-    std::decay_t<decltype(mpdef::to_constant(spec))>>{};
+  heavy_macro otherwise(spec) = type_inst(hana::template_<when_t>(
+      hana::typeid_(hana::always(hana::true_c)),
+      hana::typeid_(mpdef::to_constant(spec))));
 
   /*
    * branch_spec
@@ -302,8 +306,8 @@ namespace nbdl::ui_spec
     }
   };
 
-  heavy_macro equal(x) = equal_<
-    std::decay_t<decltype(mpdef::to_constant(x))>>{};
+  heavy_macro equal(x) = type_inst(hana::template_<equal_>(
+        hana::typeid_(mpdef::to_constant(x))));
 
   namespace detail
   {

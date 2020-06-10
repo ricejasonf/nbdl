@@ -19,10 +19,10 @@ namespace hana = boost::hana;
 namespace
 {
   template <int>
-  struct key_t { };
+  struct skey_t { };
 
   template <int i>
-  constexpr key_t<i> key{};
+  constexpr skey_t<i> key{};
 
   template <int i>
   struct some_type { };
@@ -36,13 +36,13 @@ int main()
   {
     {
       constexpr auto result = get(key<0>);
-      constexpr auto expected = path_t<get_t<key_t<0>>>{};
+      constexpr auto expected = path_t<get_t<skey_t<0>>>{};
 
       CHECK_TYPE_EQUAL(result, expected);
     }
     {
       constexpr auto result = get(key<0>, key<1>);
-      constexpr auto expected = path_t<get_t<key_t<0>, key_t<1>>>{};
+      constexpr auto expected = path_t<get_t<skey_t<0>, skey_t<1>>>{};
 
       CHECK_TYPE_EQUAL(result, expected);
     }
