@@ -52,6 +52,7 @@ TEST_CASE("match_params_spec resolves parameters which may be path specs.", "[ui
 TEST_CASE("Match values by type in match_params_spec.", "[ui_helper]")
 {
   using nbdl::ui_spec::get;
+  using nbdl::ui_spec::get_fn;
   using nbdl::ui_spec::match;
   using nbdl::ui_spec::when;
 
@@ -64,7 +65,7 @@ TEST_CASE("Match values by type in match_params_spec.", "[ui_helper]")
   constexpr auto matcher = match(
     get(foo)
   , when<nbdl::nothing>(nothing_s)
-  , when<std::string>(get)
+  , when<std::string>(get_fn{})
   );
 
   std::string result("Fail!");

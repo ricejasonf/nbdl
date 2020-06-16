@@ -10,9 +10,9 @@
         [
           {
             "name": "ricejasonf/boost",
-            "tag": "1_71_0",
+            "tag": "1_73_0",
             "source": "docker",
-            "revision": "sha256:9bdd62912a260ccfe69a3fb843dd4551441cd4ed3a824d1b10035fbf55e61cec"
+            "revision": "sha256:9be9bcadb7fc94ca5de931999e0707c2d4f6b939b3b15b8d7fcdb814d08b2cec"
           },
           {
             "name": "ricejasonf/dyno",
@@ -82,9 +82,9 @@
         [
           {
             "name": "ricejasonf/boost",
-            "tag": "1_71_0",
+            "tag": "1_73_0",
             "source": "docker",
-            "revision": "sha256:9bdd62912a260ccfe69a3fb843dd4551441cd4ed3a824d1b10035fbf55e61cec"
+            "revision": "sha256:9be9bcadb7fc94ca5de931999e0707c2d4f6b939b3b15b8d7fcdb814d08b2cec"
           },
           {
             "name": "ricejasonf/hana",

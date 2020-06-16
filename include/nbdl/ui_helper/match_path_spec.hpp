@@ -42,18 +42,18 @@ namespace nbdl::ui_helper::detail
   {
     Fn const& fn;
 
-    using operator()(auto self, auto store)
+    void operator()(auto const& store) const
     {
       // use params as path
-      match_params_spec(store, mpdef::list<P...>{}, [self, &store](auto const& ...x)
+      match_params_spec(store, mpdef::list<P...>{}, [&](auto const& ...x)
       {
         nbdl::match_path(
           store
         , hana::make_basic_tuple(x...)
-        , [self](auto const& result)
+        , [&](auto const& result)
           {
             if constexpr(decltype(hana::type_c<T> == hana::typeid_(result)){})
-              self.fn(result);
+              fn(result);
             // else do nothing 
           }
         );
@@ -66,15 +66,15 @@ namespace nbdl::ui_helper::detail
   {
     Fn const& fn;
 
-    using operator()(auto self, auto store)
+    void operator()(auto const& store) const
     {
       // use params as path
-      match_params_spec(store, mpdef::list<P...>{}, [self, &store](auto const& ...x)
+      match_params_spec(store, mpdef::list<P...>{}, [&](auto const& ...x)
       {
         nbdl::match_path(
           store
         , hana::make_basic_tuple(x...)
-        , self.fn
+        , fn
         );
       });
     }
@@ -92,7 +92,7 @@ namespace nbdl::ui_helper::detail
   template <>
   struct path_impl<>
   {
-    static using apply(auto store, auto fn) {
+    static void apply(auto const& store, auto const& fn) {
       fn(store);
     }
   };
@@ -100,7 +100,7 @@ namespace nbdl::ui_helper::detail
   template <typename P1>
   struct path_impl<P1>
   {
-    static using apply(auto store, auto fn) {
+    static void apply(auto&& store, auto&& fn) {
       path_node_match<P1, decltype(fn)>{fn}(store);
     }
   };
@@ -108,7 +108,7 @@ namespace nbdl::ui_helper::detail
   template <typename P1, typename P2>
   struct path_impl<P1, P2>
   {
-    static using apply(auto store, auto fn)
+    static void apply(auto const& store, auto const& fn)
     {
       make_path_node_match<P1>(
       make_path_node_match<P2>(
@@ -120,7 +120,7 @@ namespace nbdl::ui_helper::detail
   template <typename P1, typename P2, typename P3, typename ...Ps>
   struct path_impl<P1, P2, P3, Ps...>
   {
-    static using apply(auto store, auto fn)
+    static void apply(auto const& store, auto const& fn)
     {
       make_path_node_match<P1>(
       make_path_node_match<P2>(

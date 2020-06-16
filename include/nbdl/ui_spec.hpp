@@ -32,6 +32,13 @@ namespace nbdl::ui_spec
     return typename T::type{};
   }
 
+  // make_type implemented here because we don't want
+  // idempotence
+  template <typename T>
+  constexpr auto make_type(T) {
+    return hana::type<T>{};
+  }
+
   namespace hana = boost::hana;
 
   template <typename T, typename Spec>
@@ -97,7 +104,14 @@ namespace nbdl::ui_spec
    */
 
   heavy_macro get(...x) = type_inst(type_inst(hana::template_<make_path>(
-        hana::typeid_(mpdef::to_constant(x))...)));
+        make_type(mpdef::to_constant(x))...)));
+
+  struct get_fn {
+    auto operator()(auto ...x)
+    {
+      return get(decltype(x){}...);
+    }
+  };
 
   /*
    * match_when<T>
@@ -194,15 +208,15 @@ namespace nbdl::ui_spec
    */
 
   heavy_macro cond(pred, spec) = type_inst(hana::template_<when_t>(
-      hana::typeid_(pred), hana::typeid_(mpdef::to_constant(spec))));
+      make_type(pred), make_type(mpdef::to_constant(spec))));
 
   /*
    * otherwise - alias for default branch
    */
 
   heavy_macro otherwise(spec) = type_inst(hana::template_<when_t>(
-      hana::typeid_(hana::always(hana::true_c)),
-      hana::typeid_(mpdef::to_constant(spec))));
+      make_type(hana::always(hana::true_c)),
+      make_type(mpdef::to_constant(spec))));
 
   /*
    * branch_spec
@@ -307,7 +321,7 @@ namespace nbdl::ui_spec
   };
 
   heavy_macro equal(x) = type_inst(hana::template_<equal_>(
-        hana::typeid_(mpdef::to_constant(x))));
+        make_type(mpdef::to_constant(x))));
 
   namespace detail
   {

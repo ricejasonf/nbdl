@@ -10,13 +10,28 @@
 #include <cstdint>
 #include <utility>
 
+namespace nbdl_key_hpp_detail {
+  template <class From, class To>
+    concept convertible_to =
+      std::is_convertible_v<From, To> &&
+        requires(std::add_rvalue_reference_t<From> (&f)()) {
+          static_cast<To>(f());
+        };
+}
+
 namespace nbdl
 {
+  using namespace nbdl_key_hpp_detail;
   // Type safe representation for an entity key
   template <typename T, typename Key = uint32_t>
   struct key_impl
   {
     Key value;
+
+    template <convertible_to<Key> K>
+    explicit key_impl(K&& k)
+      : value(std::forward<K>(k))
+    { }
 
     key_impl() = delete;
 
