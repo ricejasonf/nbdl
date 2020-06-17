@@ -33,6 +33,13 @@
             "tag": "master",
             "revision": "dedbc9c350b740dc60de0af929fef1e7f6a4d904"
           }
+        ],
+        [
+          {
+            "name": "open-source-parsers/jsoncpp",
+            "tag": "refs/tags/1.9.3",
+            "revision": "6aba23f4a8628d599a9ef7fa4811c4ff6e4070e2"
+          }
         ]
       ]
     },
@@ -118,8 +125,8 @@
         [
           {
             "name": "open-source-parsers/jsoncpp",
-            "revision": "a679dde58d675e75eaf0fe31f62e833868e2f22d",
-            "tag": "refs/tags/1.8.1"
+            "tag": "refs/tags/1.9.3",
+            "revision": "6aba23f4a8628d599a9ef7fa4811c4ff6e4070e2"
           }
         ],
         [

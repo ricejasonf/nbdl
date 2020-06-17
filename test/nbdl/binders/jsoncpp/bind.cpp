@@ -31,36 +31,14 @@ TEST_CASE("Entity can read and write to and from JSON.", "[binder][jsoncpp]")
   CHECK(account.name_first == "Jason");
   CHECK(account.name_last == "Rice");
   CHECK(account.age == 34);
-  CHECK(to_string(account) == R"mmm({
-   "address" : {
-      "city" : "Las Vegas",
-      "line1" : "  123 Spork Rd.  ",
-      "line2" : "",
-      "state" : "NV",
-      "zip_code" : "89015"
-   },
-   "age" : 34,
-   "email" : "ricejasonf@gmail.com",
-   "food" : {
-      "food_group" : {
-         "name" : "Fruits"
-      },
-      "id" : 1,
-      "name" : "Banana"
-   },
-   "name_first" : "Jason",
-   "name_last" : "Rice",
-   "phone_number" : "7024569874"
-}
-)mmm");
+  CHECK(to_string(account) == R"mmm({"address":{"city":"Las Vegas","line1":"  123 Spork Rd.  ","line2":"","state":"NV","zip_code":"89015"},"age":34,"email":"ricejasonf@gmail.com","food":{"food_group":{"name":"Fruits"},"id":1,"name":"Banana"},"name_first":"Jason","name_last":"Rice","phone_number":"7024569874"})mmm");
 }
 
 TEST_CASE("Container can read and write to and from JSON.", "[bind][json]") 
 {
   std::string input_json;
 
-  input_json = R"mmm([ "C++", "Haskell", "Rust", "Javascript", "PHP" ]
-)mmm";
+  input_json = R"mmm(["C++","Haskell","Rust","Javascript","PHP"])mmm";
 
   std::vector<nbdl::string> languages;
 
@@ -77,8 +55,7 @@ TEST_CASE("Container can read and write to and from JSON.", "[bind][json]")
 
 TEST_CASE("std::vector<unsigned char> is automatcally base64 encoded/decoded.", "[binder][jsoncpp]") 
 {
-  std::string input_json =  R"mmm([ "cGxlYXN1cmUu", "bGVhc3VyZS4=" ]
-)mmm";
+  std::string input_json =  R"mmm(["cGxlYXN1cmUu","bGVhc3VyZS4="])mmm";
 
   std::vector<std::vector<unsigned char>> subject{};
 

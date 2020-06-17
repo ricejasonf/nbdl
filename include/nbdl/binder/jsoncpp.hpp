@@ -7,22 +7,24 @@
 #ifndef NBDL_BINDER_JSONCPP_HPP
 #define NBDL_BINDER_JSONCPP_HPP
 
-#include<nbdl/concept/BindableMap.hpp>
-#include<nbdl/concept/BindableSequence.hpp>
-#include<nbdl/concept/BindableVariant.hpp>
-#include<nbdl/concept/Buffer.hpp>
-#include<nbdl/concept/Container.hpp>
-#include<nbdl/concept/DynamicBuffer.hpp>
-#include<nbdl/concept/String.hpp>
-#include<nbdl/bind_map.hpp>
-#include<nbdl/bind_sequence.hpp>
-#include<nbdl/string.hpp>
-#include<nbdl/util/base64_decode.hpp>
-#include<nbdl/util/base64_encode.hpp>
+#include <nbdl/concept/BindableMap.hpp>
+#include <nbdl/concept/BindableSequence.hpp>
+#include <nbdl/concept/BindableVariant.hpp>
+#include <nbdl/concept/Buffer.hpp>
+#include <nbdl/concept/Container.hpp>
+#include <nbdl/concept/DynamicBuffer.hpp>
+#include <nbdl/concept/String.hpp>
+#include <nbdl/bind_map.hpp>
+#include <nbdl/bind_sequence.hpp>
+#include <nbdl/string.hpp>
+#include <nbdl/util/base64_decode.hpp>
+#include <nbdl/util/base64_encode.hpp>
 
-#include<json/json.h>
-#include<string>
-#include<utility>
+#include <json/json.h>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
 
 namespace nbdl { namespace binder { namespace jsoncpp
 {
@@ -351,10 +353,15 @@ namespace nbdl { namespace binder { namespace jsoncpp
     template<typename T>
     void operator()(std::string const& json, T&& t) const
     {
-      Json::Reader reader;
+      std::string errs = {};
+      Json::CharReaderBuilder builder;
+      std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
       Json::Value root;
-      if (!reader.parse(json, root, false))
-        throw std::runtime_error("JSON parse error");
+      if (!reader->parse(&(*json.begin()),
+                         &(*json.end()),
+                         &root, &errs)) {
+        throw std::runtime_error(std::string("JSON parse error") + errs);
+      }
       detail::reader<detail::bind_jsoncpp_fn> r(root);
       detail::bind_jsoncpp(r, std::forward<T>(t));
     }
@@ -367,12 +374,17 @@ namespace nbdl { namespace binder { namespace jsoncpp
     template<typename T>
     std::string operator()(T&& t) const
     {
-      Json::StyledWriter writer;
+      Json::StreamWriterBuilder builder;
+      builder["indentation"] = "";
+      std::unique_ptr<Json::StreamWriter> writer(
+          builder.newStreamWriter());
       Json::Value root;
       detail::writer<detail::bind_jsoncpp_fn> r(root);
 
+      std::ostringstream oss;
       detail::bind_jsoncpp(r, std::forward<T>(t));
-      return writer.write(root);
+      writer->write(root, &oss);
+      return oss.str();
     }
   };
 

@@ -34,22 +34,11 @@ NBDL_ENTITY(my_entity,
 // note that empty types should just be represented by their type_id
 
 std::string test_json_1 =
-  "{\n"
-  "   \"foo\" : 0\n"
-  "}\n";
+  "{\"foo\":0}";
 std::string test_json_2 =
-  "{\n"
-  "   \"foo\" : [ 1, \"a string\" ]\n"
-  "}\n";
+  "{\"foo\":[1,\"a string\"]}";
 std::string test_json_3 =
-  "{\n"
-  "   \"foo\" : [\n"
-  "      3,\n"
-  "      {\n"
-  "         \"value\" : \"bar\"\n"
-  "      }\n"
-  "   ]\n"
-  "}\n";
+  "{\"foo\":[3,{\"value\":\"bar\"}]}";
 
 TEST_CASE("Bind empty variant to JSON.", "[bind][json]") 
 {

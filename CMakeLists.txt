@@ -116,7 +116,7 @@ else (${EMSCRIPTEN})
   find_package(Threads)
 endif (${EMSCRIPTEN})
 
-#find_library(JsonCpp jsoncpp)
+find_library(JsonCpp jsoncpp)
 
 if (${NBDL_HAS_UIKIT})
   #add_definitions(-fmodules)
