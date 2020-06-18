@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# just copy the header files over
+mkdir -p /opt/install/include/boost
+cp -r ./include/boost /opt/install/include/

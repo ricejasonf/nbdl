@@ -38,6 +38,7 @@ namespace nbdl::app
   {
     std::string buffer = {};
 
+    serializer() = default;
     serializer(serializer const&) = delete;
 
     // converts to the variant type
