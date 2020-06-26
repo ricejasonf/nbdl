@@ -33,8 +33,8 @@ namespace nbdl::webui
     constexpr auto span(Args ...args)
     { return element(hana::string<'s', 'p', 'a', 'n'>{}, args...); }
 
-    using pre(using auto ...args)
-    { return element(hana::string<'p', 'r', 'e'>{}, args...); }
+    heavy_macro pre(...args) =
+      element(hana::string<'p', 'r', 'e'>{}, args...);
 
     template <typename ...Args>
     constexpr auto ul(Args ...args)
@@ -56,27 +56,21 @@ namespace nbdl::webui
     constexpr auto form(Args ...args)
     { return element(hana::string<'f', 'o', 'r', 'm'>{}, args...); }
 
-    using text_area(using auto ...args)
-    { return element(hana::string<'t', 'e', 'x', 't', 'a', 'r', 'e', 'a'>{}, args...); }
+    heavy_macro text_area(...args) =
+      element(hana::string<'t', 'e', 'x', 't', 'a', 'r', 'e', 'a'>{}, args...);
 
-    using h1(using auto ...args)
-    { return element(hana::string<'h', '1'>{}, args...); }
-    using h2(using auto ...args)
-    { return element(hana::string<'h', '2'>{}, args...); }
-    using h3(using auto ...args)
-    { return element(hana::string<'h', '3'>{}, args...); }
-    using h4(using auto ...args)
-    { return element(hana::string<'h', '4'>{}, args...); }
-    using h5(using auto ...args)
-    { return element(hana::string<'h', '5'>{}, args...); }
-    using h6(using auto ...args)
-    { return element(hana::string<'h', '6'>{}, args...); }
+    heavy_macro h1(...args) = element(hana::string<'h', '1'>{}, args...);
+    heavy_macro h2(...args) = element(hana::string<'h', '2'>{}, args...);
+    heavy_macro h3(...args) = element(hana::string<'h', '3'>{}, args...);
+    heavy_macro h4(...args) = element(hana::string<'h', '4'>{}, args...);
+    heavy_macro h5(...args) = element(hana::string<'h', '5'>{}, args...);
+    heavy_macro h6(...args) = element(hana::string<'h', '6'>{}, args...);
 
-    using attr_class(using auto ...args)
-    { return attribute(hana::string<'c', 'l', 'a', 's', 's'>{}, args...); }
+    heavy_macro attr_class(...args) =
+      attribute(hana::string<'c', 'l', 'a', 's', 's'>{}, args...);
 
-    using attr_href(using auto ...args)
-    { return attribute(hana::string<'h', 'r', 'e', 'f'>{}, args...); }
+    heavy_macro attr_href(...args) =
+      attribute(hana::string<'h', 'r', 'e', 'f'>{}, args...);
 
     template <typename ...Args>
     constexpr auto on_click(Args ...args)
@@ -101,17 +95,17 @@ namespace nbdl::webui
 
     template <typename T>
     struct add_class_when_fn {
-      static using operator()(using auto class_name, using auto path)
+      auto operator()(auto class_name, auto path)
       {
-        return mpdef::tree_node<
-          decltype(tag::add_class_when<T>)
-        , mpdef::list<decltype(mpdef::to_constant(class_name)), decltype(path)>
-        >{};
+        return mpdef::make_tree_node(
+          tag::add_class_when<T>,
+          mpdef::make_list(mpdef::to_constant(class_name), path)
+        );
       }
     };
 
-    template <typename T>
-    constexpr add_class_when_fn<T> add_class_when{};
+    heavy_macro add_class_when(type, class_name, path) =
+      add_class_when_fn<typename decltype(+type)::type>{}(mpdef::to_constant(class_name), path);
 
     // Key used to lookup event object in store
     // for use in relevant event handlers.

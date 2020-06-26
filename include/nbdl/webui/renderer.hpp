@@ -14,8 +14,9 @@
 #include <nbdl/webui/detail/flatten_spec.hpp>
 
 #include <boost/hana/integral_constant.hpp>
-#include <boost/hana/type.hpp>
 #include <boost/hana/tuple.hpp>
+#include <boost/hana/type.hpp>
+#include <boost/mp11/algorithm.hpp>
 #include <emscripten/val.h>
 #include <utility>
 
@@ -61,19 +62,13 @@ namespace nbdl
         }
       };
 
-      template <typename Store>
-      struct construct_pipe_helper_fn
-      {
-        Store store;
-
-        template <typename ...Node>
-        auto operator()(Node ...) const
-        {
+      template <typename ...Node>
+      struct construct_pipe {
+        static auto apply(auto store) {
           return hana::make_tuple(detail::construct_render_node<Node>::apply(store)...);
         }
       };
     }
-
 
     template <typename Store, typename Spec, typename IsSpecFlat = hana::false_>
     struct renderer_impl
@@ -95,10 +90,13 @@ namespace nbdl
       bool is_destroyed;
 
       using FnList = decltype(get_fn_list());
-      using RenderPipe = decltype(hana::unpack(
-        FnList{}
-      , detail::construct_pipe_helper_fn<Store>{store}
-      ));
+      using ConstructPipe = mp11::mp_apply<detail::construct_pipe, FnList>;
+      using RenderPipe = decltype(ConstructPipe::apply(std::declval<Store>()));
+
+      auto make_render_pipe() {
+        return ConstructPipe::apply(store);
+      }
+
 
       RenderPipe render_pipe;
 
@@ -106,10 +104,7 @@ namespace nbdl
         : store(s)
         , is_rendered(false)
         , is_destroyed(false)
-        , render_pipe(hana::unpack(
-            FnList{}
-          , detail::construct_pipe_helper_fn<Store>{store}
-          ))
+        , render_pipe(make_render_pipe())
       { }
 
       template <typename Element>
@@ -117,10 +112,7 @@ namespace nbdl
         : store(a.context)
         , is_rendered(false)
         , is_destroyed(false)
-        , render_pipe(hana::unpack(
-            FnList{}
-          , detail::construct_pipe_helper_fn<Store>{store}
-          ))
+        , render_pipe(make_render_pipe())
       {
         render(std::move(a.value));
       }

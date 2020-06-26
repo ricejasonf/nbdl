@@ -14,7 +14,6 @@
 #include <nbdl/app/serializer.hpp>
 
 #include <full_duplex.hpp>
-#include <functional>
 #include <nbdl.hpp>
 #include <nbdl/js.hpp>
 #include <vector>
@@ -109,7 +108,7 @@ namespace nbdl::app {
           deserializer_upstream<ContextTag>(),
           apply_read,
           full_duplex::catch_error([this, conn = std::move(conn)](auto&&) {
-            std::cerr << '\n' << "Error occured: receive_message" << '\n';
+            NBDL_APP_CONSOLE_LOG("Error occured: receive_message");
             this->drop_connection(conn);
           })
         )

@@ -25,7 +25,7 @@ namespace mpdef {
   }();
 
   // idempotently converts to a hana Constant or string
-  heavy_macro to_constant(x) = [](auto inst) {
+  heavy_macro to_constant(x) = [=](auto inst) {
     using T = std::decay_t<decltype(inst)>;
 
     if constexpr (std::is_integral_v<T>)

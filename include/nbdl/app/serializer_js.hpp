@@ -23,6 +23,7 @@ namespace nbdl::app
   {
     nbdl::js::val val = {};
 
+    serializer() = default;
     serializer(serializer const&) = delete;
 
     // converts to the variant type

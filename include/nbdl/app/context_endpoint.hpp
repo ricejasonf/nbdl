@@ -14,8 +14,10 @@
 
 #if EMSCRIPTEN
 #include <nbdl/js.hpp>
+#define NBDL_APP_CONSOLE_LOG(x) emscripten::val::global("console").template call<void>("log", emscripten::val(x))
 #else
 #include <iostream> // for log_error
+#define NBDL_APP_CONSOLE_LOG(x) std::cerr << '\n' << x << '\n'
 #endif
 
 namespace nbdl::app {
@@ -36,10 +38,10 @@ namespace nbdl::app {
 
   constexpr auto log_error = hana::overload_linearly(
     [](nbdl::system_message const& err) {
-      std::cerr << '\n' << err.value << '\n';
+      NBDL_APP_CONSOLE_LOG(err.value);
     },
     [](full_duplex::queue_full_t const&) {
-      std::cerr << '\n' << "QUEUE FULL" << '\n';
+      NBDL_APP_CONSOLE_LOG("QUEUE FULL");
     },
 #if EMSCRIPTEN
     [](nbdl::js::val const& err) {
@@ -50,11 +52,11 @@ namespace nbdl::app {
     },
 #else  /* NOT EMSCRIPTEN */
     [](boost::system::error_code const& err) {
-      std::cerr << "\nERROR: " << err.message() << '\n';
+      NBDL_APP_CONSOLE_LOG(err.message);
     },
 #endif /* EMSCRIPTEN */
     [](auto const& err) {
-      std::cerr << "\nERROR: " << err << '\n';
+      NBDL_APP_CONSOLE_LOG(err);
     });
 }
 

@@ -50,19 +50,13 @@
     },
     "web_develop": {
       "type": "emscripten",
-      "base_image": "ricejasonf/parmexpr-emscripten",
       "deps": [
         [
           {
             "name": "ricejasonf/boost_header_only",
-            "tag": "1_70_0",
+            "tag": "1_73_0",
             "source": "docker",
-            "revision": "sha256:5d385c9766123d5915bbaf6cefd2de19f74d386bb8b990f778907e57eb9d49fd"
-          },
-          {
-            "name": "ricejasonf/hana",
-            "revision": "7230879ec63c9cbbeefdd1415fe2255043168422",
-            "tag": "parmexpr"
+            "revision": "sha256:2238098bd07fd98aaae481d257427f8d0bd9771b5c3154167f9f9282653509f1"
           },
           {
             "name": "ricejasonf/dyno",

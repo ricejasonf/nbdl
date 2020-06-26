@@ -303,8 +303,8 @@ TEST_CASE("Add/Remove class based on matching a type.", "[webui]")
 
   auto spec =
     div(
-      add_class_when<int>("hello", get())
-    , add_class_when<float>("FAIL",  get())
+      add_class_when(hana::type<int>{},   "hello", get())
+    , add_class_when(hana::type<float>{}, "FAIL",  get())
     , text_node("whoa")
     );
 
