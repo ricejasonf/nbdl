@@ -133,14 +133,14 @@ namespace nbdl::webui
     using ReverseMap = mp_transform<mp_reverse, Map>;
     using Variant = mp_apply<route_variant, mp_map_keys<ReverseMap>>;
 
-    Variant make_from_params(Params const& p, std::size_t params_count) const
+    Variant make_from_params(Params const& params, std::size_t params_count) const
     {
       auto itr = std::find_if(
         detail::route_names<Map>.begin()
       , detail::route_names<Map>.end()
       , [&](auto const& x)
         {
-          return p[0] == x;
+          return params[0] == x;
         }
       );
 
@@ -155,13 +155,18 @@ namespace nbdl::webui
         mp_with_index<mp_size<Map>::value>(offset, [&](auto index)
         {
           using T = mp_at<mp_map_keys<ReverseMap>, decltype(index)>;
-          hana::unpack(p, [&](auto&&, auto ...param)
+          T value{};
+          nbdl::bind_sequence(value, [&](auto& ...member)
           {
-            T value{};
-            nbdl::bind_sequence(value, [&, param...](auto& ...member)
+            // To match the parameter pack sizes we have to create an
+            // array of the same amount of elements.
+            using SubParams = std::array<std::string_view, sizeof...(member) + 1>;
+            SubParams sub_params = {};
+            for (std::size_t i = 0; i < sub_params.size(); i++) {
+              sub_params[i] = params[i];
+            }
+            hana::unpack(sub_params, [&](auto&&, auto ...param)
             {
-              (void(param), ...); // suppress unused value in clang
-
               if (sizeof...(member) != params_count - 1)
               {
                 var = Variant{};
@@ -188,7 +193,7 @@ namespace nbdl::webui
 
     public:
 
-    static using get_type(using auto route_name)
+    static auto get_type(auto route_name)
     {
       return hana::type_c<mp_second<mp_map_find<
         Map

@@ -80,7 +80,7 @@ namespace
   {
     EM_ASM_(
       {
-        Module.NBDL_DETAIL_JS_SET($0, Pointer_stringify($1, $2));
+        Module.NBDL_DETAIL_JS_SET($0, UTF8ToString($1, $2));
       }
     , nbdl::js::detail::get_handle(p)
     , str.data()

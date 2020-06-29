@@ -113,7 +113,7 @@ namespace nbdl::websocket_api::detail
   {
     EM_ASM_(
       {
-        var s = new window.WebSocket(Pointer_stringify($0, $1));
+        var s = new window.WebSocket(UTF8ToString($0, $1));
         s.binaryType = 'arraybuffer';
 
         s.addEventListener('open', function(event)

@@ -43,7 +43,7 @@ namespace nbdl::webui
     {
       EM_ASM_(
         {
-          var s = Module.NBDL_WEBUI_NAV_URI_PREFIX + Pointer_stringify($0);
+          var s = Module.NBDL_WEBUI_NAV_URI_PREFIX + UTF8ToString($0);
           window.history.pushState(null, null, s);
         }
       , route.data()

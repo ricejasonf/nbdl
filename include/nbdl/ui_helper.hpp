@@ -117,7 +117,7 @@ namespace nbdl::ui_helper
                             , ui_spec::for_each_t<Path, SpecFn>) const
     {
       using ItrKey = hana::type<SpecFn>;
-      using ItrPath = decltype(ui_spec::get(ItrKey{}));
+      using ItrPath = decltype(ui_spec::get_fn{}(ItrKey{}));
       using Spec = decltype(nbdl::detail::default_constructible_lambda<SpecFn>{}(ItrPath{}));
 
       return mpdef::list<typename Template::template apply<

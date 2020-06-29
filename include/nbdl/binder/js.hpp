@@ -127,7 +127,7 @@ namespace nbdl::binder::js
       {
         EM_ASM_(
           {
-            Module.NBDL_DETAIL_JS_SET($0, Pointer_stringify($1, $2));
+            Module.NBDL_DETAIL_JS_SET($0, UTF8ToString($1, $2));
           }
         , val.handle()
         , x.data()
@@ -260,7 +260,7 @@ namespace nbdl::binder::js
             bind_to(child_val, hana::second(pair).get());
             EM_ASM_(
               {
-                var key = Pointer_stringify($1, $2);
+                var key = UTF8ToString($1, $2);
                 Module.NBDL_DETAIL_JS_GET($0)[key] = Module.NBDL_DETAIL_JS_GET($3);
               }
             , val.handle()
@@ -473,7 +473,7 @@ namespace nbdl::binder::js
             EM_ASM_(
               {
                 Module.NBDL_DETAIL_JS_SET($1,
-                  Module.NBDL_DETAIL_JS_GET($0)[Pointer_stringify($2, $3)]
+                  Module.NBDL_DETAIL_JS_GET($0)[UTF8ToString($2, $3)]
                 );
               }
             , val.handle()

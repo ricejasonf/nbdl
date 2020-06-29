@@ -35,9 +35,9 @@ namespace
   };
 
   constexpr auto route_map = nbdl::webui::make_route_map(
-    nbdl::webui::route_pair<>("root")
-  , nbdl::webui::route_pair<my_route_1>("my-route-1")
-  , nbdl::webui::route_pair<my_route_2>("my-route-2")
+    nbdl::webui::route_pair<>("root"_s)
+  , nbdl::webui::route_pair<my_route_1>("my-route-1"_s)
+  , nbdl::webui::route_pair<my_route_2>("my-route-2"_s)
   );
 
   struct context { }; // tag

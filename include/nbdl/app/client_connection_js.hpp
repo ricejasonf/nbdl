@@ -50,7 +50,7 @@ namespace nbdl::app::client_connection_detail {
           var ready_cb = Module.NBDL_DETAIL_JS_GET($3); 
           var error_cb = Module.NBDL_DETAIL_JS_GET($4); 
           var ws_val = ({
-            ws: new window.WebSocket(Pointer_stringify($0, $1)),
+            ws: new window.WebSocket(UTF8ToString($0, $1)),
             error: null
           });
 

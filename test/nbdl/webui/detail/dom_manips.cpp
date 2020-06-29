@@ -83,7 +83,7 @@ TEST_CASE("class attribute and text content", "[webui][dom_manips]")
   using nbdl::webui::detail::end;
   using nbdl::webui::detail::action_fn;
   using nbdl::webui::detail::mut_action_fn;
-  using nbdl::ui_spec::get;
+  using nbdl::ui_spec::get_fn;
 
   auto target = make_dom_test_equality(
     "<div class=\"foo\" >"
@@ -104,8 +104,8 @@ TEST_CASE("class attribute and text content", "[webui][dom_manips]")
   using MyStore = decltype(my_store);
 
 
-  auto mut_node_1 = mut_action_fn<tag::text_node_t, MyStore, decltype(get("key_1"_s))>(my_store);
-  auto mut_node_2 = mut_action_fn<tag::text_node_t, MyStore, decltype(get("key_2"_s))>(my_store);
+  auto mut_node_1 = mut_action_fn<tag::text_node_t, MyStore, decltype(get_fn{}("key_1"_s))>(my_store);
+  auto mut_node_2 = mut_action_fn<tag::text_node_t, MyStore, decltype(get_fn{}("key_2"_s))>(my_store);
 
   nbdl::run_sync(
     nbdl::pipe(

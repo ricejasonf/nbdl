@@ -19,27 +19,25 @@ namespace nbdl::webui
   template <typename T>
   struct route_pair_fn
   {
-    static using operator()(using auto name)
+    template <typename Name>
+    constexpr auto operator()(Name) const
     {
-      return mpdef::pair<decltype(mpdef::to_constant(name)), T>{};
+      return mpdef::pair<Name, T>{};
     }
   };
 
   template <>
   struct route_pair_fn<void>
   {
-    static using operator()(using auto name)
+    template <typename Name>
+    constexpr auto operator()(Name) const
     {
-      return mpdef::pair<
-        decltype(mpdef::to_constant(name))
-      , decltype(mpdef::to_constant(name))
-      >{};
+      return mpdef::pair<Name, Name>{};
     }
   };
 
   template <typename T = void>
   constexpr route_pair_fn<T> route_pair{};
-
 
   struct make_route_map_fn
   {

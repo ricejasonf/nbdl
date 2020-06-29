@@ -46,11 +46,11 @@ namespace
   struct boo_moo { };
 
   constexpr auto route_map = nbdl::webui::make_route_map(
-    nbdl::webui::route_pair<>         ("")
-  , nbdl::webui::route_pair<foo>      ("foo")
-  , nbdl::webui::route_pair<bar>      ("bar")
-  , nbdl::webui::route_pair<baz>      ("baz")
-  , nbdl::webui::route_pair<boo_moo>  ("boo-moo")
+    nbdl::webui::route_pair<>         (""_s)
+  , nbdl::webui::route_pair<foo>      ("foo"_s)
+  , nbdl::webui::route_pair<bar>      ("bar"_s)
+  , nbdl::webui::route_pair<baz>      ("baz"_s)
+  , nbdl::webui::route_pair<boo_moo>  ("boo-moo"_s)
   );
 
   using RouteMap = std::decay_t<decltype(route_map)>;
@@ -74,10 +74,10 @@ TEST_CASE("Map route to variant", "[webui][route_map]")
 
 TEST_CASE("Map route name to route type", "[webui][route_map]")
 {
-  CHECK((RouteMap::get_type("")        == hana::typeid_(""_s))); 
-  CHECK((RouteMap::get_type("bar")     == hana::type_c<bar>)); 
-  CHECK((RouteMap::get_type("baz")     == hana::type_c<baz>)); 
-  CHECK((RouteMap::get_type("boo-moo") == hana::type_c<boo_moo>)); 
+  CHECK((RouteMap::get_type(""_s)        == hana::typeid_(""_s))); 
+  CHECK((RouteMap::get_type("bar"_s)     == hana::type_c<bar>)); 
+  CHECK((RouteMap::get_type("baz"_s)     == hana::type_c<baz>)); 
+  CHECK((RouteMap::get_type("boo-moo"_s) == hana::type_c<boo_moo>)); 
 }
 
 TEST_CASE("Map route to string", "[webui][route_map]")
@@ -145,7 +145,7 @@ TEST_CASE("Make set_route for a route_map", "[webui][route_map]")
       is_sent = true;
       CHECK(hana::equal(message::get_payload(message), route_map.to_variant(""_s)));
     };
-    set_route("")(send_message);
+    set_route(""_s)(send_message);
     CHECK(is_sent);
   }
 
@@ -156,7 +156,7 @@ TEST_CASE("Make set_route for a route_map", "[webui][route_map]")
       is_sent = true;
       CHECK(hana::equal(message::get_payload(message), route_map.to_variant(baz{42, "baz"})));
     };
-    set_route("baz")(send_message, baz{42, "baz"});
+    set_route("baz"_s)(send_message, baz{42, "baz"});
     CHECK(is_sent);
   }
 
@@ -167,7 +167,7 @@ TEST_CASE("Make set_route for a route_map", "[webui][route_map]")
       is_sent = true;
       CHECK(hana::equal(message::get_payload(message), route_map.to_variant(boo_moo{})));
     };
-    set_route("boo-moo")(send_message);
+    set_route("boo-moo"_s)(send_message);
     CHECK(is_sent);
   }
 }

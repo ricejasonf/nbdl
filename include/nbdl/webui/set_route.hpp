@@ -43,7 +43,7 @@ namespace nbdl::webui
   template <typename RouteMap>
   struct set_route_fn
   {
-    static using operator()(using auto route_name)
+    constexpr auto operator()(auto route_name)
     {
       return set_route_rt<
         typename decltype(RouteMap::get_type(route_name))::type
