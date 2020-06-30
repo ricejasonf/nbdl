@@ -24,23 +24,17 @@ namespace
   struct foo
   {
     std::size_t id;
-
-    foo() = delete;
   };
 
   struct bar
   {
     nbdl::string name;
-
-    bar() = delete;
   };
 
   struct baz
   {
     std::size_t id;
     nbdl::string name;
-
-    baz() = delete;
   };
 
   struct boo_moo { };

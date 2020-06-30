@@ -106,9 +106,9 @@ int main()
     );
 
     constexpr auto result = hana::type_c<decltype(nbdl::webui::detail::flatten_spec(spec))>;
-    constexpr auto expected = hana::type_c<decltype(mpdef::make_list(
-      begin(tag::element_t{}, div_s),
-        action_fn<tag::attribute_t, decltype("class"_s), mpdef::list<decltype("foo"_s)>>{}
+    constexpr auto expected = hana::type_c<mpdef::list<
+      decltype(begin(tag::element_t{}, div_s)),
+        action_fn<tag::attribute_t, decltype("class"_s), mpdef::list<decltype("foo"_s)>>
       , action_fn<branch_spec<
           match_tag
         , path_t<get_t<decltype("key"_s)>>
@@ -120,9 +120,9 @@ int main()
               action_fn<tag::text_node_t, decltype("Hello, everything else!"_s)>
             >>
           >
-        >>{}
-    , end(tag::element_t{}, div_s)
-    ))>;
+        >>
+    , decltype(end(tag::element_t{}, div_s))
+    >>;
 
     (void)result;
     (void)expected;

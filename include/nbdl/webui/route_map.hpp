@@ -197,7 +197,7 @@ namespace nbdl::webui
     {
       return hana::type_c<mp_second<mp_map_find<
         Map
-      , decltype(mpdef::to_constant(route_name))
+      , decltype(route_name)
       >>>;
     }
 

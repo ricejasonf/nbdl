@@ -26,11 +26,6 @@
   Module.NBDL_DETAIL_JS_SET($0, F(Module.NBDL_DETAIL_JS_GET($0))); \
   } , nbdl::js::get_handle(val))
 
-#define NBDL_JS_TRANSFORM_(val, HANA_STRING) EM_ASM_INT( \
-  ("{ Module.NBDL_DETAIL_JS_SET($0, "_s + HANA_STRING + \
-  "(Module.NBDL_DETAIL_JS_GET($0))); \
-  }"_s).c_str(), nbdl::js::get_handle(val))
-
 namespace nbdl::js
 {
   using namespace boost::hana::literals;
@@ -124,10 +119,15 @@ namespace nbdl::js
   template <typename String>
   auto get_element_by_id_(String) {
     val x;
-    constexpr auto js_code = "function() { return document.getElementById('"_s +
-                String{} + "'); }"_s;
-    (void)js_code;
-    NBDL_JS_TRANSFORM_(x, js_code);
+    EM_ASM_({
+              var id = UTF8ToString($1, $2);
+              var result = document.getElementById(id);
+              Module.NBDL_DETAIL_JS_SET($0, result);
+            },
+            nbdl::js::get_handle(x),
+            String{}.c_str(),
+            hana::length(String{})()
+    );
     return x;
   }
 
