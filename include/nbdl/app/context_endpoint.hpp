@@ -52,7 +52,7 @@ namespace nbdl::app {
     },
 #else  /* NOT EMSCRIPTEN */
     [](boost::system::error_code const& err) {
-      NBDL_APP_CONSOLE_LOG(err.message);
+      NBDL_APP_CONSOLE_LOG(err.message());
     },
 #endif /* EMSCRIPTEN */
     [](auto const& err) {
