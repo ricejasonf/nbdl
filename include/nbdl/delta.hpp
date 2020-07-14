@@ -9,8 +9,9 @@
 
 #include <nbdl/fwd/delta.hpp>
 
-#include <nbdl/make_delta.hpp>
 #include <nbdl/apply_delta.hpp>
+#include <nbdl/bind_sequence.hpp>
+#include <nbdl/make_delta.hpp>
 #include <nbdl/variant.hpp>
 
 namespace nbdl

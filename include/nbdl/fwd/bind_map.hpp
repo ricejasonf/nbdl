@@ -7,23 +7,17 @@
 #ifndef NBDL_FWD_BIND_MAP_HPP
 #define NBDL_FWD_BIND_MAP_HPP
 
-#include<boost/hana/core/when.hpp>
+#include <nbdl/concept/BindableMap.hpp>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
-  template<typename T, typename = void>
-  struct bind_map_impl : bind_map_impl<T, hana::when<true>> { };
-
+namespace nbdl {
   struct bind_map_fn
   {
-    template <typename BindableMap, typename BindKeyValueFn>
+    template <BindableMap BindableMap, typename BindKeyValueFn>
     constexpr auto operator()(BindableMap&& s, BindKeyValueFn&& f) const;
   };
 
   constexpr bind_map_fn bind_map{};
-} // nbdl
+}
 
 #endif
 

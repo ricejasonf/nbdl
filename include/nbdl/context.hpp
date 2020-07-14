@@ -18,6 +18,7 @@
 #include <nbdl/def/builder/context.hpp>
 #include <nbdl/match.hpp>
 #include <nbdl/message.hpp>
+#include <nbdl/notify_state_change.hpp>
 #include <nbdl/producer_init.hpp>
 #include <nbdl/send_downstream_message.hpp>
 #include <nbdl/send_upstream_message.hpp>
@@ -46,7 +47,7 @@ namespace nbdl
       {
         using Actor = std::decay_t<decltype(actor)>;
 
-        if constexpr(nbdl::Producer<Actor>::value)
+        if constexpr(nbdl::Producer<Actor>)
         {
           nbdl::producer_init(actor);
         }
@@ -55,7 +56,7 @@ namespace nbdl
       {
         using Actor = std::decay_t<decltype(actor)>;
 
-        if constexpr(nbdl::Consumer<Actor>::value)
+        if constexpr(nbdl::Consumer<Actor>)
         {
           nbdl::consumer_init(actor);
         }
@@ -129,7 +130,7 @@ namespace nbdl
       // notify all consumers
       hana::for_each(actors, [&](auto& actor)
       {
-        if constexpr(nbdl::Consumer<decltype(actor)>::value)
+        if constexpr(nbdl::Consumer<decltype(actor)>)
         {
           nbdl::send_downstream_message(actor, m);
         }
@@ -141,7 +142,7 @@ namespace nbdl
     {
       hana::for_each(actors, [&](auto& actor)
       {
-        if constexpr(nbdl::StateConsumer<decltype(actor)>::value)
+        if constexpr(nbdl::StateConsumer<decltype(actor)>)
         {
           nbdl::notify_state_change(actor, p);
         }

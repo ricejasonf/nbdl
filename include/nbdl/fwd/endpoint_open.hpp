@@ -7,18 +7,14 @@
 #ifndef NBDL_FWD_ENDPOINT_OPEN_HPP
 #define NBDL_FWD_ENDPOINT_OPEN_HPP
 
-#include <boost/hana/core/when.hpp>
+#include <nbdl/concept/EndpointInfo.hpp>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
+namespace nbdl {
+  template <typename T>
+  struct endpoint_open_impl;
 
-  template <typename T, typename = void>
-  struct endpoint_open_impl : endpoint_open_impl<T, hana::when<true>> { };
-
-  struct endpoint_open_fn
-  {
-    template <typename EndpointInfo, typename SendQueue, typename EndpointHandler>
+  struct endpoint_open_fn {
+    template <EndpointInfo EndpointInfo, typename SendQueue, typename EndpointHandler>
     auto operator()(EndpointInfo&&, SendQueue&&, EndpointHandler&&) const;
   };
 

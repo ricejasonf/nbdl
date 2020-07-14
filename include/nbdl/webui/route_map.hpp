@@ -8,6 +8,7 @@
 #define NBDL_WEB_ROUTE_HPP
 
 #include <nbdl/bind_sequence.hpp>
+#include <nbdl/concept/String.hpp>
 #include <nbdl/fwd/webui/route_map.hpp>
 #include <nbdl/string.hpp>
 #include <nbdl/variant.hpp>
@@ -38,7 +39,7 @@ namespace nbdl::webui
     void append_route_param(std::string& s, X&& x)
     {
       s += '/';
-      if constexpr(nbdl::String<X>::value)
+      if constexpr(nbdl::String<X>)
       {
         s += std::forward<X>(x);
       }

@@ -7,23 +7,16 @@
 #ifndef NBDL_CONCEPT_STATE_HPP
 #define NBDL_CONCEPT_STATE_HPP
 
-#include <nbdl/fwd/concept/State.hpp>
+#include <nbdl/concept/HasImpl.hpp>
 
-#include <nbdl/get.hpp>
-
-#include <boost/hana/core/default.hpp>
-#include <boost/hana/core/tag_of.hpp>
-
-namespace nbdl
-{
-  namespace hana = boost::hana;
+namespace nbdl {
+  template <typename Tag>
+  struct get_impl : default_impl {
+    static constexpr auto apply(...) = delete;
+  };
 
   template <typename T>
-  struct State
-  {
-    using Tag = typename hana::tag_of<T>::type;
-    static constexpr bool value = !hana::is_default<nbdl::get_impl<Tag>>::value;
-  };
+  concept State = HasImpl<T, nbdl::get_impl>;
 }
 
 #endif

@@ -7,30 +7,21 @@
 #ifndef NBDL_CONSUMER_INIT_HPP
 #define NBDL_CONSUMER_INIT_HPP
 
-#include <nbdl/fwd/consumer_init.hpp>
-
 #include <nbdl/concept/Consumer.hpp>
+#include <nbdl/fwd/consumer_init.hpp>
 
 namespace nbdl
 {
-  template <typename Consumer>
-  constexpr void consumer_init_fn::operator()(Consumer& p) const
-  {
+  template <Consumer Consumer>
+  constexpr void consumer_init_fn::operator()(Consumer& p) const {
     using Tag = hana::tag_of_t<Consumer>;
     using Impl = consumer_init_impl<Tag>;
-
-    static_assert(
-      nbdl::Consumer<Tag>::value
-    , "nbdl::consumer_init<T>(p) require `p` to be a nbdl::Consumer."
-    );
 
     return Impl::apply(p);
   };
 
-  template <typename Tag, bool condition>
-  struct consumer_init_impl<Tag, hana::when<condition>>
-    : hana::default_
-  {
+  template <typename Tag>
+  struct consumer_init_impl : hana::default_ {
     // do nothing by default
     template <typename Consumer>
     static constexpr void apply(Consumer&) { }

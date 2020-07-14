@@ -10,6 +10,7 @@
 #include <nbdl/fwd/match_path.hpp>
 
 #include <nbdl/concept/Store.hpp>
+#include <nbdl/concept/Path.hpp>
 #include <nbdl/match.hpp>
 
 #include <boost/hana/drop_front.hpp>
@@ -17,72 +18,64 @@
 #include <boost/hana/functional/overload_linearly.hpp>
 #include <utility>
 
-namespace nbdl
-{
-  namespace detail
-  {
+namespace nbdl {
+  namespace detail {
     template <typename Path, typename Fn>
     struct match_path_helper_fn
     {
       Path const& path;
       Fn const& fn;
 
+      template <Store Value>
+      constexpr void operator()(Value&& value) const {
+        match_path(
+          std::forward<Value>(value)
+        , hana::drop_front(path)
+        , fn
+        );
+      }
+
       template <typename Value>
-      constexpr void operator()(Value&& value) const
-      {
-        if constexpr(nbdl::Store<decltype(value)>::value)
-        {
-          match_path(
-            std::forward<Value>(value)
-          , hana::drop_front(path)
-          , fn
-          );
-        }
-        else
-        {
-          fn(std::forward<Value>(value));
-        }
+      constexpr void operator()(Value&& value) const {
+        fn(std::forward<Value>(value));
       }
     };
   }
 
-  template<typename Store, typename Path, typename ...Fns>
-  constexpr void match_path_fn::operator()(Store&& s, Path&& p, Fns&&... fns) const
-  {
+  template <typename Store, Path Path, typename ...Fns>
+    requires (!EmptyPath<Path>)
+  constexpr void match_path_fn::operator()(Store&& s,
+                                           Path&& p,
+                                           Fns&&... fns) const {
     auto fn = hana::overload_linearly(std::forward<Fns>(fns)...);
+    auto helper = detail::match_path_helper_fn<Path, decltype(fn)>{p, std::move(fn)};
 
-    static_assert(
-      hana::Sequence<Path>::value
-    , "nbdl::match_path(store, path, fns...) requires path must be a hana::Sequence"
+    nbdl::match(
+      std::forward<Store>(s)
+    , hana::front(std::forward<Path>(p))
+    , std::move(helper)
     );
+  }
 
-    if constexpr(not decltype(hana::is_empty(p))::value)
-    {
-      auto helper = detail::match_path_helper_fn<Path, decltype(fn)>{p, std::move(fn)};
+  template <Store Store, EmptyPath Path, typename ...Fns>
+  constexpr void match_path_fn::operator()(Store&& s,
+                                           Path&&,
+                                           Fns&&... fns) const {
+    auto fn = hana::overload_linearly(std::forward<Fns>(fns)...);
+    nbdl::match(
+      std::forward<Store>(s)
+    , std::move(fn)
+    );
+  }
 
-      nbdl::match(
-        std::forward<Store>(s)
-      , hana::front(std::forward<Path>(p))
-      , std::move(helper)
-      );
-    }
-    else if constexpr(nbdl::Store<Store>::value)
-    {
-      nbdl::match(
-        std::forward<Store>(s)
-      , std::move(fn)
-      );
-    }
-    else
-    {
-      // When path is empty match behaves like an identity operation
-      // and does not require the `s` to be a Store
-      // static_assert(not nbdl::Store<Store>::value);
-      // static_assert(decltype(hana::is_empty(p))::value);
-
-      fn(std::forward<Store>(s));
-    }
-  };
+  template <typename T, EmptyPath Path, typename ...Fns>
+  constexpr void match_path_fn::operator()(T&& value,
+                                           Path&&,
+                                           Fns&&... fns) const {
+    // just yield `value`
+    auto fn = hana::overload_linearly(std::forward<Fns>(fns)...);
+    fn(std::forward<T>(value));
+  }
 }
 
 #endif

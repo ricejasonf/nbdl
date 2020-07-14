@@ -7,24 +7,16 @@
 #ifndef NBDL_CONCEPT_PRODUCER_HPP
 #define NBDL_CONCEPT_PRODUCER_HPP
 
-#include <nbdl/fwd/concept/Producer.hpp>
-#include <nbdl/send_upstream_message.hpp>
+#include <nbdl/concept/HasImpl.hpp>
 
-#include <boost/hana/core/default.hpp>
-#include <boost/hana/core/tag_of.hpp>
-
-namespace nbdl
-{
-  namespace hana = boost::hana;
+namespace nbdl {
+  template <typename Tag>
+  struct send_upstream_message_impl : default_impl {
+    static constexpr auto apply(...) = delete;
+  };
 
   template <typename T>
-  struct Producer
-  {
-    using Tag = typename hana::tag_of<T>::type;
-    static constexpr bool value =
-          !hana::is_default<nbdl::send_upstream_message_impl  <Tag>>::value
-      ;
-  };
+  concept Producer = HasImpl<T, nbdl::send_upstream_message_impl>;
 }
 
 #endif

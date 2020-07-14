@@ -7,8 +7,10 @@
 #ifndef NBDL_FWD_STORE_RANGE_HPP
 #define NBDL_FWD_STORE_RANGE_HPP
 
-namespace nbdl
-{
+#include <nbdl/concept/Container.hpp>
+#include <nbdl/concept/Store.hpp>
+
+namespace nbdl {
   // store_iterator
 
   struct store_iterator_tag { };
@@ -61,9 +63,8 @@ namespace nbdl
     auto end()          noexcept;
   };
 
-  struct store_range_fn
-  {
-    template <typename KeyType, typename Container, typename Store>
+  struct store_range_fn {
+    template <typename KeyType, Container Container, Store Store>
     auto operator()(KeyType, Container&, Store) const;
   };
 

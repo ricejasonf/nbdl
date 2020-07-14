@@ -7,6 +7,8 @@
 #ifndef NBDL_UTIL_BASE64_ENCODE_HPP
 #define NBDL_UTIL_BASE64_ENCODE_HPP
 
+#include <nbdl/concept/Container.hpp>
+
 #include <array>
 #include <cassert>
 #include <iterator>
@@ -42,11 +44,9 @@ namespace nbdl::util
 
   struct base64_encode_fn
   {
-    template <typename Buffer>
+    template <ContiguousByteContainer Buffer>
     std::string operator()(Buffer&& buffer) const
     {
-      using buffer_value_t = typename std::decay_t<Buffer>::value_type;
-      static_assert(sizeof(buffer_value_t) == 1);
       static_assert(sizeof(uint32_t) == 4);
 
       std::string output(base64_detail::encoding_length_padded(buffer.size()), '=');

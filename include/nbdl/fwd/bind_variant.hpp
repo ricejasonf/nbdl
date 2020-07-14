@@ -7,24 +7,16 @@
 #ifndef NBDL_FWD_BIND_VARIANT_HPP
 #define NBDL_FWD_BIND_VARIANT_HPP
 
-#include<boost/hana/core/when.hpp>
-#include<boost/hana/experimental/types.hpp>
+#include <nbdl/concept/BindableVariant.hpp>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
-  template<typename T, typename = void>
-  struct bind_variant_impl : bind_variant_impl<T, hana::when<true>> { };
-
-  struct bind_variant_fn
-  {
+namespace nbdl {
+  struct bind_variant_fn {
     // A variant is just like a sequence
     // when we know the type_id.
-    template<typename BindableVariant, typename BindFn>
+    template <BindableVariant BindableVariant, typename BindFn>
     constexpr auto operator()(int const type_id, BindableVariant&&, BindFn&&) const;
 
-    template<typename BindableVariant, typename BindFn>
+    template <BindableVariant BindableVariant, typename BindFn>
     constexpr auto operator()(BindableVariant const&, BindFn&&) const;
   };
 

@@ -7,21 +7,14 @@
 #ifndef NBDL_FWD_MATCH_HPP
 #define NBDL_FWD_MATCH_HPP
 
-#include <boost/hana/core/when.hpp>
+#include <nbdl/concept/Store.hpp>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
-  template<typename T, typename = void>
-  struct match_impl : match_impl<T, hana::when<true>> { };
-
-  struct match_fn
-  {
-    template<typename Store, typename Key, typename Fn>
+namespace nbdl {
+  struct match_fn {
+    template<Store Store, typename Key, typename Fn>
     constexpr void operator()(Store&&, Key&&, Fn&&) const;
 
-    template<typename Store, typename Fn>
+    template<Store Store, typename Fn>
     constexpr void operator()(Store&&, Fn&&) const;
   };
 
@@ -41,8 +34,7 @@ namespace nbdl
   struct match_when_tag { };
 
   template <typename T, typename F>
-  struct match_when_t
-  {
+  struct match_when_t {
     using hana_tag = match_when_tag;
     using type = T;
     F f;
@@ -52,15 +44,14 @@ namespace nbdl
   };
 
   template <typename T>
-  struct match_when_fn
-  {
+  struct match_when_fn {
     template <typename F>
     constexpr auto operator()(F&&) const;
 
-    template <typename Store, typename F>
+    template <Store Store, typename F>
     constexpr auto operator()(Store&&, F&&) const;
 
-    template <typename Store, typename Key, typename F>
+    template <Store Store, typename Key, typename F>
     constexpr auto operator()(Store&&, Key&&, F&&) const;
   };
 

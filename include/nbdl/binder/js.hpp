@@ -9,10 +9,10 @@
 
 #include <nbdl/bind_map.hpp>
 #include <nbdl/bind_sequence.hpp>
+#include <nbdl/bind_variant.hpp>
 #include <nbdl/concept/BindableMap.hpp>
 #include <nbdl/concept/BindableSequence.hpp>
 #include <nbdl/concept/BindableVariant.hpp>
-#include <nbdl/concept/NonbyteContainer.hpp>
 #include <nbdl/concept/String.hpp>
 #include <nbdl/detail/js_val.hpp>
 #include <nbdl/js.hpp>
@@ -21,7 +21,6 @@
 #include <nbdl/util/base64_decode.hpp>
 #include <nbdl/variant.hpp>
 
-#include <boost/hana/core/when.hpp>
 #include <boost/hana/ext/std/tuple.hpp>
 #include <emscripten.h>
 #include <string>
@@ -58,11 +57,11 @@ namespace nbdl::binder::js
   namespace detail
   {
 
-    template <typename T, typename = void>
-    struct bind_to_impl : bind_to_impl<T, hana::when<true>> { };
+    template <typename T>
+    struct bind_to_impl;
 
-    template <typename T, typename = void>
-    struct bind_from_impl : bind_from_impl<T, hana::when<true>> { };
+    template <typename T>
+    struct bind_from_impl;
   }
 
   template <typename X>
@@ -119,12 +118,10 @@ namespace nbdl::binder::js
     // bind_to_impl
     //
 
-    template <typename T>
-    struct bind_to_impl<T, hana::when<nbdl::String<T>::value>>
-    {
+    template <nbdl::String T>
+    struct bind_to_impl<T> {
       template <typename X>
-      static void apply(js_val& val, X const& x)
-      {
+      static void apply(js_val& val, X const& x) {
         EM_ASM_(
           {
             Module.NBDL_DETAIL_JS_SET($0, UTF8ToString($1, $2));
@@ -137,11 +134,10 @@ namespace nbdl::binder::js
     };
 
     template <typename T>
-    struct bind_to_impl<T, hana::when<std::is_integral<T>::value>>
-    {
+      requires std::is_integral<T>::value
+    struct bind_to_impl<T> {
       template <typename X>
-      static void apply(js_val& val, X x)
-      {
+      static void apply(js_val& val, X x) {
         EM_ASM_(
           {
             Module.NBDL_DETAIL_JS_SET($0, $1);
@@ -153,11 +149,10 @@ namespace nbdl::binder::js
     };
 
     template <typename T>
-    struct bind_to_impl<T, hana::when<std::is_enum<T>::value>>
-    {
+      requires std::is_enum<T>::value
+    struct bind_to_impl<T> {
       template <typename X>
-      static void apply(js_val& val, X x)
-      {
+      static void apply(js_val& val, X x) {
         EM_ASM_(
           {
             Module.NBDL_DETAIL_JS_SET($0, $1);
@@ -168,13 +163,11 @@ namespace nbdl::binder::js
       }
     };
 
-    template <typename T>
-    struct bind_to_impl<T, hana::when<nbdl::BindableSequence<T>::value
-                              and not nbdl::BindableMap<T>::value>>
-    {
+    template <nbdl::BindableSequence T>
+      requires (!nbdl::BindableMap<T>)
+    struct bind_to_impl<T> {
       template <typename Sequence>
-      static void apply(js_val& val, Sequence const& sequence)
-      {
+      static void apply(js_val& val, Sequence const& sequence) {
         js_val child_val{};
         EM_ASM_({ Module.NBDL_DETAIL_JS_SET($0, []); }, val.handle());
 
@@ -208,9 +201,8 @@ namespace nbdl::binder::js
       }
     };
 
-    template <typename T>
-    struct bind_to_impl<T, hana::when<nbdl::NonbyteContainer<T>::value>>
-    {
+    template <nbdl::Container T>
+    struct bind_to_impl<T> {
       template <typename Xs>
       static void apply(js_val& val, Xs const& xs)
       {
@@ -232,10 +224,8 @@ namespace nbdl::binder::js
       }
     };
 
-    template <typename T>
-    struct bind_to_impl<T, hana::when<(nbdl::Buffer<T>::value or nbdl::DynamicBuffer<T>::value)
-                                  and not nbdl::String<T>::value>>
-    {
+    template <ContiguousByteContainer T>
+    struct bind_to_impl<T> {
       template <typename Xs>
       static void apply(js_val& val, Xs const& xs)
       {
@@ -244,9 +234,8 @@ namespace nbdl::binder::js
       }
     };
 
-    template <typename T>
-    struct bind_to_impl<T, hana::when<nbdl::BindableMap<T>::value>>
-    {
+    template <BindableMap T>
+    struct bind_to_impl<T> {
       template <typename Xs>
       static void apply(js_val& val, Xs const& xs)
       {
@@ -273,9 +262,8 @@ namespace nbdl::binder::js
       }
     };
 
-    template <typename T>
-    struct bind_to_impl<T, hana::when<nbdl::BindableVariant<T>::value>>
-    {
+    template <nbdl::BindableVariant T>
+    struct bind_to_impl<T> {
       template <typename Variant>
       static void apply(js_val& val, Variant const& v)
       {
@@ -291,9 +279,8 @@ namespace nbdl::binder::js
     // bind_from_impl
     //
 
-    template <typename T>
-    struct bind_from_impl<T, hana::when<nbdl::String<T>::value>>
-    {
+    template <nbdl::String T>
+    struct bind_from_impl<T> {
       template <typename X>
       static void apply(js_val const& val, X& x)
       {
@@ -330,8 +317,8 @@ namespace nbdl::binder::js
     };
 
     template <typename T>
-    struct bind_from_impl<T, hana::when<std::is_integral<T>::value>>
-    {
+      requires std::is_integral<T>::value
+    struct bind_from_impl<T> {
       template <typename X>
       static void apply(js_val const& val, X& x)
       {
@@ -345,8 +332,8 @@ namespace nbdl::binder::js
     };
 
     template <typename T>
-    struct bind_from_impl<T, hana::when<std::is_enum<T>::value>>
-    {
+      requires std::is_enum<T>::value
+    struct bind_from_impl<T> {
       template <typename X>
       static void apply(js_val const& val, X& x)
       {
@@ -359,10 +346,9 @@ namespace nbdl::binder::js
       }
     };
 
-    template <typename T>
-    struct bind_from_impl<T, hana::when<nbdl::BindableSequence<T>::value
-                                and not nbdl::BindableMap<T>::value>>
-    {
+    template <nbdl::BindableSequence T>
+      requires (!nbdl::BindableMap<T>)
+    struct bind_from_impl<T> {
       template <typename Sequence>
       static void apply(js_val const& val, Sequence& sequence)
       {
@@ -403,9 +389,8 @@ namespace nbdl::binder::js
       }
     };
 
-    template <typename T>
-    struct bind_from_impl<T, hana::when<nbdl::NonbyteContainer<T>::value>>
-    {
+    template <nbdl::Container T>
+    struct bind_from_impl<T> {
       template <typename Xs>
       static void apply(js_val const& val, Xs& xs)
       {
@@ -444,13 +429,10 @@ namespace nbdl::binder::js
       }
     };
 
-    template <typename T>
-    struct bind_from_impl<T, hana::when<(nbdl::Buffer<T>::value or nbdl::DynamicBuffer<T>::value)
-                                and not nbdl::String<T>::value>>
-    {
+    template <nbdl::ContiguousByteContainer T>
+    struct bind_from_impl<T> {
       template <typename Xs>
-      static void apply(js_val const& val, Xs& xs)
-      {
+      static void apply(js_val const& val, Xs& xs) {
         nbdl::string temp{};
         bind_from(val, temp);
         // TODO actually check for error
@@ -458,12 +440,10 @@ namespace nbdl::binder::js
       }
     };
 
-    template <typename T>
-    struct bind_from_impl<T, hana::when<nbdl::BindableMap<T>::value>>
-    {
+    template <nbdl::BindableMap T>
+    struct bind_from_impl<T> {
       template <typename Xs>
-      static void apply(js_val const& val, Xs& xs)
-      {
+      static void apply(js_val const& val, Xs& xs) {
         js_val child_val{};
 
         nbdl::bind_map(xs, [&](auto ...y)
@@ -488,8 +468,8 @@ namespace nbdl::binder::js
       }
     };
 
-    template <typename T>
-    struct bind_from_impl<T, hana::when<nbdl::BindableVariant<T>::value>>
+    template <nbdl::BindableVariant T>
+    struct bind_from_impl<T>
     {
       template <typename Variant>
       static void apply(js_val const& val, Variant& var)

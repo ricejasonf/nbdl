@@ -7,44 +7,23 @@
 #ifndef NBDL_SEND_DOWNSTREAM_MESSAGE_HPP
 #define NBDL_SEND_DOWNSTREAM_MESSAGE_HPP
 
-#include<nbdl/concept/Consumer.hpp>
-#include<nbdl/concept/DownstreamMessage.hpp>
-#include<nbdl/concept/StateConsumer.hpp>
-#include<nbdl/fwd/send_downstream_message.hpp>
+#include <nbdl/concept/Consumer.hpp>
+#include <nbdl/concept/DownstreamMessage.hpp>
+#include <nbdl/fwd/send_downstream_message.hpp>
 
-#include<boost/hana/core/tag_of.hpp>
-#include<boost/hana/core/when.hpp>
+#include <boost/hana/core/tag_of.hpp>
 
 namespace nbdl
 {
-  template<typename T, typename Message>
-  constexpr auto send_downstream_message_fn::operator()(T&& t, Message&& m) const
-  {
+  template <Consumer T, DownstreamMessage Message>
+  constexpr auto send_downstream_message_fn::operator()(T&& t,
+                                                        Message&& m) const {
     using Tag = hana::tag_of_t<T>;
     using Impl = send_downstream_message_impl<Tag>;
 
-    static_assert(nbdl::Consumer<T>::value,
-      "nbdl::send_downstream_message(t, m) requires 't' to be a Consumer");
-    static_assert(nbdl::DownstreamMessage<Message>::value,
-      "nbdl::send_downstream_message(t, m) requires 'm' to be an DownstreamMessage");
-
     return Impl::apply(std::forward<T>(t), std::forward<Message>(m));
   };
-
-  template<typename Tag, bool condition>
-  struct send_downstream_message_impl<Tag, hana::when<condition>>
-    : hana::default_
-  {
-    static constexpr auto apply(...) = delete;
-  };
-
-  template<typename Tag>
-  struct send_downstream_message_impl<Tag, hana::when<nbdl::StateConsumer<Tag>::value>>
-    : hana::default_
-  {
-    static constexpr auto apply(...) = delete;
-  };
-} // nbdl
+}
 
 #endif
 

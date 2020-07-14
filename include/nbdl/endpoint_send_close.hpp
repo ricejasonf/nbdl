@@ -8,42 +8,30 @@
 #define NBDL_ENDPOINT_SEND_CLOSE_HPP
 
 #include <nbdl/concept/Endpoint.hpp>
+#include <nbdl/concept/HasImpl.hpp>
 #include <nbdl/fwd/endpoint_send_close.hpp>
 
-namespace nbdl
-{
-  template <typename Endpoint>
-  void endpoint_send_close_fn::operator()(Endpoint& endpoint) const
-  {
+namespace nbdl {
+  template <Endpoint Endpoint>
+  void endpoint_send_close_fn::operator()(Endpoint& endpoint) const {
     using Tag = hana::tag_of_t<Endpoint>;
     using Impl = endpoint_send_close_impl<Tag>;
-
-    static_assert(
-      nbdl::Endpoint<Tag>::value
-    , "nbdl::endpoint_send_close(endpoint, message) "
-      "requires endpoint to be a nbdl::Endpoint"
-    );
 
     Impl::apply(endpoint);
   };
 
-  template <typename Tag, bool condition>
-  struct endpoint_send_close_impl<Tag, hana::when<condition>>
-    : hana::default_
-  {
+  template <typename Tag>
+  struct endpoint_send_close_impl : default_impl {
     template <typename Endpoint>
-    static void apply(Endpoint& endpoint)
-    {
+    static void apply(Endpoint& endpoint) {
       endpoint.send_close();
     }
   };
 
-  template <typename Tag>
-  struct endpoint_send_close_impl<Tag, hana::when<EndpointPtr<Tag>::value>>
-  {
+  template <EndpointPtr Tag>
+  struct endpoint_send_close_impl<Tag> {
     template <typename Endpoint>
-    static void apply(Endpoint& endpoint)
-    {
+    static void apply(Endpoint& endpoint) {
       endpoint_send_close(*endpoint);
     }
   };

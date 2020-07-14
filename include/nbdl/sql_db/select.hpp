@@ -37,8 +37,8 @@ namespace nbdl::sql_db
     static void apply(...) = delete;
   };
 
-  template <typename T>
-  struct select_impl<T, hana::when<nbdl::Entity<T>::value>>
+  template <Entity T>
+  struct select_impl<T>
   {
     // Keys would be an owner_id or
     // the keys in a path from a nbdl::Message
@@ -59,8 +59,8 @@ namespace nbdl::sql_db
     }
   };
 
-  template <typename T>
-  struct select_impl<T, hana::when<nbdl::EntityContainer<T>::value>>
+  template <EntityContainer T>
+  struct select_impl<T>
   {
     static void apply(...) = delete;
   };

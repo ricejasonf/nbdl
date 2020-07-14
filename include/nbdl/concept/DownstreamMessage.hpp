@@ -7,21 +7,13 @@
 #ifndef NBDL_CONCEPT_DOWNSTREAM_MESSAGE_HPP
 #define NBDL_CONCEPT_DOWNSTREAM_MESSAGE_HPP
 
-#include<nbdl/fwd/concept/DownstreamMessage.hpp>
+#include <nbdl/message.hpp>
 
-#include<nbdl/message.hpp>
+#include <utility>
 
-#include<boost/hana/integral_constant.hpp>
-#include<type_traits>
-
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
+namespace nbdl {
   template<typename T>
-  struct DownstreamMessage<T>
-    : hana::bool_<message::is_downstream<std::decay_t<T>>>
-  { };
+  concept DownstreamMessage = message::is_downstream<std::decay_t<T>>;
 }
 
 #endif

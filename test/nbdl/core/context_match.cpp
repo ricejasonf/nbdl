@@ -133,7 +133,7 @@ TEST_CASE("Matching nbdl::trigger_read triggers upstream read message.", "[conte
     bool result = false;
     producer1.recorded_messages[0].match(
       [](auto const& x)
-        -> std::enable_if_t<!nbdl::UpstreamMessage<decltype(x)>::value>
+        -> std::enable_if_t<!nbdl::UpstreamMessage<decltype(x)>>
       { },
       [&](auto const& msg)
         ->  std::enable_if_t<decltype(hana::equal(

@@ -27,7 +27,7 @@ namespace nbdl
     using Return = decltype(Impl::apply(PathType{}, EntityType{}));
 
     static_assert(
-      nbdl::NetworkStore<Return>::value
+      nbdl::NetworkStore<Return>
       && std::is_default_constructible<Return>::value
     , "nbdl::make_store<T>(path_type, entity_type) must return default constructible NetworkStore."
     );

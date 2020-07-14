@@ -24,14 +24,11 @@
 
 namespace nbdl
 {
-  template<typename BindableSequence, typename BindFn>
+  template <BindableSequence BindableSequence, typename BindFn>
   constexpr auto bind_sequence_fn::operator()(BindableSequence&& s, BindFn&& f) const
   {
     using Tag = hana::tag_of_t<BindableSequence>;
     using Impl = bind_sequence_impl<Tag>;
-
-    static_assert(nbdl::BindableSequence<BindableSequence>::value,
-      "nbdl::bind_sequence(seq, fn) requires 'seq' to be a BindableSequence");
 
     return Impl::apply(
       std::forward<BindableSequence>(s),
@@ -44,14 +41,11 @@ namespace nbdl
     // bleh
     struct bind_sequence_no_filter_fn
     {
-      template<typename BindableSequence, typename BindFn>
+      template<BindableSequence BindableSequence, typename BindFn>
       constexpr auto operator()(BindableSequence&& s, BindFn&& f) const
       {
         using Tag = hana::tag_of_t<BindableSequence>;
         using Impl = bind_sequence_impl<Tag>;
-
-        static_assert(nbdl::BindableSequence<BindableSequence>::value,
-          "nbdl::bind_sequence(seq, fn) requires 'seq' to be a BindableSequence");
 
         return Impl::apply(
           std::forward<BindableSequence>(s),
@@ -61,15 +55,8 @@ namespace nbdl
     };
   }
 
-  template<typename Tag, bool condition>
-  struct bind_sequence_impl<Tag, hana::when<condition>>
-    : hana::default_
-  {
-    static constexpr auto apply(...) = delete;
-  };
-
-  template<typename Tag>
-  struct bind_sequence_impl<Tag, hana::when<nbdl::Entity<Tag>::value>>
+  template<Entity Tag>
+  struct bind_sequence_impl<Tag>
   {
     template <typename Entity, typename BindFn>
     static constexpr auto apply(Entity&& e, BindFn&& f)
@@ -83,13 +70,12 @@ namespace nbdl
 
   // Support for hana::Foldables that guarantee
   // deterministic ordering.
-  template<typename Tag>
-  struct bind_sequence_impl<Tag, hana::when<
-        hana::Sequence  <Tag>::value
+  template<typename Tag> requires
+       (hana::Sequence  <Tag>::value
     ||  hana::Product   <Tag>::value
-    ||  hana::is_a<hana::optional_tag, Tag>
-    ||  hana::is_a<hana::string_tag, Tag>
-  >>
+    ||  hana::is_a<hana::optional_tag, Tag>()
+    ||  hana::is_a<hana::string_tag, Tag>())
+  struct bind_sequence_impl<Tag>
   {
     template <typename BindableSequence, typename BindFn>
     static constexpr auto apply(BindableSequence&& xs, BindFn&& f)

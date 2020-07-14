@@ -38,7 +38,7 @@ namespace nbdl
       }
       else
       {
-        if constexpr(nbdl::Store<decltype(itr->second)>::value)
+        if constexpr(nbdl::Store<decltype(itr->second)>)
         {
           nbdl::match(itr->second, std::forward<Fn>(fn));
         }

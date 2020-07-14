@@ -7,6 +7,9 @@
 #ifndef NBDL_DETAIL_BIND_TAG_OF_HPP
 #define NBDL_DETAIL_BIND_TAG_OF_HPP
 
+#include <nbdl/bind_map.hpp>
+#include <nbdl/bind_sequence.hpp>
+#include <nbdl/bind_variant.hpp>
 #include <nbdl/concept/BindableMap.hpp>
 #include <nbdl/concept/BindableSequence.hpp>
 #include <nbdl/concept/BindableVariant.hpp>
@@ -59,29 +62,19 @@ namespace nbdl::_b
 
   // bind_tag_of
 
-  template <typename T, typename = void>
-  struct bto : bto<T, hana::when<true>> { };
-
-  template <typename T, typename U = void>
-  using bind_tag_of = typename bto<T, U>::type;
-
   template <typename T>
-  struct bto<T, hana::when<
-    (std::is_fundamental<T>::value || std::is_empty<T>::value)
-    && !hana::Constant<T>::value
-    && !hana::is_a<hana::type_tag, T>
-    && !hana::is_a<hana::string_tag, T>
-    && !nbdl::BindableSequence<T>::value
-    && !nbdl::BindableMap<T>::value
-    && !nbdl::BindableVariant<T>::value
-    >>
-  {
+  struct bto {
+    // all others should be specialized
+    static_assert(std::is_fundamental<T>::value || std::is_empty<T>::value);
     using type = T;
   };
 
   template <typename T>
-  struct bto<T, hana::when<hana::is_a<hana::type_tag, T>>>
-  {
+  using bind_tag_of = typename bto<T>::type;
+
+  template <typename T>
+    requires (hana::is_a<hana::type_tag, T>())
+  struct bto<T> {
     using type = tag::type<typename T::type>;
   };
 
@@ -90,23 +83,20 @@ namespace nbdl::_b
     -> T<bind_tag_of<std::decay_t<decltype(x)>>...>
   { return {}; };
 
-  template <typename T>
-  struct bto<T, hana::when<BindableSequence<T>::value>>
-  {
+  template <BindableSequence T>
+  struct bto<T> {
     using type = decltype(
       nbdl::detail::bind_sequence_no_filter_fn{}(std::declval<T>(), bind_tag_unpack_helper<tag::sequence>)
     );
   };
 
   template <typename ...T>
-  struct bind_tag_unpack_variant_types_helper
-  {
+  struct bind_tag_unpack_variant_types_helper {
     using type = tag::variant<bind_tag_of<T>...>;
   };
 
-  template <typename T>
-  struct bto<T, hana::when<BindableVariant<T>::value>>
-  {
+  template <BindableVariant T>
+  struct bto<T> {
     using type = typename decltype(hana::unpack(
       nbdl::bind_variant_types<T>, hana::metafunction<bind_tag_unpack_variant_types_helper>
     ))::type;
@@ -119,57 +109,47 @@ namespace nbdl::_b
                >...>
   { return {}; };
 
-  template <typename T>
-  struct bto<T, hana::when<BindableMap<T>::value>>
-  {
+  template <BindableMap T>
+  struct bto<T> {
     using type = decltype(nbdl::bind_map(std::declval<T>(), bind_tag_unpack_map_helper));
   };
 
   template <typename T>
-  struct bto<T, hana::when<hana::Constant<T>::value>>
-  {
+    requires hana::Constant<T>::value
+  struct bto<T> {
     using type = tag::constant<hana::value<T>()>;
   };
 
   template <char ...c>
-  struct bto<hana::string<c...>> // hana::string representation is actually not supported :(
-  {
+  struct bto<hana::string<c...>> {
     using type = tag::ct_string<c...>;
   };
 
-  template <typename T>
-  struct bto<T, hana::when<Container<T>::value
-                        && !String<T>::value
-                        && !Buffer<T>::value
-                        && !DynamicBuffer<T>::value
-                        >>
-  {
+  template <Container T>
+  struct bto<T> {
     using type = tag::container<bind_tag_of<typename T::value_type>>;
   };
 
-  template <typename T>
-  struct bto<T, hana::when<Buffer<T>::value>>
-  {
+  template <Buffer T>
+  struct bto<T> {
     using type = tag::buffer;
   };
 
-  template <typename T>
-  struct bto<T, hana::when<String<T>::value>>
-  {
+  template <String T>
+  struct bto<T> {
     using type = tag::string;
   };
 
-  template <typename T>
-  struct bto<T, hana::when<DynamicBuffer<T>::value && !String<T>::value>>
-  {
+  template <DynamicBuffer T>
+  struct bto<T> {
     using type = tag::dynamic_buffer;
   };
 }
 
 namespace nbdl::detail
 {
-  template <typename T, typename U = void>
-  using bind_tag_of = _b::bind_tag_of<T, U>;
+  template <typename T>
+  using bind_tag_of = _b::bind_tag_of<T>;
 }
 
 #endif

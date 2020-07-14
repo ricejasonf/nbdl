@@ -13,16 +13,13 @@ namespace nbdl
 {
   namespace hana = boost::hana;
 
-  template <typename T, typename = void>
-  struct make_delta_impl : make_delta_impl<T, hana::when<true>> { };
-
   template <typename T>
   struct make_delta_fn
   {
-    template <typename X>
+    template <BindableSequence X>
     constexpr auto operator()(X&&) const;
 
-    template <typename X, typename Y>
+    template <BindableSequence X, typename Y>
     constexpr auto operator()(X&&, Y&&) const;
   };
 

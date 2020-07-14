@@ -7,21 +7,13 @@
 #ifndef NBDL_CONCEPT_UPSTREAM_MESSAGE_HPP
 #define NBDL_CONCEPT_UPSTREAM_MESSAGE_HPP
 
-#include<nbdl/fwd/concept/UpstreamMessage.hpp>
+#include <nbdl/message.hpp>
 
-#include<nbdl/message.hpp>
+#include <utility>
 
-#include<boost/hana/integral_constant.hpp>
-#include<utility>
-
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
+namespace nbdl {
   template<typename T>
-  struct UpstreamMessage<T>
-    : hana::bool_<message::is_upstream<std::decay_t<T>>>
-  { };
+  concept UpstreamMessage = message::is_upstream<std::decay_t<T>>;
 }
 
 #endif

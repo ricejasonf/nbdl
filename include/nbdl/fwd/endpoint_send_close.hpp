@@ -7,18 +7,14 @@
 #ifndef NBDL_FWD_ENDPOINT_SEND_CLOSE_HPP
 #define NBDL_FWD_ENDPOINT_SEND_CLOSE_HPP
 
-#include <boost/hana/core/when.hpp>
+#include <nbdl/concept/Endpoint.hpp>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
+namespace nbdl {
+  template <typename T>
+  struct endpoint_send_close_impl;
 
-  template <typename T, typename = void>
-  struct endpoint_send_close_impl : endpoint_send_close_impl<T, hana::when<true>> { };
-
-  struct endpoint_send_close_fn
-  {
-    template <typename Endpoint>
+  struct endpoint_send_close_fn {
+    template <Endpoint Endpoint>
     void operator()(Endpoint&) const;
   };
 

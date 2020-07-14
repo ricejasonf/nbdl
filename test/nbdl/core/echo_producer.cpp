@@ -60,7 +60,7 @@ TEST_CASE("Echo producer should echo messages to downstream.", "[echo_producer]"
   REQUIRE(consumer2.recorded_messages.size() == 3);
 
   consumer2.recorded_messages[0].match(
-    [](auto const& m) -> std::enable_if_t<!nbdl::DownstreamMessage<decltype(m)>::value>
+    [](auto const& m) -> std::enable_if_t<!nbdl::DownstreamMessage<decltype(m)>>
     { CHECK(false); },
     [](auto const& m) -> std::enable_if_t<
       decltype(hana::equal(message::get_path_type(m), hana::type_c<Path>))::value>
@@ -70,7 +70,7 @@ TEST_CASE("Echo producer should echo messages to downstream.", "[echo_producer]"
   );
 
   consumer2.recorded_messages[1].match(
-    [](auto const& m) -> std::enable_if_t<!nbdl::DownstreamMessage<decltype(m)>::value>
+    [](auto const& m) -> std::enable_if_t<!nbdl::DownstreamMessage<decltype(m)>>
     { CHECK(false); },
     [](auto const& m) -> std::enable_if_t<
       decltype(hana::equal(message::get_path_type(m), hana::type_c<Path>))::value>
@@ -80,7 +80,7 @@ TEST_CASE("Echo producer should echo messages to downstream.", "[echo_producer]"
   );
 
   consumer2.recorded_messages[2].match(
-    [](auto const& m) -> std::enable_if_t<!nbdl::DownstreamMessage<decltype(m)>::value>
+    [](auto const& m) -> std::enable_if_t<!nbdl::DownstreamMessage<decltype(m)>>
     { CHECK(false); },
     [](auto const& m) -> std::enable_if_t<
       decltype(hana::equal(message::get_path_type(m), hana::type_c<Path>))::value>

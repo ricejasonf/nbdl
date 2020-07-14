@@ -7,18 +7,14 @@
 #ifndef NBDL_FWD_APPLY_DELTA_HPP
 #define NBDL_FWD_APPLY_DELTA_HPP
 
-#include <boost/hana/core/when.hpp>
+#include <nbdl/concept/Delta.hpp>
+#include <nbdl/concept/BindableSequence.hpp>
 
-namespace nbdl
-{
+namespace nbdl {
   namespace hana = boost::hana;
 
-  template <typename T, typename = void>
-  struct apply_delta_impl : apply_delta_impl<T, hana::when<true>> { };
-
-  struct apply_delta_fn
-  {
-    template <typename Delta, typename BindableSequence>
+  struct apply_delta_fn {
+    template <Delta Delta, BindableSequence BindableSequence>
     constexpr bool operator()(Delta const&, BindableSequence&&) const;
   };
 

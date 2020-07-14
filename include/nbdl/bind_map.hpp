@@ -24,27 +24,17 @@
 
 namespace nbdl
 {
-  template <typename BindableMap, typename BindFn>
+  template <BindableMap BindableMap, typename BindFn>
   constexpr auto bind_map_fn::operator()(BindableMap&& s, BindFn&& f) const
   {
     using Tag = hana::tag_of_t<BindableMap>;
     using Impl = bind_map_impl<Tag>;
 
-    static_assert(nbdl::BindableMap<BindableMap>::value,
-      "nbdl::bind_map(map, fn) requires 'map' to be a BindableMap");
-
     return Impl::apply(std::forward<BindableMap>(s), std::forward<BindFn>(f));
   };
 
-  template <typename Tag, bool condition>
-  struct bind_map_impl<Tag, hana::when<condition>>
-    : hana::default_
-  {
-    static constexpr auto apply(...) = delete;
-  };
-
-  template <typename Tag>
-  struct bind_map_impl<Tag, hana::when<nbdl::Entity<Tag>::value>>
+  template <Entity Tag>
+  struct bind_map_impl<Tag>
   {
     template <typename Entity, typename BindFn>
     static constexpr auto apply(Entity&& e, BindFn&& f)

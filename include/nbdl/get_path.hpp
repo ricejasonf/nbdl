@@ -8,9 +8,11 @@
 #define NBDL_GET_PATH_HPP
 
 #include <nbdl/concept/State.hpp>
+#include <nbdl/concept/Path.hpp>
 #include <nbdl/fwd/get_path.hpp>
 #include <nbdl/get.hpp>
 
+#include <boost/hana/concept/sequence.hpp>
 #include <boost/hana/fold_left.hpp>
 #include <utility>
 
@@ -18,23 +20,12 @@ namespace nbdl
 {
   namespace hana = boost::hana;
 
-  template<typename State, typename Path>
-  constexpr decltype(auto) get_path_fn::operator()(State&& s, Path&& p) const
-  {
-    static_assert(
-      nbdl::State<State>::value
-    , "nbdl::get_path(state, path) requires state must be nbdl::State"
-    );
-    static_assert(
-      hana::Sequence<Path>::value
-    , "nbdl::get_path(state, path) requires path must be a hana::Sequence"
-    );
-
+  template<State State, Path Path>
+  constexpr decltype(auto) get_path_fn::operator()(State&& s, Path&& p) const {
     return hana::fold_left(
       std::forward<Path>(p)
     , std::forward<State>(s)
-    , [](auto&& state, auto&& x) -> decltype(auto)
-      {
+    , [](auto&& state, auto&& x) -> decltype(auto) {
         return nbdl::get(
           std::forward<decltype(state)>(state)
         , std::forward<decltype(x)>(x)

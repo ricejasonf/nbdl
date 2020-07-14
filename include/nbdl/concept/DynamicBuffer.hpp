@@ -9,23 +9,15 @@
 
 #include <nbdl/concept/Container.hpp>
 
-#include <boost/hana/core/default.hpp>
-#include <boost/hana/core/tag_of.hpp>
 #include <type_traits>
+#include <utility>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
+namespace nbdl {
   template<typename T>
-  struct DynamicBuffer
-  {
-    using Tag = typename std::decay<T>::type;
-    static constexpr bool value = nbdl::Container<Tag>::value
-                               && decltype(detail::is_contiguous(std::declval<Tag>()))::value
-                               && decltype(detail::is_byte_container(std::declval<Tag>()))::value
-                               && not decltype(detail::is_size_fixed(std::declval<Tag>()))::value
-                               ;
+  concept DynamicBuffer = ContiguousByteContainer<T> && requires (T) {
+    // We are not concerned with whether we can resize it but that
+    // it has a dynamic length so const qualifiers are okay here.
+    std::remove_cvref_t<T>{}.resize(std::size_t{0}, char{0});
   };
 }
 

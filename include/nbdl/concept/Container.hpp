@@ -8,46 +8,33 @@
 #define NBDL_CONCEPT_CONTAINER_HPP
 
 #include<mpdef/list.hpp>
-#include<nbdl/fwd/concept/Container.hpp>
 
 #include <array> // for std::tuple_size
-#include <boost/hana/integral_constant.hpp>
-#include <boost/hana/type.hpp>
 #include <iterator>
 #include <utility>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
-  namespace detail
-  {
-    constexpr auto is_container = hana::is_valid([](auto&& x)
-      -> mpdef::list<decltype(std::size(x)), decltype(std::begin(x)), decltype(std::end(x))>
-    { return {}; });
-
-    constexpr auto is_contiguous = hana::is_valid([](auto&& x)
-      -> decltype(std::data(x))
-    { return {}; });
-
-    constexpr auto is_byte_container = hana::is_valid([](auto&& x)
-      -> std::enable_if_t<(sizeof(typename std::decay_t<decltype(x)>::value_type) == 1)>
-    { return {}; });
-
-    constexpr auto is_size_fixed = hana::is_valid([](auto&& x)
-      -> hana::size_t<std::tuple_size<std::decay_t<decltype(x)>>::value>
-    { return {}; });
-  }
-
+namespace nbdl {
+  template <typename T>
+  concept Container = requires (T t) {
+    std::size(t);
+    std::begin(t);
+    std::end(t);
+    typename std::decay_t<T>::value_type;
+  };
 
   template <typename T>
-  struct Container
-    : decltype(detail::is_container(std::declval<T>()))
-  { };
+  concept ContiguousContainer = Container<T> && requires (T t) {
+    std::data(t);
+  };
 
-  template <>
-  struct Container<void> : hana::false_
-  { };
+  template <typename T>
+  concept ContiguousByteContainer = ContiguousContainer<T> &&
+     (sizeof(typename std::decay_t<T>::value_type) == 1);
+
+  template <typename T>
+  concept FixedSizeContainer = Container<T> && requires (T t) {
+    std::tuple_size<std::decay_t<T>>::value;
+  };
 }
 
 #endif

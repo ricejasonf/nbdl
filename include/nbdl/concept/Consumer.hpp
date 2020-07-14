@@ -7,23 +7,16 @@
 #ifndef NBDL_CONCEPT_CONSUMER_HPP
 #define NBDL_CONCEPT_CONSUMER_HPP
 
-#include <nbdl/fwd/concept/Consumer.hpp>
-#include <nbdl/send_downstream_message.hpp>
+#include <nbdl/concept/HasImpl.hpp>
 
-#include <boost/hana/core/default.hpp>
-
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
-  template<typename T>
-  struct Consumer
-  {
-    using Tag = typename hana::tag_of<T>::type;
-    static constexpr bool value =
-          !hana::is_default<nbdl::send_downstream_message_impl  <Tag>>::value
-      ;
+namespace nbdl {
+  template <typename Tag>
+  struct send_downstream_message_impl : default_impl {
+    static constexpr auto apply(...) = delete;
   };
+
+  template <typename T>
+  concept Consumer = HasImpl<T, nbdl::send_downstream_message_impl>;
 }
 
 #endif

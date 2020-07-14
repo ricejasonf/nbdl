@@ -320,7 +320,7 @@ namespace nbdl
       , fn
       , [&](auto&& value)
         {
-          if constexpr(nbdl::Store<decltype(value)>::value)
+          if constexpr(nbdl::Store<decltype(value)>)
           {
             nbdl::match(
               std::forward<decltype(value)>(value)
@@ -343,7 +343,7 @@ namespace nbdl
       , fn
       , [&](auto&& value)
         {
-          if constexpr(nbdl::Store<decltype(value)>::value)
+          if constexpr(nbdl::Store<decltype(value)>)
           {
             nbdl::match(
               std::forward<decltype(value)>(value)

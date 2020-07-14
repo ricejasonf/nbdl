@@ -7,23 +7,16 @@
 #ifndef NBDL_CONCEPT_STORE_HPP
 #define NBDL_CONCEPT_STORE_HPP
 
-#include <nbdl/fwd/concept/Store.hpp>
+#include <nbdl/concept/HasImpl.hpp>
 
-#include <nbdl/fwd/match.hpp>
-
-#include <boost/hana/core/default.hpp>
-#include <boost/hana/core/tag_of.hpp>
-
-namespace nbdl
-{
-  namespace hana = boost::hana;
+namespace nbdl {
+  template <typename Tag>
+  struct match_impl : hana::default_ {
+    static constexpr auto apply(...) = delete;
+  };
 
   template <typename T>
-  struct Store
-  {
-    using Tag = typename hana::tag_of<T>::type;
-    static constexpr bool value = !hana::is_default<nbdl::match_impl<Tag>>::value;
-  };
+  concept Store = HasImpl<T, nbdl::match_impl>;
 }
 
 #endif

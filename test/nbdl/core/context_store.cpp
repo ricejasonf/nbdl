@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <nbdl/concept/NetworkStore.hpp>
 #include <nbdl/context_store.hpp>
 #include <nbdl/get_path.hpp>
 #include <nbdl/match_path.hpp>
@@ -33,7 +34,7 @@ TEST_CASE("Make a store for use in nbdl::context", "[context_store][make_store]"
 
   static_assert(decltype(check_type)::value, "Expecting type nbdl::context_store_t<hana::tuple<int>>.");
 
-  static_assert(nbdl::NetworkStore<my_store>::value);
+  static_assert(nbdl::NetworkStore<my_store>);
   nbdl::apply_message(store, message::make_downstream_update(
     hana::make_tuple()
   , message::no_uid

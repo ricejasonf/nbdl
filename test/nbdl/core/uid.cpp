@@ -7,6 +7,7 @@
 
 #include <boost/hana/equal.hpp>
 #include <catch.hpp>
+#include <nbdl/concept/Buffer.hpp>
 #include <nbdl/uid.hpp>
 
 #include <unordered_set>
@@ -34,7 +35,7 @@ namespace
 }
 #endif
 
-static_assert(nbdl::Buffer<nbdl::uid>::value, "nbdl::uid is a nbdl::Buffer");
+static_assert(nbdl::Buffer<nbdl::uid>, "nbdl::uid is a nbdl::Buffer");
 
 TEST_CASE("Smoke test uid generation", "[core]")
 {

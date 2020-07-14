@@ -45,11 +45,8 @@ namespace nbdl
     return store_iterator<Key, Iterator, Store>{container.end(), store};
   }
 
-  template <typename Key, typename Container, typename Store>
-  auto store_range_fn::operator()(Key, Container& c, Store s) const
-  {
-    static_assert(nbdl::Store<Store>::value);
-    static_assert(nbdl::Container<Container>::value);
+  template <typename Key, Container Container, Store Store>
+  auto store_range_fn::operator()(Key, Container& c, Store s) const {
     return store_range_t<Key, Container, Store>{c, s};
   }
 }

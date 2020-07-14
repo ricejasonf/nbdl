@@ -611,7 +611,8 @@ namespace nbdl::webui::detail
   struct mut_action_fn<ui_spec::for_each_tag, Store, PathSpec, ItrKey, NodeFnList>
   {
     using Container = ui_spec::detail::get_type_at_path<Store, PathSpec>;
-    static_assert( nbdl::Container<Container>::value, "ui_spec::for_each supports only nbdl::Containers");
+    static_assert(nbdl::Container<Container>,
+      "ui_spec::for_each supports only nbdl::Containers");
     using Range = store_range_t<
       ItrKey
     , typename std::add_const<typename std::remove_reference<Container>::type>::type

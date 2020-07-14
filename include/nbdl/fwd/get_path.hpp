@@ -7,12 +7,15 @@
 #ifndef NBDL_FWD_GET_PATH_HPP
 #define NBDL_FWD_GET_PATH_HPP
 
-namespace nbdl
-{
-  struct get_path_fn
-  {
-    template<typename Store, typename Path>
-    constexpr decltype(auto) operator()(Store&&, Path&&) const;
+#include <nbdl/concept/State.hpp>
+#include <nbdl/concept/Path.hpp>
+
+#include <boost/hana/concept/sequence.hpp>
+
+namespace nbdl {
+  struct get_path_fn {
+  template <State State, Path Path>
+    constexpr decltype(auto) operator()(State&&, Path&&) const;
   };
 
   // get_path - not to be confused with nbdl::message::get_path

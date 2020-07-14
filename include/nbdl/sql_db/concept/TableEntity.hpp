@@ -9,15 +9,8 @@
 
 #include <nbdl/concept/Entity.hpp>
 #include <nbdl/concept/EntityContainer.hpp>
-#include <nbdl/fwd/sql_db/concept/TableEntity.hpp>
 
-#include <boost/hana/core/default.hpp>
-#include <type_traits>
-
-namespace nbdl::sql_db
-{
-  namespace hana = boost::hana;
-
+namespace nbdl::sql_db {
   // TableEntity represents a type that purports
   // database operation support for ops such as
   // select, insert, update, delete
@@ -27,15 +20,9 @@ namespace nbdl::sql_db
   // into Selectable, Insertable, Deletable, Updateable
   // concepts
   // See also: is_multirow<T> (traits.hpp)
-  template <typename T, typename>
-  struct TableEntity
-    : std::false_type
-  { };
 
   template <typename T>
-  struct TableEntity<T, std::enable_if_t<nbdl::Entity<T>::value or nbdl::EntityContainer<T>::value>>
-    : std::true_type
-  { };
+  concept TableEntity = nbdl::Entity<T> || nbdl::EntityContainer<T>;
 }
 
 #endif

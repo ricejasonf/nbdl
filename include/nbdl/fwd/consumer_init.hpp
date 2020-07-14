@@ -7,22 +7,18 @@
 #ifndef NBDL_FWD_CONSUMER_INIT_HPP
 #define NBDL_FWD_CONSUMER_INIT_HPP
 
-#include <boost/hana/core/when.hpp>
+#include <nbdl/concept/Consumer.hpp>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
-  template <typename T, typename = void>
-  struct consumer_init_impl : consumer_init_impl<T, hana::when<true>> { };
+namespace nbdl {
+  template <typename Tag>
+  struct consumer_init_impl;
 
   //
   // A hook to allow consumers to do initialization stuffs
   // and send messages after the context's components have
   // all been constructed.
-  struct consumer_init_fn
-  {
-    template <typename Consumer>
+  struct consumer_init_fn {
+    template <Consumer Consumer>
     constexpr void operator()(Consumer&) const;
   };
 

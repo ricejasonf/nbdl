@@ -7,19 +7,14 @@
 #ifndef NBDL_FWD_APPLY_MESSAGE_HPP
 #define NBDL_FWD_APPLY_MESSAGE_HPP
 
-#include<boost/hana/core/when.hpp>
+#include <nbdl/concept/NetworkStore.hpp>
 
-namespace nbdl
-{
+namespace nbdl {
   namespace hana = boost::hana;
 
-  template<typename T, typename = void>
-  struct apply_message_impl : apply_message_impl<T, hana::when<true>> { };
-
-  struct apply_message_fn
-  {
+  struct apply_message_fn {
     // returns true if the contained state changed
-    template<typename Store, typename Message>
+    template <NetworkStore Store, typename Message>
     constexpr auto operator()(Store&&, Message&&) const;
   };
 

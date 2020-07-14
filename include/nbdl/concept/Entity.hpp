@@ -7,22 +7,18 @@
 #ifndef NBDL_CONCEPT_ENTITY_HPP
 #define NBDL_CONCEPT_ENTITY_HPP
 
-#include<nbdl/fwd/concept/Entity.hpp>
 
-#include<nbdl/entity_members.hpp>
+#include <nbdl/entity_members.hpp>
 
-#include<boost/hana/core/default.hpp>
-#include<type_traits>
+#include <boost/hana/core/default.hpp>
+#include <type_traits>
 
-namespace nbdl
-{
+namespace nbdl {
   namespace hana = boost::hana;
 
   template<typename T>
-  struct Entity
-  {
-    static constexpr bool value = !hana::is_default<nbdl::entity_members_impl<std::decay_t<T>>>::value;
-  };
-} // nbdl
+  concept Entity =
+    !hana::is_default<nbdl::entity_members_impl<std::decay_t<T>>>::value;
+}
 
 #endif

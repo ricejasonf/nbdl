@@ -7,22 +7,16 @@
 #ifndef NBDL_CONCEPT_ENDPOINT_INFO_HPP
 #define NBDL_CONCEPT_ENDPOINT_INFO_HPP
 
-#include <nbdl/fwd/concept/EndpointInfo.hpp>
-#include <nbdl/fwd/endpoint_open.hpp>
+#include <nbdl/concept/HasImpl.hpp>
 
-#include <boost/hana/core/default.hpp>
-#include <boost/hana/core/tag_of.hpp>
-
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
-  template<typename T>
-  struct EndpointInfo
-  {
-    using Tag = typename hana::tag_of<T>::type;
-    static constexpr bool value = !hana::is_default<nbdl::endpoint_open_impl<Tag>>::value;
+namespace nbdl {
+  template <typename Tag>
+  struct endpoint_open_impl : default_impl {
+    static auto apply(...) = delete;
   };
+  
+  template <typename T>
+  concept EndpointInfo = HasImpl<T, nbdl::endpoint_open_impl>;
 }
 
 #endif

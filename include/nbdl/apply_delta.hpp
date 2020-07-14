@@ -14,26 +14,13 @@
 
 namespace nbdl
 {
-  template <typename Delta, typename BindableSequence>
+  template <Delta Delta, BindableSequence BindableSequence>
   constexpr bool apply_delta_fn::operator()(Delta const& d, BindableSequence&& e) const
   {
     using Tag = hana::tag_of_t<Delta>;
     using Impl = apply_delta_impl<Tag>;
 
-    static_assert(nbdl::Delta<Delta>::value
-      , "nbdl::apply_delta(delta, x) delta must be a Delta");
-
-    static_assert(nbdl::BindableSequence<BindableSequence>::value
-      , "nbdl::apply_delta(delta, x) x must be a BindableSequence");
-
     return Impl::apply(d, std::forward<BindableSequence>(e));
-  };
-
-  template <typename Tag, bool condition>
-  struct apply_delta_impl<Tag, hana::when<condition>>
-    : hana::default_
-  {
-    static constexpr auto apply(...) = delete;
   };
 }
 

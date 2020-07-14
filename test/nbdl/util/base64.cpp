@@ -55,7 +55,7 @@ TEST_CASE("base64_encode", "[util]")
 
   CHECK(base64_encode(""s)     == ""s);
 
-  CHECK(base64_encode(arbitrary_bytes_decoded) == arbitrary_bytes_encoded)
+  CHECK(base64_encode(arbitrary_bytes_decoded) == arbitrary_bytes_encoded);
 }
 
 TEST_CASE("base64_decode", "[util]")
@@ -79,7 +79,7 @@ TEST_CASE("base64_decode", "[util]")
   CHECK((std::vector<unsigned char>{255, 35, 254}) == base64_decode("/yP+"s));
   CHECK((std::vector<unsigned char>{255, 35, 254, 123}) == base64_decode("/yP+ew=="s));
 
-  CHECK(base64_decode(arbitrary_bytes_encoded) == arbitrary_bytes_decoded)
+  CHECK(base64_decode(arbitrary_bytes_encoded) == arbitrary_bytes_decoded);
 }
 
 TEST_CASE("base64_decode output to existing container", "[util]")

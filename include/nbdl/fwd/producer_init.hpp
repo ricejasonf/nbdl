@@ -7,22 +7,18 @@
 #ifndef NBDL_FWD_PRODUCER_INIT_HPP
 #define NBDL_FWD_PRODUCER_INIT_HPP
 
-#include <boost/hana/core/when.hpp>
+#include <nbdl/concept/Producer.hpp>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
-
-  template <typename T, typename = void>
-  struct producer_init_impl : producer_init_impl<T, hana::when<true>> { };
+namespace nbdl {
+  template <typename T>
+  struct producer_init_impl;
 
   //
   // A hook to allow producers to do initialization stuffs
   // and send messages after the context's components have
   // all been constructed.
-  struct producer_init_fn
-  {
-    template <typename Producer>
+  struct producer_init_fn {
+    template <Producer Producer>
     constexpr void operator()(Producer&) const;
   };
 

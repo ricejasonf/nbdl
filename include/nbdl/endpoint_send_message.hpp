@@ -7,23 +7,16 @@
 #ifndef NBDL_ENDPOINT_SEND_MESSAGE_HPP
 #define NBDL_ENDPOINT_SEND_MESSAGE_HPP
 
-#include <nbdl/fwd/endpoint_send_message.hpp>
-
 #include <nbdl/concept/Endpoint.hpp>
+#include <nbdl/fwd/endpoint_send_message.hpp>
 
 namespace nbdl
 {
-  template <typename Endpoint, typename Message>
-  void endpoint_send_message_fn::operator()(Endpoint& endpoint, Message&& message) const
-  {
+  template <Endpoint Endpoint, typename Message>
+  void endpoint_send_message_fn::operator()(Endpoint& endpoint,
+                                            Message&& message) const {
     using Tag = hana::tag_of_t<Endpoint>;
     using Impl = endpoint_send_message_impl<Tag>;
-
-    static_assert(
-      nbdl::Endpoint<Tag>::value
-    , "nbdl::endpoint_send_message(endpoint, message) "
-      "requires endpoint to be a nbdl::Endpoint"
-    );
 
     static_assert(
       decltype(hana::typeid_(message) == hana::type_c<typename Endpoint::value_type>)::value
@@ -37,23 +30,18 @@ namespace nbdl
     );
   };
 
-  template <typename Tag, bool condition>
-  struct endpoint_send_message_impl<Tag, hana::when<condition>>
-    : hana::default_
-  {
+  template <typename Tag>
+  struct endpoint_send_message_impl : hana::default_ {
     template <typename Endpoint, typename Message>
-    static void apply(Endpoint& endpoint, Message&& message)
-    {
+    static void apply(Endpoint& endpoint, Message&& message) {
       endpoint.send_message(std::forward<Message>(message));
     }
   };
 
-  template <typename Tag>
-  struct endpoint_send_message_impl<Tag, hana::when<nbdl::EndpointPtr<Tag>::value>>
-  {
+  template <EndpointPtr Tag>
+  struct endpoint_send_message_impl<Tag> {
     template <typename Endpoint, typename Message>
-    static void apply(Endpoint& endpoint, Message&& message)
-    {
+    static void apply(Endpoint& endpoint, Message&& message) {
       endpoint_send_message(*endpoint, std::forward<Message>(message));
     }
   };

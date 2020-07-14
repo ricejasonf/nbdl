@@ -9,6 +9,7 @@
 #define NBDL_TEST_ASSETS_TEST_CONTEXT_HPP
 
 #include <mpdef/list.hpp>
+#include <nbdl/concept/Store.hpp>
 #include <nbdl/context.hpp>
 #include <nbdl/def/builder/context.hpp>
 #include <nbdl/def/directives.hpp>
@@ -245,10 +246,9 @@ namespace test_context {
   template <typename T = void> struct state_consumer_tag { };
   struct null_system_message { };
 
-  template<typename Context, typename T = void>
+  template <nbdl::Store Context, typename T = void>
   struct producer
   {
-    static_assert(nbdl::Store<Context>::value);
     using hana_tag = test_context::producer_tag<T>;
     Context context;
     T t_;
@@ -260,10 +260,9 @@ namespace test_context {
     { }
   };
 
-  template<typename Context>
+  template <nbdl::Store Context>
   struct producer<Context, void>
   {
-    static_assert(nbdl::Store<Context>::value);
     using hana_tag = test_context::producer_tag<>;
 
     using MessageVariant = typename nbdl::message_api<
@@ -281,10 +280,9 @@ namespace test_context {
     { }
   };
 
-  template<typename Context, typename T = void>
+  template <nbdl::Store Context, typename T = void>
   struct consumer
   {
-    static_assert(nbdl::Store<Context>::value);
     using hana_tag = test_context::consumer_tag<T>;
 
     using MessageVariant = typename nbdl::message_api<
@@ -304,10 +302,9 @@ namespace test_context {
     { }
   };
 
-  template<typename Context>
+  template <nbdl::Store Context>
   struct consumer<Context, void>
   {
-    static_assert(nbdl::Store<Context>::value);
     using hana_tag = test_context::consumer_tag<>;
 
     using MessageVariant = typename nbdl::message_api<

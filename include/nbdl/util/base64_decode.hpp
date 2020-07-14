@@ -77,18 +77,16 @@ namespace nbdl::util
       return (3 * n) / 4;
     }
 
+    template <DynamicBuffer Buffer>
+    constexpr bool prepare_output_buffer(Buffer& buffer, int length) {
+      buffer.resize(length);
+      return true;
+    }
+
     template <typename Buffer>
     constexpr bool prepare_output_buffer(Buffer& buffer, int length)
     {
-      if constexpr(nbdl::DynamicBuffer<Buffer>::value)
-      {
-        buffer.resize(length);
-        return true;
-      }
-      else
-      {
-        return buffer.size() == static_cast<std::size_t>(length);
-      }
+      return buffer.size() == static_cast<std::size_t>(length);
     }
 
     template <typename Input, typename Output>

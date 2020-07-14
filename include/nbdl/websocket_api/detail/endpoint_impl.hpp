@@ -230,14 +230,11 @@ namespace nbdl::websocket_api::detail
   }
 }
 
-namespace nbdl
-{
+namespace nbdl {
   // Endpoint
 
   template <>
-  struct Endpoint<nbdl::websocket_api::detail::endpoint_impl_tag>
-  {
-    static constexpr bool value = true;
-  };
+  inline constexpr bool
+  is_endpoint<nbdl::websocket_api::detail::endpoint_impl_tag> = true;
 }
 #endif

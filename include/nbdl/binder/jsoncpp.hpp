@@ -12,10 +12,10 @@
 #include <nbdl/concept/BindableVariant.hpp>
 #include <nbdl/concept/Buffer.hpp>
 #include <nbdl/concept/Container.hpp>
-#include <nbdl/concept/DynamicBuffer.hpp>
 #include <nbdl/concept/String.hpp>
 #include <nbdl/bind_map.hpp>
 #include <nbdl/bind_sequence.hpp>
+#include <nbdl/bind_variant.hpp>
 #include <nbdl/string.hpp>
 #include <nbdl/util/base64_decode.hpp>
 #include <nbdl/util/base64_encode.hpp>
@@ -261,10 +261,8 @@ namespace nbdl { namespace binder { namespace jsoncpp
     // binds as map when possible
     struct bind_jsoncpp_fn
     {
-      template <typename Binder, typename T>
-      constexpr auto operator()(Binder&& binder, T&& t) const
-        -> std::enable_if_t<nbdl::BindableMap<T>::value>
-      {
+      template <typename Binder, BindableMap T>
+      constexpr auto operator()(Binder&& binder, T&& t) const {
         nbdl::bind_map(std::forward<T>(t), [&](auto&& ...pair)
         {
           (
@@ -277,9 +275,8 @@ namespace nbdl { namespace binder { namespace jsoncpp
         });
       }
 
-      template <typename Binder, typename T>
+      template <typename Binder, BindableVariant T>
       constexpr auto operator()(Binder&& binder, T&& t) const
-        -> std::enable_if_t<nbdl::BindableVariant<T>::value>
       {
         hana::overload_linearly(
           [](auto&& binder, auto&& t)
@@ -300,12 +297,9 @@ namespace nbdl { namespace binder { namespace jsoncpp
         )(std::forward<Binder>(binder), std::forward<T>(t));
       }
 
-      template <typename Binder, typename T>
+      template <typename Binder, BindableSequence T>
       constexpr auto operator()(Binder&& binder, T&& t) const
-        -> std::enable_if_t<
-              nbdl::BindableSequence<T>::value
-          && !nbdl::BindableMap<T>::value
-        >
+        requires (!nbdl::BindableMap<T>)
       {
         nbdl::bind_sequence(std::forward<T>(t), [&](auto&& ...x)
         {
@@ -313,31 +307,24 @@ namespace nbdl { namespace binder { namespace jsoncpp
         });
       }
 
+      template <typename Binder, nbdl::String T>
+      constexpr auto operator()(Binder&& binder, T&& t) const {
+        binder.bind_string(std::forward<T>(t));
+      }
+
+      template <typename Binder, nbdl::ContiguousByteContainer T>
+      constexpr auto operator()(Binder&& binder, T&& t) const {
+        binder.bind_buffer(std::forward<T>(t));
+      }
+
+      template <typename Binder, nbdl::Container T>
+      constexpr auto operator()(Binder&& binder, T&& t) const {
+        binder.bind_container(std::forward<T>(t));
+      }
+
       template <typename Binder, typename T>
-      constexpr auto operator()(Binder&& binder, T&& t) const
-        -> std::enable_if_t<
-             !nbdl::BindableSequence<T>::value
-          && !nbdl::BindableMap<T>::value
-          && !nbdl::BindableVariant<T>::value
-        >
-      {
-        if constexpr(nbdl::String<T>::value)
-        {
-          binder.bind_string(std::forward<T>(t));
-        }
-        //else if constexpr(decltype(hana::type_c<std::vector<unsigned char>> == hana::typeid_(t))::value)
-        else if constexpr(nbdl::Buffer<T>::value or nbdl::DynamicBuffer<T>::value)
-        {
-          binder.bind_buffer(std::forward<T>(t));
-        }
-        else if constexpr(nbdl::Container<T>::value)
-        {
-          binder.bind_container(std::forward<T>(t));
-        }
-        else
-        {
-          binder.bind_member(std::forward<T>(t));
-        }
+      constexpr auto operator()(Binder&& binder, T&& t) const {
+        binder.bind_member(std::forward<T>(t));
       }
     };
 

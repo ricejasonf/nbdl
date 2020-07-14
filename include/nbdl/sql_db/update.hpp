@@ -61,8 +61,8 @@ namespace nbdl::sql_db
     static auto apply(...) = delete;
   };
 
-  template <typename T>
-  struct update_impl<T, hana::when<nbdl::Entity<T>::value>>
+  template <Entity T>
+  struct update_impl<T>
   {
     // Keys would be an owner_id or
     // the keys in a path from a nbdl::Message
@@ -130,8 +130,8 @@ namespace nbdl::sql_db
 
   // TODO update_impl for nbdl::Delta
 
-  template <typename T>
-  struct update_impl<T, hana::when<nbdl::EntityContainer<T>::value>>
+  template <EntityContainer T>
+  struct update_impl<T>
   {
     // I don't even know how this could be implemented
     static void apply(...) = delete;

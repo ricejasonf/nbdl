@@ -21,8 +21,8 @@ namespace nbdl
 {
   // State
 
-  template<typename Tag>
-  struct get_impl<Tag, hana::when<nbdl::Entity<Tag>::value>>
+  template<Entity Tag>
+  struct get_impl<Tag>
   {
     template <typename State>
     static constexpr decltype(auto) apply(State&& s)
@@ -42,8 +42,8 @@ namespace boost::hana
 {
   // Comparable
 
-  template <typename T>
-  struct equal_impl<T, T, hana::when<nbdl::Entity<T>::value>>
+  template <nbdl::Entity T>
+  struct equal_impl<T, T>
   {
     template <typename E>
     static constexpr auto apply(E const& e1, E const& e2)

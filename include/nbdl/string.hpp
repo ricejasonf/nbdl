@@ -28,8 +28,9 @@ namespace nbdl
   };
 
   template <>
-  struct String<string> : std::true_type
-  { };
+  inline constexpr bool is_string<string> = true;
+  static_assert(String<string>);
+  static_assert(String<string const&>);
 }
 
 #endif

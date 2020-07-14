@@ -7,18 +7,14 @@
 #ifndef NBDL_FWD_ENDPOINT_SEND_MESSAGE_HPP
 #define NBDL_FWD_ENDPOINT_SEND_MESSAGE_HPP
 
-#include <boost/hana/core/when.hpp>
+#include <nbdl/concept/Endpoint.hpp>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
+namespace nbdl {
+  template <typename T>
+  struct endpoint_send_message_impl;
 
-  template <typename T, typename = void>
-  struct endpoint_send_message_impl : endpoint_send_message_impl<T, hana::when<true>> { };
-
-  struct endpoint_send_message_fn
-  {
-    template <typename Endpoint, typename Message>
+  struct endpoint_send_message_fn {
+    template <Endpoint Endpoint, typename Message>
     void operator()(Endpoint&, Message&&) const;
   };
 

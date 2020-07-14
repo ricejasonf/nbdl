@@ -9,9 +9,9 @@
 
 #include <nbdl/fwd/apply_action.hpp>
 
+#include <nbdl/apply_message.hpp>
 #include <nbdl/concept/NetworkStore.hpp>
 #include <nbdl/concept/Store.hpp>
-#include <nbdl/fwd/apply_message.hpp>
 
 #include <boost/hana/concept/searchable.hpp>
 #include <boost/hana/core/default.hpp>
@@ -40,17 +40,20 @@ namespace nbdl
       >::value
     , "nbdl::apply_action must return a value convertible to bool"
     );
+    static_assert(requires {
+        { bool{Impl::apply(std::forward<Store>(s),
+                      std::forward<Message>(m))}
+        } -> bool
+      },
+      "nbdl::apply_action_impl must return a value convertible to bool"
 #endif
     return Impl::apply(std::forward<Store>(s), std::forward<Message>(m));
   };
 
-  template <typename Tag, bool condition>
-  struct apply_action_impl<Tag, hana::when<condition>>
-    : hana::default_
-  {
+  template <typename Tag>
+  struct apply_action_impl : hana::default_ {
     template <typename Store, typename Action>
-    static constexpr auto apply(Store& s, Action&& a)
-    {
+    static constexpr auto apply(Store& s, Action&& a) {
       if constexpr(std::is_assignable<Store&, Action>::value)
       {
         s = std::forward<Action>(a);
@@ -64,22 +67,18 @@ namespace nbdl
     }
   };
 
-  template <typename Tag>
-  struct apply_action_impl<Tag, hana::when<nbdl::NetworkStore<Tag>::value>>
-  {
+  template <NetworkStore Tag>
+  struct apply_action_impl<Tag> {
     template <typename Store, typename Action>
-    static constexpr auto apply(Store& s, Action&& a)
-    {
+    static constexpr auto apply(Store& s, Action&& a) {
       return nbdl::apply_message(s , std::forward<Action>(a));
     }
   };
 
   template <typename T>
-  struct apply_action_impl<std::reference_wrapper<T>>
-  {
+  struct apply_action_impl<std::reference_wrapper<T>> {
     template <typename Store, typename Action>
-    static constexpr auto apply(Store s, Action&& a)
-    {
+    static constexpr auto apply(Store s, Action&& a) {
       return nbdl::apply_action(s.get(), std::forward<Action>(a));
     }
   };

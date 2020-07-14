@@ -197,22 +197,14 @@ namespace nbdl::detail
       return string_view(hana::string<c...>::c_str(), sizeof...(c));
     }
 
-    template <typename String>
-    auto operator()(String const& str) const
-      -> std::enable_if_t<nbdl::String<String>::value, string_concat_view>
+    template <String String>
+    string_concat_view operator()(String const& str) const
     {
       return string_view(str.data(), str.size());
     }
 
     template <typename String>
-    auto operator()(String const& str) const
-      -> std::enable_if_t<
-           !decltype(hana::is_a<string_concat_view, String>)::value
-        && !decltype(hana::is_a<std::string, decltype(std::cref(str).get())>)::value
-        && !decltype(hana::is_a<hana::string_tag, String>)::value
-        && !nbdl::String<String>::value
-         , string_concat_view
-         >
+    string_concat_view operator()(String const& str) const
     {
       return string_view(hana::to<char const*>(std::cref(str).get()));
     }

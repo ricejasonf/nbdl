@@ -8,6 +8,10 @@
 #include <boost/asio.hpp>
 #include <catch.hpp>
 #include <nbdl/catch.hpp>
+#include <nbdl/endpoint_handler.hpp>
+#include <nbdl/endpoint_open.hpp>
+#include <nbdl/endpoint_send_close.hpp>
+#include <nbdl/endpoint_send_message.hpp>
 #include <nbdl/hold.hpp>
 #include <nbdl/hold_lazy.hpp>
 #include <nbdl/run_async.hpp>

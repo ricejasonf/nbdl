@@ -93,7 +93,7 @@ namespace nbdl
     {
       if constexpr(std::is_same<Key, std::decay_t<KeyArg>>::value)
       {
-        if constexpr(nbdl::Store<decltype(s.right)>::value)
+        if constexpr(nbdl::Store<decltype(s.right)>)
         {
           nbdl::match(s.right, std::forward<Fn>(fn));
         }

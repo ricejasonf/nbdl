@@ -18,6 +18,7 @@
 #include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
 #include <boost/mp11/list.hpp>
+#include <boost/mp11/integral.hpp>
 
 namespace nbdl_def::builder
 {
@@ -37,6 +38,11 @@ namespace nbdl_def::builder
 
   struct make_message_api_fn
   {
+    template <typename T>
+    struct is_upstream_message
+      : mp_bool<nbdl::UpstreamMessage<T>>
+    { };
+
     // aggregate all entity messages
     // and partition by upstream/downstream
     template<typename ProducersMeta>
@@ -51,7 +57,7 @@ namespace nbdl_def::builder
         mp_transform_q<mpdef::metastruct_get<decltype(producer_meta::access_points)>,
           ProducersMeta
         >>>>
-      , nbdl::UpstreamMessage
+      , is_upstream_message
       >>{};
     }
   };

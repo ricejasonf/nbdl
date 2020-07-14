@@ -87,8 +87,8 @@ namespace nbdl
   template <typename T>
   struct local_version<T
                      , std::enable_if_t<
-                           nbdl::Store<T>::value
-                       && !nbdl::NetworkStore<T>::value
+                           nbdl::Store<T>
+                       && !nbdl::NetworkStore<T>
                        >>
   {
     using hana_tag = local_version_tag<hana::tag_of_t<T>>;
@@ -122,13 +122,13 @@ namespace nbdl
 
       static_assert(
           !message::is_update<Message>
-      ||  (   nbdl::Delta<Payload>::value
-           && hana::is_a<hana::tag_of_t<decltype(store.pending_delta)>, Payload>
+      ||  (nbdl::Delta<Payload> &&
+           hana::is_a<hana::tag_of_t<decltype(store.pending_delta)>, Payload>
           )
       , "Update payload must be a Delta of the same data-type"
       );
 
-      if constexpr(nbdl::Delta<Payload>::value)
+      if constexpr(nbdl::Delta<Payload>)
       {
         static_assert(
           message::has_uid<Message>
@@ -168,21 +168,17 @@ namespace nbdl
   };
 
   template <typename Tag>
-  struct match_impl<local_version_tag<Tag>, hana::when<not nbdl::State<Tag>::value>>
-  {
+  struct match_impl<local_version_tag<Tag>> {
     template <typename Store, typename ...Args>
-    static void apply(Store& s, Args&& ...args)
-    {
+    static void apply(Store& s, Args&& ...args) {
       nbdl::match(s.value, std::forward<Args>(args)...);
     }
   };
 
-  template <typename Tag>
-  struct get_impl<local_version_tag<Tag>, hana::when<nbdl::State<Tag>::value>>
-  {
+  template <State Tag>
+  struct get_impl<local_version_tag<Tag>> {
     template <typename State, typename ...Args>
-    static auto apply(State& s, Args&& ...args)
-    {
+    static auto apply(State& s, Args&& ...args) {
       return nbdl::get(s.value, std::forward<Args>(args)...);
     }
   };

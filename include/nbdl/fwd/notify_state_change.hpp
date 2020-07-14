@@ -7,23 +7,19 @@
 #ifndef NBDL_FWD_NOTIFY_STATE_CHANGE_HPP
 #define NBDL_FWD_NOTIFY_STATE_CHANGE_HPP
 
-#include<boost/hana/core/when.hpp>
+#include <nbdl/concept/StateConsumer.hpp>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
+namespace nbdl {
+  template <typename T>
+  struct notify_state_change_impl;
 
-  template<typename T, typename = void>
-  struct notify_state_change_impl : notify_state_change_impl<T, hana::when<true>> { };
-
-  struct notify_state_change_fn
-  {
-    template<typename StateConsumer, typename Path>
+  struct notify_state_change_fn {
+    template <StateConsumer StateConsumer, typename Path>
     constexpr auto operator()(StateConsumer&&, Path&&) const;
   };
 
   constexpr notify_state_change_fn notify_state_change{};
-} // nbdl
+}
 
 #endif
 

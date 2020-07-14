@@ -9,6 +9,8 @@
 
 #include <nbdl/apply_action.hpp>
 #include <nbdl/apply_foreign_message.hpp>
+#include <nbdl/concept/State.hpp>
+#include <nbdl/concept/Store.hpp>
 #include <nbdl/get.hpp>
 #include <nbdl/make_store.hpp>
 #include <nbdl/match.hpp>
@@ -16,8 +18,7 @@
 
 #include <type_traits>
 
-namespace nbdl
-{
+namespace nbdl {
   // Wrapper for stores used within a nbdl::context
   template <typename Store>
   struct context_store { };
@@ -64,44 +65,42 @@ namespace nbdl
 
   // State
 
-  template <typename S>
+  template <State S>
   struct get_impl<context_store<S>>
   {
     template <typename Store, typename Key>
-    static constexpr decltype(auto) apply(Store&& s, Key&&)
-    {
-      if constexpr(nbdl::State<S>::value)
-      {
-        return nbdl::get(s.store);
-      }
-      else
-      {
-        // parentheses are important here
-        return (s.store);
-      }
+    static constexpr decltype(auto) apply(Store&& s, Key&&) {
+      return nbdl::get(s.store);
+    }
+  };
+
+  template <typename S>
+  struct get_impl<context_store<S>> {
+    template <typename Store, typename Key>
+    static constexpr decltype(auto) apply(Store&& s, Key&&) {
+      // parentheses are important here
+      return (s.store);
     }
   };
 
   // Store
 
-  template <typename S>
-  struct match_impl<context_store<S>>
-  {
+  template <Store S>
+  struct match_impl<context_store<S>> {
     template <typename Store, typename Key, typename Fn>
-    static constexpr void apply(Store&& s, Key&&, Fn&& fn)
-    {
+    static constexpr void apply(Store&& s, Key&&, Fn&& fn) {
       // just proxy to the contained store
-      if constexpr(nbdl::Store<S>::value)
-      {
-        nbdl::match(std::forward<Store>(s).store, std::forward<Fn>(fn));
-      }
-      else
-      {
-        std::forward<Fn>(fn)(std::forward<Store>(s).store);
-      }
+      nbdl::match(std::forward<Store>(s).store, std::forward<Fn>(fn));
     }
   };
 
+  template <typename S>
+  struct match_impl<context_store<S>> {
+    template <typename Store, typename Key, typename Fn>
+    static constexpr void apply(Store&& s, Key&&, Fn&& fn) {
+      std::forward<Fn>(fn)(std::forward<Store>(s).store);
+    }
+  };
 }
 
 #endif

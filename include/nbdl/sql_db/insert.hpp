@@ -50,8 +50,8 @@ namespace nbdl::sql_db
     static auto apply(...) = delete;
   };
 
-  template <typename T>
-  struct insert_impl<T, hana::when<nbdl::Entity<T>::value>>
+  template <Entity T>
+  struct insert_impl<T>
   {
     // ForeignKeys would be an owner_id or
     // the keys in a path from a nbdl::Message
@@ -116,8 +116,8 @@ namespace nbdl::sql_db
     }
   };
 
-  template <typename T>
-  struct insert_impl<T, hana::when<nbdl::EntityContainer<T>::value>>
+  template <EntityContainer T>
+  struct insert_impl<T>
   {
     template <typename DbInsert, typename Container, typename ForeignKeys>
     static void apply(DbInsert db_insert, Container&& c, ForeignKeys&& keys)

@@ -7,25 +7,18 @@
 #ifndef NBDL_FWD_GET_HPP
 #define NBDL_FWD_GET_HPP
 
-#include<boost/hana/core/when.hpp>
+#include <nbdl/concept/State.hpp>
 
-namespace nbdl
-{
-  namespace hana = boost::hana;
+namespace nbdl {
+  struct get_fn {
+    template <State State>
+    constexpr decltype(auto) operator()(State&&) const;
 
-  template<typename T, typename = void>
-  struct get_impl : get_impl<T, hana::when<true>> { };
-
-  struct get_fn
-  {
-    template<typename Store>
-    constexpr decltype(auto) operator()(Store&&) const;
-
-    template<typename Store, typename Key>
-    constexpr decltype(auto) operator()(Store&&, Key&&) const;
+    template <State State, typename Key>
+    constexpr decltype(auto) operator()(State&&, Key&&) const;
   };
 
   constexpr get_fn get{};
-} // nbdl
+}
 
 #endif

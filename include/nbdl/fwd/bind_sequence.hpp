@@ -7,18 +7,13 @@
 #ifndef NBDL_FWD_BIND_SEQUENCE_HPP
 #define NBDL_FWD_BIND_SEQUENCE_HPP
 
-#include <boost/hana/core/when.hpp>
+#include <nbdl/concept/BindableSequence.hpp>
 
 namespace nbdl
 {
-  namespace hana = boost::hana;
-
-  template<typename T, typename = void>
-  struct bind_sequence_impl : bind_sequence_impl<T, hana::when<true>> { };
-
   struct bind_sequence_fn
   {
-    template<typename BindableSequence, typename BindFn>
+    template<BindableSequence BindableSequence, typename BindFn>
     constexpr auto operator()(BindableSequence&&, BindFn&&) const;
   };
 
