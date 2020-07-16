@@ -7,22 +7,16 @@
 #ifndef NBDL_CONCEPT_BINDABLE_MAP_HPP
 #define NBDL_CONCEPT_BINDABLE_MAP_HPP
 
-#include <boost/hana/core/default.hpp>
-#include <boost/hana/core/tag_of.hpp>
+#include <nbdl/concept/HasImpl.hpp>
 
 namespace nbdl {
-  namespace hana = boost::hana;
-
   template <typename Tag>
-  struct bind_map_impl
-    : hana::default_
-  {
+  struct bind_map_impl : default_impl {
     static constexpr auto apply(...) = delete;
   };
 
   template <typename T>
-  concept BindableMap = 
-    !hana::is_default<nbdl::bind_map_impl<hana::tag_of_t<T>>>::value;
+  concept BindableMap = HasImpl<T, nbdl::bind_map_impl>;
 }
 
 #endif

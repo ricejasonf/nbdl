@@ -7,22 +7,17 @@
 #ifndef NBDL_CONCEPT_BINDABLE_VARIANT_HPP
 #define NBDL_CONCEPT_BINDABLE_VARIANT_HPP
 
-#include <boost/hana/core/default.hpp>
-#include <boost/hana/core/tag_of.hpp>
+#include <nbdl/concept/HasImpl.hpp>
 
 namespace nbdl {
-  namespace hana = boost::hana;
-
-  template<typename Tag>
-  struct bind_variant_impl
-    : hana::default_
-  {
+  template <typename Tag>
+  struct bind_variant_impl : default_impl {
     static constexpr auto apply(...) = delete;
   };
 
-  template<typename T>
-  concept BindableVariant = 
-    !hana::is_default<nbdl::bind_variant_impl<hana::tag_of_t<T>>>::value;
+  template <typename T>
+  concept BindableVariant = HasImpl<T, nbdl::bind_variant_impl>;
 }
+
 #endif
 
