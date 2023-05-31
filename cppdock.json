@@ -83,7 +83,7 @@
     "server": {
       "description": "For building nbdl::server",
       "type": "linux_x64",
-      "base_image": "ricejasonf/parmexpr",
+      "base_image": "ricejasonf/cppdock:linux_x64",
       "deps": [
         [
           {
@@ -93,9 +93,9 @@
             "revision": "sha256:9be9bcadb7fc94ca5de931999e0707c2d4f6b939b3b15b8d7fcdb814d08b2cec"
           },
           {
-            "name": "ricejasonf/hana",
-            "revision": "7230879ec63c9cbbeefdd1415fe2255043168422",
-            "tag": "parmexpr"
+            "name": "boostorg/beast",
+            "tag": "develop",
+            "revision": "6f57e5934c1f307e4510ee11dd09594526a3f5d0"
           },
           {
             "name": "elsid/resource_pool",

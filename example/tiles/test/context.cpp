@@ -6,11 +6,14 @@
 //
 //
 
+#include <boost/hana/string.hpp>
 #include <nbdl.hpp>
 #include <nbdl_test/test_state_consumer.hpp>
 #include "../game.hpp"
 
 #include <catch.hpp>
+
+using namespace boost::hana::literals;
 
 namespace
 {
@@ -24,7 +27,7 @@ namespace
   };
 
   auto ctx = nbdl::make_context<context>(
-    nbdl::actor("server", nbdl::echo_producer{})
+    nbdl::actor("server"_s, nbdl::echo_producer{})
   );
 
   auto& state = ctx->template actor<1>();

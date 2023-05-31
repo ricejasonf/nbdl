@@ -13,6 +13,8 @@
 #include <boost/hana.hpp>
 #include <utility>
 
+using namespace boost::hana::literals;
+
 namespace tiles
 {
   namespace hana = boost::hana;
@@ -127,12 +129,12 @@ namespace tiles
   {
     static constexpr auto make_def()
     {
-      using namespace nbdl_def; 
+      using namespace nbdl_def;
       namespace hana = boost::hana;
       return
         Context(
           Producer(
-            Name("producer"),
+            Name("producer"_s),
             Type<ProducerTag>,
             AccessPoint(
               Entity<game>,
@@ -147,7 +149,7 @@ namespace tiles
             )
           ),
           Consumer(
-            Name("consumer"),
+            Name("consumer"_s),
             Type<ConsumerTag>
           )
         );

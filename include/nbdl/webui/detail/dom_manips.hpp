@@ -592,7 +592,6 @@ namespace nbdl::webui::detail
 
       el["classList"].template call<void>(
         result ? "add" : "remove"
-      , to_json_val("class"_s)
       , to_json_val(ClassName{})
       );
     }

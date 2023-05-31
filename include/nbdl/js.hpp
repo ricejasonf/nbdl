@@ -16,7 +16,6 @@
 #include <boost/hana/equal.hpp>
 #include <boost/hana/string.hpp>
 #include <emscripten.h>
-#include <mpdef/utility.hpp>
 #include <type_traits>
 
 //
@@ -131,8 +130,9 @@ namespace nbdl::js
     return x;
   }
 
-  heavy_macro get_element_by_id(name) =
-    get_element_by_id_(mpdef::to_constant(name));
+  static constexpr auto get_element_by_id = [](auto name) {
+    return get_element_by_id_(name);
+  };
 }
 
 namespace boost::hana

@@ -103,15 +103,14 @@ namespace nbdl::ui_spec
    * get
    */
 
-  heavy_macro get(...x) = type_inst(type_inst(hana::template_<make_path>(
-        make_type(mpdef::to_constant(x))...)));
-
   struct get_fn {
-    auto operator()(auto ...x)
-    {
-      return get(decltype(x){}...);
-    }
+    template <typename ...Xs>
+    constexpr auto operator()(Xs...) const
+      -> typename make_path<Xs...>::type
+    { return {}; }
   };
+
+  constexpr get_fn get{};
 
   /*
    * match_when<T>
@@ -207,16 +206,29 @@ namespace nbdl::ui_spec
    *        (to be used with predicates)
    */
 
-  heavy_macro cond(pred, spec) = type_inst(hana::template_<when_t>(
-      make_type(pred), make_type(mpdef::to_constant(spec))));
+   struct cond_fn
+   {
+     template <typename Pred, typename Spec>
+     constexpr auto operator()(Pred pred, Spec) const
+       -> when_t<decltype(pred), Spec>
+     { return {}; }
+   };
+
+   constexpr cond_fn cond{};
 
   /*
    * otherwise - alias for default branch
    */
 
-  heavy_macro otherwise(spec) = type_inst(hana::template_<when_t>(
-      make_type(hana::always(hana::true_c)),
-      make_type(mpdef::to_constant(spec))));
+   struct otherwise_fn
+   {
+     template <typename Spec>
+     constexpr auto operator()(Spec) const
+       -> when_t<decltype(hana::always(hana::true_c)), Spec>
+     { return {}; }
+   };
+
+   constexpr otherwise_fn otherwise{};
 
   /*
    * branch_spec
@@ -320,8 +332,15 @@ namespace nbdl::ui_spec
     }
   };
 
-  heavy_macro equal(x) = type_inst(hana::template_<equal_>(
-        make_type(mpdef::to_constant(x))));
+  struct equal_fn
+  {
+    template <typename X>
+    constexpr auto operator()(X) const
+      -> equal_<X>
+    { return {}; }
+  };
+
+  constexpr equal_fn equal{};
 
   namespace detail
   {

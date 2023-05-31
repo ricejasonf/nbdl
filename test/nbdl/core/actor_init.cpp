@@ -15,6 +15,8 @@
 #include <string_view>
 #include <vector>
 
+using namespace boost::hana::literals;
+
 namespace {
   using event_list = std::vector<std::string_view>;
   event_list test_events{};
@@ -74,13 +76,13 @@ namespace test {
       return Context(
         Producers(
           Producer(
-            Name("test_producer"),
+            Name("test_producer"_s),
             Type<producer>
           )
         ),
         Consumers(
           Consumer(
-            Name("test_consumer"),
+            Name("test_consumer"_s),
             Type<consumer>
           )
         )
@@ -91,9 +93,9 @@ namespace test {
 
 TEST_CASE("Context should init producers then consumers") {
   auto ctx = nbdl::make_context<test::context_tag>(
-    nbdl::actor("test_producer", 42),
-    nbdl::actor("test_consumer", 42)
-    //, nbdl::actor("fake_an_actor", 42)
+    nbdl::actor("test_producer"_s, 42),
+    nbdl::actor("test_consumer"_s, 42)
+    //, nbdl::actor("fake_an_actor"_s, 42)
   );
 
   test::producer foo = ctx->actor<0>();

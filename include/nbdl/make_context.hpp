@@ -8,7 +8,6 @@
 #define NBDL_MAKE_CONTEXT_HPP
 
 #include <nbdl/def/builder/context.hpp>
-#include <mpdef/utility.hpp>
 #include <nbdl/context.hpp>
 
 #include <boost/hana/map.hpp>
@@ -30,7 +29,9 @@ namespace nbdl
   }
 
   // actor - named pair operand for use with make_context
-  heavy_macro actor(name, arg) = hana::make_pair(mpdef::to_constant(name), arg);
+  static constexpr auto actor = [](auto name, auto arg) {
+    return hana::make_pair(name, arg);
+  };
 
   namespace make_context_detail
   {

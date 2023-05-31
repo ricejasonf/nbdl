@@ -11,6 +11,7 @@
 #include <catch.hpp>
 
 namespace hana = boost::hana;
+using namespace boost::hana::literals;
 
 TEST_CASE("get_element_by_id from document object.", "[js]")
 {
@@ -26,8 +27,8 @@ TEST_CASE("get_element_by_id from document object.", "[js]")
     }
   });
 
-  nbdl::js::val foo = nbdl::js::get_element_by_id("foo");
-  nbdl::js::val bar = nbdl::js::get_element_by_id("bar");
+  nbdl::js::val foo = nbdl::js::get_element_by_id("foo"_s);
+  nbdl::js::val bar = nbdl::js::get_element_by_id("bar"_s);
 
   nbdl::js::val foo_expected;
   nbdl::js::val bar_expected;

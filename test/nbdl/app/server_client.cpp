@@ -21,6 +21,7 @@
 
 
 namespace hana = boost::hana;
+using namespace boost::hana::literals;
 using namespace std::literals;
 
 // TODO suport native client
@@ -54,12 +55,12 @@ namespace
       return Context(
         Producers(Producer(
           Type<nbdl::echo_producer>,
-          Name("echo"),
+          Name("echo"_s),
           get_data_model()
         )),
         Consumers(Consumer(
           Type<nbdl::app::server>,
-          Name("server")
+          Name("server"_s)
         ))
       );
     }
@@ -71,12 +72,12 @@ namespace
       return Context(
         Producers(Producer(
           Type<nbdl::app::client>,
-          Name("client"),
+          Name("client"_s),
           get_data_model()
         )),
         Consumers(Consumer(
           Type<nbdl_test::consumer>,
-          Name("test_consumer")
+          Name("test_consumer"_s)
         ))
       );
     }
@@ -122,12 +123,12 @@ int main()
   nbdl::app::io_context io;
 
   auto client_ctx = nbdl::make_context<client_context>(
-    nbdl::actor("client", nbdl::app::client{"ws://127.0.0.1:8080", io}),
-    nbdl::actor("test_consumer", on_message)
+    nbdl::actor("client"_s, nbdl::app::client{"ws://127.0.0.1:8080", io}),
+    nbdl::actor("test_consumer"_s, on_message)
   );
 
   auto server_ctx = nbdl::make_context<server_context>(
-    nbdl::actor("server", nbdl::app::server{8080, io})
+    nbdl::actor("server"_s, nbdl::app::server{8080, io})
   );
 
   auto init = [&] {

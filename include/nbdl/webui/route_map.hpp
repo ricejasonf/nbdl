@@ -22,7 +22,6 @@
 #include <boost/hana/type.hpp>
 #include <iterator>
 #include <mpdef/pair.hpp>
-#include <mpdef/utility.hpp>
 #include <string>
 #include <string_view>
 #include <type_traits>

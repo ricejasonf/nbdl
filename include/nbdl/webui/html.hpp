@@ -33,8 +33,9 @@ namespace nbdl::webui
     constexpr auto span(Args ...args)
     { return element(hana::string<'s', 'p', 'a', 'n'>{}, args...); }
 
-    heavy_macro pre(...args) =
-      element(hana::string<'p', 'r', 'e'>{}, args...);
+    template <typename ...Args>
+    constexpr auto pre(Args ...args)
+    { return element(hana::string<'p', 'r', 'e'>{}, args...); }
 
     template <typename ...Args>
     constexpr auto ul(Args ...args)
@@ -56,29 +57,50 @@ namespace nbdl::webui
     constexpr auto form(Args ...args)
     { return element(hana::string<'f', 'o', 'r', 'm'>{}, args...); }
 
-    heavy_macro text_area(...args) =
-      element(hana::string<'t', 'e', 'x', 't', 'a', 'r', 'e', 'a'>{}, args...);
-
-    heavy_macro h1(...args) = element(hana::string<'h', '1'>{}, args...);
-    heavy_macro h2(...args) = element(hana::string<'h', '2'>{}, args...);
-    heavy_macro h3(...args) = element(hana::string<'h', '3'>{}, args...);
-    heavy_macro h4(...args) = element(hana::string<'h', '4'>{}, args...);
-    heavy_macro h5(...args) = element(hana::string<'h', '5'>{}, args...);
-    heavy_macro h6(...args) = element(hana::string<'h', '6'>{}, args...);
-
-    heavy_macro attr_class(...args) =
-      attribute(hana::string<'c', 'l', 'a', 's', 's'>{}, args...);
-
-    heavy_macro attr_href(...args) =
-      attribute(hana::string<'h', 'r', 'e', 'f'>{}, args...);
+    template <typename ...Args>
+    constexpr auto text_area(Args... args) {
+      return element(hana::string<'t', 'e', 'x', 't', 'a', 'r', 'e', 'a'>{},
+                     args...);
+    }
 
     template <typename ...Args>
-    constexpr auto on_click(Args ...args)
-    { return event_attribute(hana::string<'c', 'l', 'i', 'c', 'k'>{}, args...); }
+    constexpr auto h1(Args... args)
+    { return element(hana::string<'h', '1'>{}, args...); }
+    template <typename ...Args>
+    constexpr auto h2(Args... args)
+    { return element(hana::string<'h', '2'>{}, args...); }
+    template <typename ...Args>
+    constexpr auto h3(Args... args)
+    { return element(hana::string<'h', '3'>{}, args...); }
+    template <typename ...Args>
+    constexpr auto h4(Args... args)
+    { return element(hana::string<'h', '4'>{}, args...); }
+    template <typename ...Args>
+    constexpr auto h5(Args... args)
+    { return element(hana::string<'h', '5'>{}, args...); }
+    template <typename ...Args>
+    constexpr auto h6(Args... args)
+    { return element(hana::string<'h', '6'>{}, args...); }
 
     template <typename ...Args>
-    constexpr auto on_key_down(Args ...args)
-    { return event_attribute(hana::string<'k', 'e', 'y', 'd', 'o', 'w', 'n'>{}, args...); }
+    constexpr auto attr_class(Args... args)
+    { return attribute(hana::string<'c', 'l', 'a', 's', 's'>{}, args...); }
+
+    template <typename ...Args>
+    constexpr auto attr_href(Args... args)
+    { return attribute(hana::string<'h', 'r', 'e', 'f'>{}, args...); }
+
+    template <typename ...Args>
+    constexpr auto on_click(Args ...args) {
+      return event_attribute(hana::string<'c', 'l', 'i', 'c', 'k'>{},
+                             args...);
+    }
+
+    template <typename ...Args>
+    constexpr auto on_key_down(Args ...args) {
+      return event_attribute(hana::string<'k', 'e', 'y', 'd', 'o', 'w', 'n'>{},
+        args...);
+    }
 
     template <typename ...Args>
     constexpr auto on_key_up(Args ...args)
@@ -95,17 +117,17 @@ namespace nbdl::webui
 
     template <typename T>
     struct add_class_when_fn {
-      auto operator()(auto class_name, auto path)
+      auto operator()(auto class_name, auto path) const
       {
-        return mpdef::make_tree_node(
-          tag::add_class_when<T>,
-          mpdef::make_list(mpdef::to_constant(class_name), path)
-        );
+        return mpdef::tree_node<
+          decltype(tag::add_class_when<T>)
+        , mpdef::list<decltype(class_name), decltype(path)>
+        >{};
       }
     };
 
-    heavy_macro add_class_when(type, class_name, path) =
-      add_class_when_fn<typename decltype(+type)::type>{}(mpdef::to_constant(class_name), path);
+    template <typename T>
+    constexpr add_class_when_fn<T> add_class_when{};
 
     // Key used to lookup event object in store
     // for use in relevant event handlers.

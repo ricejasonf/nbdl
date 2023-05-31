@@ -8,7 +8,6 @@
 #define NBDL_FWD_WEBUI_ROUTE_MAP_HPP
 
 #include <mpdef/pair.hpp>
-#include <mpdef/utility.hpp>
 #include <nbdl/variant.hpp>
 
 namespace nbdl::webui
