@@ -72,7 +72,10 @@ namespace test_context
     key<decltype(hana::if_(hana::bool_c<i == 0>, entity::my_entity<1>{}, entity::my_entity<i>{}))>
   >;
 
-  using path_variant = nbdl::variant<path<0>, path<1>, path<2>, path<3>, path<4>>;
+  using path_variant_ = nbdl::variant<path<0>, path<1>, path<2>, path<3>, path<4>>;
+  struct path_variant : path_variant_ {
+    using path_variant_::path_variant_;
+  };
 } // test_context
 
 namespace boost::hana

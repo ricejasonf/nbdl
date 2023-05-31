@@ -31,19 +31,27 @@ namespace nbdl
   template <typename Tag, typename SystemMessage = system_message>
   struct message_api
   {
-    using upstream_variant =
+    using upstream_variant_ =
       mp11::mp_apply<nbdl::variant,
       mp11::mp_push_front<
         typename nbdl_def::builder::make_context_meta_t<Tag>::message_api_meta::upstream_types
       , SystemMessage
       >>;
 
-    using downstream_variant =
+    using downstream_variant_ =
       mp11::mp_apply<nbdl::variant,
       mp11::mp_push_front<
         typename nbdl_def::builder::make_context_meta_t<Tag>::message_api_meta::downstream_types
       , SystemMessage
       >>;
+
+    struct upstream_variant : upstream_variant_ {
+      using upstream_variant_::upstream_variant_;
+    };
+
+    struct downstream_variant : downstream_variant_ {
+      using downstream_variant_::downstream_variant_;
+    };
   };
 }
 
