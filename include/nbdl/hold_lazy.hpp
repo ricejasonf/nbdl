@@ -89,7 +89,7 @@ namespace nbdl
       auto operator()(ResolverType) //&&
       {
         using Resolver = typename ResolverType::type;
-        using T = std::result_of_t<F(Resolver&, Args...)>;
+        using T = std::invoke_result_t<F, Resolver&, Args...>;
         return nbdl::promise(lazy_holder<F, T>{std::move(this->f)});
       }
     };

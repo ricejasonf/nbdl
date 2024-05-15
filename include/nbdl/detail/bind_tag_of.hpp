@@ -78,16 +78,17 @@ namespace nbdl::_b
     using type = tag::type<typename T::type>;
   };
 
-  template <template <typename...> class T>
-  constexpr auto bind_tag_unpack_helper = [](auto const& ...x)
-    -> T<bind_tag_of<std::decay_t<decltype(x)>>...>
-  { return {}; };
+  struct bind_tag_unpack_helper {
+    template <typename ...X>
+    constexpr auto operator()(X&&...) const
+      -> tag::sequence<bind_tag_of<std::decay_t<X>>...>
+    { return {}; }
+  };
 
   template <BindableSequence T>
   struct bto<T> {
-    using type = decltype(
-      nbdl::detail::bind_sequence_no_filter_fn{}(std::declval<T>(), bind_tag_unpack_helper<tag::sequence>)
-    );
+    using type = std::invoke_result_t<nbdl::detail::bind_sequence_no_filter_fn, T,
+                                     bind_tag_unpack_helper>;
   };
 
   template <typename ...T>
@@ -102,16 +103,19 @@ namespace nbdl::_b
     ))::type;
   };
 
-  constexpr auto bind_tag_unpack_map_helper = [](auto const& ...x)
-    -> tag::map<tag::map_node<
-                  bind_tag_of<std::decay_t<decltype(hana::first(x))>>,
-                  bind_tag_of<typename std::decay_t<decltype(hana::second(x))>::type>
-               >...>
-  { return {}; };
+  struct bind_tag_unpack_map_helper {
+    template <typename ...X>
+    constexpr auto operator()(X&&... x) const
+      -> tag::map<tag::map_node<
+            bind_tag_of<std::decay_t<decltype(hana::first(x))>>,
+            bind_tag_of<typename std::decay_t<decltype(hana::second(x))>::type>
+          >...>
+    { return {}; }
+  };
 
   template <BindableMap T>
   struct bto<T> {
-    using type = decltype(nbdl::bind_map(std::declval<T>(), bind_tag_unpack_map_helper));
+    using type = std::invoke_result_t<nbdl::bind_map_fn, T, bind_tag_unpack_map_helper>;
   };
 
   template <typename T>

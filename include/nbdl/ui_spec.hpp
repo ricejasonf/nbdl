@@ -153,7 +153,7 @@ namespace nbdl::ui_spec
       constexpr auto operator()(when_t<T, Spec>, Path) const
       {
         using MatchedPath = typename make_path_match_type<T, Path>::type;
-        if constexpr(std::__invokable<Spec, MatchedPath>::value)
+        if constexpr(std::is_invocable<Spec, MatchedPath>::value)
         {
           return mpdef::pair<T, decltype(std::declval<Spec>()(MatchedPath{}))>{};
         }
@@ -169,7 +169,7 @@ namespace nbdl::ui_spec
       template <typename Pred, typename Spec, typename Path>
       constexpr auto operator()(when_t<Pred, Spec>, Path) const
       {
-        if constexpr(std::__invokable<Spec, Path>::value)
+        if constexpr(std::is_invocable<Spec, Path>::value)
         {
           return mpdef::pair<Pred, decltype(std::declval<Spec>()(Path{}))>{};
         }

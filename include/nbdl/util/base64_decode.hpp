@@ -10,6 +10,7 @@
 #include <nbdl/concept/DynamicBuffer.hpp>
 #include <nbdl/util/base64_encode.hpp>
 
+#include <algorithm>
 #include <vector>
 
 namespace nbdl::util

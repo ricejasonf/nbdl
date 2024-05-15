@@ -36,7 +36,7 @@ namespace nbdl
     void reject(Resolver& r, Args&&... args) noexcept
     {
       // uses libc++ impl details FIXME
-      if constexpr(std::__invokable<RejectionHandler, Args...>::value)
+      if constexpr(std::is_invocable<RejectionHandler, Args...>::value)
       {
         fn(std::forward<Args>(args)...);
         r.terminate();

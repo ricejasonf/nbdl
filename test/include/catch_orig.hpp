@@ -2919,7 +2919,7 @@ namespace Catch {
                 for( std::vector<Ptr<Pattern> >::const_iterator it = m_patterns.begin(), itEnd = m_patterns.end(); it != itEnd; ++it )
                     if( !(*it)->matches( testCase ) )
                         return false;
-                    return true;
+                return true;
             }
         };
 
@@ -3898,8 +3898,7 @@ namespace Clara {
         OptBuilder operator[]( std::string const& optName ) {
             m_options.push_back( Arg() );
             addOptName( m_options.back(), optName );
-            OptBuilder builder( &m_options.back() );
-            return builder;
+            return OptBuilder( &m_options.back() );
         }
 
         ArgBuilder operator[]( int position ) {
@@ -5540,11 +5539,11 @@ namespace Catch {
             std::vector<TestCase> testCases;
             getRegistryHub().getTestCaseRegistry().getFilteredTests( testSpec, *m_config, testCases );
 
-            int testsRunForGroup = 0;
+            //int testsRunForGroup = 0;
             for( std::vector<TestCase>::const_iterator it = testCases.begin(), itEnd = testCases.end();
                     it != itEnd;
                     ++it ) {
-                testsRunForGroup++;
+                //testsRunForGroup++;
                 if( m_testsAlreadyRun.find( *it ) == m_testsAlreadyRun.end() ) {
 
                     if( context.aborting() )

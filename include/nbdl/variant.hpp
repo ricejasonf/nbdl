@@ -20,6 +20,8 @@
 #include <boost/mp11/algorithm.hpp>
 #include <type_traits>
 
+#include <variant>
+
 namespace nbdl
 {
 
@@ -35,14 +37,14 @@ namespace nbdl
     class variant
     {
       static_assert(std::is_empty<DefaultType>::value, "DefaultType must be an empty tag struct");
-      using Storage = typename std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>::type;
+      //using Storage = typename std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>::type;
+      using Storage = std::variant<DefaultType, Tn...>;
+
 
       using Types = hana::experimental::types<DefaultType, Tn...>;
 
-      int type_id;
-      Storage value_;
-
       public:
+      Storage value_;
       template <typename T>
       static constexpr auto type_id_from_type()
       {
@@ -59,75 +61,20 @@ namespace nbdl
         });
       }
 
-      void copy(int src_type_id, const void* src, void* dest)
-      {
-        call_by_type(src_type_id, [&](auto matched) {
-          using T = typename decltype(matched)::type;
-          new (dest) T(*reinterpret_cast<const T*>(src));
-        });
-      }
-
-      void move(int src_type_id, void* src, void* dest)
-      {
-        call_by_type(src_type_id, [&](auto matched) {
-          using T = typename decltype(matched)::type;
-          new (dest) T(std::move(*reinterpret_cast<T*>(src)));
-        });
-      }
-
-      void destroy(int value_type_id, void* value)
-      {
-        call_by_type(value_type_id, [&](auto matched) {
-          using T = typename decltype(matched)::type;
-          reinterpret_cast<T*>(value)->~T();
-        });
-      }
-
       public:
 
       using hana_tag = nbdl::variant_tag;
 
-      variant()
-        : type_id(0)
-      { }
-
-      variant(const variant& old)
-        : type_id(old.type_id)
-      {
-        copy(old.type_id, &old.value_, &value_);
-      }
-
-      variant(variant&& old)
-        : type_id(old.type_id)
-      {
-        move(old.type_id, &old.value_, &value_);
-      }
-
-      ~variant()
-      {
-        destroy(type_id, &value_);
-      }
-
-      variant& operator=(variant old)
-      {
-        destroy(type_id, &value_);
-        move(old.type_id, &old.value_, &value_);
-        type_id = old.type_id;
-        return *this;
-      }
+      variant() = default;
 
       template <typename T>
       variant(T val)
-        : type_id(*type_id_from_type<T>())
-      {
-        // Do not destroy because this should
-        // only be called from a constructor.
-        new (&value_) std::decay_t<T>(std::move(val));
-      }
+        : value_(std::move(val))
+      { }
 
       int get_type_id() const
       {
-        return type_id;
+        return value_.index();
       }
 
       // calls overload function with type type
@@ -135,7 +82,7 @@ namespace nbdl
       template <typename Fn>
       void match_by_type(int type_id_x, Fn&& fn) const
       {
-        if (not (type_id_x >= 0 and type_id_x < static_cast<int>(sizeof...(Tn) + 1)))
+        if (!(type_id_x >= 0 && type_id_x < static_cast<int>(sizeof...(Tn) + 1)))
         {
           return;
         }
@@ -143,24 +90,10 @@ namespace nbdl
         call_by_type(type_id_x, std::forward<Fn>(fn));
       }
 
-      template <typename T, typename Fn>
-      void unsafe_match_as(Fn&& fn) const
-      {
-        // not even checking T here
-        std::forward<Fn>(fn)(*reinterpret_cast<T const*>(&value_));
-      }
-
-      template <typename T, typename Fn>
-      void unsafe_match_as(Fn&& fn)
-      {
-        // not even checking T here
-        std::forward<Fn>(fn)(*reinterpret_cast<T*>(&value_));
-      }
-
       template <typename T>
-      bool is() const
+      constexpr bool is() const
       {
-        return (type_id == int{*type_id_from_type<T>()});
+        return std::holds_alternative<T>(value_);
       }
 
       template <typename T>
@@ -169,23 +102,15 @@ namespace nbdl
       template <typename... Fns>
       void match(Fns&&... fns) const
       {
-        call_by_type(type_id, [&](auto matched) {
-          using T = typename decltype(matched)::type;
-          hana::overload_linearly(std::forward<Fns>(fns)...)(
-            *reinterpret_cast<T const*>(&value_)
-          );
-        });
+        std::visit(hana::overload_linearly(std::forward<Fns>(fns)...),
+                   value_);
       }
 
       template <typename... Fns>
       void match(Fns&&... fns)
       {
-        call_by_type(type_id, [&](auto matched) {
-          using T = typename decltype(matched)::type;
-          hana::overload_linearly(std::forward<Fns>(fns)...)(
-            *reinterpret_cast<T*>(&value_)
-          );
-        });
+        std::visit(hana::overload_linearly(std::forward<Fns>(fns)...),
+                   value_);
       }
     };
 
@@ -207,37 +132,22 @@ namespace nbdl
       {
         using T = typename Visitor::type;
 
+        // Note match_when does nothing for invalid alternatives.
         if constexpr(std::decay_t<Variant>::template has<T>::value)
         {
           if (v.template is<T>())
           {
-            std::forward<Variant>(v).template unsafe_match_as<T>(std::forward<Fn>(fn));
+            std::forward<Fn>(fn)(std::get<T>(std::forward<Variant>(v).value_));
           }
         }
       }
     };
-
-#if 0 // not sure if this would really be a benefit
-    template <>
-    struct variant_visit_impl<mapped_overload_tag>
-    {
-      template <typename Variant, typename Visitor, typename Fn>
-      static constexpr void apply(Variant&& v, Visitor const& visitor, Fn&& fn)
-      {
-        using Keys = decltype(hana::keys(visitor.map));
-        hana::unpack(Keys{}, [&](auto ...keys)
-        {
-          // ???
-        });
-      }
-    };
-#endif
   }
 
   //useful for match catch all
-  auto noop = [](auto){};
+  inline constexpr auto noop = [](auto){};
 
-  // tag for empty variant value (always has type_id of 0)
+  // tag for empty variant value (always has type index of 0)
   struct nothing { };
 
   template <typename... Tn>

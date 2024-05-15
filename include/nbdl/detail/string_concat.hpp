@@ -7,6 +7,7 @@
 #ifndef NBDL_DETAIL_STRING_CONCAT_HPP
 #define NBDL_DETAIL_STRING_CONCAT_HPP
 
+#include <algorithm>
 #include <array>
 #include <boost/hana/core/is_a.hpp>
 #include <boost/hana/core/to.hpp>
@@ -31,9 +32,9 @@ namespace nbdl::detail
     template <typename String>
     string_view operator()(String const& str) const
     {
-      if constexpr(hana::is_a<std::string, decltype(std::cref(str).get())>)
+      if constexpr(hana::is_a<std::string, String>)
       {
-        return string_view(std::cref(str).get());
+        return string_view(str);
       }
       else if constexpr(hana::is_a<hana::string_tag, String>)
       {
@@ -41,7 +42,7 @@ namespace nbdl::detail
       }
       else
       {
-        return string_view(hana::to<char const*>(std::cref(str).get()));
+        return string_view(hana::to<char const*>(str));
       }
     }
   };

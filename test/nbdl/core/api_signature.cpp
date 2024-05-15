@@ -24,11 +24,13 @@ TEST_CASE("Create a unique signature to represent an api.", "[api_signature]")
   using T3 = std::integral_constant<int, 54321>;
   using T4 = hana::tuple<T1, T2, T3>;
 
+  // FIXME This is obviously not comprehensive and not reliable
+  //       since it relies on compiler implementation details.
   constexpr auto expected_lookup = hana::make_map(
     hana::make_pair(hana::type_c<T1>, "hC2CGB8MPHXgcXPVLsFwK2lN+Y8="sv)
   , hana::make_pair(hana::type_c<T2>, "Oow0uBtBxbh+hUf8+h4Nm9DDGK4="sv)
   , hana::make_pair(hana::type_c<T3>, "82J9C34K+Xm5lnc7z1cnb8iuEWo="sv)
-  , hana::make_pair(hana::type_c<T4>, "Rokv/sbGDPsN2CZ6oJzQMkZbShc="sv)
+  , hana::make_pair(hana::type_c<T4>, "3TJmnZgDFCPXmFWNs30cE6i020k="sv)
   );
 
   hana::for_each(expected_lookup, [](auto const& x)

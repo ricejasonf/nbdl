@@ -10,19 +10,14 @@
         [
           {
             "name": "ricejasonf/boost",
-            "tag": "1_73_0",
+            "tag": "1_85_0",
             "source": "docker",
-            "revision": "sha256:9be9bcadb7fc94ca5de931999e0707c2d4f6b939b3b15b8d7fcdb814d08b2cec"
+            "revision": "sha256:cebcb149011ed4a0bf7a8c38c43976d525545a527204e932ffc3019fe0594ffc"
           },
           {
             "name": "ricejasonf/dyno",
             "revision": "8dcb05fde3d1c4dae8ad005c46a36b7efcdf3380",
             "tag": "fix2a"
-          },
-          {
-            "name": "boostorg/beast",
-            "tag": "develop",
-            "revision": "6f57e5934c1f307e4510ee11dd09594526a3f5d0"
           }
         ],
         [
