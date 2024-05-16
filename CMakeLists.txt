@@ -64,7 +64,7 @@ function(nbdl_add_dom_test name_)
   add_dependencies(${name} tool.dom_test)
   get_target_property(link_flags_ ${name} LINK_FLAGS)
   set_target_properties(${name} PROPERTIES LINK_FLAGS
-    "${link_flags} --bind -s ASSERTIONS=1 -s ENVIRONMENT=node --memory-init-file 0"
+    "${link_flags} -lembind -s ASSERTIONS=1 -s ENVIRONMENT=node "
   )
   add_test(
     NAME ${name}
@@ -107,11 +107,10 @@ if (${NBDL_USE_CATCH})
 endif (${NBDL_USE_CATCH})
 
 if (${EMSCRIPTEN})
-	add_definitions(--bind)
   # TODO don't use stringToAscii
   set(
     CMAKE_EXE_LINKER_FLAGS
-    "${CMAKE_EXE_LINKER_FLAGS} -s EXTRA_EXPORTED_RUNTIME_METHODS=\"['stringToAscii']\"") 
+    "${CMAKE_EXE_LINKER_FLAGS} -s EXPORTED_RUNTIME_METHODS=\"['stringToAscii']\" -s EXPORTED_FUNCTIONS=\"['_main', '_malloc', '_free']\"")
 else (${EMSCRIPTEN})
   find_package(Threads)
 endif (${EMSCRIPTEN})

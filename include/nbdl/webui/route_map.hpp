@@ -229,8 +229,6 @@ namespace nbdl::webui
 
     Variant from_string(nbdl::string const& s) const
     {
-      Variant v{};
-
       if (s.size() < 1 || *s.begin() != '/')
       {
         return Variant{};

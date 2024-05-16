@@ -123,8 +123,8 @@ namespace nbdl::app {
         nbdl::js::get_handle(conn)
       );
 
-      // remove it from connections
-      std::remove_if(connections.begin(), connections.end(),
+      // Erase it from connections.
+      std::erase_if(connections,
         [&](nbdl::js::val& x) {
           return EM_ASM_INT({
               return Module.NBDL_DETAIL_JS_GET($0)

@@ -307,7 +307,9 @@ TEST_CASE("Add/Remove class based on matching a type.", "[webui]")
     );
 
   using renderer_tag = nbdl::webui::renderer<decltype(spec)>;
-  auto renderer = nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
+  auto renderer = nbdl::webui::make_renderer<renderer_tag>(my_store, target);
+  // FIXME no idea why this was creating infinite recursion in the tuple construction
+  //auto renderer = nbdl::webui::make_renderer<renderer_tag>(std::ref(my_store), target);
 
   CHECK(check_dom_equals());
 }

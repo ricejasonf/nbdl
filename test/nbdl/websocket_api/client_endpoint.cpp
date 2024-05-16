@@ -36,6 +36,7 @@ namespace
       {
         ws.on('message', function message(data)
         {
+        console.log("MOESSAGE!");
           var val = JSON.parse(data);
           ws.send(JSON.stringify(val.toUpperCase()));
           if (val == 'close')
@@ -148,11 +149,11 @@ int main()
     }, nbdl::lazy_args<std::vector<std::string>&>)
   , []
     {
-      emscripten_force_exit(0);
+      EM_ASM({process.exit(0)});
     }
   , nbdl::catch_([](auto)
     {
-      emscripten_force_exit(1);
+      EM_ASM({process.exit(1)});
     })
   ));
 

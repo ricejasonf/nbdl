@@ -49,9 +49,9 @@
         [
           {
             "name": "ricejasonf/boost_header_only",
-            "tag": "1_73_0",
+            "tag": "1_85_0",
             "source": "docker",
-            "revision": "sha256:2238098bd07fd98aaae481d257427f8d0bd9771b5c3154167f9f9282653509f1"
+            "revision": "sha256:252cdac0f4fbac7b065d7754ca2b9431ddeb3273c6dd3f95219086578ec881a5"
           },
           {
             "name": "ricejasonf/dyno",
