@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.15)
 
 project(nbdl_project)
 enable_testing()
@@ -127,9 +127,23 @@ endif (${NBDL_HAS_UIKIT})
 
 include_directories(${nbdl_project_SOURCE_DIR}/include)
 
+find_package(MLIR REQUIRED CONFIG)
+if (MLIR_FOUND)
+  set(LLVM_RUNTIME_OUTPUT_INTDIR ${CMAKE_BINARY_DIR}/bin)
+  set(LLVM_LIBRARY_OUTPUT_INTDIR ${CMAKE_BINARY_DIR}/lib)
+  set(MLIR_BINARY_DIR ${CMAKE_BINARY_DIR})
+
+  list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
+  list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
+
+  include(TableGen)
+  include(AddMLIR)
+endif (MLIR_FOUND)
+
 add_subdirectory(test)
 add_subdirectory(example/tiles)
 add_subdirectory(example/pipes)
+add_subdirectory(include/nbdl)
 #add_subdirectory(metabench)
 
 install(FILES include/nbdl.hpp  DESTINATION include)
