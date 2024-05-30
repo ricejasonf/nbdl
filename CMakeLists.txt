@@ -127,6 +127,12 @@ endif (${NBDL_HAS_UIKIT})
 
 include_directories(${nbdl_project_SOURCE_DIR}/include)
 
+add_subdirectory(test)
+add_subdirectory(example/tiles)
+add_subdirectory(example/pipes)
+add_subdirectory(include/nbdl)
+#add_subdirectory(metabench)
+
 find_package(MLIR REQUIRED CONFIG)
 if (MLIR_FOUND)
   set(LLVM_RUNTIME_OUTPUT_INTDIR ${CMAKE_BINARY_DIR}/bin)
@@ -138,13 +144,8 @@ if (MLIR_FOUND)
 
   include(TableGen)
   include(AddMLIR)
+  add_subdirectory(include/nbdl/gen)
 endif (MLIR_FOUND)
-
-add_subdirectory(test)
-add_subdirectory(example/tiles)
-add_subdirectory(example/pipes)
-add_subdirectory(include/nbdl)
-#add_subdirectory(metabench)
 
 install(FILES include/nbdl.hpp  DESTINATION include)
 install(DIRECTORY include/nbdl  DESTINATION include)
