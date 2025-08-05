@@ -31,3 +31,6 @@ add_subdirectory(sql_db)
 add_subdirectory(ui_helper)
 add_subdirectory(util)
 add_subdirectory(websocket)
+
+# Heavy
+add_subdirectory(spec)

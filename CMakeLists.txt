@@ -95,7 +95,7 @@ function(nbdl_catch_dom_test_suite out suite_name)
   set(${out} ${_build_targets} PARENT_SCOPE)
 endfunction()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23") # -fheavy
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23 -Xclang -fheavy") # -fheavy
 add_definitions(-DBOOST_HANA_CONFIG_ENABLE_STRING_UDL)
 add_definitions(-ftemplate-backtrace-limit=0)
 add_definitions(-Wall)
@@ -132,20 +132,6 @@ add_subdirectory(example/tiles)
 add_subdirectory(example/pipes)
 add_subdirectory(include/nbdl)
 #add_subdirectory(metabench)
-
-find_package(MLIR REQUIRED CONFIG)
-if (MLIR_FOUND)
-  set(LLVM_RUNTIME_OUTPUT_INTDIR ${CMAKE_BINARY_DIR}/bin)
-  set(LLVM_LIBRARY_OUTPUT_INTDIR ${CMAKE_BINARY_DIR}/lib)
-  set(MLIR_BINARY_DIR ${CMAKE_BINARY_DIR})
-
-  list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
-  list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
-
-  include(TableGen)
-  include(AddMLIR)
-  add_subdirectory(include/nbdl/gen)
-endif (MLIR_FOUND)
 
 install(FILES include/nbdl.hpp  DESTINATION include)
 install(DIRECTORY include/nbdl  DESTINATION include)

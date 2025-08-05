@@ -1,3 +1,4 @@
+;;; DEPRECATED FILE FOR REFERENCE ONLY
 ; The functions defined for the DSL typically take objects that represent
 ; either compile-time constants or objects that are resolved at runtime
 ; using paths.
