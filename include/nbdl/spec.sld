@@ -53,6 +53,7 @@
     (define (build-member-name name)
       (result
         (create-op "nbdl.member_name"
+                   (loc name)
                    (attributes
                      `("name", (string-attr name)))
                    (result-types !nbdl.symbol))))
@@ -77,6 +78,7 @@
                   (result
                     (create-op
                       "nbdl.store"
+                      (loc typename)
                       (attributes `("name", (flat-symbolref-attr typename)))
                       (operands (maybe-literal-op* init-arg))
                       (result-types !nbdl.store)
@@ -85,10 +87,13 @@
                   (result
                     (create-op
                       "nbdl.store_compose"
+                      (loc key)
                       (operands (build-member-name key) NewStore parent)
                       (result-types !nbdl.store)))))
               body ...
-              (BuildCont)
+              (translate-cpp
+                (parent-op (BuildCont))
+                lexer-writer)
               )))))
 
     ;; Given a C++ function, return a lambda that takes a list of paths
