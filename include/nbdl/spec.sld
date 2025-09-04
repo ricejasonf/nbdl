@@ -35,14 +35,17 @@
               (string-attr arg)
               #f))))
       (if AttrVal
-        (result
-          (create-op "nbdl.literal"
-                     (attributes
-                       `("value", AttrVal))
-                     (result-types !nbdl.opaque)))
+        (build-literal AttrVal)
         arg))
 
-    (define (constexpr arg)
+    (define (build-literal arg)
+      (result
+        (create-op "nbdl.literal"
+                   (attributes
+                     `("value", arg))
+                   (result-types !nbdl.opaque)))
+
+    (define (build-constexpr arg)
       (result
         (create-op "nbdl.constexpr"
                    (attributes
@@ -59,7 +62,7 @@
                    (result-types !nbdl.symbol))))
 
     (define-syntax context
-      (base.syntax-rules ()
+      (syntax-rules ()
         ((context name (formals ...) body ...)
           (%build-context
             name
@@ -96,6 +99,111 @@
                 lexer-writer)
               )))))
 
+    ;; Take a list of paths and take the first node
+    ;; off of the first path and reconstruct the
+    ;; list of paths with that node removed.
+    ;; FIXME Replace syntax with let-values.
+    (define-syntax %take-path-node
+      (syntax-rules ()
+        ((%take-path-node
+            InputPaths (CurPathNode NewPaths) body ...)
+          (((lambda ()
+            (define $CurPath (if (pair? InputPaths)
+                                 (car InputPaths)
+                                 '()))
+            (define $CurPathNode (if (pair? $CurPath)
+                                     (car $CurPath)
+                                     '()))
+            (define $NewPaths
+              (if (pair? InputPaths)
+                (if pair? $CurPath
+                  (cons (cdr $CurPath) (cdr InputPaths))
+                  (cdr InputPaths))
+                '()))
+            (lambda (CurPathNode NewPaths) body ...)
+              $CurPathNode $NewPaths))))))
+
+    ;; Define a function to receive a matched set of parameters.
+    (define-syntax match-params-fn
+      (syntax-rules ()
+        ((match-params-fn name (stores ... fn) body ...)
+          (%build-match-params
+            name
+            (base.length '(stores ...))
+            (base.lambda (stores ... FnArg)
+              (define (Fn . paths)
+                (define ParamVals '())
+                (lambda (???
+                (%take-path-node paths (CurPathNode NewPaths)
+                  ; The MatchedVal is the Store input for the next operation
+                  ; or it is added to the ParamVals.
+                  (define MatchedVal
+                    (%build-path-node MatchedVal CurPathNode ParamVals))
+                  (if (null? MatchedVal)
+                      (create-op "nbdl.visit" (operands FnArg ParamVals))
+                      'else???)
+
+                )
+              ; Note we are shadowing the stores names here.
+              ((base.lambda (stores ... fn) body ...)
+                stores ... Fn)
+              )))))
+
+
+    ; Note that some of these internal procedures alter
+    ; the builder insertion point without reverting.
+    (define (%match-path-spec PathSpec)
+      (define RootStore #f)
+      (define PathNodes #f)
+      (if (pair? PathSpec)
+        (if (eqv? '%nbdl-path (car PathSpec))
+          (set! PathNodes (cdr PathSpec))))
+      (if (pair? PathNodes)
+        (begin (set! RootStore (car PathNodes))
+               (set! PathNodes (cdr PathNodes)))
+        (error "expecting nbdl pathspec" PathSpec))
+      (if (mlir-operation? RootStore)
+        (%match-path-spec-rec RootStore PathNodes)
+        (error "expecting a root store object in pathspec" PathSpec)))
+
+    (define (%match-path-spec-rec Store PathNodes)
+      (define Rec (lambda ()
+        (define PathNode (car PathNodes))
+        (define Loc (source-loc PathNodes))
+        (define NewStore #f)
+        (define Key #f)
+        (if (pair? PathNode)
+          ((lambda ()
+            (define Id (car PathNode))
+            (if (eqv? Id '%nbdl-path)
+              (set! Key (%match-path-spec PathNode))
+            (if (eqv? Id '%constexpr)
+              (set! Key (build-constexpr Loc (cdr PathNode)))
+            (if (eqv? Id '%overload)
+              (set! NewStore (%build-overload Loc (cdr PathNode)))
+            (if (eqv? Id '%apply)
+              (set! NewStore (%build-apply Loc (cdr PathNode)))
+          ))))))
+          (set! Key
+            (if (number? PathNode)
+              (build-literal PathNode)
+            (if (string? PathNode)
+              (literal PathNode)
+            (if (symbol? PathNode)
+              (build-member-name PathNode)
+            (if (pair? PathNode)
+              (define Id (car PathNode))
+            (error "unsupported path node kind" PathNode)))))))
+        (if Key
+          (set! NewStore (%build-match Loc Store Key)))
+        (if NewStore
+          NewStore
+          (error "failed to create new store from path node" PathNode))
+        ))
+      (if (null? PathNodes)
+        Store
+        (Rec)))
+
     ;; Given a C++ function, return a lambda that takes a list of paths
     ;; that resolve to a list of parameters to apply to the function.
     ;; - This will have runtime effects that are not necessarily stored.
@@ -111,6 +219,7 @@
         (base.error "expecting a path")))
 
     ;; Create a new path appending keys to the input path.
+    ; TODO check mlir-operation? if not a path
     (base.define (get path . keys)
       (if (path? path)
         (base.append path keys)
@@ -141,7 +250,6 @@
         (base.error "TODO implement match-cond")
         (base.error "expecting a path")))
 
-
     ;; Check if a scheme value is a path.
     (base.define (path? path)
       (if (base.null? path)
@@ -162,6 +270,7 @@
     ; reexport some base stuff
     define
     define-syntax
+    syntax-rules
     if
     lambda
     set!
