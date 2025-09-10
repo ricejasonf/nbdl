@@ -17,7 +17,7 @@ heavy_scheme {
     (member 'baz 'int arg1)
     (member 'boo 'std::string arg2))
 
-  (match-fn 'match_1 (store fn)
+  (match-params-fn 'match_1 (store fn)
     (define root-path (get store))
     (fn
       (get store 'foo)
@@ -28,7 +28,7 @@ heavy_scheme {
 TEST_CASE("Match context members", "[spec][match]") {
   std::string boo = "this is a boo";
   auto ctx = foo::context_1(5, std::move(boo));
-  std::string result_baz;
+  int result_baz;
   std::string result_boo;
 
   match_1(ctx, [&](int baz, std::string const& boo) {

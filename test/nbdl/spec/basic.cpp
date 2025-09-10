@@ -7,9 +7,7 @@
 
 namespace foo {
 heavy_scheme {
-  (import (prefix (heavy base) base.))
-  (import (heavy clang)
-          (nbdl spec))
+  (import (heavy clang))
   (write-lexer "
     struct woof {
       static constexpr bool is_woof = true;

@@ -1,15 +1,7 @@
 (import (heavy base))
 
 (define-library (nbdl spec)
-  (import (prefix (heavy base) base.)
-          (only (heavy base) define
-                             define-syntax
-                             if
-                             lambda
-                             set!
-                             syntax-rules
-                             quote
-                             quasiquote)
+  (import (heavy base)
           (heavy mlir)
           (heavy clang)
           (nbdl comp))
@@ -25,40 +17,42 @@
     (define i32 (type "i32"))
 
     ; Maybe lift a literal to a LiteralOp.
-    (define (maybe-literal-op* arg)
+    (define (maybe-literal-op* Arg)
       (define AttrVal
-        (if (base.number? arg)
-          (attr (base.number->string arg) i32)
-          (if (base.symbol? arg)
-            (string-attr arg)
-            (if (base.string? arg)
-              (string-attr arg)
+        (if (number? Arg)
+          (attr (number->string Arg) i32)
+          (if (symbol? Arg)
+            (string-attr Arg)
+            (if (string? Arg)
+              (string-attr Arg)
               #f))))
       (if AttrVal
-        (build-literal AttrVal)
-        arg))
+        (build-literal Arg AttrVal)
+        Arg))
 
-    (define (build-literal arg)
+    (define (build-literal Loc Arg)
       (result
         (create-op "nbdl.literal"
+                   (loc Loc)
                    (attributes
-                     `("value", arg))
-                   (result-types !nbdl.opaque)))
+                     `("value", Arg))
+                   (result-types !nbdl.opaque))))
 
-    (define (build-constexpr arg)
+    (define (build-constexpr Loc ExprStr)
       (result
         (create-op "nbdl.constexpr"
+                   (loc Loc)
                    (attributes
-                     `("expr", (string-attr arg))
+                     `("expr", (string-attr ExprStr))
                    (result-types !nbdl.opaque)))))
 
 
-    (define (build-member-name name)
+    (define (build-member-name Loc Name)
       (result
         (create-op "nbdl.member_name"
-                   (loc name)
+                   (loc Loc)
                    (attributes
-                     `("name", (string-attr name)))
+                     `("name", (string-attr Name)))
                    (result-types !nbdl.symbol))))
 
     (define-syntax context
@@ -66,8 +60,8 @@
         ((context name (formals ...) body ...)
           (%build-context
             name
-            (base.length '(formals ...))
-            (base.lambda (formals ...)
+            (length '(formals ...))
+            (lambda (formals ...)
               (define parent
                  (result
                    (create-op "nbdl.empty"
@@ -91,7 +85,7 @@
                     (create-op
                       "nbdl.store_compose"
                       (loc key)
-                      (operands (build-member-name key) NewStore parent)
+                      (operands (build-member-name key key) NewStore parent)
                       (result-types !nbdl.store)))))
               body ...
               (translate-cpp
@@ -103,6 +97,7 @@
     ;; off of the first path and reconstruct the
     ;; list of paths with that node removed.
     ;; FIXME Replace syntax with let-values.
+    ;; TODO REMOVE
     (define-syntax %take-path-node
       (syntax-rules ()
         ((%take-path-node
@@ -123,38 +118,43 @@
             (lambda (CurPathNode NewPaths) body ...)
               $CurPathNode $NewPaths))))))
 
+    ; FIXME The macro/closure is not capturing a binding for %match-path-spec
+    ;       because we define it after the macro. (this is a workaround)
+    (define %match-path-spec 0)
+
     ;; Define a function to receive a matched set of parameters.
+    ;; Each path node should be of the format:
+    ;;  (%Kind Loc Args...)
+    ;; or specifically for nested pathspecs:
+    ;;  (%nbdl-path PathNodes...)
     (define-syntax match-params-fn
       (syntax-rules ()
         ((match-params-fn name (stores ... fn) body ...)
           (%build-match-params
             name
-            (base.length '(stores ...))
-            (base.lambda (stores ... FnArg)
-              (define (Fn . paths)
-                (define ParamVals '())
-                (lambda (???
-                (%take-path-node paths (CurPathNode NewPaths)
-                  ; The MatchedVal is the Store input for the next operation
-                  ; or it is added to the ParamVals.
-                  (define MatchedVal
-                    (%build-path-node MatchedVal CurPathNode ParamVals))
-                  (if (null? MatchedVal)
-                      (create-op "nbdl.visit" (operands FnArg ParamVals))
-                      'else???)
-
-                )
-              ; Note we are shadowing the stores names here.
-              ((base.lambda (stores ... fn) body ...)
-                stores ... Fn)
+            (length '(stores ...))
+            (lambda (stores ... %FnVal)
+              (define (Fn . %Paths)
+                (define ParamVals '()) ; Reverse ordered
+                (define (FnRec Paths)
+                  (if (pair? Paths)
+                    (begin
+                      (set! ParamVals
+                        (cons (%match-path-spec (car Paths)) ParamVals))
+                      (!FnRec (cdr Paths)))
+                  (if (null? Paths)
+                    (%build-visit-params %FnVal ParamVals)
+                    (error "expecting proper list" Paths))))
+                (FnRec %Paths))
+              ((lambda (fn) body ...) Fn)
               )))))
-
 
     ; Note that some of these internal procedures alter
     ; the builder insertion point without reverting.
     (define (%match-path-spec PathSpec)
       (define RootStore #f)
       (define PathNodes #f)
+      (set! PathNodes (cdr PathSpec))
       (if (pair? PathSpec)
         (if (eqv? '%nbdl-path (car PathSpec))
           (set! PathNodes (cdr PathSpec))))
@@ -162,100 +162,156 @@
         (begin (set! RootStore (car PathNodes))
                (set! PathNodes (cdr PathNodes)))
         (error "expecting nbdl pathspec" PathSpec))
-      (if (mlir-operation? RootStore)
+      (if (value? !nbdl.store RootStore)
         (%match-path-spec-rec RootStore PathNodes)
         (error "expecting a root store object in pathspec" PathSpec)))
 
     (define (%match-path-spec-rec Store PathNodes)
-      (define Rec (lambda ()
+      (define (Rec)
         (define PathNode (car PathNodes))
-        (define Loc (source-loc PathNodes))
-        (define NewStore #f)
-        (define Key #f)
-        (if (pair? PathNode)
-          ((lambda ()
-            (define Id (car PathNode))
-            (if (eqv? Id '%nbdl-path)
-              (set! Key (%match-path-spec PathNode))
-            (if (eqv? Id '%constexpr)
-              (set! Key (build-constexpr Loc (cdr PathNode)))
-            (if (eqv? Id '%overload)
-              (set! NewStore (%build-overload Loc (cdr PathNode)))
-            (if (eqv? Id '%apply)
-              (set! NewStore (%build-apply Loc (cdr PathNode)))
-          ))))))
-          (set! Key
-            (if (number? PathNode)
-              (build-literal PathNode)
-            (if (string? PathNode)
-              (literal PathNode)
-            (if (symbol? PathNode)
-              (build-member-name PathNode)
-            (if (pair? PathNode)
-              (define Id (car PathNode))
-            (error "unsupported path node kind" PathNode)))))))
-        (if Key
-          (set! NewStore (%build-match Loc Store Key)))
-        (if NewStore
-          NewStore
-          (error "failed to create new store from path node" PathNode))
-        ))
+        (define RestPathNodes (cdr PathNodes))
+        (define NewStore
+          (if (pair? PathNode)
+            ((lambda ()
+              (define Kind (car PathNode))
+              (define Args (cdr PathNode))
+              ; These permit custom source locations.
+              (if (eqv? Kind '%get)
+                (apply build-node-get Store Args)
+              (if (eqv? Kind '%overload)
+                (apply build-node-overload Store Args)
+              (if (eqv? Kind '%match)
+                (apply build-node-match Store Args)
+              (if (eqv? Kind '%apply)
+                (apply build-node-apply Store Args)
+              ))))))
+            ((lambda () ; Raw %get key specs.
+              (define Loc (source-loc PathNode PathNodes))
+              (build-node-get Store Loc PathNode)))))
+        (%match-path-spec-rec NewStore RestPathNodes))
       (if (null? PathNodes)
         Store
         (Rec)))
+
+    ; Key is the "key spec". Return the KeyVal (ie mlir.value).
+    (define (build-node-key Loc Key)
+      (if (number? Key)
+        (build-literal Loc Key)
+      (if (string? Key)
+        (build-literal Loc Key)
+      (if (symbol? Key)
+        (build-member-name Loc Key)
+      (if (value? !nbdl.store Key)
+        (error "unexpected root store in path" Key)
+      (if (pair? Key)
+        ((lambda ()
+          (define Kind (car Key))
+          (define Args (cdr Key))
+          (if (eqv? Kind '%constexpr)
+            (apply build-constexpr Args)
+          (if (eqv? Kind '%nbdl-path)
+            (%match-path-spec Store Key)
+          (error "unrecognized path node")
+            ))))
+      (error "unsupported path node kind" Key)
+        ))))))
+
+    (define (build-node-get Store Loc Key)
+      (define KeyVal (build-node-key Loc Key))
+      (define Op
+        (create-op "nbdl.get"
+                   (loc Loc)
+                   (result-types !nbdl.store)
+                   (operands Store KeyVal)))
+      (result Op))
+
+    (define (build-node-match Store Loc Key TypeStr)
+      ; TODO If TypeStr is empty mark the yielded store as "Noncanonical".
+      ;      Also add that "Noncanonical" attribute to dependent store objects
+      ;      everywhere we build them.
+      (define KeyVal (build-node-key Loc Key))
+      (define MatchOp
+        (create-op "nbdl.match"
+          (regions 1)
+          (operands Store KeyVal)))
+      (define Block (entry-block MatchOp))
+      (at-block-begin Block)
+      ; Return overloaded matched value.
+      ((lambda ()
+         (define MatchVal (add-argument Block))
+         (build-node-overload MatchVal Loc TypeStr))))
+
+    (define (build-node-overload Store Loc TypeStr)
+      (define OverloadOp
+        (create-op "nbdl.overload"
+          (regions 1)
+          (operands (string-attr TypeStr))))
+      (define Block (entry-block OverloadOp))
+      (at-block-begin Block)
+      ; Return a newly added value in the body.
+      (add-argument Block))
+
+    (define (build-node-apply Loc Store Key)
+      (error "TODO implement build-node-apply"))
+
+    ; FIXME Accept mlir.value with type !nbdl.store.
+    (define (path? obj)
+      (if (pair? obj)
+        (if (eqv? (car obj) '%nbdl-path)
+          #t #f) #f))
+
+    ;; Create a new path appending keys to the input path.
+    ;; TODO check that type of mlir value of path is !nbdl.store
+    (define (get path . keys)
+      (if (path? path)
+        (append path keys)
+          (append (list '%nbdl-path path) keys)
+          ))
 
     ;; Given a C++ function, return a lambda that takes a list of paths
     ;; that resolve to a list of parameters to apply to the function.
     ;; - This will have runtime effects that are not necessarily stored.
     ;; - (e.g. string concatentation for creating an attribute.)
-    (base.define (apply cpp-func)
+    (define (apply cpp-func)
       (lambda paths
-        (base.apply nbdl-impl-apply cpp-func paths)))
+        (apply nbdl-impl-apply cpp-func paths)))
     ;; TODO Figure out what this returns exactly.
     ;; Visit each element of a range.
-    (base.define (for-each path proc)
+    (define (for-each path proc)
       (if (path? path)
-        (base.error "TODO Implement for-each")
-        (base.error "expecting a path")))
-
-    ;; Create a new path appending keys to the input path.
-    ; TODO check mlir-operation? if not a path
-    (base.define (get path . keys)
-      (if (path? path)
-        (base.append path keys)
-        (base.append (base.cons '%nbdl-path path) keys)
-        ))
+        (error "TODO Implement for-each")
+        (error "expecting a path")))
 
     ;; Resolve a value at a path to use as a key.
-    (base.define (key-at path)
+    (define (key-at path)
       (if (path? path)
-        (base.error "TODO Implement key")
-        (base.error "expecting a path")))
+        (error "TODO Implement key")
+        (error "expecting a path")))
 
     ;; Match a resolved object by its type.
     ;; - It is an error if a type appears more that once as an alternative.
     ;;   (Think type switch)
     ;; - Each clause should be ((type <cpp-typename>) proc)
     ;;   where proc is a unary lambda receiving the matched path.
-    (base.define (match path . clauses)
+    (define (match path . clauses)
       (if (path? path)
-        (base.error "TODO implement match")
-        (base.error "expecting a path")))
+        (error "TODO implement match")
+        (error "expecting a path")))
 
     ;; Match the first satisified condition.
     ;; - Each clause should be (unary-predicate proc)
     ;;   where proc is a unary lambda receiving the matched path.
-    (base.define (match-cond path . clauses)
+    (define (match-cond path . clauses)
       (if (path? path)
-        (base.error "TODO implement match-cond")
-        (base.error "expecting a path")))
+        (error "TODO implement match-cond")
+        (error "expecting a path")))
 
     ;; Check if a scheme value is a path.
-    (base.define (path? path)
-      (if (base.null? path)
+    (define (path? path)
+      (if (null? path)
         #t
-        (if (base.pair? path)
-          (base.eqv? (base.car path) '%nbdl-path)
+        (if (pair? path)
+          (eqv? (car path) '%nbdl-path)
           #f)))
 
   ) ; end of... begin
@@ -266,6 +322,7 @@
     key-at
     match
     match-cond
+    match-params-fn
     member
     ; reexport some base stuff
     define
@@ -276,6 +333,6 @@
     set!
     quote
     quasiquote
-    syntax-rules
+    dump
     )
 )  ; end of (nbdl spec)
