@@ -20,7 +20,7 @@ heavy_scheme {
   (match-params-fn 'match_1 (store fn)
     (define root-path (get store))
     (fn
-      (get store 'foo)
+      (get store 'baz)
       (get root-path 'boo)))
 }
 }

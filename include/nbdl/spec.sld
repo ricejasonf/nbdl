@@ -1,6 +1,7 @@
 (import (heavy base))
 
 (define-library (nbdl spec)
+  (import (heavy base r7rs-syntax)) ; FIXME (heavy base) should export these
   (import (rename (heavy base)
                   (apply base.apply))
           (heavy mlir)
@@ -123,9 +124,8 @@
               ((lambda ()
                 (define FuncOp
                   (module-lookup current-nbdl-module name))
-                (dump FuncOp)
                 (translate-cpp FuncOp lexer-writer)
-                (translate-cpp FuncOp)))
+                FuncOp))
               )))))
 
     ; Note that some of these internal procedures alter
@@ -234,9 +234,31 @@
       (error "TODO implement build-node-apply"))
 
     (define (build-visit-params Loc FnVal ParamVals)
+      ; ParamsVals is a reverse ordered list.
+      ; FIXME Use reverse when it becomes availabe.
+      ; FIXME Fix crash with named-let.
+      #;(define OrderedParamVals
+        (let my-reverse ((List ParamVals)
+                          (NewList '()))
+          (if (pair? List)
+            (my-reverse (cdr List)
+                        (cons (car List) NewList))
+            NewList)))
+      (define OrderedParamVals
+        ((lambda ()
+          (define NewList '())
+          (define (Loop List)
+            (if (pair? List)
+              (begin
+                (set! NewList
+                  (cons (car List) NewList))
+                (Loop (cdr List)))
+              NewList))
+          (Loop ParamVals))))
+
       (create-op "nbdl.visit"
                  (loc Loc)
-                 (operands FnVal ParamVals)))
+                 (operands FnVal OrderedParamVals)))
 
     ; FIXME Accept mlir.value with type !nbdl.store.
     (define (path? obj)
