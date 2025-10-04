@@ -10,7 +10,7 @@
 namespace foo {
 heavy_scheme {
   (import (nbdl spec))
-  (context 'context_1 (arg1 arg2)
+  (context 'context_1 (member) (arg1 arg2)
     (member 'foo 'int 42)
     (member 'bar 'std::string
            "initial string value")
@@ -31,7 +31,7 @@ TEST_CASE("Match context members", "[spec][match]") {
   int result_baz;
   std::string result_boo;
 
-  match_1(ctx, [&](int baz, std::string const& boo) {
+  foo::match_1(ctx, [&](int baz, std::string const& boo) {
     result_baz = baz;
     result_boo = boo;
   });

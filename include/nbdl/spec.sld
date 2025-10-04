@@ -1,7 +1,8 @@
 (import (heavy base))
 
 (define-library (nbdl spec)
-  (import (heavy base)
+  (import (rename (heavy base)
+                  (apply base.apply))
           (heavy mlir)
           (heavy clang)
           (nbdl comp))
@@ -57,7 +58,7 @@
 
     (define-syntax context
       (syntax-rules ()
-        ((context name (formals ...) body ...)
+        ((context name (member) (formals ...) body ...)
           (%build-context
             name
             (length '(formals ...))
@@ -93,35 +94,6 @@
                 lexer-writer)
               )))))
 
-    ;; Take a list of paths and take the first node
-    ;; off of the first path and reconstruct the
-    ;; list of paths with that node removed.
-    ;; FIXME Replace syntax with let-values.
-    ;; TODO REMOVE
-    (define-syntax %take-path-node
-      (syntax-rules ()
-        ((%take-path-node
-            InputPaths (CurPathNode NewPaths) body ...)
-          (((lambda ()
-            (define $CurPath (if (pair? InputPaths)
-                                 (car InputPaths)
-                                 '()))
-            (define $CurPathNode (if (pair? $CurPath)
-                                     (car $CurPath)
-                                     '()))
-            (define $NewPaths
-              (if (pair? InputPaths)
-                (if pair? $CurPath
-                  (cons (cdr $CurPath) (cdr InputPaths))
-                  (cdr InputPaths))
-                '()))
-            (lambda (CurPathNode NewPaths) body ...)
-              $CurPathNode $NewPaths))))))
-
-    ; FIXME The macro/closure is not capturing a binding for %match-path-spec
-    ;       because we define it after the macro. (this is a workaround)
-    (define %match-path-spec 0)
-
     ;; Define a function to receive a matched set of parameters.
     ;; Each path node should be of the format:
     ;;  (%Kind Loc Args...)
@@ -136,17 +108,24 @@
             (lambda (stores ... %FnVal)
               (define (Fn . %Paths)
                 (define ParamVals '()) ; Reverse ordered
+                (define Loc (source-loc name))
                 (define (FnRec Paths)
                   (if (pair? Paths)
                     (begin
                       (set! ParamVals
                         (cons (%match-path-spec (car Paths)) ParamVals))
-                      (!FnRec (cdr Paths)))
+                      (FnRec (cdr Paths)))
                   (if (null? Paths)
-                    (%build-visit-params %FnVal ParamVals)
+                    (build-visit-params Loc %FnVal ParamVals)
                     (error "expecting proper list" Paths))))
                 (FnRec %Paths))
               ((lambda (fn) body ...) Fn)
+              ((lambda ()
+                (define FuncOp
+                  (module-lookup current-nbdl-module name))
+                (dump FuncOp)
+                (translate-cpp FuncOp lexer-writer)
+                (translate-cpp FuncOp)))
               )))))
 
     ; Note that some of these internal procedures alter
@@ -164,7 +143,7 @@
         (error "expecting nbdl pathspec" PathSpec))
       (if (value? !nbdl.store RootStore)
         (%match-path-spec-rec RootStore PathNodes)
-        (error "expecting a root store object in pathspec" PathSpec)))
+        (error "expecting a root store object in pathspec: {}" PathSpec)))
 
     (define (%match-path-spec-rec Store PathNodes)
       (define (Rec)
@@ -254,6 +233,11 @@
     (define (build-node-apply Loc Store Key)
       (error "TODO implement build-node-apply"))
 
+    (define (build-visit-params Loc FnVal ParamVals)
+      (create-op "nbdl.visit"
+                 (loc Loc)
+                 (operands FnVal ParamVals)))
+
     ; FIXME Accept mlir.value with type !nbdl.store.
     (define (path? obj)
       (if (pair? obj)
@@ -272,7 +256,7 @@
     ;; that resolve to a list of parameters to apply to the function.
     ;; - This will have runtime effects that are not necessarily stored.
     ;; - (e.g. string concatentation for creating an attribute.)
-    (define (apply cpp-func)
+    (define (applyz cpp-func)
       (lambda paths
         (apply nbdl-impl-apply cpp-func paths)))
     ;; TODO Figure out what this returns exactly.
@@ -316,7 +300,7 @@
 
   ) ; end of... begin
   (export
-    apply
+    nbdl.apply
     context
     get
     key-at
@@ -333,6 +317,7 @@
     set!
     quote
     quasiquote
+    unquote unquote-splicing
     dump
     )
 )  ; end of (nbdl spec)
