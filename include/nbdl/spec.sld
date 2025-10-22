@@ -1,7 +1,8 @@
 (import (heavy base))
 
 (define-library (nbdl spec)
-  (import (heavy base r7rs-syntax)) ; FIXME (heavy base) should export these
+  (import (only (heavy builtins)
+                syntax-error)) ; FIXME (heavy base) should export these
   (import (rename (heavy base)
                   (apply base.apply))
           (heavy mlir)
@@ -16,6 +17,7 @@
     (define !nbdl.tag (type "!nbdl.tag"))
     (define !nbdl.symbol (type "!nbdl.symbol"))
     (define !nbdl.empty (type "!nbdl.empty"))
+    (define !nbdl.unit (type "!nbdl.unit"))
     (define i32 (type "i32"))
 
     ; Maybe lift a literal to a LiteralOp.
@@ -32,30 +34,38 @@
         (build-literal Arg AttrVal)
         Arg))
 
+    (define (build-unit)
+      (result
+        (create-op "nbdl.unit"
+          (loc: 0)
+          (operands:)
+          (attributes:)
+          (result-types: !nbdl.unit))))
+
     (define (build-literal Loc Arg)
       (result
         (create-op "nbdl.literal"
-                   (loc Loc)
-                   (attributes
-                     `("value", Arg))
-                   (result-types !nbdl.opaque))))
+          (loc: Loc)
+          (operands:)
+          (attributes: ("value" Arg))
+          (result-types: !nbdl.opaque))))
 
     (define (build-constexpr Loc ExprStr)
       (result
         (create-op "nbdl.constexpr"
-                   (loc Loc)
-                   (attributes
-                     `("expr", (string-attr ExprStr))
-                   (result-types !nbdl.opaque)))))
+          (loc: Loc)
+          (operands:)
+          (attributes: ("expr" (string-attr ExprStr)))
+          (result-types: !nbdl.opaque))))
 
 
     (define (build-member-name Loc Name)
       (result
         (create-op "nbdl.member_name"
-                   (loc Loc)
-                   (attributes
-                     `("name", (string-attr Name)))
-                   (result-types !nbdl.symbol))))
+          (loc: Loc)
+          (operands:)
+          (attributes: ("name" (string-attr Name)))
+          (result-types: !nbdl.symbol))))
 
     (define-syntax context
       (syntax-rules ()
@@ -67,28 +77,34 @@
               (define parent
                  (result
                    (create-op "nbdl.empty"
-                              (result-types !nbdl.empty))))
+                      (loc: 0)
+                      (operands:)
+                      (attributes:)
+                      (result-types: !nbdl.empty))))
               (define (BuildCont)
-                (create-op
-                  "nbdl.cont"
-                  (operands parent)))
-              (define (member key typename init-arg)
+                (create-op "nbdl.cont"
+                  (loc: 0)
+                  (operands: parent)
+                  (attributes:)
+                  (result-types:)
+                  ))
+              (define (member key typename . init-args)
                 (define NewStore
                   (result
-                    (create-op
-                      "nbdl.store"
-                      (loc typename)
-                      (attributes `("name", (flat-symbolref-attr typename)))
-                      (operands (maybe-literal-op* init-arg))
-                      (result-types !nbdl.store)
+                    (create-op "nbdl.store"
+                      (loc: typename)
+                      (operands: (map maybe-literal-op* init-args))
+                      (attributes: ("name" (flat-symbolref-attr typename)))
+                      (result-types: !nbdl.store)
                       )))
                 (set! parent
                   (result
                     (create-op
                       "nbdl.store_compose"
-                      (loc key)
-                      (operands (build-member-name key key) NewStore parent)
-                      (result-types !nbdl.store)))))
+                      (loc: key)
+                      (operands: (build-member-name key key) NewStore parent)
+                      (attributes:)
+                      (result-types: !nbdl.store)))))
               body ...
               (translate-cpp
                 (parent-op (BuildCont))
@@ -124,26 +140,30 @@
               ((lambda ()
                 (define FuncOp
                   (module-lookup current-nbdl-module name))
-                (translate-cpp FuncOp lexer-writer)
+                (if (verify FuncOp)
+                  (translate-cpp FuncOp lexer-writer)
+                  (begin
+                    (translate-cpp FuncOp)
+                    (error "verification failed: {0} {1}" name FuncOp)))
                 FuncOp))
               )))))
 
     ; Note that some of these internal procedures alter
     ; the builder insertion point without reverting.
     (define (%match-path-spec PathSpec)
-      (define RootStore #f)
-      (define PathNodes #f)
-      (set! PathNodes (cdr PathSpec))
-      (if (pair? PathSpec)
-        (if (eqv? '%nbdl-path (car PathSpec))
-          (set! PathNodes (cdr PathSpec))))
-      (if (pair? PathNodes)
-        (begin (set! RootStore (car PathNodes))
-               (set! PathNodes (cdr PathNodes)))
-        (error "expecting nbdl pathspec" PathSpec))
-      (if (value? !nbdl.store RootStore)
-        (%match-path-spec-rec RootStore PathNodes)
-        (error "expecting a root store object in pathspec: {}" PathSpec)))
+      (dump PathSpec)
+      (cond
+        ((or (value? !nbdl.store PathSpec)
+             (value? !nbdl.unit PathSpec))
+           PathSpec)
+        ((and (pair? PathSpec)
+              (eqv? '%nbdl-path (car PathSpec)))
+         (let ((RootStore (cadr PathSpec))
+               (PathNodes (cddr PathSpec)))
+          (if (value? RootStore)
+            (%match-path-spec-rec RootStore PathNodes)
+            (error "expecting a root store object in pathspec: {}" PathSpec))))
+        (else (error "expecting nbdl pathspec: {}" PathSpec))))
 
     (define (%match-path-spec-rec Store PathNodes)
       (define (Rec)
@@ -156,13 +176,13 @@
               (define Args (cdr PathNode))
               ; These permit custom source locations.
               (if (eqv? Kind '%get)
-                (apply build-node-get Store Args)
+                (base.apply build-node-get Store Args)
               (if (eqv? Kind '%overload)
-                (apply build-node-overload Store Args)
+                (base.apply build-node-overload Store Args)
               (if (eqv? Kind '%match)
-                (apply build-node-match Store Args)
+                (base.apply build-node-match Store Args)
               (if (eqv? Kind '%apply)
-                (apply build-node-apply Store Args)
+                (base.apply build-node-apply Store Args)
               ))))))
             ((lambda () ; Raw %get key specs.
               (define Loc (source-loc PathNode PathNodes))
@@ -192,16 +212,17 @@
             (%match-path-spec Store Key)
           (error "unrecognized path node")
             ))))
-      (error "unsupported path node kind" Key)
+      (error "unsupported path node kind: {}" Key)
         ))))))
 
     (define (build-node-get Store Loc Key)
       (define KeyVal (build-node-key Loc Key))
       (define Op
         (create-op "nbdl.get"
-                   (loc Loc)
-                   (result-types !nbdl.store)
-                   (operands Store KeyVal)))
+          (loc: Loc)
+          (operands: Store KeyVal)
+          (attributes:)
+          (result-types: !nbdl.store)))
       (result Op))
 
     (define (build-node-match Store Loc Key TypeStr)
@@ -209,56 +230,37 @@
       ;      Also add that "Noncanonical" attribute to dependent store objects
       ;      everywhere we build them.
       (define KeyVal (build-node-key Loc Key))
-      (define MatchOp
-        (create-op "nbdl.match"
-          (regions 1)
-          (operands Store KeyVal)))
-      (define Block (entry-block MatchOp))
-      (at-block-begin Block)
-      ; Return overloaded matched value.
-      ((lambda ()
-         (define MatchVal (add-argument Block))
-         (build-node-overload MatchVal Loc TypeStr))))
+      (create-op "nbdl.match"
+        (loc: Loc)
+        (operands: Store KeyVal)
+        (attributes:)
+        (result-types:)
+        #;(region "overloads" (store : !nbdl.store)
+          (build-node-overload store Loc TypeStr)
+          (dump "stuff")
+          )))
 
     (define (build-node-overload Store Loc TypeStr)
-      (define OverloadOp
-        (create-op "nbdl.overload"
-          (regions 1)
-          (operands (string-attr TypeStr))))
-      (define Block (entry-block OverloadOp))
-      (at-block-begin Block)
-      ; Return a newly added value in the body.
-      (add-argument Block))
+      (create-op "nbdl.overload"
+        (loc: Loc)
+        (operands:)
+        (attributes: ("type" (string-attr TypeStr)))
+        (result-types:)
+        #;(region "body" (store : !nbdl.store)
+          (dump "overload stuff")
+          )))
 
     (define (build-node-apply Loc Store Key)
       (error "TODO implement build-node-apply"))
 
     (define (build-visit-params Loc FnVal ParamVals)
-      ; ParamsVals is a reverse ordered list.
-      ; FIXME Use reverse when it becomes availabe.
-      ; FIXME Fix crash with named-let.
-      #;(define OrderedParamVals
-        (let my-reverse ((List ParamVals)
-                          (NewList '()))
-          (if (pair? List)
-            (my-reverse (cdr List)
-                        (cons (car List) NewList))
-            NewList)))
       (define OrderedParamVals
-        ((lambda ()
-          (define NewList '())
-          (define (Loop List)
-            (if (pair? List)
-              (begin
-                (set! NewList
-                  (cons (car List) NewList))
-                (Loop (cdr List)))
-              NewList))
-          (Loop ParamVals))))
-
+        (reverse ParamVals))
       (create-op "nbdl.visit"
-                 (loc Loc)
-                 (operands FnVal OrderedParamVals)))
+        (loc: Loc)
+        (operands: FnVal OrderedParamVals)
+        (attributes:)
+        (result-types:)))
 
     ; FIXME Accept mlir.value with type !nbdl.store.
     (define (path? obj)
@@ -274,13 +276,20 @@
           (append (list '%nbdl-path path) keys)
           ))
 
+    ;; Construct an "overload" as a key to a path.
+    ;; The visitor will not be called if the type does not match.
+    (define (overload typename)
+      (define Loc (source-loc typename))
+      (list '%overload Loc typename))
+
+
     ;; Given a C++ function, return a lambda that takes a list of paths
     ;; that resolve to a list of parameters to apply to the function.
     ;; - This will have runtime effects that are not necessarily stored.
     ;; - (e.g. string concatentation for creating an attribute.)
     (define (applyz cpp-func)
       (lambda paths
-        (apply nbdl-impl-apply cpp-func paths)))
+        (base.apply nbdl-impl-apply cpp-func paths)))
     ;; TODO Figure out what this returns exactly.
     ;; Visit each element of a range.
     (define (for-each path proc)
@@ -294,15 +303,72 @@
         (error "TODO Implement key")
         (error "expecting a path")))
 
+    (define-syntax match-aux
+      (syntax-rules (=>)
+        ((match-aux S K
+          (TypeN => FnN) ...)
+         (let ((ResolvedStore (%match-path-spec S))
+               (ResolvedKey   (%match-path-spec K)))
+          (create-op "nbdl.match"
+            (loc: 0)
+            (operands: ResolvedStore ResolvedKey)
+            (attributes:)
+            (result-types:)
+            (region: "overloads" ()
+              (create-op "nbdl.overload"
+                (loc: (source-loc TypeN))
+                (operands:)
+                (attributes: ("type" (string-attr TypeN)))
+                (result-types:)
+                (region: "body" ((OverloadArg : !nbdl.store))
+                  (FnN OverloadArg))) ...))))))
+    
+
     ;; Match a resolved object by its type.
     ;; - It is an error if a type appears more that once as an alternative.
     ;;   (Think type switch)
-    ;; - Each clause should be ((type <cpp-typename>) proc)
-    ;;   where proc is a unary lambda receiving the matched path.
-    (define (match path . clauses)
-      (if (path? path)
-        (error "TODO implement match")
-        (error "expecting a path")))
+    ;; - Each clause should be
+    ;;    (<cpp-typename> => proc) or
+    ;;    (else => proc)
+    ;;   where proc is a unary lambda receiving the matched store.
+    ;; - All Types should not have qualifiers.
+    (define-syntax match
+      (syntax-rules (else => store: key:)
+        ((match Path
+          (else => DefaultFn))
+         (match Path
+           ; FIXME This should be an empty string
+           ;       but NbdlWriter has to support that.
+           ("auto&&" => DefaultFn)))
+        ((match Path
+          (Type1 => Fn1)
+          (TypeN => FnN) ...
+          (else => DefaultFn))
+         (match Path
+           (Type1 => Fn1)
+           (TypeN => FnN) ...
+           ("" => DefaultFn)))
+        ; FIXME Consider not providing this overload
+        ;       and using (get ...) for keys.
+        ((match ((store: S)
+                 (key: K))
+           (Type1 => Fn1)
+           (TypeN => FnN) ...)
+         (match-aux S K
+           (Type1 => Fn1)
+           (TypeN => FnN) ...))
+        ((match StoreOnly
+           (Type1 => Fn1)
+           (TypeN => FnN) ...)
+         (let ((K (build-unit)))
+           (match-aux StoreOnly K
+             (Type1 => Fn1)
+             (TypeN => FnN) ...)))
+        ))
+
+    (define (noop x)
+      ; Do nothing.
+      (when #f #f))
 
     ;; Match the first satisified condition.
     ;; - Each clause should be (unary-predicate proc)
@@ -320,16 +386,28 @@
           (eqv? (car path) '%nbdl-path)
           #f)))
 
+    (define (dump-cpp name)
+      (define Op
+        (module-lookup current-nbdl-module name))
+      (translate-cpp Op))
+
+    (define (dump-op name)
+      (define Op
+        (module-lookup current-nbdl-module name))
+      (dump Op))
+
+
   ) ; end of... begin
   (export
-    nbdl.apply
+    ;nbdl.apply
     context
     get
     key-at
     match
     match-cond
     match-params-fn
-    member
+    dump-cpp
+    dump-op
     ; reexport some base stuff
     define
     define-syntax
@@ -340,6 +418,7 @@
     quote
     quasiquote
     unquote unquote-splicing
+    source-loc
     dump
     )
 )  ; end of (nbdl spec)

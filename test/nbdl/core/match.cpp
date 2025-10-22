@@ -41,6 +41,22 @@ namespace nbdl
   );
 }
 
+TEST_CASE("Match an arbitrary object.", "[match][Store]")
+{
+  std::string result("FAIL!");
+
+  std::string store("Hello, string!");
+
+  nbdl::match(
+    std::move(store)
+  , [&](std::string&& x) { result = std::move(x); }
+  );
+
+  // Hello, World!
+
+  CHECK(result == std::string{"Hello, string!"});
+}
+
 TEST_CASE("Match on values in a hana::map.", "[match][Store]")
 {
   std::string result("FAIL!");
@@ -163,6 +179,18 @@ TEST_CASE("Match on values nested in a variant.", "[match][Store]")
   // John
 
   CHECK(result == std::string{"John"});
+}
+
+TEST_CASE("Match variant index.", "[match][Store]")
+{
+  size_t result(static_cast<size_t>(-1));
+
+  nbdl::optional<std::string> store = std::string("Hello, index!");
+
+  nbdl::match(store, nbdl::variant_index{},
+              [&](size_t index) { result = index; });
+
+  CHECK(result == 1);
 }
 
 TEST_CASE("Match with visitor match_when", "[match]")

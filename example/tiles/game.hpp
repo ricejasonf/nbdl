@@ -192,9 +192,9 @@ namespace nbdl
   struct get_impl<tiles::game_store>
   {
     template <typename Store, typename Path>
-    static constexpr auto apply(Store const& s, Path const&)
+    static constexpr decltype(auto) apply(Store&& s, Path const&)
     {
-      return s.game_;
+      return (s.game_);
     }
   };
 

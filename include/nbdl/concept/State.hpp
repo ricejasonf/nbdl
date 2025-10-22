@@ -13,6 +13,11 @@ namespace nbdl {
   template <typename Tag>
   struct get_impl : default_impl {
     static constexpr auto apply(...) = delete;
+
+    template <typename S>
+    static constexpr decltype(auto) apply(S&& s) {
+      return (s);
+    }
   };
 
   template <typename T>

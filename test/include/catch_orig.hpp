@@ -5147,6 +5147,7 @@ namespace Catch {
 
 #endif // not Windows
 
+#include <exception>
 #include <set>
 #include <string>
 
@@ -5302,7 +5303,7 @@ namespace Catch {
         }
 
         virtual void sectionEnded( SectionInfo const& info, Counts const& prevAssertions, double _durationInSeconds ) {
-            if( std::uncaught_exception() ) {
+            if( std::uncaught_exceptions() ) {
                 m_unfinishedSections.push_back( UnfinishedSections( info, prevAssertions, _durationInSeconds ) );
                 return;
             }

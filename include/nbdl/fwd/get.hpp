@@ -11,7 +11,7 @@
 
 namespace nbdl {
   struct get_fn {
-    template <State State>
+    template <typename State>
     constexpr decltype(auto) operator()(State&&) const;
 
     template <State State, typename Key>

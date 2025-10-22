@@ -11,10 +11,10 @@
 
 namespace nbdl {
   struct match_fn {
-    template<Store Store, typename Key, typename Fn>
+    template <Store Store, typename Key, typename Fn>
     constexpr void operator()(Store&&, Key&&, Fn&&) const;
 
-    template<Store Store, typename Fn>
+    template <typename Store, typename Fn>
     constexpr void operator()(Store&&, Fn&&) const;
   };
 

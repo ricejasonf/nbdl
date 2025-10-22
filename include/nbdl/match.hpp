@@ -23,6 +23,7 @@
 
 namespace nbdl {
   namespace detail {
+    // TODO This could be a concept.
     template <typename Impl, typename Store, typename Fn, typename = void>
     struct matches_identity : std::false_type { };
 
@@ -45,7 +46,7 @@ namespace nbdl {
     );
   };
 
-  template<Store Store, typename Fn>
+  template<typename Store, typename Fn>
   constexpr void match_fn::operator()(Store&& s, Fn&& fn) const {
     using Tag = hana::tag_of_t<Store>;
     using Impl = match_impl<Tag>;

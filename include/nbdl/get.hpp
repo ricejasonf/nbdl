@@ -13,6 +13,7 @@
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/concept/searchable.hpp>
+#include <boost/hana/core/default.hpp>
 #include <boost/hana/index_if.hpp>
 #include <boost/hana/equal.hpp>
 #include <boost/hana/functional/compose.hpp>
@@ -27,10 +28,10 @@ namespace nbdl {
     using Tag = hana::tag_of_t<State>;
     using Impl = get_impl<Tag>;
 
-    return Impl::apply(std::forward<State>(s), std::forward<Key>(k));
+    return get(Impl::apply(std::forward<State>(s), std::forward<Key>(k)));
   };
 
-  template <State State>
+  template <typename State>
   constexpr decltype(auto) get_fn::operator()(State&& s) const {
     using Tag = hana::tag_of_t<State>;
     using Impl = get_impl<Tag>;

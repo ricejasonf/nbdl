@@ -29,6 +29,7 @@ namespace nbdl
   namespace mp11 = boost::mp11;
 
   struct variant_tag { };
+  struct variant_index { };
 
   namespace detail
   {
@@ -245,6 +246,12 @@ namespace nbdl
       );
     }
 
+    template <typename Store, typename Fn>
+    static constexpr void apply(Store&& s, variant_index, Fn&& fn)
+    {
+      std::forward<Fn>(fn)(s.get_type_id());
+    }
+
     template <typename Store, typename Key, typename Fn>
     static constexpr void apply(Store&& s, Key&& k, Fn&& fn)
     {
@@ -263,6 +270,10 @@ namespace nbdl
           }
           else
           {
+            // FIXME This feels incorrect. What happened to the key?
+            //       I think specifying a key should require get/match
+            //       be applied with the key to the value
+            //       (which is handled by nbdl::match above.)
             std::forward<Fn>(fn)(std::forward<decltype(value)>(value));
           }
         }
