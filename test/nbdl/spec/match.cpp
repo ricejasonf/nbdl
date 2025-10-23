@@ -28,8 +28,6 @@ heavy_scheme {
     (member 'boo "std::pair<std::string, int>" arg2 arg3)
     (member 'my_var 'my_variant arg2))
 
-  (dump-op 'context)
-
   ; // get values initialized with literals
   (match-params-fn 'match_0 (store fn)
     (define root-path (get store))
@@ -52,6 +50,8 @@ heavy_scheme {
   ; // equivalent to (get store 'my_var unit)
   (match-params-fn 'match_3 (store fn)
     (fn (get store 'my_var)))
+  (dump-cpp 'match_3)
+
 
   ; // match variant alternative with overloaded fn.
   ; // equivalent to (get store 'my_var unit)
@@ -107,20 +107,14 @@ TEST_CASE("Match context members", "[spec][match]") {
 
   CHECK(result_boo_2 == 9001);
 
-  foo::match_3(ctx,
-    [&](foo::my_variant const& my_var) {
-      nbdl::match(my_var, boost::hana::overload_linearly(
-        [&](std::string const& alt_boo) {
-        std::cout << "WHHHAT? alt_boo\n" << alt_boo << '\n';
-          result_alt_boo = alt_boo;
-        },
-        [&](auto&&) {
-          result_alt_boo = "FAIL";
-        }));
-    });
+  foo::match_3(ctx, boost::hana::overload_linearly(
+    [&](std::string const& alt_boo) {
+      result_alt_boo = alt_boo;
+    },
+    [&](auto&& X) {
+      result_alt_boo = "FAIL";
+    }));
 
-  std::cout << "HHHHHEEEEERRRREEEE" << '\n';
-  std::cout << result_alt_boo << '\n';
   CHECK(result_alt_boo == "this is a boo");
 
   result_alt_boo.clear();

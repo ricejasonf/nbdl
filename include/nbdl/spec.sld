@@ -1,10 +1,7 @@
 (import (heavy base))
 
 (define-library (nbdl spec)
-  (import (only (heavy builtins)
-                syntax-error)) ; FIXME (heavy base) should export these
-  (import (rename (heavy base)
-                  (apply base.apply))
+  (import (heavy base)
           (heavy mlir)
           (heavy clang)
           (nbdl comp))
@@ -123,19 +120,11 @@
             name
             (length '(stores ...))
             (lambda (stores ... %FnVal)
-              (define (Fn . %Paths)
-                (define ParamVals '()) ; Reverse ordered
+              (define (Fn . PathSpec)
                 (define Loc (source-loc name))
-                (define (FnRec Paths)
-                  (if (pair? Paths)
-                    (begin
-                      (set! ParamVals
-                        (cons (%match-path-spec (car Paths)) ParamVals))
-                      (FnRec (cdr Paths)))
-                  (if (null? Paths)
-                    (build-visit-params Loc %FnVal ParamVals)
-                    (error "expecting proper list" Paths))))
-                (FnRec %Paths))
+                (define (VisitFn ParamVals)
+                  (build-visit-params Loc %FnVal ParamVals))
+                (%match-params-spec PathSpec VisitFn))
               ((lambda (fn) body ...) Fn)
               ((lambda ()
                 (define FuncOp
@@ -148,49 +137,97 @@
                 FuncOp))
               )))))
 
-    ; Note that some of these internal procedures alter
-    ; the builder insertion point without reverting.
-    (define (%match-path-spec PathSpec)
-      (dump PathSpec)
+    ; ParamsSpec is a list of PathSpecs
+    ; ParamsFn is the callback taking the list of results.
+    (define (%match-params-spec ParamsSpec ParamsFn)
+      (let Loop ((ParamValsRev '()) ; Reverse ordered
+                 (CurPathSpec (car ParamsSpec))
+                 (Rest (cdr ParamsSpec)))
+        (define (NextFn ParamVal)
+          (define NewParamValsRev
+            (cons ParamVal ParamValsRev))
+          (cond
+            ((pair? Rest)
+              (Loop NewParamValsRev
+                    (car Rest)
+                    (cdr Rest)))
+            ((null? Rest)
+              (ParamsFn (reverse NewParamValsRev)))
+            (else (error "expecting proper list" Rest))))
+        (%match-path-spec CurPathSpec NextFn)))
+
+    (define (%match-path-spec PathSpec Fn)
       (cond
         ((or (value? !nbdl.store PathSpec)
              (value? !nbdl.unit PathSpec))
-           PathSpec)
+           (Fn PathSpec))
         ((and (pair? PathSpec)
               (eqv? '%nbdl-path (car PathSpec)))
          (let ((RootStore (cadr PathSpec))
                (PathNodes (cddr PathSpec)))
           (if (value? RootStore)
-            (%match-path-spec-rec RootStore PathNodes)
+            (%match-path-spec-rec RootStore PathNodes Fn)
             (error "expecting a root store object in pathspec: {}" PathSpec))))
         (else (error "expecting nbdl pathspec: {}" PathSpec))))
 
-    (define (%match-path-spec-rec Store PathNodes)
-      (define (Rec)
-        (define PathNode (car PathNodes))
-        (define RestPathNodes (cdr PathNodes))
-        (define NewStore
-          (if (pair? PathNode)
-            ((lambda ()
-              (define Kind (car PathNode))
-              (define Args (cdr PathNode))
-              ; These permit custom source locations.
-              (if (eqv? Kind '%get)
-                (base.apply build-node-get Store Args)
-              (if (eqv? Kind '%overload)
-                (base.apply build-node-overload Store Args)
-              (if (eqv? Kind '%match)
-                (base.apply build-node-match Store Args)
-              (if (eqv? Kind '%apply)
-                (base.apply build-node-apply Store Args)
-              ))))))
-            ((lambda () ; Raw %get key specs.
-              (define Loc (source-loc PathNode PathNodes))
-              (build-node-get Store Loc PathNode)))))
-        (%match-path-spec-rec NewStore RestPathNodes))
-      (if (null? PathNodes)
-        Store
-        (Rec)))
+    (define (%match-path-spec-rec Store PathNodes Fn)
+      (let Loop ((Loc (source-loc PathNodes))
+                 (PathNode (car PathNodes))
+                 (Rest (cdr PathNodes))
+                 (CurStore Store))
+        (define (NextFn StoreResult)
+          (cond
+            ((pair? Rest)
+             (Loop (source-loc Rest)
+                   (car Rest)
+                   (cdr Rest)
+                   StoreResult))
+            ; Finish by match with unit-key to "unwrap" store.
+            ((null? Rest)
+             (match-unit StoreResult Fn))
+            (else (error "expecting proper list"))))
+        (%match-path-node CurStore Loc PathNode NextFn)))
+
+    ;; Simply apply the unit-key to a mlir.value Store.
+    (define (match-unit Store Fn)
+      (match-key Store (build-unit) Fn))
+
+    ;; We have mlir.values for both Store and Key
+    (define (match-key Store Key Fn)
+      (create-op "nbdl.match"
+        (loc: 0)
+        (operands: Store Key)
+        (attributes:)
+        (result-types:)
+        (region: "overloads" ()
+          (create-op "nbdl.overload"
+            (loc: 0)
+            (operands:)
+            (attributes: ("type" (string-attr "")))
+            (result-types:)
+            (region: "body" ((ResolvedStore : !nbdl.store))
+              (Fn ResolvedStore)
+              )))))
+
+    (define (%match-path-node Store Loc PathNode Fn)
+      (cond
+        ; Member name is the only key kind where nbdl.get is required
+        ; but we have to apply the identity first to unwrap the store.
+        ((symbol? PathNode)
+          (match-unit Store
+            (lambda (MatchedStore)
+              (define MemberStore
+                (build-node-get MatchedStore Loc PathNode))
+              (Fn MemberStore))))
+        ; PathNode is a mlir.value that is the Key.
+        ((value? PathNode)
+          (match-key Store PathNode Fn))
+        ; Match a nested PathSpec then continue
+        ((path? PathNode)
+          (%match-path-spec PathNode
+            (lambda (KeyVal)
+              (%match-path-node Store Loc KeyVal Fn))))
+        ))
 
     ; Key is the "key spec". Return the KeyVal (ie mlir.value).
     (define (build-node-key Loc Key)
@@ -202,18 +239,8 @@
         (build-member-name Loc Key)
       (if (value? !nbdl.store Key)
         (error "unexpected root store in path" Key)
-      (if (pair? Key)
-        ((lambda ()
-          (define Kind (car Key))
-          (define Args (cdr Key))
-          (if (eqv? Kind '%constexpr)
-            (apply build-constexpr Args)
-          (if (eqv? Kind '%nbdl-path)
-            (%match-path-spec Store Key)
-          (error "unrecognized path node")
-            ))))
       (error "unsupported path node kind: {}" Key)
-        ))))))
+        )))))
 
     (define (build-node-get Store Loc Key)
       (define KeyVal (build-node-key Loc Key))
@@ -225,71 +252,38 @@
           (result-types: !nbdl.store)))
       (result Op))
 
-    (define (build-node-match Store Loc Key TypeStr)
-      ; TODO If TypeStr is empty mark the yielded store as "Noncanonical".
-      ;      Also add that "Noncanonical" attribute to dependent store objects
-      ;      everywhere we build them.
-      (define KeyVal (build-node-key Loc Key))
-      (create-op "nbdl.match"
-        (loc: Loc)
-        (operands: Store KeyVal)
-        (attributes:)
-        (result-types:)
-        #;(region "overloads" (store : !nbdl.store)
-          (build-node-overload store Loc TypeStr)
-          (dump "stuff")
-          )))
-
-    (define (build-node-overload Store Loc TypeStr)
-      (create-op "nbdl.overload"
-        (loc: Loc)
-        (operands:)
-        (attributes: ("type" (string-attr TypeStr)))
-        (result-types:)
-        #;(region "body" (store : !nbdl.store)
-          (dump "overload stuff")
-          )))
-
-    (define (build-node-apply Loc Store Key)
-      (error "TODO implement build-node-apply"))
-
     (define (build-visit-params Loc FnVal ParamVals)
-      (define OrderedParamVals
-        (reverse ParamVals))
+      (unless (pair? ParamVals)
+        (error "expecting list of params: {}" ParamVals))
       (create-op "nbdl.visit"
         (loc: Loc)
-        (operands: FnVal OrderedParamVals)
+        (operands: FnVal ParamVals)
         (attributes:)
         (result-types:)))
 
-    ; FIXME Accept mlir.value with type !nbdl.store.
     (define (path? obj)
       (if (pair? obj)
         (if (eqv? (car obj) '%nbdl-path)
           #t #f) #f))
 
     ;; Create a new path appending keys to the input path.
-    ;; TODO check that type of mlir value of path is !nbdl.store
     (define (get path . keys)
-      (if (path? path)
-        (append path keys)
-          (append (list '%nbdl-path path) keys)
-          ))
-
-    ;; Construct an "overload" as a key to a path.
-    ;; The visitor will not be called if the type does not match.
-    (define (overload typename)
-      (define Loc (source-loc typename))
-      (list '%overload Loc typename))
-
+      (cond
+        ((value? path)
+          (append (list '%nbdl-path path) keys))
+        ((path? path)
+          (append path keys))
+        ((else (error "invalid path object: {}" path)))
+        ))
 
     ;; Given a C++ function, return a lambda that takes a list of paths
     ;; that resolve to a list of parameters to apply to the function.
     ;; - This will have runtime effects that are not necessarily stored.
     ;; - (e.g. string concatentation for creating an attribute.)
-    (define (applyz cpp-func)
+    (define (apply-fn cpp-func)
       (lambda paths
-        (base.apply nbdl-impl-apply cpp-func paths)))
+        (apply nbdl-impl-apply cpp-func paths)))
+
     ;; TODO Figure out what this returns exactly.
     ;; Visit each element of a range.
     (define (for-each path proc)
@@ -297,32 +291,26 @@
         (error "TODO Implement for-each")
         (error "expecting a path")))
 
-    ;; Resolve a value at a path to use as a key.
-    (define (key-at path)
-      (if (path? path)
-        (error "TODO Implement key")
-        (error "expecting a path")))
-
     (define-syntax match-aux
       (syntax-rules (=>)
-        ((match-aux S K
+        ((match-aux PathSpec
           (TypeN => FnN) ...)
-         (let ((ResolvedStore (%match-path-spec S))
-               (ResolvedKey   (%match-path-spec K)))
-          (create-op "nbdl.match"
-            (loc: 0)
-            (operands: ResolvedStore ResolvedKey)
-            (attributes:)
-            (result-types:)
-            (region: "overloads" ()
-              (create-op "nbdl.overload"
-                (loc: (source-loc TypeN))
-                (operands:)
-                (attributes: ("type" (string-attr TypeN)))
-                (result-types:)
-                (region: "body" ((OverloadArg : !nbdl.store))
-                  (FnN OverloadArg))) ...))))))
-    
+         (%match-path-spec PathSpec
+          (lambda (Store)
+            (define Key (build-unit))
+            (create-op "nbdl.match"
+              (loc: 0)
+              (operands: Store Key)
+              (attributes:)
+              (result-types:)
+              (region: "overloads" ()
+                (create-op "nbdl.overload"
+                  (loc: (source-loc TypeN))
+                  (operands:)
+                  (attributes: ("type" (string-attr TypeN)))
+                  (result-types:)
+                  (region: "body" ((OverloadArg : !nbdl.store))
+                    (FnN OverloadArg))) ...)))))))
 
     ;; Match a resolved object by its type.
     ;; - It is an error if a type appears more that once as an alternative.
@@ -334,12 +322,10 @@
     ;; - All Types should not have qualifiers.
     (define-syntax match
       (syntax-rules (else => store: key:)
-        ((match Path
+        ((match PathSpec
           (else => DefaultFn))
-         (match Path
-           ; FIXME This should be an empty string
-           ;       but NbdlWriter has to support that.
-           ("auto&&" => DefaultFn)))
+         (match PathSpec
+           ("" => DefaultFn)))
         ((match Path
           (Type1 => Fn1)
           (TypeN => FnN) ...
@@ -348,22 +334,12 @@
            (Type1 => Fn1)
            (TypeN => FnN) ...
            ("" => DefaultFn)))
-        ; FIXME Consider not providing this overload
-        ;       and using (get ...) for keys.
-        ((match ((store: S)
-                 (key: K))
+        ((match Store
            (Type1 => Fn1)
            (TypeN => FnN) ...)
-         (match-aux S K
+         (match-aux Store
            (Type1 => Fn1)
            (TypeN => FnN) ...))
-        ((match StoreOnly
-           (Type1 => Fn1)
-           (TypeN => FnN) ...)
-         (let ((K (build-unit)))
-           (match-aux StoreOnly K
-             (Type1 => Fn1)
-             (TypeN => FnN) ...)))
         ))
 
     (define (noop x)
@@ -386,6 +362,7 @@
           (eqv? (car path) '%nbdl-path)
           #f)))
 
+    ; FIXME Make this dump to error output.
     (define (dump-cpp name)
       (define Op
         (module-lookup current-nbdl-module name))
