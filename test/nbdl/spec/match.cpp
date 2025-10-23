@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <nbdl/concept/extras.hpp>
 #include <nbdl/variant.hpp>
 #include <boost/hana/functional/overload_linearly.hpp>
 #include <catch.hpp>
@@ -50,23 +51,20 @@ heavy_scheme {
   ; // equivalent to (get store 'my_var unit)
   (match-params-fn 'match_3 (store fn)
     (fn (get store 'my_var)))
-  (dump-cpp 'match_3)
-
 
   ; // match variant alternative with overloaded fn.
   ; // equivalent to (get store 'my_var unit)
-#;(match-params-fn 'match_4 (store fn)
+  (match-params-fn 'match_4 (store fn)
     (match (get store 'my_var)
       (else => fn)))
 
   ; // match specific variant alternative std::string
-#;(match-params-fn 'match_5 (store fn)
+  (match-params-fn 'match_5 (store fn)
     (define my_var
       (get store 'my_var))
     (match my_var
       ('std::string => fn)
       (else => noop)))
-  (dump 'moo)
 }
 }
 
@@ -111,7 +109,7 @@ TEST_CASE("Match context members", "[spec][match]") {
     [&](std::string const& alt_boo) {
       result_alt_boo = alt_boo;
     },
-    [&](auto&& X) {
+    [&](auto&&) {
       result_alt_boo = "FAIL";
     }));
 
@@ -119,12 +117,11 @@ TEST_CASE("Match context members", "[spec][match]") {
 
   result_alt_boo.clear();
 
-#if 0
   foo::match_4(ctx, boost::hana::overload_linearly(
     [&](std::string const& alt_boo) {
       result_alt_boo = alt_boo;
     },
-    [](auto&&) {
+    [&](auto&&) {
       result_alt_boo = "FAIL";
     }));
 
@@ -137,6 +134,4 @@ TEST_CASE("Match context members", "[spec][match]") {
   });
 
   CHECK(result_alt_boo == "this is a boo");
-#endif
-
 }

@@ -73,11 +73,11 @@
             (lambda (formals ...)
               (define parent
                  (result
-                   (create-op "nbdl.empty"
+                   (create-op "nbdl.unit"
                       (loc: 0)
                       (operands:)
                       (attributes:)
-                      (result-types: !nbdl.empty))))
+                      (result-types: !nbdl.unit))))
               (define (BuildCont)
                 (create-op "nbdl.cont"
                   (loc: 0)
@@ -342,8 +342,14 @@
            (TypeN => FnN) ...))
         ))
 
-    (define (noop x)
-      ; Do nothing.
+    ; Visit store and do nothing even if there is
+    ; butterscotch in a crystal bowl on the table.
+    (define (noop Store)
+      (create-op "nbdl.noop"
+        (loc: 0)
+        (operands: Store)
+        (attributes:)
+        (result-types:))
       (when #f #f))
 
     ;; Match the first satisified condition.
@@ -383,6 +389,7 @@
     match
     match-cond
     match-params-fn
+    noop
     dump-cpp
     dump-op
     ; reexport some base stuff
