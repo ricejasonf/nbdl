@@ -213,37 +213,36 @@
       (cond
         ; Member name is the only key kind where nbdl.get is required
         ; but we have to apply the identity first to unwrap the store.
+        ; (Which means the member name is applied to all alternatives.)
         ((symbol? PathNode)
           (match-unit Store
             (lambda (MatchedStore)
               (define MemberStore
-                (build-node-get MatchedStore Loc PathNode))
+                (build-node-get MatchedStore Loc
+                                (build-member-name Loc PathNode)))
               (Fn MemberStore))))
-        ; PathNode is a mlir.value that is the Key.
+        ; Number literal
+        ((number? PathNode)
+          (match-key Store (build-literal Loc PathNode) Fn))
+        ; String literal
+        ((string? PathNode)
+          (match-key Store (build-literal Loc PathNode) Fn))
+        ; Mlir.value that is the Key.
         ((value? PathNode)
           (match-key Store PathNode Fn))
+        ; Constexpr expr specifier
+        ((and (pair? PathNode)
+              (eqv? '%constexpr (car PathNode)))
+          (match-key Store (build-constexpr Loc (cdr PathNode)) Fn))
         ; Match a nested PathSpec then continue
         ((path? PathNode)
           (%match-path-spec PathNode
             (lambda (KeyVal)
               (%match-path-node Store Loc KeyVal Fn))))
+        (else (error "unsupported path node kind: {}" PathNode))
         ))
 
-    ; Key is the "key spec". Return the KeyVal (ie mlir.value).
-    (define (build-node-key Loc Key)
-      (if (number? Key)
-        (build-literal Loc Key)
-      (if (string? Key)
-        (build-literal Loc Key)
-      (if (symbol? Key)
-        (build-member-name Loc Key)
-      (if (value? !nbdl.store Key)
-        (error "unexpected root store in path" Key)
-      (error "unsupported path node kind: {}" Key)
-        )))))
-
-    (define (build-node-get Store Loc Key)
-      (define KeyVal (build-node-key Loc Key))
+    (define (build-node-get Store Loc KeyVal)
       (define Op
         (create-op "nbdl.get"
           (loc: Loc)
@@ -267,13 +266,18 @@
           #t #f) #f))
 
     ;; Create a new path appending keys to the input path.
-    (define (get path . keys)
-      (cond
-        ((value? path)
-          (append (list '%nbdl-path path) keys))
-        ((path? path)
-          (append path keys))
-        ((else (error "invalid path object: {}" path)))
+    (define-syntax get
+      (syntax-rules ()
+        ((get path key ...)
+         (cond
+          ((value? path)
+            (append (list '%nbdl-path path)
+                    (source-cons key '() (syntax-source-loc key)) ...))
+          ((path? path)
+            (append path
+                    (source-cons key '() (syntax-source-loc key)) ...))
+          ((else (error "invalid path object: {}" path)))
+          ))
         ))
 
     ;; Given a C++ function, return a lambda that takes a list of paths
@@ -368,6 +372,15 @@
           (eqv? (car path) '%nbdl-path)
           #f)))
 
+    ; Allow users to predefine constexprs
+    ; without inserting an operation.
+    ; (Stored as an improper list)
+    (define (constexpr Expr)
+      (cons '%constexpr Expr))
+
+    (define var-index
+      (constexpr "::nbdl::variant_index{}"))
+
     ; FIXME Make this dump to error output.
     (define (dump-cpp name)
       (define Op
@@ -382,7 +395,8 @@
 
   ) ; end of... begin
   (export
-    ;nbdl.apply
+    apply-fn
+    constexpr
     context
     get
     key-at
@@ -395,6 +409,7 @@
     ; reexport some base stuff
     define
     define-syntax
+    error
     syntax-rules
     if
     lambda

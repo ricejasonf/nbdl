@@ -65,6 +65,14 @@ heavy_scheme {
     (match my_var
       ('std::string => fn)
       (else => noop)))
+
+  ; // match variant index (not flat)
+  (match-params-fn 'match_6 (store fn)
+    (define my-var-index
+      (get store 'my_var (constexpr "nbdl::variant_index{}")))
+    (fn my-var-index))
+
+  (dump-cpp 'match_6)
 }
 }
 
@@ -78,6 +86,7 @@ TEST_CASE("Match context members", "[spec][match]") {
   std::string result_boo_1;
   int result_boo_2 = 0;
   std::string result_alt_boo;
+  size_t result_alt_index = ~size_t(-1);
 
   foo::match_0(ctx, [&](int foo, std::string const& bar) {
     result_foo = foo;
@@ -134,4 +143,10 @@ TEST_CASE("Match context members", "[spec][match]") {
   });
 
   CHECK(result_alt_boo == "this is a boo");
+
+  foo::match_6(ctx, [&](int alt_index) {
+    result_alt_index = alt_index;
+  });
+
+  CHECK(result_alt_index == 2);
 }
