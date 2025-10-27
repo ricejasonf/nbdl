@@ -20,13 +20,14 @@
     ; Maybe lift a literal to a LiteralOp.
     (define (maybe-literal-op* Arg)
       (define AttrVal
-        (if (number? Arg)
-          (attr (number->string Arg) i32)
-          (if (symbol? Arg)
-            (string-attr Arg)
-            (if (string? Arg)
-              (string-attr Arg)
-              #f))))
+        (cond
+          ((number? Arg)
+            (attr (number->string Arg) i32))
+          ((symbol? Arg)
+            (string-attr Arg))
+          ((string? Arg)
+              (string-attr Arg))
+          (else #f)))
       (if AttrVal
         (build-literal Arg AttrVal)
         Arg))
@@ -56,13 +57,47 @@
           (result-types: !nbdl.opaque))))
 
 
+    ;; Expects name begins with a .
     (define (build-member-name Loc Name)
+      (define StrippedName
+        (begin
+          (unless (member-name-key? Name)
+            (error "expecting member name: {}" Name))
+          (string-copy Name 1)))
       (result
         (create-op "nbdl.member_name"
           (loc: Loc)
           (operands:)
-          (attributes: ("name" (string-attr Name)))
+          (attributes: ("name" (string-attr StrippedName)))
           (result-types: !nbdl.symbol))))
+
+    (define (build-cont ResultArg)
+      (create-op "nbdl.cont"
+        (loc: 0)
+        (operands: ResultArg)
+        (attributes:)
+        (result-types:)
+        ))
+
+    ;; Build a Store and StoreCompose it with Parent
+    (define (build-store-node Parent Key Typename InitArgs)
+      (define KeyLoc (source-loc Key))
+      (define NewStore
+        (result
+          (create-op "nbdl.store"
+            (loc: Typename)
+            (operands: (map maybe-literal-op* InitArgs))
+            (attributes: ("name" (flat-symbolref-attr Typename)))
+            (result-types: !nbdl.store)
+            )))
+      (result
+        (create-op
+          "nbdl.store_compose"
+          (loc: Key)
+          (operands: (build-member-name KeyLoc Key) NewStore Parent)
+          (attributes:)
+          (result-types: !nbdl.store)))
+      )
 
     (define-syntax context
       (syntax-rules ()
@@ -71,40 +106,12 @@
             name
             (length '(formals ...))
             (lambda (formals ...)
-              (define parent
-                 (result
-                   (create-op "nbdl.unit"
-                      (loc: 0)
-                      (operands:)
-                      (attributes:)
-                      (result-types: !nbdl.unit))))
-              (define (BuildCont)
-                (create-op "nbdl.cont"
-                  (loc: 0)
-                  (operands: parent)
-                  (attributes:)
-                  (result-types:)
-                  ))
-              (define (member key typename . init-args)
-                (define NewStore
-                  (result
-                    (create-op "nbdl.store"
-                      (loc: typename)
-                      (operands: (map maybe-literal-op* init-args))
-                      (attributes: ("name" (flat-symbolref-attr typename)))
-                      (result-types: !nbdl.store)
-                      )))
-                (set! parent
-                  (result
-                    (create-op
-                      "nbdl.store_compose"
-                      (loc: key)
-                      (operands: (build-member-name key key) NewStore parent)
-                      (attributes:)
-                      (result-types: !nbdl.store)))))
+              (define Parent (build-unit))
+              (define (member Key Typename . InitArgs)
+                (set! Parent (build-store-node Parent Key Typename InitArgs)))
               body ...
               (translate-cpp
-                (parent-op (BuildCont))
+                (parent-op (build-cont Parent))
                 lexer-writer)
               )))))
 
@@ -190,18 +197,18 @@
 
     ;; Simply apply the unit-key to a mlir.value Store.
     (define (match-unit Store Fn)
-      (match-key Store (build-unit) Fn))
+      (match-key (source-loc) Store (build-unit) Fn))
 
     ;; We have mlir.values for both Store and Key
-    (define (match-key Store Key Fn)
+    (define (match-key Loc Store Key Fn)
       (create-op "nbdl.match"
-        (loc: 0)
+        (loc: Loc)
         (operands: Store Key)
         (attributes:)
         (result-types:)
         (region: "overloads" ()
           (create-op "nbdl.overload"
-            (loc: 0)
+            (loc: Loc)
             (operands:)
             (attributes: ("type" (string-attr "")))
             (result-types:)
@@ -209,31 +216,34 @@
               (Fn ResolvedStore)
               )))))
 
+    (define (member-name-key? PathNode)
+      (and (symbol? PathNode)
+           (eq? (string-ref PathNode 0) #\.)))
+
     (define (%match-path-node Store Loc PathNode Fn)
       (cond
         ; Member name is the only key kind where nbdl.get is required
         ; but we have to apply the identity first to unwrap the store.
         ; (Which means the member name is applied to all alternatives.)
-        ((symbol? PathNode)
+        ((member-name-key? PathNode)
           (match-unit Store
             (lambda (MatchedStore)
               (define MemberStore
                 (build-node-get MatchedStore Loc
                                 (build-member-name Loc PathNode)))
               (Fn MemberStore))))
+        ; All other symbols are treated as constexpr expressions.
+        ((symbol? PathNode)
+          (match-key Loc Store (build-constexpr Loc PathNode) Fn))
         ; Number literal
         ((number? PathNode)
-          (match-key Store (build-literal Loc PathNode) Fn))
+          (match-key Loc Store (build-literal Loc PathNode) Fn))
         ; String literal
         ((string? PathNode)
-          (match-key Store (build-literal Loc PathNode) Fn))
+          (match-key Loc Store (build-literal Loc PathNode) Fn))
         ; Mlir.value that is the Key.
         ((value? PathNode)
-          (match-key Store PathNode Fn))
-        ; Constexpr expr specifier
-        ((and (pair? PathNode)
-              (eqv? '%constexpr (car PathNode)))
-          (match-key Store (build-constexpr Loc (cdr PathNode)) Fn))
+          (match-key Loc Store PathNode Fn))
         ; Match a nested PathSpec then continue
         ((path? PathNode)
           (%match-path-spec PathNode
@@ -261,9 +271,8 @@
         (result-types:)))
 
     (define (path? obj)
-      (if (pair? obj)
-        (if (eqv? (car obj) '%nbdl-path)
-          #t #f) #f))
+      (and (pair? obj)
+           (eqv? (car obj) '%nbdl-path)))
 
     ;; Create a new path appending keys to the input path.
     (define-syntax get
@@ -364,23 +373,6 @@
         (error "TODO implement match-cond")
         (error "expecting a path")))
 
-    ;; Check if a scheme value is a path.
-    (define (path? path)
-      (if (null? path)
-        #t
-        (if (pair? path)
-          (eqv? (car path) '%nbdl-path)
-          #f)))
-
-    ; Allow users to predefine constexprs
-    ; without inserting an operation.
-    ; (Stored as an improper list)
-    (define (constexpr Expr)
-      (cons '%constexpr Expr))
-
-    (define var-index
-      (constexpr "::nbdl::variant_index{}"))
-
     ; FIXME Make this dump to error output.
     (define (dump-cpp name)
       (define Op
@@ -396,7 +388,6 @@
   ) ; end of... begin
   (export
     apply-fn
-    constexpr
     context
     get
     key-at

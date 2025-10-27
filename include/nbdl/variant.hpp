@@ -29,7 +29,7 @@ namespace nbdl
   namespace mp11 = boost::mp11;
 
   struct variant_tag { };
-  struct variant_index { };
+  inline constexpr struct variant_index_t { } variant_index;
 
   namespace detail
   {
@@ -247,7 +247,7 @@ namespace nbdl
     }
 
     template <typename Store, typename Fn>
-    static constexpr void apply(Store&& s, variant_index, Fn&& fn)
+    static constexpr void apply(Store&& s, variant_index_t, Fn&& fn)
     {
       std::forward<Fn>(fn)(s.get_type_id());
     }

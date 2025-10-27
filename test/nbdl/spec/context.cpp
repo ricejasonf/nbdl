@@ -11,11 +11,11 @@ namespace foo {
 heavy_scheme {
   (import (nbdl spec))
   (context 'my_context (member) (arg1 arg2)
-    (member 'foo 'int 42)
-    (member 'bar 'std::string
+    (member '.foo 'int 42)
+    (member '.bar 'std::string
            "initial string value")
-    (member 'baz 'int arg1)
-    (member 'boo 'std::string
+    (member '.baz 'int arg1)
+    (member '.boo 'std::string
            arg2))
 }
 }
@@ -23,8 +23,8 @@ heavy_scheme {
 TEST_CASE("Construct context", "[spec][context]") {
   std::string boo = "this is a boo";
   auto ctx = foo::my_context(5, std::move(boo));
-  CHECK(ctx.get_foo() == 42);
-  CHECK(ctx.get_bar() == std::string("initial string value"));
-  CHECK(ctx.get_baz() == 5);
-  CHECK(ctx.get_boo() == std::string("this is a boo"));
+  CHECK(ctx.foo == 42);
+  CHECK(ctx.bar == std::string("initial string value"));
+  CHECK(ctx.baz == 5);
+  CHECK(ctx.boo == std::string("this is a boo"));
 }

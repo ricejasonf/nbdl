@@ -187,7 +187,7 @@ TEST_CASE("Match variant index.", "[match][Store]")
 
   nbdl::optional<std::string> store = std::string("Hello, index!");
 
-  nbdl::match(store, nbdl::variant_index{},
+  nbdl::match(store, nbdl::variant_index,
               [&](size_t index) { result = index; });
 
   CHECK(result == 1);
