@@ -10,13 +10,15 @@
 namespace foo {
 heavy_scheme {
   (import (nbdl spec))
-  (context 'my_context (member) (arg1 arg2)
-    (member '.foo 'int 42)
-    (member '.bar 'std::string
-           "initial string value")
-    (member '.baz 'int arg1)
-    (member '.boo 'std::string
-           arg2))
+  (context 'my_context (arg1 arg2)
+   (member: '.foo 'int
+    (init-args: 42))
+    (member: '.bar 'std::string
+     (init-args: "initial string value"))
+    (member: '.baz 'int
+     (init-args: arg1))
+    (member: '.boo 'std::string
+     (init-args: arg2)))
 }
 }
 

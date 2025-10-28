@@ -100,16 +100,19 @@
       )
 
     (define-syntax context
-      (syntax-rules ()
-        ((context name (member) (formals ...) body ...)
+      (syntax-rules (member: init-args:)
+        ((context Name (Formals ...)
+            (member: Key1 Typename1 (init-args: InitArgs1N ...))
+            (member: KeyN TypenameN (init-args: InitArgsNN ...)) ...)
           (%build-context
-            name
-            (length '(formals ...))
-            (lambda (formals ...)
+            Name
+            (length '(Formals ...))
+            (lambda (Formals ...)
               (define Parent (build-unit))
               (define (member Key Typename . InitArgs)
                 (set! Parent (build-store-node Parent Key Typename InitArgs)))
-              body ...
+              (member Key1 Typename1 InitArgs1N ...)
+              (member KeyN TypenameN InitArgsNN ...) ...
               (translate-cpp
                 (parent-op (build-cont Parent))
                 lexer-writer)

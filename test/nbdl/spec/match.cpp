@@ -21,13 +21,16 @@ using my_variant = nbdl::variant<int, std::string>;
 
 heavy_scheme {
   (import (nbdl spec))
-  (context 'context (member) (arg1 arg2 arg3)
-    (member '.foo 'int 42)
-    (member '.bar 'std::string
-           "initial string value for bar")
-    (member '.baz 'int arg1)
-    (member '.boo "std::pair<std::string, int>" arg2 arg3)
-    (member '.my_var 'my_variant arg2))
+  (context 'context (arg1 arg2 arg3)
+    (member: '.foo 'int
+     (init-args: 42))
+    (member: '.bar 'std::string
+     (init-args: "initial string value for bar"))
+    (member: '.baz 'int
+     (init-args: arg1))
+    (member: '.boo "std::pair<std::string, int>"
+     (init-args: arg2 arg3))
+    (member: '.my_var 'my_variant (init-args: arg2)))
 
   ; // get values initialized with literals
   (match-params-fn 'match_0 (store fn)
