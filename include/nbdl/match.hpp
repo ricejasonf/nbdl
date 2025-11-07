@@ -9,6 +9,7 @@
 
 #include <nbdl/concept/State.hpp>
 #include <nbdl/concept/Store.hpp>
+#include <nbdl/concept/SameAs.hpp>
 #include <nbdl/fwd/match.hpp>
 #include <nbdl/get.hpp>
 #include <nbdl/variant.hpp>
@@ -22,16 +23,18 @@
 #include <utility>
 
 namespace nbdl {
-  namespace detail {
-    // TODO This could be a concept.
-    template <typename Impl, typename Store, typename Fn, typename = void>
-    struct matches_identity : std::false_type { };
+  // Useful for match catch all
+  inline constexpr auto noop = [](auto&&) { };
 
-    template <typename Impl, typename Store, typename Fn>
-    struct matches_identity<Impl, Store, Fn,
-      decltype(Impl::apply(std::declval<Store>(), std::declval<Fn>()))>
-      : std::true_type
-    { };
+  namespace detail {
+    // Does the match_impl explicitly implement matching
+    // with no key (implicitly as unit key)?
+    template <Store T>
+    concept MatchesIdentity = requires (T t) {
+        using Tag = hana::tag_of_t<T>;
+        using Impl = match_impl<Tag>;
+        Impl::apply(t, nbdl::noop);
+      };
   }
 
   template<Store Store, typename Key, typename Fn>
@@ -39,11 +42,8 @@ namespace nbdl {
     using Tag = hana::tag_of_t<Store>;
     using Impl = match_impl<Tag>;
 
-    Impl::apply(
-      std::forward<Store>(s)
-    , std::forward<Key>(k)
-    , std::forward<Fn>(fn)
-    );
+    Impl::apply(std::forward<Store>(s), std::forward<Key>(k),
+                std::forward<Fn>(fn));
   };
 
   template<typename Store, typename Fn>
@@ -51,16 +51,17 @@ namespace nbdl {
     using Tag = hana::tag_of_t<Store>;
     using Impl = match_impl<Tag>;
 
-    if constexpr(detail::matches_identity<Impl, Store, Fn>::value) {
-      Impl::apply(
-        std::forward<Store>(s)
-      , std::forward<Fn>(fn)
-      );
+    if constexpr(detail::MatchesIdentity<Store>) {
+      static_assert(
+        !requires {
+          Impl::apply(std::forward<Store>(s),
+                      [](nbdl::SameAs<Store> auto&&) { });
+        }, "should not directly implement matching self");
+      Impl::apply(std::forward<Store>(s),
+                  std::forward<Fn>(fn));
     }
     else {
-      std::forward<Fn>(fn)(
-        std::forward<Store>(s)
-      );
+      std::forward<Fn>(fn)(std::forward<Store>(s));
     }
   };
 

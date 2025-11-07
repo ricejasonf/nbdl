@@ -145,9 +145,6 @@ namespace nbdl
     };
   }
 
-  //useful for match catch all
-  inline constexpr auto noop = [](auto){};
-
   // tag for empty variant value (always has type index of 0)
   struct nothing { };
 

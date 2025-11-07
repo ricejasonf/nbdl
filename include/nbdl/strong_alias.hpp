@@ -1,0 +1,102 @@
+//
+// Copyright Jason Rice 2025
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+//
+#ifndef NBDL_STRONG_ALIAS_HPP
+#define NBDL_STRONG_ALIAS_HPP
+
+namespace nbdl {
+template <typename T>
+class strong_alias {
+  T value;
+
+public:
+  // The defaulted constructors use subsumption to
+  // beat the forwarding constructor.
+  strong_alias(strong_alias const&) = default;
+  strong_alias(strong_alias&) = default;
+  strong_alias(strong_alias&&) = default;
+  explicit strong_alias(auto&& ... args) :
+    value(static_cast<decltype(args)>(args) ...)
+
+  auto&& nbdl_get_strong_alias(this auto&& self) {
+    return static_cast<decltype(self)>(self); 
+  }
+};
+
+template <State State, bool is_moveable>
+struct get_impl<strong_alias<State, is_moveable> {
+  template <typename StateAlias>
+  static constexpr decltype(auto) apply(StateAlias&& s) {
+    return (s);
+  }
+
+  template <typename StateAlias, typename Key>
+  static constexpr decltype(auto) apply(State s, Key&& k) {
+    return nbdl::get(std::forward<State>(s).nbdl_get_strong_alias_value(),
+                     std::forward<Key>(k));
+  }
+};
+
+template <Store Store, bool is_moveable>
+  requires (!State<Store>)
+struct match_impl<strong_alias<Store, is_moveable>> {
+  template <typename StoreAlias, typename Fn>
+    requires detail::MatchesIdentity<Store>
+  static constexpr void apply(StoreAlias&& s, Fn&& fn) {
+    match(std::forward<StoreAlias>(s).nbdl_get_strong_alias_value(),
+          std::forward<Fn>(fn));
+  }
+
+  template <typename StoreAlias, typename Key, typename Fn>
+  static constexpr void apply(StoreAlias&& s, Key&& k, Fn&& fn) {
+    match(std::forward<StoreAlias>(s).nbdl_get_strong_alias_value(),
+          std::forward<Key>(k),
+          std::forward<Fn>(fn));
+  }
+};
+
+// context_alias
+
+// TODO This should replace the legacy nbdl::context.
+template <Store T, bool is_moveable = true>
+class context_alias {
+  T value;
+
+public:
+  // The defaulted constructors use subsumption to
+  // beat the forwarding constructor.
+  context_alias(context_alias const&) = default;
+  context_alias(context_alias&) = default;
+  context_alias(context_alias&&) = default;
+  explicit context_alias(auto&& ... args) :
+    value(static_cast<decltype(args)>(args) ...)
+
+  auto&& nbdl_get_context_alias_value(this auto&& self) {
+    return static_cast<decltype(self)>(self).value; 
+  }
+};
+
+template <Store T>>
+class context_alias<T, /*is_moveable=*/false> {
+  T value;
+
+public:
+  // The deleted constructors use subsumption to
+  // beat the forwarding constructor.
+  context_alias(context_alias const&) = delete;
+  context_alias(context_alias&) = delete;
+  context_alias(context_alias&&) = delete;
+  explicit context_alias(auto&& ... args) :
+    value(static_cast<decltype(args)>(args) ...)
+
+  auto&& nbdl_get_context_alias_value(this auto&& self) {
+    return static_cast<decltype(self)>(self).value; 
+  }
+};
+
+}  // end namespace nbdl
+
+#endif

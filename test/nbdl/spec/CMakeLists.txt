@@ -17,4 +17,5 @@ nbdl_add_test("test.nbdl.spec.basic"
 nbdl_catch_test_suite(build_targets "test.nbdl.spec"
   context.cpp
   match.cpp
+  apply_action.cpp
 )

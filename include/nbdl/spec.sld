@@ -9,8 +9,9 @@
     (load-dialect "func")
     (load-dialect "heavy")
     (load-dialect "nbdl")
-    (define !nbdl.opaque (type "!nbdl.opaque"))
     (define !nbdl.store (type "!nbdl.store"))
+    ; FIXME change to "!nbdl.variant" once its in the compiler.
+    (define !nbdl.variant (type "!nbdl.store")) ;"!nbdl.variant"))
     (define !nbdl.tag (type "!nbdl.tag"))
     (define !nbdl.symbol (type "!nbdl.symbol"))
     (define !nbdl.empty (type "!nbdl.empty"))
@@ -18,19 +19,24 @@
     (define i32 (type "i32"))
 
     ; Maybe lift a literal to a LiteralOp.
-    (define (maybe-literal-op* Arg)
-      (define AttrVal
-        (cond
-          ((number? Arg)
-            (attr (number->string Arg) i32))
-          ((symbol? Arg)
-            (string-attr Arg))
-          ((string? Arg)
-              (string-attr Arg))
-          (else #f)))
-      (if AttrVal
-        (build-literal Arg AttrVal)
-        Arg))
+    (define maybe-literal-op*
+      (case-lambda
+        ((Loc Arg)
+          (define AttrVal
+            (cond
+              ((number? Arg)
+                (attr (number->string Arg) i32))
+              ((symbol? Arg)
+                (string-attr Arg))
+              ((string? Arg)
+                  (string-attr Arg))
+              (else #f)))
+          (if AttrVal
+            (build-literal Loc AttrVal)
+            Arg))
+        ((Arg)
+         (maybe-literal-op* (source-loc Arg) Arg))
+        ))
 
     (define (build-unit)
       (result
@@ -46,7 +52,7 @@
           (loc: Loc)
           (operands:)
           (attributes: ("value" Arg))
-          (result-types: !nbdl.opaque))))
+          (result-types: !nbdl.store))))
 
     (define (build-constexpr Loc ExprStr)
       (result
@@ -54,8 +60,15 @@
           (loc: Loc)
           (operands:)
           (attributes: ("expr" (string-attr ExprStr)))
-          (result-types: !nbdl.opaque))))
+          (result-types: !nbdl.store))))
 
+    ; Build a key for store-compose.
+    (define (build-store-key Loc Key)
+      (cond
+        ((value? Key) Key)
+        ((member-name-key?
+           (build-member-name Loc Key)))
+        (else (build-constexpr Loc Key))))
 
     ;; Expects name begins with a .
     (define (build-member-name Loc Name)
@@ -99,6 +112,69 @@
           (result-types: !nbdl.store)))
       )
 
+    (define-syntax store
+      (syntax-rules (init-args:)
+        ((store Typename)
+         (store Typename (init-args:)))
+        ((store Typename (init-args: InitArgs ...))
+         (result
+           (create-op "nbdl.store"
+             (loc: (syntax-source-loc Typename))
+             (operands: (map maybe-literal-op*
+                             '((syntax-source-loc InitArgs) ...)
+                             '(InitArgs ...)))
+             (attributes: ("name" (flat-symbolref-attr Typename)))
+             (result-types: !nbdl.store)
+             )))))
+
+    (define-syntax store-compose
+      (syntax-rules ()
+        ((store-compose Key Store)
+         (lambda (ParentStore)
+           (let ((KeyLoc (syntax-source-loc Key)))
+             (result
+               (create-op "nbdl.store_compose"
+                 (loc: KeyLoc)
+                 (operands: (build-store-key KeyLoc Key) Store ParentStore)
+                 (attributes:)
+                 (result-types: !nbdl.store)
+                 )))))))
+
+    (define-syntax variant
+      (syntax-rules ()
+        ((variant Store1 StoreN ...)
+          (result
+            (create-op "nbdl.variant"
+              (loc: (syntax-source-loc Store1))
+              (operands: Store1 StoreN ...)
+              (attributes:)
+              (result-types: !nbdl.variant)
+              )))))
+
+    (define-syntax define-store
+      (syntax-rules ()
+        ((define-store Name (InitArgs ...) Body ...)
+          (%build-context
+            Name
+            (length '(InitArgs ...))
+            (lambda (InitArgs ...)
+              (define Parent (build-unit))
+              (define (ProcessBody BodyEl)
+                (set! Parent
+                  (cond
+                    ((procedure? BodyEl)
+                      (BodyEl Parent))
+                    ; Allow specifying a single store
+                    ((value? !nbdl.unit Parent)
+                     BodyEl)
+                    (else
+                      (error "expecting store functional: {}" BodyEl)))))
+              (ProcessBody Body) ...
+              (translate-cpp
+                (parent-op (build-cont Parent))
+                lexer-writer)
+              )))))
+
     (define-syntax context
       (syntax-rules (member: init-args:)
         ((context Name (Formals ...)
@@ -126,26 +202,22 @@
     (define-syntax match-params-fn
       (syntax-rules ()
         ((match-params-fn name (stores ... fn) body ...)
-          (%build-match-params
-            name
-            (length '(stores ...))
-            (lambda (stores ... %FnVal)
-              (define (Fn . PathSpec)
-                (define Loc (source-loc name))
-                (define (VisitFn ParamVals)
-                  (build-visit-params Loc %FnVal ParamVals))
-                (%match-params-spec PathSpec VisitFn))
-              ((lambda (fn) body ...) Fn)
-              ((lambda ()
-                (define FuncOp
-                  (module-lookup current-nbdl-module name))
-                (if (verify FuncOp)
-                  (translate-cpp FuncOp lexer-writer)
-                  (begin
-                    (translate-cpp FuncOp)
-                    (error "verification failed: {0} {1}" name FuncOp)))
-                FuncOp))
-              )))))
+         (let ((FuncOp
+                (%build-match-params
+                  name
+                  (length '(stores ...))
+                  (lambda (stores ... %FnVal)
+                    (define (Fn . PathSpec)
+                      (define Loc (source-loc name))
+                      (define (VisitFn ParamVals)
+                        (build-resolve-params Loc %FnVal ParamVals))
+                      (%match-params-spec PathSpec VisitFn))
+                    ((lambda (fn) body ...) Fn)
+                    ))))
+            (unless (verify FuncOp)
+              (error "verification failed: {0} {1}" name FuncOp))
+            (translate-cpp FuncOp lexer-writer)
+            FuncOp))))
 
     ; ParamsSpec is a list of PathSpecs
     ; ParamsFn is the callback taking the list of results.
@@ -264,10 +336,10 @@
           (result-types: !nbdl.store)))
       (result Op))
 
-    (define (build-visit-params Loc FnVal ParamVals)
+    (define (build-resolve-params Loc FnVal ParamVals)
       (unless (pair? ParamVals)
         (error "expecting list of params: {}" ParamVals))
-      (create-op "nbdl.visit"
+      (create-op "nbdl.resolve"
         (loc: Loc)
         (operands: FnVal ParamVals)
         (attributes:)
@@ -292,13 +364,29 @@
           ))
         ))
 
-    ;; Given a C++ function, return a lambda that takes a list of paths
-    ;; that resolve to a list of parameters to apply to the function.
-    ;; - This will have runtime effects that are not necessarily stored.
-    ;; - (e.g. string concatentation for creating an attribute.)
-    (define (apply-fn cpp-func)
-      (lambda paths
-        (apply nbdl-impl-apply cpp-func paths)))
+    ;; Apply a "Store" function to a list of Store operands.
+    ;; - This will have a return value that is not necessarily stored.
+    ;; - (e.g. string concatentation for creating an html attribute.)
+    (define-syntax apply-func
+      (syntax-rules ()
+        ((apply-func FnStore Store1 StoreN ...)
+          (create-op "nbdl.apply_func"
+            (loc: (syntax-source-loc FnStore))
+            (operands: FnStore Store1 StoreN ...)
+            (attributes:)
+            (result-types: !nbdl.store)))))
+
+    ;; Modify an LHS Store object by calling `nbdl::apply_action`
+    ;; whose default implementation receives a single RHS and
+    ;; performs an assignment.
+    (define-syntax apply-action
+      (syntax-rules ()
+        ((apply-action StoreLHS Store1 StoreN ...)
+          (create-op "nbdl.apply_action"
+            (loc: (syntax-source-loc StoreLHS))
+            (operands: StroreLHS Store1 StoreN ...)
+            (attributes:)
+            (result-types:)))))
 
     ;; TODO Figure out what this returns exactly.
     ;; Visit each element of a range.
@@ -314,14 +402,15 @@
          (%match-path-spec PathSpec
           (lambda (Store)
             (define Key (build-unit))
+            (close-previous-scope)
             (create-op "nbdl.match"
-              (loc: 0)
+              (loc: (syntax-source-loc PathSpec))
               (operands: Store Key)
               (attributes:)
               (result-types:)
               (region: "overloads" ()
                 (create-op "nbdl.overload"
-                  (loc: (source-loc TypeN))
+                  (loc: (syntax-source-loc TypeN))
                   (operands:)
                   (attributes: ("type" (string-attr TypeN)))
                   (result-types:)
@@ -392,6 +481,10 @@
   (export
     apply-fn
     context
+    define-store
+    store-compose
+    variant
+    store
     get
     key-at
     match
