@@ -9,10 +9,9 @@
 
 #include <nbdl/concept/State.hpp>
 #include <nbdl/concept/Store.hpp>
-#include <nbdl/concept/SameAs.hpp>
+#include <nbdl/concept/extras.hpp>
 #include <nbdl/fwd/match.hpp>
 #include <nbdl/get.hpp>
-#include <nbdl/variant.hpp>
 
 #include <boost/hana/bool.hpp>
 #include <boost/hana/core/default.hpp>
@@ -29,11 +28,9 @@ namespace nbdl {
   namespace detail {
     // Does the match_impl explicitly implement matching
     // with no key (implicitly as unit key)?
-    template <Store T>
-    concept MatchesIdentity = requires (T t) {
-        using Tag = hana::tag_of_t<T>;
-        using Impl = match_impl<Tag>;
-        Impl::apply(t, nbdl::noop);
+    template <typename T>
+    concept MatchesIdentity = Store<T> && requires (T t) {
+        match_impl<hana::tag_of_t<T>>::apply(t, nbdl::noop);
       };
   }
 
@@ -52,13 +49,12 @@ namespace nbdl {
     using Impl = match_impl<Tag>;
 
     if constexpr(detail::MatchesIdentity<Store>) {
-      static_assert(
-        !requires {
-          Impl::apply(std::forward<Store>(s),
-                      [](nbdl::SameAs<Store> auto&&) { });
-        }, "should not directly implement matching self");
       Impl::apply(std::forward<Store>(s),
-                  std::forward<Fn>(fn));
+                  [&](auto&& t) {
+                    static_assert(!nbdl::SameAs<decltype(s), decltype(t)>,
+                        "should not directly implement matching self");
+                    std::forward<Fn>(fn)(static_cast<decltype(t)>(t));
+                  });
     }
     else {
       std::forward<Fn>(fn)(std::forward<Store>(s));
@@ -67,13 +63,6 @@ namespace nbdl {
 
   template<State Tag>
   struct match_impl<Tag> {
-    template <typename Store, typename Fn>
-    static constexpr void apply(Store&& s, Fn&& fn) {
-      std::forward<Fn>(fn)(
-        nbdl::get(std::forward<Store>(s))
-      );
-    }
-
     template <typename Store, typename Key, typename Fn>
     static constexpr void apply(Store&& s, Key&& k, Fn&& fn) {
       std::forward<Fn>(fn)(

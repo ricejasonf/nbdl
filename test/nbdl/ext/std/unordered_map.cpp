@@ -8,6 +8,7 @@
 #include <nbdl/ext/std/unordered_map.hpp>
 #include <nbdl/match.hpp>
 
+#include <boost/hana.hpp>
 #include <catch.hpp>
 #include <string>
 #include <utility>

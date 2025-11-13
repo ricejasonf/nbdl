@@ -13,30 +13,53 @@
     ; FIXME change to "!nbdl.variant" once its in the compiler.
     (define !nbdl.variant (type "!nbdl.store")) ;"!nbdl.variant"))
     (define !nbdl.tag (type "!nbdl.tag"))
-    (define !nbdl.symbol (type "!nbdl.symbol"))
+    (define !nbdl.member_name (type "!nbdl.member_name"))
     (define !nbdl.empty (type "!nbdl.empty"))
     (define !nbdl.unit (type "!nbdl.unit"))
     (define i32 (type "i32"))
 
-    ; Maybe lift a literal to a LiteralOp.
-    (define maybe-literal-op*
-      (case-lambda
-        ((Loc Arg)
-          (define AttrVal
-            (cond
-              ((number? Arg)
-                (attr (number->string Arg) i32))
-              ((symbol? Arg)
-                (string-attr Arg))
-              ((string? Arg)
-                  (string-attr Arg))
-              (else #f)))
-          (if AttrVal
-            (build-literal Loc AttrVal)
-            Arg))
-        ((Arg)
-         (maybe-literal-op* (source-loc Arg) Arg))
-        ))
+    ; Maybe lift to a LiteralOp or ConstexprOp.
+    (define (maybe-build-expr Loc Arg)
+      (cond
+        ((member-name-expr? Arg)
+          (error "unexpected member name literal"))
+        ((symbol? Arg)
+          (build-constexpr Loc Arg))
+        ((number? Arg)
+          (build-literal Loc (attr (number->string Arg) i32)))
+        ((string? Arg)
+          (build-literal Loc (string-attr Arg)))
+        (else Arg)))
+
+    ;; Maybe lift to a LiteralOp, ConstexprOp, or MemberNameOp.
+    (define (maybe-build-expr+ Loc Arg)
+      (if (member-name-expr? Arg)
+        (build-member-name Loc Arg)
+        (maybe-build-expr Loc Arg)))
+
+    (define (%match-expr-impl Expr Fn)
+      (cond
+        ((value? Expr)
+         (Fn Expr))
+        ((procedure? Expr)
+         (Expr Fn))
+        ((expr? Expr) ;; FIXME this go here?
+         (let ((Loc (cadr Expr))
+               (Thunk (car (cddr Expr))))
+           (Thunk Loc Fn)))
+        ((path? Expr)
+         (%match-path-spec Expr Fn))
+        (else (error "unable to resolve value: {}" Expr)))
+      ; Return something... unspecified.
+      (if #f #f))
+
+    (define (%match-expr Loc ExprArg Fn)
+      (define Expr (maybe-build-expr Loc ExprArg))
+      (%match-expr-impl Expr Fn))
+
+    (define (%match-expr+ Loc ExprArg Fn)
+      (define Expr (maybe-build-expr+ Loc ExprArg))
+      (%match-expr-impl Expr Fn))
 
     (define (build-unit)
       (result
@@ -55,6 +78,8 @@
           (result-types: !nbdl.store))))
 
     (define (build-constexpr Loc ExprStr)
+      (when (member-name-expr? ExprStr)
+        (error "unexpected member name: {}" ExprStr))
       (result
         (create-op "nbdl.constexpr"
           (loc: Loc)
@@ -66,15 +91,15 @@
     (define (build-store-key Loc Key)
       (cond
         ((value? Key) Key)
-        ((member-name-key?
-           (build-member-name Loc Key)))
+        ((member-name-expr? Key)
+           (build-member-name Loc Key))
         (else (build-constexpr Loc Key))))
 
     ;; Expects name begins with a .
     (define (build-member-name Loc Name)
       (define StrippedName
         (begin
-          (unless (member-name-key? Name)
+          (unless (member-name-expr? Name)
             (error "expecting member name: {}" Name))
           (string-copy Name 1)))
       (result
@@ -82,7 +107,7 @@
           (loc: Loc)
           (operands:)
           (attributes: ("name" (string-attr StrippedName)))
-          (result-types: !nbdl.symbol))))
+          (result-types: !nbdl.member_name))))
 
     (define (build-cont ResultArg)
       (create-op "nbdl.cont"
@@ -92,26 +117,6 @@
         (result-types:)
         ))
 
-    ;; Build a Store and StoreCompose it with Parent
-    (define (build-store-node Parent Key Typename InitArgs)
-      (define KeyLoc (source-loc Key))
-      (define NewStore
-        (result
-          (create-op "nbdl.store"
-            (loc: Typename)
-            (operands: (map maybe-literal-op* InitArgs))
-            (attributes: ("name" (flat-symbolref-attr Typename)))
-            (result-types: !nbdl.store)
-            )))
-      (result
-        (create-op
-          "nbdl.store_compose"
-          (loc: Key)
-          (operands: (build-member-name KeyLoc Key) NewStore Parent)
-          (attributes:)
-          (result-types: !nbdl.store)))
-      )
-
     (define-syntax store
       (syntax-rules (init-args:)
         ((store Typename)
@@ -120,9 +125,9 @@
          (result
            (create-op "nbdl.store"
              (loc: (syntax-source-loc Typename))
-             (operands: (map maybe-literal-op*
+             (operands: (map maybe-build-expr
                              '((syntax-source-loc InitArgs) ...)
-                             '(InitArgs ...)))
+                             (list InitArgs ...)))
              (attributes: ("name" (flat-symbolref-attr Typename)))
              (result-types: !nbdl.store)
              )))))
@@ -153,46 +158,56 @@
 
     (define-syntax define-store
       (syntax-rules ()
-        ((define-store Name (InitArgs ...) Body ...)
-          (%build-context
-            Name
-            (length '(InitArgs ...))
-            (lambda (InitArgs ...)
-              (define Parent (build-unit))
-              (define (ProcessBody BodyEl)
-                (set! Parent
-                  (cond
-                    ((procedure? BodyEl)
-                      (BodyEl Parent))
-                    ; Allow specifying a single store
-                    ((value? !nbdl.unit Parent)
-                     BodyEl)
-                    (else
-                      (error "expecting store functional: {}" BodyEl)))))
-              (ProcessBody Body) ...
-              (translate-cpp
-                (parent-op (build-cont Parent))
-                lexer-writer)
-              )))))
+        ((define-store Name (InitArgs ...) StoreFunctionalN ...)
+          (with-builder
+            (lambda ()
+              (at-block-end (entry-block current-nbdl-module))
+              (let ()
+                (define Op
+                  (create-op "nbdl.define_store"
+                    (loc: (syntax-source-loc Name))
+                    (operands:)
+                    (attributes: ("sym_name" (string-attr Name)))
+                    (result-types:)
+                    (region: "body" ((InitArgs : !nbdl.store) ...)
+                      (define Parent (build-unit))
+                      (define (ProcessBody BodyEl)
+                        (set! Parent
+                          (cond
+                            ((procedure? BodyEl)
+                              (BodyEl Parent))
+                            ; Allow specifying a single store
+                            ((value? !nbdl.unit Parent)
+                             (begin
+                               ; TODO Delete the dangling nbdl.unit operation here.
+                               BodyEl))
+                            (else
+                              (error "expecting store functional: {}" BodyEl)))))
+                      (ProcessBody StoreFunctionalN) ...
+                      (create-op "nbdl.cont"
+                        (loc: (syntax-source-loc Name))
+                        (operands: Parent)
+                        (attributes:)
+                        (result-types:))
+                      )))
+                (unless (verify Op)
+                  (error "operation failed verification: {}" Op))
+                (translate-cpp Op lexer-writer)
+                Op))))))
 
+    ;; For now, this is just an alternative interface to define-store.
+    ;; The idea was to encapsulate a root node in the state graph
+    ;; but the benefit is not apparent.
     (define-syntax context
       (syntax-rules (member: init-args:)
         ((context Name (Formals ...)
             (member: Key1 Typename1 (init-args: InitArgs1N ...))
             (member: KeyN TypenameN (init-args: InitArgsNN ...)) ...)
-          (%build-context
-            Name
-            (length '(Formals ...))
-            (lambda (Formals ...)
-              (define Parent (build-unit))
-              (define (member Key Typename . InitArgs)
-                (set! Parent (build-store-node Parent Key Typename InitArgs)))
-              (member Key1 Typename1 InitArgs1N ...)
-              (member KeyN TypenameN InitArgsNN ...) ...
-              (translate-cpp
-                (parent-op (build-cont Parent))
-                lexer-writer)
-              )))))
+         (define-store Name (Formals ...)
+           (store-compose Key1 (store Typename1 (init-args: InitArgs1N ...)))
+           (store-compose KeyN (store TypenameN (init-args: InitArgsNN ...)))
+           ...
+           ))))
 
     ;; Define a function to receive a matched set of parameters.
     ;; Each path node should be of the format:
@@ -240,16 +255,25 @@
 
     (define (%match-path-spec PathSpec Fn)
       (cond
-        ((or (value? !nbdl.store PathSpec)
-             (value? !nbdl.unit PathSpec))
-           (Fn PathSpec))
+        ((value? PathSpec)
+         (Fn PathSpec))
+        ((expr? PathSpec)
+         (let ((Loc (cadr PathSpec))
+               (Thunk (car (cddr PathSpec))))
+           (Thunk Loc Fn)))
         ((and (pair? PathSpec)
               (eqv? '%nbdl-path (car PathSpec)))
          (let ((RootStore (cadr PathSpec))
                (PathNodes (cddr PathSpec)))
-          (if (value? RootStore)
-            (%match-path-spec-rec RootStore PathNodes Fn)
-            (error "expecting a root store object in pathspec: {}" PathSpec))))
+          (cond
+            ((and (value? RootStore)
+                  (pair? PathNodes))
+              (%match-path-spec-rec RootStore PathNodes Fn))
+            ((value? RootStore)
+              (match-unit RootStore Fn))
+            (else
+              (error "expecting a root store object in pathspec: {}"
+                     PathSpec)))))
         (else (error "expecting nbdl pathspec: {}" PathSpec))))
 
     (define (%match-path-spec-rec Store PathNodes Fn)
@@ -291,41 +315,35 @@
               (Fn ResolvedStore)
               )))))
 
-    (define (member-name-key? PathNode)
+    (define (member-name-expr? PathNode)
       (and (symbol? PathNode)
            (eq? (string-ref PathNode 0) #\.)))
 
     (define (%match-path-node Store Loc PathNode Fn)
-      (cond
-        ; Member name is the only key kind where nbdl.get is required
-        ; but we have to apply the identity first to unwrap the store.
-        ; (Which means the member name is applied to all alternatives.)
-        ((member-name-key? PathNode)
-          (match-unit Store
-            (lambda (MatchedStore)
-              (define MemberStore
-                (build-node-get MatchedStore Loc
-                                (build-member-name Loc PathNode)))
-              (Fn MemberStore))))
-        ; All other symbols are treated as constexpr expressions.
-        ((symbol? PathNode)
-          (match-key Loc Store (build-constexpr Loc PathNode) Fn))
-        ; Number literal
-        ((number? PathNode)
-          (match-key Loc Store (build-literal Loc PathNode) Fn))
-        ; String literal
-        ((string? PathNode)
-          (match-key Loc Store (build-literal Loc PathNode) Fn))
-        ; Mlir.value that is the Key.
-        ((value? PathNode)
-          (match-key Loc Store PathNode Fn))
-        ; Match a nested PathSpec then continue
-        ((path? PathNode)
-          (%match-path-spec PathNode
-            (lambda (KeyVal)
-              (%match-path-node Store Loc KeyVal Fn))))
-        (else (error "unsupported path node kind: {}" PathNode))
-        ))
+      (close-previous-scope)
+      (let ((PathNode
+              (maybe-build-expr+ Loc PathNode)))
+        (cond
+          ; Member name is the only key kind where nbdl.get is required
+          ; but we have to apply the identity first to unwrap the store.
+          ; (Which means the member name is applied to all alternatives.)
+          ((value? !nbdl.member_name PathNode)
+            (match-unit Store
+              (lambda (MatchedStore)
+                (define MemberStore
+                  (build-node-get MatchedStore Loc
+                                  PathNode))
+                (Fn MemberStore))))
+          ; Any other resolved mlir.value.
+          ((value? PathNode)
+            (match-key Loc Store PathNode Fn))
+          ; Match a nested PathSpec then continue.
+          ((path? PathNode)
+            (%match-path-spec PathNode
+              (lambda (KeyVal)
+                (%match-path-node Store Loc KeyVal Fn))))
+          (else (error "unsupported path node kind: {}" PathNode))
+          )))
 
     (define (build-node-get Store Loc KeyVal)
       (define Op
@@ -339,11 +357,21 @@
     (define (build-resolve-params Loc FnVal ParamVals)
       (unless (pair? ParamVals)
         (error "expecting list of params: {}" ParamVals))
-      (create-op "nbdl.resolve"
-        (loc: Loc)
-        (operands: FnVal ParamVals)
-        (attributes:)
-        (result-types:)))
+      (let ()
+        (define Result
+          (result
+            (create-op "nbdl.visit"
+                       (loc: Loc)
+                       (operands: FnVal ParamVals)
+                       (attributes:)
+                       (result-types: !nbdl.unit))))
+        (create-op "nbdl.discard"
+                   (loc: Loc)
+                   (operands: Result)
+                   (attributes:)
+                   (result-types:))))
+
+
 
     (define (path? obj)
       (and (pair? obj)
@@ -367,6 +395,7 @@
     ;; Apply a "Store" function to a list of Store operands.
     ;; - This will have a return value that is not necessarily stored.
     ;; - (e.g. string concatentation for creating an html attribute.)
+    ;; TODO REMOVE apply-func
     (define-syntax apply-func
       (syntax-rules ()
         ((apply-func FnStore Store1 StoreN ...)
@@ -376,17 +405,100 @@
             (attributes:)
             (result-types: !nbdl.store)))))
 
-    ;; Modify an LHS Store object by calling `nbdl::apply_action`
-    ;; whose default implementation receives a single RHS and
-    ;; performs an assignment.
-    (define-syntax apply-action
+    (define matching-results? #f)
+
+    ;; Indicate that we require intermediate result values
+    ;; from a ParamsSpec usually to become operands
+    ;; to a call to visit.
+    (define (%match-results ParamsSpec Fn)
+      (define prev matching-results?)
+      (dynamic-wind
+        (lambda ()
+          (set! matching-results? #t))
+        (lambda ()
+          (%match-params-spec ParamsSpec Fn))
+        (lambda ()
+          (set! matching-results? prev))))
+
+    (define (%top-level Thunk)
+      (define prev matching-results?)
+      (dynamic-wind
+        (lambda ()
+          (set! matching-results? #f))
+        Thunk
+        (lambda ()
+          (set! matching-results? prev))))
+
+    ;; Create a thunk that should receive a location and callback
+    ;; to resolve a value once its dependencies are resolved.
+    ;; (e.g. arguments to visit)
+    (define-syntax %expr
       (syntax-rules ()
-        ((apply-action StoreLHS Store1 StoreN ...)
-          (create-op "nbdl.apply_action"
-            (loc: (syntax-source-loc StoreLHS))
-            (operands: StroreLHS Store1 StoreN ...)
-            (attributes:)
-            (result-types:)))))
+        ((%expr Loc Thunk)
+         (list '%nbdl-expr Loc Thunk))))
+
+    (define (expr? Arg)
+      (and (pair? Arg) (eqv? '%nbdl-expr (car Arg))))
+
+    (define (build-visit MatchingResults? Loc Results)
+      (define ResultType
+        (if MatchingResults?
+          !nbdl.store
+          !nbdl.unit))
+      (define VisitResult
+        (result
+          (create-op "nbdl.visit"
+                     (loc: Loc)
+                     (operands: Results)
+                     (attributes:)
+                     (result-types: ResultType))))
+      (unless MatchingResults?
+        (create-op "nbdl.discard"
+                   (loc: Loc)
+                   (operands: VisitResult)
+                   (attributes:)
+                   (result-types:)))
+      VisitResult)
+
+    (define (visit-impl MatchingResults? Loc ParamsSpec)
+      (close-previous-scope)
+      (if MatchingResults?
+        (%expr Loc
+               (lambda (Loc Fn)
+                 (%match-results
+                   ParamsSpec
+                   (lambda (Results)
+                     (Fn (build-visit MatchingResults? Loc Results))))))
+        (%match-results
+          ParamsSpec
+          (lambda (Results)
+            (build-visit MatchingResults? Loc Results)))))
+
+    ;; Analogous to std::visit but it takes stores
+    ;; for all of its parameters including the callee.
+    ;;
+    ;; The callee accepts a member name which is mapped
+    ;; to a member expression with the first argument as
+    ;; the owning object.
+    ;;
+    ;; Return the result only if it is not discarded.
+    (define-syntax visit
+      (syntax-rules ()
+        ((visit Callee StoreN ...)
+         (let ()
+           (define MatchingResults? matching-results?)
+           (define CalleeLoc (syntax-source-loc Callee))
+           (define ParamsSpec
+             (list
+               (%expr CalleeLoc
+                 (lambda (Loc Fn)
+                   (%match-expr+ Loc Callee Fn)))
+               (%expr (syntax-source-loc StoreN)
+                 (lambda (Loc Fn)
+                   (%match-expr Loc StoreN Fn)))
+               ...))
+           (visit-impl matching-results? CalleeLoc ParamsSpec)
+           ))))
 
     ;; TODO Figure out what this returns exactly.
     ;; Visit each element of a range.
@@ -401,21 +513,23 @@
           (TypeN => FnN) ...)
          (%match-path-spec PathSpec
           (lambda (Store)
-            (define Key (build-unit))
-            (close-previous-scope)
-            (create-op "nbdl.match"
-              (loc: (syntax-source-loc PathSpec))
-              (operands: Store Key)
-              (attributes:)
-              (result-types:)
-              (region: "overloads" ()
-                (create-op "nbdl.overload"
-                  (loc: (syntax-source-loc TypeN))
-                  (operands:)
-                  (attributes: ("type" (string-attr TypeN)))
+            (%top-level
+              (lambda()
+                (define Key (build-unit))
+                (close-previous-scope)
+                (create-op "nbdl.match"
+                  (loc: (syntax-source-loc PathSpec))
+                  (operands: Store Key)
+                  (attributes:)
                   (result-types:)
-                  (region: "body" ((OverloadArg : !nbdl.store))
-                    (FnN OverloadArg))) ...)))))))
+                  (region: "overloads" ()
+                    (create-op "nbdl.overload"
+                      (loc: (syntax-source-loc TypeN))
+                      (operands:)
+                      (attributes: ("type" (string-attr TypeN)))
+                      (result-types:)
+                      (region: "body" ((OverloadArg : !nbdl.store))
+                        (FnN OverloadArg))) ...)))))))))
 
     ;; Match a resolved object by its type.
     ;; - It is an error if a type appears more that once as an alternative.
@@ -469,17 +583,18 @@
     (define (dump-cpp name)
       (define Op
         (module-lookup current-nbdl-module name))
-      (translate-cpp Op))
+      (translate-cpp Op)
+      (newline))
 
     (define (dump-op name)
       (define Op
         (module-lookup current-nbdl-module name))
-      (dump Op))
+      (dump Op)
+      (newline))
 
 
   ) ; end of... begin
   (export
-    apply-fn
     context
     define-store
     store-compose
@@ -490,6 +605,7 @@
     match
     match-cond
     match-params-fn
+    visit
     noop
     dump-cpp
     dump-op

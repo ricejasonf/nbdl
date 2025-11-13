@@ -8,6 +8,7 @@
 #include <mpdef/list.hpp>
 #include <nbdl/ui_helper/match_params_spec.hpp>
 #include <nbdl/ui_spec.hpp>
+#include <nbdl/variant.hpp>
 
 #include <boost/hana/equal.hpp>
 #include <boost/hana/map.hpp>

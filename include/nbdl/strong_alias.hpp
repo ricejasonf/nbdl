@@ -7,8 +7,13 @@
 #ifndef NBDL_STRONG_ALIAS_HPP
 #define NBDL_STRONG_ALIAS_HPP
 
+#include <nbdl/concept/State.hpp>
+#include <nbdl/concept/Store.hpp>
+#include <nbdl/get.hpp>
+#include <nbdl/match.hpp>
+
 namespace nbdl {
-template <typename T>
+template <typename T, bool is_moveable = true>
 class strong_alias {
   T value;
 
@@ -20,6 +25,7 @@ public:
   strong_alias(strong_alias&&) = default;
   explicit strong_alias(auto&& ... args) :
     value(static_cast<decltype(args)>(args) ...)
+  { }
 
   auto&& nbdl_get_strong_alias(this auto&& self) {
     return static_cast<decltype(self)>(self); 
@@ -27,7 +33,7 @@ public:
 };
 
 template <State State, bool is_moveable>
-struct get_impl<strong_alias<State, is_moveable> {
+struct get_impl<strong_alias<State, is_moveable>> {
   template <typename StateAlias>
   static constexpr decltype(auto) apply(StateAlias&& s) {
     return (s);
@@ -73,13 +79,14 @@ public:
   context_alias(context_alias&&) = default;
   explicit context_alias(auto&& ... args) :
     value(static_cast<decltype(args)>(args) ...)
+  { }
 
   auto&& nbdl_get_context_alias_value(this auto&& self) {
     return static_cast<decltype(self)>(self).value; 
   }
 };
 
-template <Store T>>
+template <Store T>
 class context_alias<T, /*is_moveable=*/false> {
   T value;
 
@@ -91,6 +98,7 @@ public:
   context_alias(context_alias&&) = delete;
   explicit context_alias(auto&& ... args) :
     value(static_cast<decltype(args)>(args) ...)
+  { }
 
   auto&& nbdl_get_context_alias_value(this auto&& self) {
     return static_cast<decltype(self)>(self).value; 
