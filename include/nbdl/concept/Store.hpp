@@ -8,6 +8,7 @@
 #define NBDL_CONCEPT_STORE_HPP
 
 #include <nbdl/concept/HasImpl.hpp>
+#include <nbdl/concept/extras.hpp>
 #include <utility>
 
 namespace nbdl {
@@ -23,6 +24,10 @@ namespace nbdl {
 
   template <typename T>
   concept Store = HasImpl<T, nbdl::match_impl>;
+
+  template <typename T>
+  concept StoreAlias = StrongAlias<T> &&
+                       Store<typename T::value_type>;
 }
 
 #endif

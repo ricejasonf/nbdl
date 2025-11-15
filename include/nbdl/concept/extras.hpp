@@ -14,7 +14,17 @@ namespace nbdl {
 template <typename T, typename U>
 concept SameAs = std::same_as<std::remove_cvref_t<T>,
                               std::remove_cvref_t<U>>;
-}
+
+template <typename T, typename U>
+concept NotSameAs = (!std::same_as<std::remove_cvref_t<T>,
+                                   std::remove_cvref_t<U>>);
+template <typename T>
+concept StrongAlias = requires (T t) {
+  t.nbdl_get_strong_alias_value();
+};
+
+}  // end namespace nbdl
+
 
 #endif
 

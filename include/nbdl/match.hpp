@@ -23,13 +23,15 @@
 
 namespace nbdl {
   // Useful for match catch all
-  inline constexpr auto noop = [](auto&&) { };
+  inline constexpr struct noop_t {
+    void operator()(auto&& ...) const { }
+  } noop;
 
   namespace detail {
     // Does the match_impl explicitly implement matching
     // with no key (implicitly as unit key)?
     template <typename T>
-    concept MatchesIdentity = Store<T> && requires (T t) {
+    concept HasMatchUnitImpl = Store<T> && requires (T t) {
         match_impl<hana::tag_of_t<T>>::apply(t, nbdl::noop);
       };
   }
@@ -48,7 +50,7 @@ namespace nbdl {
     using Tag = hana::tag_of_t<Store>;
     using Impl = match_impl<Tag>;
 
-    if constexpr(detail::MatchesIdentity<Store>) {
+    if constexpr(detail::HasMatchUnitImpl<Store>) {
       Impl::apply(std::forward<Store>(s),
                   [&](auto&& t) {
                     static_assert(!nbdl::SameAs<decltype(s), decltype(t)>,

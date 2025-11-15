@@ -7,17 +7,20 @@
 #ifndef NBDL_STRONG_ALIAS_HPP
 #define NBDL_STRONG_ALIAS_HPP
 
+#include <nbdl/concept/extras.hpp>
 #include <nbdl/concept/State.hpp>
 #include <nbdl/concept/Store.hpp>
 #include <nbdl/get.hpp>
 #include <nbdl/match.hpp>
 
 namespace nbdl {
-template <typename T, bool is_moveable = true>
+template <typename Value, bool is_moveable = true>
 class strong_alias {
-  T value;
+  Value value;
 
 public:
+  using value_type = Value;
+
   // The defaulted constructors use subsumption to
   // beat the forwarding constructor.
   strong_alias(strong_alias const&) = default;
@@ -27,8 +30,14 @@ public:
     value(static_cast<decltype(args)>(args) ...)
   { }
 
-  auto&& nbdl_get_strong_alias(this auto&& self) {
-    return static_cast<decltype(self)>(self); 
+  strong_alias& operator=(this auto& self,
+                          NotSameAs<Value> auto&& arg) {
+    self.value = static_cast<decltype(arg)>(arg);
+    return self;
+  }
+
+  auto&& nbdl_get_strong_alias_value(this auto&& self) {
+    return static_cast<decltype(self)>(self).value;
   }
 };
 
@@ -46,11 +55,10 @@ struct get_impl<strong_alias<State, is_moveable>> {
   }
 };
 
-template <Store Store, bool is_moveable>
-  requires (!State<Store>)
-struct match_impl<strong_alias<Store, is_moveable>> {
+template <StoreAlias T>
+struct match_impl<T> {
   template <typename StoreAlias, typename Fn>
-    requires detail::MatchesIdentity<Store>
+    requires detail::HasMatchUnitImpl<typename T::value_type>
   static constexpr void apply(StoreAlias&& s, Fn&& fn) {
     match(std::forward<StoreAlias>(s).nbdl_get_strong_alias_value(),
           std::forward<Fn>(fn));

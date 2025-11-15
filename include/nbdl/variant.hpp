@@ -13,6 +13,7 @@
 #include <nbdl/detail/common_type.hpp>
 #include <nbdl/fwd/bind_variant.hpp>
 #include <nbdl/match.hpp>
+#include <nbdl/strong_alias.hpp>
 #include <nbdl/tags.hpp>
 
 #include <boost/hana.hpp>
@@ -22,9 +23,7 @@
 
 #include <variant>
 
-namespace nbdl
-{
-
+namespace nbdl {
   namespace hana = boost::hana;
   namespace mp11 = boost::mp11;
 

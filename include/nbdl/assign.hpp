@@ -9,7 +9,7 @@
 
 namespace nbdl {
   inline constexpr struct assign_t {
-    auto&& operator()(auto& LHS, auto&& RHS) {
+    auto&& operator()(auto&& LHS, auto&& RHS) const {
       return LHS = static_cast<decltype(RHS)>(RHS);
     }
   } assign;

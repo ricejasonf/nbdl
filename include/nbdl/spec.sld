@@ -6,6 +6,10 @@
           (heavy clang)
           (nbdl comp))
   (begin
+    ;; Note that the %match functions in this implementation
+    ;; use a CPS style where callbacks can be called multiple
+    ;; times to generate code for the regions of every combination
+    ;; of possible branches.
     (load-dialect "func")
     (load-dialect "heavy")
     (load-dialect "nbdl")
@@ -222,11 +226,11 @@
                   name
                   (length '(stores ...))
                   (lambda (stores ... %FnVal)
-                    (define (Fn . PathSpec)
+                    (define (Fn . ParamsSpec)
                       (define Loc (source-loc name))
                       (define (VisitFn ParamVals)
                         (build-resolve-params Loc %FnVal ParamVals))
-                      (%match-params-spec PathSpec VisitFn))
+                      (%match-params-spec ParamsSpec VisitFn))
                     ((lambda (fn) body ...) Fn)
                     ))))
             (unless (verify FuncOp)
@@ -234,12 +238,12 @@
             (translate-cpp FuncOp lexer-writer)
             FuncOp))))
 
-    ; ParamsSpec is a list of PathSpecs
-    ; ParamsFn is the callback taking the list of results.
-    (define (%match-params-spec ParamsSpec ParamsFn)
+    ;; Transform each element in a list calling ParamsFn with the results.
+    ;; MapFn must take a single argument and a callback.
+    (define (%map-params MapFn Params ParamsFn)
       (let Loop ((ParamValsRev '()) ; Reverse ordered
-                 (CurPathSpec (car ParamsSpec))
-                 (Rest (cdr ParamsSpec)))
+                 (CurParam (car Params))
+                 (Rest (cdr Params)))
         (define (NextFn ParamVal)
           (define NewParamValsRev
             (cons ParamVal ParamValsRev))
@@ -251,7 +255,12 @@
             ((null? Rest)
               (ParamsFn (reverse NewParamValsRev)))
             (else (error "expecting proper list" Rest))))
-        (%match-path-spec CurPathSpec NextFn)))
+        (MapFn CurParam NextFn)))
+
+    ; ParamsSpec is a list of PathSpecs
+    ; ParamsFn is the callback taking the list of results.
+    (define (%match-params-spec ParamsSpec ParamsFn)
+      (%map-params %match-path-spec ParamsSpec ParamsFn))
 
     (define (%match-path-spec PathSpec Fn)
       (cond
@@ -270,7 +279,7 @@
                   (pair? PathNodes))
               (%match-path-spec-rec RootStore PathNodes Fn))
             ((value? RootStore)
-              (match-unit RootStore Fn))
+              (Fn RootStore))
             (else
               (error "expecting a root store object in pathspec: {}"
                      PathSpec)))))
@@ -290,13 +299,19 @@
                    StoreResult))
             ; Finish by match with unit-key to "unwrap" store.
             ((null? Rest)
-             (match-unit StoreResult Fn))
+             (%match-unit Loc StoreResult Fn))
             (else (error "expecting proper list"))))
         (%match-path-node CurStore Loc PathNode NextFn)))
 
     ;; Simply apply the unit-key to a mlir.value Store.
-    (define (match-unit Store Fn)
-      (match-key (source-loc) Store (build-unit) Fn))
+    (define %match-unit
+      (case-lambda
+        ((Store Fn)
+          (if (value? !nbdl.member_name Store)
+            (Fn Store)
+            (%match-unit 0 Store Fn)))
+        ((Loc Store Fn)
+          (match-key Loc Store '() Fn))))
 
     ;; We have mlir.values for both Store and Key
     (define (match-key Loc Store Key Fn)
@@ -328,7 +343,7 @@
           ; but we have to apply the identity first to unwrap the store.
           ; (Which means the member name is applied to all alternatives.)
           ((value? !nbdl.member_name PathNode)
-            (match-unit Store
+            (%match-unit Loc Store
               (lambda (MatchedStore)
                 (define MemberStore
                   (build-node-get MatchedStore Loc
@@ -452,27 +467,33 @@
                      (operands: Results)
                      (attributes:)
                      (result-types: ResultType))))
-      (unless MatchingResults?
+      (if MatchingResults?
+        VisitResult
         (create-op "nbdl.discard"
-                   (loc: Loc)
-                   (operands: VisitResult)
-                   (attributes:)
-                   (result-types:)))
-      VisitResult)
+                     (loc: Loc)
+                     (operands: VisitResult)
+                     (attributes:)
+                     (result-types:))))
 
     (define (visit-impl MatchingResults? Loc ParamsSpec)
+      ;; All operands to visit are... visited (via match-unit).
+      (define (MapResults FinishFn)
+        (lambda (Results)
+          (%map-params %match-unit Results FinishFn)))
       (close-previous-scope)
       (if MatchingResults?
         (%expr Loc
-               (lambda (Loc Fn)
-                 (%match-results
-                   ParamsSpec
-                   (lambda (Results)
-                     (Fn (build-visit MatchingResults? Loc Results))))))
+          (lambda (Loc Fn)
+            (%match-results
+              ParamsSpec
+              (MapResults
+                (lambda (Results)
+                  (Fn (build-visit MatchingResults? Loc Results)))))))
         (%match-results
           ParamsSpec
-          (lambda (Results)
-            (build-visit MatchingResults? Loc Results)))))
+          (MapResults
+            (lambda (Results)
+              (build-visit MatchingResults? Loc Results))))))
 
     ;; Analogous to std::visit but it takes stores
     ;; for all of its parameters including the callee.
@@ -515,11 +536,10 @@
           (lambda (Store)
             (%top-level
               (lambda()
-                (define Key (build-unit))
                 (close-previous-scope)
                 (create-op "nbdl.match"
                   (loc: (syntax-source-loc PathSpec))
-                  (operands: Store Key)
+                  (operands: Store)
                   (attributes:)
                   (result-types:)
                   (region: "overloads" ()
