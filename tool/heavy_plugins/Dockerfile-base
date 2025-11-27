@@ -1,0 +1,2 @@
+FROM ricejasonf/cppdock
+  RUN apt-get -y update && apt-get -y install build-essential zlib1g

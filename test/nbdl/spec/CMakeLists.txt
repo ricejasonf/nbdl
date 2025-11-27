@@ -19,3 +19,11 @@ nbdl_catch_test_suite(build_targets "test.nbdl.spec"
   match.cpp
   visit.cpp
 )
+
+foreach(target IN LISTS build_targets)
+  set_target_properties(
+    ${target}
+    PROPERTIES
+      OBJECT_DEPENDS
+        ${nbdl_project_SOURCE_DIR}/include/nbdl/spec.sld)
+endforeach()

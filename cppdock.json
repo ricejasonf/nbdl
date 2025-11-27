@@ -9,6 +9,13 @@
       "deps": [
         [
           {
+            "name": "ricejasonf/nbdl-tools-heavy-plugins",
+            "source": "docker",
+            "revision": "sha256:eba4a8fca15c0f008564978cf2c1a7fef6e8430798430699c3fbfbef8edabf13"
+          }
+        ],
+        [
+          {
             "name": "ricejasonf/boost",
             "tag": "1_85_0",
             "source": "docker",

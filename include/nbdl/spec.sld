@@ -3,13 +3,26 @@
 (define-library (nbdl spec)
   (import (heavy base)
           (heavy mlir)
-          (heavy clang)
-          (nbdl comp))
+          (heavy clang))
   (begin
     ;; Note that the %match functions in this implementation
     ;; use a CPS style where callbacks can be called multiple
     ;; times to generate code for the regions of every combination
     ;; of possible branches.
+
+    (load-plugin "libNbdl.so")
+    (define %build-match-params
+      (load-builtin "nbdl_spec_build_match_params"))
+    (define translate-cpp
+      (load-builtin "nbdl_spec_translate_cpp"))
+    (define close-previous-scope
+      (load-builtin "nbdl_spec_close_previous_scope"))
+    (define module-init
+      (load-builtin "nbdl_spec_module_init"))
+
+    ;; Initialize the mlir module.
+    (module-init)
+    (define-binding current-nbdl-module "nbdl_current_module")
     (load-dialect "func")
     (load-dialect "heavy")
     (load-dialect "nbdl")
