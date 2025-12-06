@@ -40,6 +40,6 @@ void nbdl_spec::NbdlDialect::initialize() {
 
 void nbdl_spec::ScopeOp::build(::mlir::OpBuilder&,
                               ::mlir::OperationState& odsState,
-                              std::unique_ptr<::mlir::Region> body) {
+                              std::unique_ptr<::mlir::Region>&& body) {
   odsState.addRegion(std::move(body));
 }

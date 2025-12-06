@@ -425,7 +425,7 @@ def Nbdl_ScopeOp : Nbdl_Op<"scope", []> {
   let regions = (region SizedRegion<1>:$body);
 
   let builders = [
-    OpBuilder<(ins "std::unique_ptr<::mlir::Region>":$body)>
+    OpBuilder<(ins "std::unique_ptr<::mlir::Region>&&":$body)>
   ];
 }
 

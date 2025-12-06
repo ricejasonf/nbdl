@@ -5,13 +5,12 @@
   "platforms": {
     "develop": {
       "type": "linux_x64",
-      "base_image": "ricejasonf/cppdock:linux_x64",
       "deps": [
         [
           {
             "name": "ricejasonf/nbdl-tools-heavy-plugins",
             "source": "docker",
-            "revision": "sha256:eba4a8fca15c0f008564978cf2c1a7fef6e8430798430699c3fbfbef8edabf13"
+            "revision": "sha256:2d14ea3049544fadb2a187b31b3c60a2a3697984648cfdbd75db3a078c987647"
           }
         ],
         [
@@ -55,6 +54,13 @@
       "deps": [
         [
           {
+            "name": "ricejasonf/nbdl-tools-heavy-plugins",
+            "source": "docker",
+            "revision": "sha256:2d14ea3049544fadb2a187b31b3c60a2a3697984648cfdbd75db3a078c987647"
+          }
+        ],
+        [
+          {
             "name": "ricejasonf/boost_header_only",
             "tag": "1_85_0",
             "source": "docker",
@@ -77,7 +83,7 @@
           {
             "name": "ricejasonf/full_duplex",
             "tag": "master",
-            "revision": "dedbc9c350b740dc60de0af929fef1e7f6a4d904"
+            "revision": "ba441e60538382f2082c707a867730ffbe698992"
           }
         ]
       ]
@@ -85,7 +91,6 @@
     "server": {
       "description": "For building nbdl::server",
       "type": "linux_x64",
-      "base_image": "ricejasonf/cppdock:linux_x64",
       "deps": [
         [
           {

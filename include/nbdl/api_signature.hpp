@@ -39,7 +39,7 @@ namespace nbdl
     );
 
     sha1::init(ctx);
-    sha1::update(ctx, type_str.begin(), type_str.size());
+    sha1::update(ctx, type_str.data(), type_str.size());
     sha1::finish(ctx, digest.data());
 
     return digest;

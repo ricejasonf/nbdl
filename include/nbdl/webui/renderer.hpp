@@ -90,7 +90,7 @@ namespace nbdl
       bool is_destroyed;
 
       using FnList = decltype(get_fn_list());
-      using ConstructPipe = mp11::mp_apply<detail::construct_pipe, FnList>;
+      using ConstructPipe = boost::mp11::mp_apply<detail::construct_pipe, FnList>;
       using RenderPipe = decltype(ConstructPipe::apply(std::declval<Store>()));
 
       auto make_render_pipe() {

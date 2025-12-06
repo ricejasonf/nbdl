@@ -91,7 +91,7 @@ void nbdl_spec_build_match_params(Context& C, ValueRefs Args) {
                                                   /*ResultTypes*/{});
 
   // Create the function.
-  auto FuncOp = Builder.create<mlir::func::FuncOp>(MLoc, Name, FT);
+  auto FuncOp = mlir::func::FuncOp::create(Builder, MLoc, Name, FT);
   FuncOp.addEntryBlock();
 
   heavy::Value Thunk = C.CreateLambda([FuncOp](Context& C, ValueRefs) mutable {
@@ -187,7 +187,8 @@ void nbdl_spec_close_previous_scope(Context& C, ValueRefs Args) {
   mlir::Block& NewBlock = ScopeBody->emplaceBlock();
   while (!Block->empty())
     Block->front().moveBefore(&NewBlock, NewBlock.end());
-  mlir::Operation* ScopeOp = Builder->create<nbdl_spec::ScopeOp>(Loc, std::move(ScopeBody));
+  mlir::Operation* ScopeOp
+    = nbdl_spec::ScopeOp::create(*Builder, Loc, std::move(ScopeBody));
   Builder->setInsertionPointAfter(ScopeOp);
 
   C.Cont();
@@ -201,22 +202,8 @@ void nbdl_spec_module_init(heavy::Context& C, heavy::ValueRefs) {
   mlir::OpBuilder Builder(C.MLIRContext.get());
   mlir::Location Loc = Builder.getUnknownLoc();
   mlir::ModuleOp ModuleOp
-    = Builder.create<mlir::ModuleOp>(Loc, "nbdl_spec_module");
+    = mlir::ModuleOp::create(Builder, Loc, "nbdl_spec_module");
   nbdl_current_module.set(C, ModuleOp.getOperation());
   C.Cont();
 }
-
-#if 0
-// TODO Need to initialize there in (nbdl spec)
-void HEAVY_NBDL_LOAD_MODULE(heavy::Context& C) {
-  HEAVY_NBDL_INIT(C);
-  heavy::initModuleNames(C, HEAVY_NBDL_LIB_STR, {
-    {"current-nbdl-module", heavy::nbdl_bind_var::current_nbdl_module.get(C)},
-    {"translate-cpp", heavy::nbdl_bind_var::translate_cpp},
-    {"close-previous-scope",
-                  heavy::nbdl_bind_var::close_previous_scope},
-    {"%build-match-params", heavy::nbdl_bind_var::build_match_params_impl},
-  });
-}
-#endif
 } //  extern "C"

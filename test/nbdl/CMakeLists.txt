@@ -7,6 +7,9 @@
 
 add_subdirectory(app)
 
+# Heavy
+add_subdirectory(spec)
+
 if (EMSCRIPTEN)
   add_subdirectory(binders/js)
   add_subdirectory(core)
@@ -31,6 +34,3 @@ add_subdirectory(sql_db)
 add_subdirectory(ui_helper)
 add_subdirectory(util)
 add_subdirectory(websocket)
-
-# Heavy
-add_subdirectory(spec)
