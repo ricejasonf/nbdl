@@ -10,7 +10,8 @@
           {
             "name": "ricejasonf/nbdl-tools-heavy-plugins",
             "source": "docker",
-            "revision": "sha256:2d14ea3049544fadb2a187b31b3c60a2a3697984648cfdbd75db3a078c987647"
+            "revision": "sha256:2d14ea3049544fadb2a187b31b3c60a2a3697984648cfdbd75db3a078c987647",
+            "dest_dir": "/usr/local"
           }
         ],
         [
@@ -56,7 +57,8 @@
           {
             "name": "ricejasonf/nbdl-tools-heavy-plugins",
             "source": "docker",
-            "revision": "sha256:2d14ea3049544fadb2a187b31b3c60a2a3697984648cfdbd75db3a078c987647"
+            "revision": "sha256:2d14ea3049544fadb2a187b31b3c60a2a3697984648cfdbd75db3a078c987647",
+            "dest_dir": "/usr/local"
           }
         ],
         [
