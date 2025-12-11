@@ -28,14 +28,11 @@ namespace nbdl {
   namespace mp11 = boost::mp11;
 
   struct variant_tag { };
-  inline constexpr struct variant_index_t { } variant_index;
 
-  namespace detail
-  {
+  namespace detail {
 
     template <typename DefaultType, typename... Tn>
-    class variant
-    {
+    class variant {
       static_assert(std::is_empty<DefaultType>::value, "DefaultType must be an empty tag struct");
       //using Storage = typename std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>::type;
       using Storage = std::variant<DefaultType, Tn...>;
@@ -115,28 +112,22 @@ namespace nbdl {
     };
 
     template <typename VisitorTag>
-    struct variant_visit_impl
-    {
+    struct variant_visit_impl {
       template <typename Variant, typename Visitor, typename Fn>
-      static constexpr void apply(Variant&& v, Visitor const&, Fn&& fn)
-      {
+      static constexpr void apply(Variant&& v, Visitor const&, Fn&& fn) {
         std::forward<Variant>(v).match(std::forward<Fn>(fn));
       }
     };
 
     template <>
-    struct variant_visit_impl<match_when_tag>
-    {
+    struct variant_visit_impl<match_when_tag> {
       template <typename Variant, typename Visitor, typename Fn>
-      static constexpr void apply(Variant&& v, Visitor const&, Fn&& fn)
-      {
+      static constexpr void apply(Variant&& v, Visitor const&, Fn&& fn) {
         using T = typename Visitor::type;
 
         // Note match_when does nothing for invalid alternatives.
-        if constexpr(std::decay_t<Variant>::template has<T>::value)
-        {
-          if (v.template is<T>())
-          {
+        if constexpr(std::decay_t<Variant>::template has<T>::value) {
+          if (v.template is<T>()) {
             std::forward<Fn>(fn)(std::get<T>(std::forward<Variant>(v).value_));
           }
         }
@@ -240,12 +231,6 @@ namespace nbdl {
           }
         }
       );
-    }
-
-    template <typename Store, typename Fn>
-    static constexpr void apply(Store&& s, variant_index_t, Fn&& fn)
-    {
-      std::forward<Fn>(fn)(s.get_type_id());
     }
 
     template <typename Store, typename Key, typename Fn>

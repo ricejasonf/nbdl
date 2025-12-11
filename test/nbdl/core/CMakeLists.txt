@@ -33,6 +33,7 @@ nbdl_catch_test_suite(build_targets "test.nbdl.core"
   store_compose.cpp
   uid.cpp
   variant.cpp
+  variant_holder.cpp
 )
 
 # compile-time tests

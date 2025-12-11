@@ -11,8 +11,7 @@
           {
             "name": "ricejasonf/llvm-project-heavy",
             "tag": "latest",
-            "source": "docker",
-            "revision": "sha256:46b94737736fcbdecc9c6037d06941be15c9cca72a8cd39a0e2e6ba0b03b1d89"
+            "type": "docker"
           }
         ]
       ]

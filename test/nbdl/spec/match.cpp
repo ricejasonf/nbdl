@@ -70,16 +70,17 @@ heavy_scheme {
       (else => noop)))
 
   ; // match variant index (not flat)
-  (match-params-fn 'match_6 (store fn)
+#;(match-params-fn 'match_6 (store fn)
     (define my-var-index
       (get store '.my_var 'nbdl::variant_index))
     (fn my-var-index))
 
   ; // match variant index (not flat)
-  (match-params-fn 'match_7 (store fn)
+#;  (match-params-fn 'match_7 (store fn)
     (define my-var-index
       (get store '.my_var '|nbdl::variant_index_t{}|))
     (fn my-var-index))
+  '() ; Do nothing
 }
 }
 
@@ -151,6 +152,7 @@ TEST_CASE("Match context members", "[spec][match]") {
 
   CHECK(result_alt_boo == "this is a boo");
 
+#if 0 // Test variant_holder
   foo::match_6(ctx, [&](int alt_index) {
     result_alt_index = alt_index;
   });
@@ -163,4 +165,5 @@ TEST_CASE("Match context members", "[spec][match]") {
   });
 
   CHECK(result_alt_index == 2);
+#endif
 }

@@ -181,18 +181,6 @@ TEST_CASE("Match on values nested in a variant.", "[match][Store]")
   CHECK(result == std::string{"John"});
 }
 
-TEST_CASE("Match variant index.", "[match][Store]")
-{
-  size_t result(static_cast<size_t>(-1));
-
-  nbdl::optional<std::string> store = std::string("Hello, index!");
-
-  nbdl::match(store, nbdl::variant_index,
-              [&](size_t index) { result = index; });
-
-  CHECK(result == 1);
-}
-
 TEST_CASE("Match with visitor match_when", "[match]")
 {
   auto store = hana::make_map(
