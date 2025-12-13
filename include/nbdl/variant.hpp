@@ -33,10 +33,7 @@ namespace nbdl {
 
     template <typename DefaultType, typename... Tn>
     class variant {
-      static_assert(std::is_empty<DefaultType>::value, "DefaultType must be an empty tag struct");
-      //using Storage = typename std::aligned_union<sizeof(DefaultType), DefaultType, Tn...>::type;
       using Storage = std::variant<DefaultType, Tn...>;
-
 
       using Types = hana::experimental::types<DefaultType, Tn...>;
 

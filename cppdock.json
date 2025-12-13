@@ -9,16 +9,16 @@
         [
           {
             "name": "ricejasonf/nbdl-tools-heavy-plugins",
-            "source": "docker",
-            "revision": "sha256:2d14ea3049544fadb2a187b31b3c60a2a3697984648cfdbd75db3a078c987647",
-            "dest_dir": "/usr/local"
+            "type": "docker",
+            "dest_dir": "/usr/local",
+            "revision": "sha256:bd41362756c61f720b6cee8336060c1aa36d3d4680075464fbb58c9c51607c48"
           }
         ],
         [
           {
             "name": "ricejasonf/boost",
             "tag": "1_85_0",
-            "source": "docker",
+            "type": "docker",
             "revision": "sha256:cebcb149011ed4a0bf7a8c38c43976d525545a527204e932ffc3019fe0594ffc"
           },
           {
@@ -56,16 +56,16 @@
         [
           {
             "name": "ricejasonf/nbdl-tools-heavy-plugins",
-            "source": "docker",
-            "revision": "sha256:2d14ea3049544fadb2a187b31b3c60a2a3697984648cfdbd75db3a078c987647",
-            "dest_dir": "/usr/local"
+            "type": "docker",
+            "dest_dir": "/usr/local",
+            "revision": "sha256:bd41362756c61f720b6cee8336060c1aa36d3d4680075464fbb58c9c51607c48"
           }
         ],
         [
           {
             "name": "ricejasonf/boost_header_only",
             "tag": "1_85_0",
-            "source": "docker",
+            "type": "docker",
             "revision": "sha256:252cdac0f4fbac7b065d7754ca2b9431ddeb3273c6dd3f95219086578ec881a5"
           },
           {
@@ -98,7 +98,7 @@
           {
             "name": "ricejasonf/boost",
             "tag": "1_73_0",
-            "source": "docker",
+            "type": "docker",
             "revision": "sha256:9be9bcadb7fc94ca5de931999e0707c2d4f6b939b3b15b8d7fcdb814d08b2cec"
           },
           {
@@ -112,7 +112,7 @@
           },
           {
             "name": "ricejasonf/libpq",
-            "source": "docker",
+            "type": "docker",
             "revision": "sha256:260af9b730dc7e7cbdd80a14fe2ec939b1f7b1eec255def8137b0e2b7b45beab"
           },
           {

@@ -6,7 +6,9 @@
 //
 
 #include <nbdl/concept/extras.hpp>
-#include <nbdl/variant.hpp>
+#include <nbdl/match.hpp>
+#include <nbdl/tags.hpp>
+#include <nbdl/variant_holder.hpp>
 #include <boost/hana/functional/overload_linearly.hpp>
 #include <catch.hpp>
 #include <string>
@@ -16,8 +18,8 @@
 
 namespace foo {
 
-// Note that nbdl::unresolved is the monostate type.
-using my_variant = nbdl::variant<int, std::string>;
+// Note that nbdl::unresolved is like the monostate type.
+using my_variant = nbdl::variant_holder<nbdl::unresolved, int, std::string>;
 
 heavy_scheme {
   (import (nbdl spec))
@@ -53,34 +55,33 @@ heavy_scheme {
   ; // match variant alternative with overloaded fn.
   ; // equivalent to (get store 'my_var unit)
   (match-params-fn 'match_3 (store fn)
-    (fn (get store '.my_var)))
+    (fn (get store '.my_var '.value)))
 
   ; // match variant alternative with overloaded fn.
   ; // equivalent to (get store 'my_var unit)
   (match-params-fn 'match_4 (store fn)
-    (match (get store '.my_var)
+    (match (get store '.my_var '.value)
       (else => fn)))
 
   ; // match specific variant alternative std::string
   (match-params-fn 'match_5 (store fn)
     (define my_var
-      (get store '.my_var))
+      (get store '.my_var 'nbdl::variant_value))
     (match my_var
       ('std::string => fn)
       (else => noop)))
 
   ; // match variant index (not flat)
-#;(match-params-fn 'match_6 (store fn)
+  (match-params-fn 'match_6 (store fn)
     (define my-var-index
       (get store '.my_var 'nbdl::variant_index))
     (fn my-var-index))
 
   ; // match variant index (not flat)
-#;  (match-params-fn 'match_7 (store fn)
+  (match-params-fn 'match_7 (store fn)
     (define my-var-index
       (get store '.my_var '|nbdl::variant_index_t{}|))
     (fn my-var-index))
-  '() ; Do nothing
 }
 }
 
@@ -152,7 +153,6 @@ TEST_CASE("Match context members", "[spec][match]") {
 
   CHECK(result_alt_boo == "this is a boo");
 
-#if 0 // Test variant_holder
   foo::match_6(ctx, [&](int alt_index) {
     result_alt_index = alt_index;
   });
@@ -165,5 +165,4 @@ TEST_CASE("Match context members", "[spec][match]") {
   });
 
   CHECK(result_alt_index == 2);
-#endif
 }

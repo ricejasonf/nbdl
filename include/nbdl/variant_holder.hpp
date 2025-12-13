@@ -9,7 +9,8 @@
 
 
 #include <nbdl/concept/BindableVariant.hpp>
-#include <nbdl/concept/State.hpp>
+#include <nbdl/concept/Store.hpp>
+#include <nbdl/variant.hpp>
 #include <boost/hana/functional/overload.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <variant>
@@ -25,24 +26,25 @@ inline constexpr struct variant_value_t { } variant_value;
 // Represent the product of a variant value and the index of its alternative.
 // VariantTy has to work with std::visit, std::variant_alternative, ...
 // which is unfortunately limited to std::variant.
-template <typename VariantTy>
+template <typename... Tn>
 class variant_holder {
 public:
   using hana_tag = nbdl::variant_holder_tag;
-  using value_type = VariantTy;
-  VariantTy value;
+  using value_type = detail::variant<Tn ...>;
+  // .value has the properties of the sum type.
+  value_type value;
 };
 
 template<>
 struct match_impl<variant_holder_tag> {
   template <typename Store, typename Fn>
   static constexpr void apply(Store&& s, variant_index_t, Fn&& fn) {
-    std::forward<Fn>(fn)(std::forward<Store>(s).value.index());
+    std::forward<Fn>(fn)(std::forward<Store>(s).value.value_.index());
   }
 
   template <typename Store, typename Fn>
   static constexpr void apply(Store&& s, variant_value_t, Fn&& fn) {
-    std::visit(std::forward<Fn>(fn), std::forward<Store>(s).value);
+    std::visit(std::forward<Fn>(fn), std::forward<Store>(s).value.value_);
   }
 };
 

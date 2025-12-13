@@ -8,7 +8,7 @@
 #include <nbdl/assign.hpp>
 #include <nbdl/match.hpp>
 #include <nbdl/strong_alias.hpp>
-#include <nbdl/variant.hpp>
+#include <nbdl/variant_holder.hpp>
 
 #include <catch.hpp>
 #include <unordered_map>

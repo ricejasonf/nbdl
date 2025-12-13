@@ -302,13 +302,13 @@ public:
   }
 
   void VisitType(VariantOp Op) {
-    OS << "::nbdl::variant_holder<std::variant<";
+    OS << "::nbdl::variant_holder<";
     llvm::interleaveComma(Op.getOperands(), OS,
         [&](mlir::Value const& Val) {
           mlir::Value V = Val;
           VisitType(V);
         });
-    OS << ">>";
+    OS << ">";
   }
 
   void VisitType(StoreComposeOp Op) {

@@ -19,7 +19,7 @@ struct some_tag { };
 
 TEST_CASE("Unitialized variant should match the first alternative.", "[variant_holder]") {
 	using Number = nbdl::variant_holder<
-    std::variant<nbdl::unresolved, int, std::string, some_tag>>;
+    nbdl::unresolved, int, std::string, some_tag>;
 	Number number;
   int result = 0;
 
@@ -44,7 +44,7 @@ TEST_CASE("Assign a value to a variant and use the "
           "callback interface to retrieve it.",
           "[variant_holder]") {
 	using Number = nbdl::variant_holder<
-    std::variant<nbdl::unresolved, int, std::string, some_tag>>;
+    nbdl::unresolved, int, std::string, some_tag>;
 	
 	Number number = Number(512);
   int result = 0;
@@ -73,7 +73,7 @@ TEST_CASE("Modify a struct's member in a variant", "[variant]")
 		std::string name_last;
 	};
 	using MyVar = nbdl::variant_holder<
-    std::variant<person, int, std::string, some_tag, std::vector<char>>>;
+    person, int, std::string, some_tag, std::vector<char>>;
 	
 	MyVar var = MyVar(person{"Jason", "Rice"});
 
@@ -99,7 +99,7 @@ TEST_CASE("Modify a struct's member in a variant", "[variant]")
 TEST_CASE("variant_holder as a nbdl::State", "[variant_holder][State]")
 {
 	using Number = nbdl::variant_holder<
-      std::variant<nbdl::unresolved, some_tag, int, std::string>>;
+      nbdl::unresolved, some_tag, int, std::string>;
 	Number number = Number(512);
   size_t result_type_id = -1;
   int result = 0;

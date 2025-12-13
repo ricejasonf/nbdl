@@ -6,12 +6,14 @@
     "main": {
       "type": "linux_x64",
       "base_image_dockerfile": "./Dockerfile-base",
+      "push_tag": "ricejasonf/nbdl-tools-heavy-plugins",
       "deps": [
         [
           {
             "name": "ricejasonf/llvm-project-heavy",
             "tag": "latest",
-            "type": "docker"
+            "type": "docker",
+            "revision": "sha256:73d73f3831a759416c27cc0924ec24ab19adadb9f3c452c3cf9b41a0f78be8ff"
           }
         ]
       ]
