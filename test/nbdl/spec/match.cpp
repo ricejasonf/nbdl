@@ -9,12 +9,10 @@
 #include <nbdl/match.hpp>
 #include <nbdl/tags.hpp>
 #include <nbdl/variant_holder.hpp>
-#include <boost/hana/functional/overload_linearly.hpp>
+#include <boost/hana/functional/overload.hpp>
 #include <catch.hpp>
 #include <string>
 #include <utility>
-
-#include <iostream>
 
 namespace foo {
 

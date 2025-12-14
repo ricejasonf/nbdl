@@ -26,6 +26,7 @@
     (load-dialect "func")
     (load-dialect "heavy")
     (load-dialect "nbdl")
+
     (define !nbdl.store (type "!nbdl.store"))
     ; FIXME change to "!nbdl.variant" once its in the compiler.
     (define !nbdl.variant (type "!nbdl.store")) ;"!nbdl.variant"))
@@ -134,6 +135,10 @@
         (result-types:)
         ))
 
+    ; FIXME This inserts a mlir.operation which means it has to
+    ;       be invoked in the right context to insert properly.
+    ;       Consider making a StoreSpec or something to prevent
+    ;       this potentially surprising requirement.
     (define-syntax store
       (syntax-rules (init-args:)
         ((store Typename)
@@ -162,6 +167,7 @@
                  (result-types: !nbdl.store)
                  )))))))
 
+    ; FIXME Use a StoreSpec instead if inserting directly. (See `store`.)
     (define-syntax variant
       (syntax-rules ()
         ((variant Store1 StoreN ...)
@@ -604,13 +610,52 @@
         (result-types:))
       (when #f #f))
 
-    ;; Match the first satisified condition.
-    ;; - Each clause should be (unary-predicate proc)
-    ;;   where proc is a unary lambda receiving the matched path.
-    (define (match-cond path . clauses)
-      (if (path? path)
-        (error "TODO implement match-cond")
-        (error "expecting a path")))
+    ; The syntax match-if is not so different from
+    ; if except that it operates on expressions that
+    ; resolve stores (ie via get, visit, et al.)
+    ; If Else is not specified map it to C++ false
+    ; for use as conditionals in cond clauses.
+    (define-syntax match-if
+      (syntax-rules ()
+        ((match-if Cond Then)
+         (match-if Cond Then 'false))
+        ((match-if Cond Then Else)
+         (let ((CondResult Cond))
+           (create-op
+             (loc: (syntax-source-loc Cond))
+             (operands: CondResult)
+             (attributes:)
+             (result-types:)
+             (region: "then" () Then)
+             (region: "else" () Else))))))
+
+    ; This is basically a copy of R7RS `cond` syntax
+    ; adapted to use match-if.
+    (define-syntax match-cond
+      (syntax-rules (else =>)
+        ((match-cond (else result1 result2 ...))
+         (begin result1 result2 ...))
+        ((match-cond (test => result))
+         (let ((temp test))
+           (match-if temp (result temp))))
+        ((match-cond (test => result) clause1 clause2 ...)
+         (let ((temp test))
+           (match-if temp
+             (result temp)
+             (match-cond clause1 clause2 ...))))
+        ((match-cond (test)) test)
+        ((match-cond (test) clause1 clause2 ...)
+         (let ((temp test))
+           (match-if temp
+             temp
+             (match-cond clause1 clause2 ...))))
+        ((match-cond (test result1 result2 ...))
+         (match-if test (begin result1 result2 ...)))
+        ((match-cond (test result1 result2 ...)
+               clause1 clause2 ...)
+         (match-if test
+           (begin result1 result2 ...)
+           (match-cond clause1 clause2 ...)))))
 
     ; FIXME Make this dump to error output.
     (define (dump-cpp name)
