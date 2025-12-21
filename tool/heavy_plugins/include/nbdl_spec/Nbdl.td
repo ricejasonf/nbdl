@@ -200,11 +200,11 @@ def Nbdl_NoOp : Nbdl_Op<"noop", [Terminator]> {
 
 def Nbdl_MatchIfOp : Nbdl_Op<"match_if", [Terminator]> {
   let description = [{
-    Apply a predicate to an object and branch on the result
-    like an if/else statement.
+    Provide a branch on the result of a conditional.
+    Note that, like MatchOp, the operation has no result.
   }];
 
-  let arguments = (ins Nbdl_Type:$input, Nbdl_Type:$pred);
+  let arguments = (ins Nbdl_Type:$cond);
   let regions   = (region SizedRegion<1>:$thenRegion,
                           SizedRegion<1>:$elseRegion);
 }

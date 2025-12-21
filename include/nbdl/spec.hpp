@@ -30,10 +30,10 @@ namespace nbdl {
   // is convertible to bool evaluating to false.
   template <std::convertible_to<bool> T>
   constexpr bool scheme_like_cond(T const& value) {
-    return static_cast<bool>(input);
+    return static_cast<bool>(value);
   }
 
-  constexpr bool scheme_like_cond(auto const& value) {
+  constexpr bool scheme_like_cond(auto const&) {
     return true;
   }
 }

@@ -459,7 +459,7 @@ class FuncWriter : public NbdlSpecWriter<FuncWriter> {
       WriteExpr(Op.getFn());
     }
     OS << '(';
-    llvm::interleave(Op.getArgs(), OS,
+    llvm::interleave(Args, OS,
         [&](mlir::Value V) {
           WriteExpr(V);
         }, ",\n");
@@ -538,13 +538,11 @@ class FuncWriter : public NbdlSpecWriter<FuncWriter> {
     mlir::Region& Then = Op.getThenRegion();
     mlir::Region& Else = Op.getElseRegion();
     OS << "if (";
-    WriteExpr(Op.getPred());
-    OS << '(';
-    WriteExpr(Op.getInput());
-    OS << ")) {\n";
+    WriteExpr(Op.getCond());
+    OS << ") {\n";
     VisitRegion(Then);
 
-    // Check if the the else region is a single MatchIfOp
+    // Check if the else region is a single MatchIfOp
     // for pretty chaining.
     OS << "} else ";
     if (auto ChainedIfOp = dyn_cast<MatchIfOp>(Else.front().front())) {

@@ -14,16 +14,22 @@
 nbdl_add_test("test.nbdl.spec.basic"
   basic.cpp
 )
-nbdl_catch_test_suite(build_targets "test.nbdl.spec"
+
+set(TEST_NBDL_SPEC_SOURCE_LIST
   context.cpp
   match.cpp
+  match_cond.cpp
   visit.cpp
 )
 
-foreach(target IN LISTS build_targets)
-  set_target_properties(
-    ${target}
-    PROPERTIES
-      OBJECT_DEPENDS
-        ${nbdl_project_SOURCE_DIR}/include/nbdl/spec.sld)
+nbdl_catch_test_suite(build_targets "test.nbdl.spec"
+  ${TEST_NBDL_SPEC_SOURCE_LIST}
+)
+
+
+foreach(SOURCE_FILE IN LISTS TEST_NBDL_SPEC_SOURCE_LIST)
+  set_source_files_properties(
+    ${SOURCE_FILE}
+    OBJECT_DEPENDS
+      ${nbdl_project_SOURCE_DIR}/include/nbdl/spec.sld)
 endforeach()

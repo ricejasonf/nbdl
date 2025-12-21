@@ -36,6 +36,17 @@
     (define !nbdl.unit (type "!nbdl.unit"))
     (define i32 (type "i32"))
 
+    ;; Create a thunk that should receive a location and callback
+    ;; to resolve a value once its dependencies are resolved.
+    ;; (e.g. arguments to visit)
+    (define-syntax %expr
+      (syntax-rules ()
+        ((%expr Loc Thunk)
+         (list '%nbdl-expr Loc Thunk))))
+
+    (define (expr? Arg)
+      (and (pair? Arg) (eqv? '%nbdl-expr (car Arg))))
+
     ; Maybe lift to a LiteralOp or ConstexprOp.
     (define (maybe-build-expr Loc Arg)
       (cond
@@ -181,7 +192,7 @@
 
     (define-syntax define-store
       (syntax-rules ()
-        ((define-store Name (InitArgs ...) StoreFunctionalN ...)
+        ((define-store Name (InitParams ...) StoreFunctionalN ...)
           (with-builder
             (lambda ()
               (at-block-end (entry-block current-nbdl-module))
@@ -192,7 +203,7 @@
                     (operands:)
                     (attributes: ("sym_name" (string-attr Name)))
                     (result-types:)
-                    (region: "body" ((InitArgs : !nbdl.store) ...)
+                    (region: "body" ((InitParams : !nbdl.store) ...)
                       (define Parent (build-unit))
                       (define (ProcessBody BodyEl)
                         (set! Parent
@@ -232,6 +243,22 @@
            ...
            ))))
 
+    ; Provide the callback function for match-params-fn syntax
+    ; %FnVal is a mlir.value.
+    (define (%match-params-resolver Loc %FnVal)
+      (lambda ParamsSpec_
+        (define Loc (source-loc name))
+        (define (ToExpr Param)
+          (%expr Loc
+                 (lambda (Loc Fn) 
+                   (%match-expr Loc Param Fn))))
+        (define ParamsSpec
+          (map ToExpr ParamsSpec_))
+        (define (VisitFn ParamVals)
+          (build-resolve-params Loc %FnVal ParamVals))
+        (close-previous-scope)
+        (%match-params-spec ParamsSpec VisitFn)))
+
     ;; Define a function to receive a matched set of parameters.
     ;; Each path node should be of the format:
     ;;  (%Kind Loc Args...)
@@ -245,11 +272,9 @@
                   name
                   (length '(stores ...))
                   (lambda (stores ... %FnVal)
-                    (define (Fn . ParamsSpec)
-                      (define Loc (source-loc name))
-                      (define (VisitFn ParamVals)
-                        (build-resolve-params Loc %FnVal ParamVals))
-                      (%match-params-spec ParamsSpec VisitFn))
+                    (define Loc (source-loc name))
+                    (define Fn
+                      (%match-params-resolver Loc %FnVal))
                     ((lambda (fn) body ...) Fn)
                     ))))
             (unless (verify FuncOp)
@@ -389,7 +414,8 @@
       (result Op))
 
     (define (build-resolve-params Loc FnVal ParamVals)
-      (unless (pair? ParamVals)
+      (unless (or (pair? ParamVals)
+                  (null? ParamVals))
         (error "expecting list of params: {}" ParamVals))
       (let ()
         (define Result
@@ -419,7 +445,7 @@
           ((value? path)
             (append (list '%nbdl-path path)
                     (source-cons key '() (syntax-source-loc key)) ...))
-          ((path? path)
+          ((path? (dump path))
             (append path
                     (source-cons key '() (syntax-source-loc key)) ...))
           ((else (error "invalid path object: {}" path)))
@@ -463,17 +489,6 @@
         (lambda ()
           (set! matching-results? prev))))
 
-    ;; Create a thunk that should receive a location and callback
-    ;; to resolve a value once its dependencies are resolved.
-    ;; (e.g. arguments to visit)
-    (define-syntax %expr
-      (syntax-rules ()
-        ((%expr Loc Thunk)
-         (list '%nbdl-expr Loc Thunk))))
-
-    (define (expr? Arg)
-      (and (pair? Arg) (eqv? '%nbdl-expr (car Arg))))
-
     (define (build-visit MatchingResults? Loc Results)
       (define ResultType
         (if MatchingResults?
@@ -489,10 +504,10 @@
       (if MatchingResults?
         VisitResult
         (create-op "nbdl.discard"
-                     (loc: Loc)
-                     (operands: VisitResult)
-                     (attributes:)
-                     (result-types:))))
+                   (loc: Loc)
+                   (operands: VisitResult)
+                   (attributes:)
+                   (result-types:))))
 
     (define (visit-impl MatchingResults? Loc ParamsSpec)
       ;; All operands to visit are... visited (via match-unit).
@@ -610,6 +625,27 @@
         (result-types:))
       (when #f #f))
 
+    (define (build-match-if Loc CondResult ThenThunk ElseThunk)
+      (create-op "nbdl.match_if"
+                 (loc: Loc)
+                 (operands: CondResult)
+                 (attributes:)
+                 (result-types:)
+                 (region: "then" () (%top-level ThenThunk))
+                 (region: "else" () (%top-level ElseThunk))))
+
+    (define (match-if-impl Loc CondExprFn ThenThunk ElseThunk)
+      (define CondExpr
+        (%expr Loc CondExprFn))
+      (define ParamsSpec
+        (list CondExpr))
+      (%match-results
+        ParamsSpec
+        (lambda (Results)
+          (define CondResult (car Results))
+          (build-match-if Loc CondResult ThenThunk ElseThunk)))
+      (if #f #f)) ; return undefined
+
     ; The syntax match-if is not so different from
     ; if except that it operates on expressions that
     ; resolve stores (ie via get, visit, et al.)
@@ -620,14 +656,11 @@
         ((match-if Cond Then)
          (match-if Cond Then 'false))
         ((match-if Cond Then Else)
-         (let ((CondResult Cond))
-           (create-op
-             (loc: (syntax-source-loc Cond))
-             (operands: CondResult)
-             (attributes:)
-             (result-types:)
-             (region: "then" () Then)
-             (region: "else" () Else))))))
+         (match-if-impl (syntax-source-loc Cond)
+                        (lambda (Loc Fn)
+                          (%match-expr Loc Cond Fn))
+                        (lambda () Then)
+                        (lambda () Else)))))
 
     ; This is basically a copy of R7RS `cond` syntax
     ; adapted to use match-if.
@@ -682,6 +715,7 @@
     key-at
     match
     match-cond
+    match-if
     match-params-fn
     visit
     noop
