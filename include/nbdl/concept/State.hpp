@@ -7,6 +7,7 @@
 #ifndef NBDL_CONCEPT_STATE_HPP
 #define NBDL_CONCEPT_STATE_HPP
 
+#include <nbdl/concept/extras.hpp>
 #include <nbdl/concept/HasImpl.hpp>
 
 namespace nbdl {
@@ -22,6 +23,10 @@ namespace nbdl {
 
   template <typename T>
   concept State = HasImpl<T, nbdl::get_impl>;
+
+  template <typename T>
+  concept StateAlias = StrongAlias<T> &&
+                       State<typename T::value_type>;
 }
 
 #endif

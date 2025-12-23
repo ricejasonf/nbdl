@@ -7,9 +7,10 @@
 #ifndef NBDL_TAGS_HPP
 #define NBDL_TAGS_HPP
 
-namespace nbdl
-{
-  // Tags used for possible store values
+#include <cstddef>
+
+namespace nbdl {
+  // Tags used for possible store values and keys
 
   //
   //  trigger_read  - nbdl::context and others can trigger a read action
@@ -35,6 +36,21 @@ namespace nbdl
   //                  (Also the default for nbdl::variant)
   //
   struct unresolved { };
+
+  // Provide a key to access elements of
+  // tuple-likes and sequences by their index.
+  // (ie similar to std::get<i>)
+  template <size_t i> struct index_t { };
+  template <size_t i>
+  inline constexpr index_t<i> index;
+
+
+  // Provide a key to access elements of
+  // tuple-likes and sequences by their type.
+  // (ie similar to std::get<T>)
+  template <typename T> struct type_t { };
+  template <typename T>
+  inline constexpr type_t<T> type;
 }
 
 #endif

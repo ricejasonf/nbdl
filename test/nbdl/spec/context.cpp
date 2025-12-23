@@ -7,6 +7,7 @@
 
 #include <catch.hpp>
 
+namespace {
 namespace foo {
 heavy_scheme {
   (import (nbdl spec))
@@ -20,7 +21,8 @@ heavy_scheme {
     (member: '.boo 'std::string
      (init-args: arg2)))
 }
-}
+}  // namespace foo
+}  // namespace
 
 TEST_CASE("Construct context", "[spec][context]") {
   std::string boo = "this is a boo";

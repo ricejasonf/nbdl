@@ -14,6 +14,7 @@
 #include <string>
 #include <utility>
 
+namespace {
 namespace foo {
 
 // Note that nbdl::unresolved is like the monostate type.
@@ -81,7 +82,8 @@ heavy_scheme {
       (get store '.my_var '|nbdl::variant_index_t{}|))
     (fn my-var-index))
 }
-}
+}  // namespace foo
+}  // namespace
 
 TEST_CASE("Match context members", "[spec][match]") {
   std::string boo = "this is a boo";

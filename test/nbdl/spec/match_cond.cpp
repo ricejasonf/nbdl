@@ -6,24 +6,23 @@
 //
 
 #include <nbdl/spec.hpp>
+#include <nbdl/ext/std/tuple_like.hpp>
 #include <catch.hpp>
+#include <functional>
 #include <string>
 
-  #include <iostream>
-
+namespace {
 namespace foo {
 heavy_scheme {
   (import (nbdl spec))
 
   (define (>= a b)
-    (visit '.operator>= a b))
+    (visit '|std::greater_equal<int>{}| a b))
 
+  ; // Note that .first and .second are not accessible
+  ; // because of implementation issues. (ie not having reflection)
   (define-store 'weighted_string ()
     (store "std::pair<int, std::string>"))
-
-  (define-store 'my_variant ()
-    (variant (store 'nbdl::unresolved)
-             (store 'weighted_string)))
 
   ; // Store 3 values and the result of concatenating
   ; // the strings that match our conditional.
@@ -32,7 +31,7 @@ heavy_scheme {
                             (init-args: arg1)))
     (store-compose '.val2 (store 'weighted_string
                             (init-args: arg2)))
-    (store-compose '.val3 (store 'my_variant
+    (store-compose '.val3 (store 'weighted_string
                             (init-args: arg3)))
     (store-compose '.result_val (store 'std::string)))
 
@@ -44,25 +43,25 @@ heavy_scheme {
     (define result-val
       (get context '.result_val))
     (define (my-concat member)
+      ;; // This looks like destructuring here.
       (define weight
-        (get member '.first))
+        (get member 'nbdl::index<0>))
+      (define str
+        (get member 'nbdl::index<1>))
       (match-cond
         ((>= weight 42)
-         (visit '.append (get context result-val)
-                         member))
+         (visit '.append result-val str))
         (else (visit 'nbdl::noop))
         ))
 
     (visit '.clear result-val)
     (my-concat (get context '.val1))
-    ;(my-concat (get context '.val2))
-    ;(my-concat (get context '.val3))
+    (my-concat (get context '.val2))
+    (my-concat (get context '.val3))
     (fn 5))
-  (dump-cpp 'weighted_string)
-  (dump-cpp 'combo_concat)
-  'ok
 }
 }  // namespace foo
+}  // namespace
 
 TEST_CASE("Branch on conditionals over stores", "[spec][match-cond]") {
   foo::context ctx1(foo::weighted_string{0, "foo"},
@@ -81,12 +80,8 @@ TEST_CASE("Branch on conditionals over stores", "[spec][match-cond]") {
   combo_concat(ctx2, nbdl::noop);
   combo_concat(ctx3, nbdl::noop);
   combo_concat(ctx4, nbdl::noop);
-  std::cout << ctx1.result_val << '\n';
-  std::cout << ctx2.result_val << '\n';
-  std::cout << ctx3.result_val << '\n';
-  std::cout << ctx4.result_val << '\n';
   CHECK(ctx1.result_val == std::string());
   CHECK(ctx2.result_val == std::string("foobaz"));
-  CHECK(ctx3.result_val == std::string("barbaz"));
+  CHECK(ctx3.result_val == std::string("baz"));
   CHECK(ctx4.result_val == std::string("foobarbaz"));
 }

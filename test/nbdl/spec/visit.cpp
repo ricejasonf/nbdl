@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <type_traits>
 
+namespace {
 namespace my {
 
 using fav_games = std::unordered_map<std::string, std::string>;
@@ -93,7 +94,8 @@ heavy_scheme {
 |#
     (fn (get context '.last_message)))
 }
-}
+}  // namespace my
+}  // namespace
 
 static_assert(std::is_assignable_v<my::message_1&, my::message_1>);
 static_assert(std::is_assignable_v<my::message&, my::message_1>);

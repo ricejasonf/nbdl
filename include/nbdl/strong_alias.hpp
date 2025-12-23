@@ -41,21 +41,23 @@ public:
   }
 };
 
-template <State State, bool is_moveable>
-struct get_impl<strong_alias<State, is_moveable>> {
-  template <typename StateAlias>
-  static constexpr decltype(auto) apply(StateAlias&& s) {
+template <StateAlias Alias>
+  requires nbdl::State<typename Alias::value_type>
+struct get_impl<Alias> {
+  template <typename State>
+  static constexpr decltype(auto) apply(State&& s) {
     return (s);
   }
 
-  template <typename StateAlias, typename Key>
-  static constexpr decltype(auto) apply(State s, Key&& k) {
+  template <typename State, typename Key>
+  static constexpr decltype(auto) apply(State&& s, Key&& k) {
     return nbdl::get(std::forward<State>(s).nbdl_get_strong_alias_value(),
                      std::forward<Key>(k));
   }
 };
 
 template <StoreAlias T>
+ requires (!nbdl::StateAlias<T>)
 struct match_impl<T> {
   template <typename StoreAlias, typename Fn>
     requires detail::HasMatchUnitImpl<typename T::value_type>

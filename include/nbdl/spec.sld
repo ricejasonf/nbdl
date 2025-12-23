@@ -348,17 +348,11 @@
         (%match-path-node CurStore Loc PathNode NextFn)))
 
     ;; Simply apply the unit-key to a mlir.value Store.
-    (define %match-unit
-      (case-lambda
-        ((Store Fn)
-          (if (value? !nbdl.member_name Store)
-            (Fn Store)
-            (%match-unit 0 Store Fn)))
-        ((Loc Store Fn)
-          (match-key Loc Store '() Fn))))
+    (define (%match-unit Loc Store Fn)
+      (%match-key Loc Store '() Fn))
 
     ;; We have mlir.values for both Store and Key
-    (define (match-key Loc Store Key Fn)
+    (define (%match-key Loc Store Key Fn)
       (create-op "nbdl.match"
         (loc: Loc)
         (operands: Store Key)
@@ -395,7 +389,7 @@
                 (Fn MemberStore))))
           ; Any other resolved mlir.value.
           ((value? PathNode)
-            (match-key Loc Store PathNode Fn))
+            (%match-key Loc Store PathNode Fn))
           ; Match a nested PathSpec then continue.
           ((path? PathNode)
             (%match-path-spec PathNode
@@ -445,7 +439,7 @@
           ((value? path)
             (append (list '%nbdl-path path)
                     (source-cons key '() (syntax-source-loc key)) ...))
-          ((path? (dump path))
+          ((path? path)
             (append path
                     (source-cons key '() (syntax-source-loc key)) ...))
           ((else (error "invalid path object: {}" path)))
@@ -510,24 +504,19 @@
                    (result-types:))))
 
     (define (visit-impl MatchingResults? Loc ParamsSpec)
-      ;; All operands to visit are... visited (via match-unit).
-      (define (MapResults FinishFn)
-        (lambda (Results)
-          (%map-params %match-unit Results FinishFn)))
       (close-previous-scope)
+      ;; This %expr is for the whole visit expr (ie its result).
       (if MatchingResults?
         (%expr Loc
           (lambda (Loc Fn)
             (%match-results
               ParamsSpec
-              (MapResults
-                (lambda (Results)
-                  (Fn (build-visit MatchingResults? Loc Results)))))))
+              (lambda (Results)
+                (Fn (build-visit MatchingResults? Loc Results))))))
         (%match-results
           ParamsSpec
-          (MapResults
-            (lambda (Results)
-              (build-visit MatchingResults? Loc Results))))))
+          (lambda (Results)
+            (build-visit MatchingResults? Loc Results)))))
 
     ;; Analogous to std::visit but it takes stores
     ;; for all of its parameters including the callee.
